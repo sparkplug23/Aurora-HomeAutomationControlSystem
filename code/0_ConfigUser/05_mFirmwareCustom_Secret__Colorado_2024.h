@@ -40,6 +40,7 @@ sd card reader
 *******************************************************************************************************************************************/
 
 // #define DEVICE_COLORADO24__REDBOARD_01
+#define DEVICE_TESTBED_WEBCAM_ARDUINO
 
 /**************************************************************************************************************************************************
 ***************************************************************************************************************************************************
@@ -242,7 +243,7 @@ sd card reader
 
   #define ENABLE_NEOPIXELBUS_BUSMETHODS__I2S0_PARALLEL_16_CHANNELS_MODE
 
-  #define ENABLE_BUSCONFIG_10X_2000
+  #define ENABLE_BUSCONFIG_OPTION_01
 
 
   #ifdef ENABLE_BUSCONFIG_16X_3200
@@ -403,7 +404,7 @@ sd card reader
   #endif
 
 
-  #ifdef ENABLE_BUSCONFIG_10X_2000
+  #ifdef ENABLE_BUSCONFIG_OPTION_01
 
   // 4, 16, 17, 18, 19, 21, 22, 23, 2, 13, 14, 27, 26, 25, 33, 32
   /**
@@ -427,37 +428,23 @@ sd card reader
     "BusConfig":[
       {
         "Pin":2,
-        "ColourOrder":"BRG",
+        "ColourOrder":"RGB",
         "BusType":"WS2812_RGB",
         "Start":0,
-        "Length":100
+        "Length":250
       },
       {
         "Pin":4,
-        "ColourOrder":"BRG",
+        "ColourOrder":"RGB",
         "BusType":"WS2812_RGB",
-        "Start":100,
-        "Length":100
-      },
-      {
-        "Pin":18,
-        "ColourOrder":"BRG",
-        "BusType":"WS2812_RGB",
-        "Start":200,
-        "Length":100
-      },
-      {
-        "Pin":19,
-        "ColourOrder":"BRG",
-        "BusType":"WS2812_RGB",
-        "Start":300,
-        "Length":100
+        "Start":250,
+        "Length":250
       }
     ],
     "Segment0": {
       "PixelRange": [
         0,
-        400
+        500
       ],
       "ColourPalette":"Snowy 02",
       "Effects": {
@@ -500,6 +487,46 @@ sd card reader
 
 #endif // DEVICE_COLORADO24__FINAL__16X_OUTSIDE_TREE
 
+
+#ifdef DEVICE_TESTBED_WEBCAM_ARDUINO   //based on arduino core example : Feb 2023
+  #define DEVICENAME_CTR                            "testbed_camera"
+  #define DEVICENAME_FRIENDLY_CTR                   "testbed_camera"
+  #define DEVICENAME_ROOMHINT_CTR                   "Testbed"
+  #define D_MQTTSERVER_IP_ADDRESS_COMMA_DELIMITED   "192.168.1.70"
+    #define MQTT_PORT 1883
+
+  #define ENABLE_FEATURE_WATCHDOG_TIMER
+  #define ENABLE_DEVFEATURE_FASTBOOT_DETECTION
+  #define ENABLE_DEVFEATURE_FAST_REBOOT_OTA_SAFEMODE
+  #define ENABLE_DEVFEATURE_FASTBOOT_OTA_FALLBACK_DEFAULT_SSID
+
+  #define DISABLE_SLEEP
+  #define ENABLE_DEVFEATURE_SETDEBUGOUTPUT
+
+  #define ENABLE_FEATURE_EVERY_SECOND_SPLASH_UPTIME
+
+  // #define USE_MODULE_DRIVERS_CAMERA_OV2640
+  #define USE_MODULE_DRIVERS__CAMERA_ARDUINO
+    #define CAMERA_MODEL_WROVER_KIT
+  // #define USE_MODULE_DRIVERS__CAMERA_TASMOTA
+  //   #define ENABLE_DEVFEATURE_CAMERA_TASMOTA_INCLUDE_WEBSERVER
+
+  #define ENABLE_DEVFEATURE_MQTT_USING_WIFI
+
+
+  #define USE_MODULE_TEMPLATE
+  DEFINE_PGM_CTR(MODULE_TEMPLATE) 
+  "{"
+    "\"" D_NAME "\":\"" DEVICENAME_CTR "\","
+    "\"" D_FRIENDLYNAME "\":\"" DEVICENAME_FRIENDLY_CTR "\","
+    "\"" D_GPIOC "\":{"      
+      "\"2\":\"" D_GPIO_FUNCTION_LED1_INV_CTR "\""
+    "},"
+    "\"" D_BASE "\":\"" D_MODULE_NAME_USERMODULE_CTR "\","
+    "\"" D_ROOMHINT "\":\"" DEVICENAME_ROOMHINT_CTR "\""
+  "}";
+
+#endif // DEVICE_TESTBED_WEBCAM_ARDUINO
 
 
 #endif // _CONFIG_USER_FIRMWARE_CUSTOM_SECRET_CHRISTMAS23_H

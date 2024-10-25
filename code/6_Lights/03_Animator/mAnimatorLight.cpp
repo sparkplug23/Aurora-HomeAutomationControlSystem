@@ -2230,7 +2230,7 @@ void mAnimatorLight::CommandSet_Flasher_FunctionID(uint8_t value, uint8_t segmen
 }
 
 
-int8_t mAnimatorLight::GetFlasherFunctionIDbyName(const char* f)
+int16_t mAnimatorLight::GetFlasherFunctionIDbyName(const char* f)
 {
       
   if(f==0) return -2;

@@ -24,6 +24,7 @@
  ****************************************************************************/
 // #define DEVICE_CHRISTMAS24__DESK__TIMING_TESTER
 // #define DEVICE_CHRISTMAS24__DESK__4X_GREEN      
+// #define DEVICE_CHRISTMAS24__DESK__8X_RED     
 // #define DEVICE_CHRISTMAS24__DESK__8X_OUTSIDE_TREE 
 // #define DEVICE_CHRISTMAS24__DESK__16X_OUTSIDE_TREE
 // #define DEVICE_CHRISTMAS24__DESK__16X_SNOW_TREE
@@ -33,8 +34,9 @@
  * Final hardware will be used in the attic for remove viewing, but should be considered as the "final" software under test
  ****************************************************************************/
 // #define DEVICE_CHRISTMAS24__FINAL__4X_GREEN      
+// #define DEVICE_CHRISTMAS24__FINAL__8X_RED      
 // #define DEVICE_CHRISTMAS24__FINAL__8X_OUTSIDE_TREE 
-#define DEVICE_CHRISTMAS24__FINAL__16X_OUTSIDE_TREE
+// #define DEVICE_CHRISTMAS24__FINAL__16X_OUTSIDE_TREE
 // #define DEVICE_CHRISTMAS24__FINAL__16X_SNOW_TREE
 // #define DEVICE_CHRISTMAS24__FINAL__SIDEDOOR_WREATH
 
@@ -647,6 +649,8 @@
   "}";
 
 #endif // DEVICE_CHRISTMAS24__DESK__4X_GREEN
+
+
 
 
 #ifdef DEVICE_CHRISTMAS24__DESK__16X_SNOW_TREE
@@ -2405,6 +2409,322 @@
   "}";
 
 #endif // DEVICE_CHRISTMAS24__FINAL__4X_GREEN
+
+
+
+
+
+#ifdef DEVICE_CHRISTMAS24__FINAL__8X_RED
+  #ifndef DEVICENAME_CTR
+  #define DEVICENAME_CTR          "xmas24__final__8x_red"
+  #endif
+  #ifndef DEVICENAME_FRIENDLY_CTR
+  #define DEVICENAME_FRIENDLY_CTR DEVICENAME_CTR
+  #endif
+  #ifndef DEVICENAME_DESCRIPTION_CTR
+  #define DEVICENAME_DESCRIPTION_CTR DEVICENAME_FRIENDLY_CTR
+  #endif
+  #define DEVICENAME_ROOMHINT_CTR "testgroup"
+  #define D_MQTTSERVER_IP_ADDRESS_COMMA_DELIMITED   "192.168.1.70"
+    #define MQTT_PORT     1883
+
+  /***********************************
+   * SECTION: System Debug Options
+  ************************************/   
+  // #define DISABLE_SERIAL
+  // #define DISABLE_SERIAL0_CORE
+  // #define DISABLE_SERIAL_LOGGING
+  
+  // #define ENABLE_ADVANCED_DEBUGGING
+  // #define ENABLE_FEATURE_EVERY_SECOND_SPLASH_UPTIME
+  // #define ENABLE_FEATURE_DEBUG_TASKER_INTERFACE_LOOP_TIMES
+  // #define ENABLE_DEBUG_FEATURE__TASKER_INTERFACE_SPLASH_LONG_LOOPS_WITH_MS 50
+  // #define ENABLE_DEBUG_FUNCTION_NAMES
+
+  // #define ENABLE_DEBUG_LINE_HERE_TRACE
+  // #define ENABLE_DEBUG_LINE_HERE
+
+  // #define ENABLE_FREERAM_APPENDING_SERIAL
+
+  // #define ENABLE_DEBUGFEATURE_TASKER__DELAYED_START_OF_MODULES_SECONDS 10
+
+  // #define ENABLE_DEBUGFEATURE__OVERIDE_FASTBOOT_DISABLE // comment out to enable fastboot recovery
+
+  #define ENABLE_FREERAM_APPENDING_SERIAL
+
+  /***********************************
+   * SECTION: Enable Functions
+  ************************************/  
+  
+
+  /***********************************
+   * SECTION: System Configs
+  ************************************/    
+ 
+  #define SETTINGS_HOLDER 1239
+
+  // #define USE_MODULE_CORE_FILESYSTEM
+  //   #define WLED_ENABLE_FS_EDITOR
+  //   #define ENABLE_FEATURE_PIXEL__AUTOMATION_PRESETS
+  //   #define ENABLE_FEATURE_FILESYSTEM__LOAD_MODULE_CONFIG_JSON_ON_BOOT
+  //   #define ENABLE_FEATURE_TEMPLATES__LOAD_DEFAULT_PROGMEM_TEMPLATES_OVERRIDE_FILESYSTEM
+
+  // Settings saving and loading
+  //   // #define ENABLE_DEVFEATURE_PERIODIC_SETTINGS_SAVING__EVERY_HOUR
+  //   #define ENABLE_DEVFEATURE_STORAGE_IS_LITTLEFS
+  //   #define ENABLE_FEATURE_SETTINGS_STORAGE__ENABLED_AS_FULL_USER_CONFIGURATION_REQUIRING_SETTINGS_HOLDER_CONTROL
+  //   #define ENABLE_DEVFEATURE_SETTINGS__INCLUDE_EXTRA_SETTINGS_IN_STRING_FORMAT_FOR_VISUAL_FILE_DEBUG
+  //   // #define ENABLE_FEATURE_SETTINGS_STORAGE__ENABLED_SAVING_BEFORE_OTA
+
+  // #define ENABLE_DEVFEATURE_STORAGE__SYSTEM_CONFIG__LOAD_WITH_TEMPLATES_OVERRIDE
+  // #define ENABLE_DEVFEATURE_STORAGE__ANIMATION_PLAYLISTS
+
+  // #define ENABLE_DEVFEATURE__SAVE_MODULE_DATA
+  // #define ENABLE_DEVFEATURE__SAVE_CRITICAL_BOOT_DATA_FOR_DEBUG_BUT_ONLY_SPLASH_ON_BOOT_FOR_NOW__EG_SSID_MQTT_SERVER_IP_ADDRESS // until devices can reliably be used without compiling per device
+
+  // #define ENABLE_DEVFEATURE_ADD_TIMESTAMP_ON_SAVE_FILES
+    
+  #define ENABLE_DEBUGFEATURE_WEBUI__SHOW_BUILD_DATETIME_IN_FOOTER
+
+  #define ENABLE_FEATURE_LOGGING__NORMAL_OPERATION_REDUCE_LOGGING_LEVEL_WHEN_NOT_DEBUGGING // reduce logging when not debugging
+
+
+  /***********************************
+   * SECTION: Network Configs
+  ************************************/    
+
+  #define ENABLE_DEVFEATURE_JSON__ASYNCJSON_V6
+  #define USE_MODULE_NETWORK_WEBSERVER
+  #define ENABLE_WEBSERVER_LIGHTING_WEBUI  
+
+  /***********************************
+   * SECTION: Sensor Configs
+  ************************************/  
+
+  /***********************************
+   * SECTION: Display Configs
+  ************************************/  
+
+  /***********************************
+   * SECTION: Driver Configs
+  ************************************/  
+
+  /***********************************
+   * SECTION: Lighting Configs
+  ************************************/  
+
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC        // ie shimmering. Used around house all year
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED     // ie christmas. Seasonal, flashing
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE     // ie all options
+  
+
+  #define ENABLE_DEVFEATURE_LIGHTS__DECIMATE
+    #define ENABLE_DEVFEATURE_LIGHTING__DECIMATE_V2
+
+
+
+
+  #define ENABLE_PIXEL_LIGHTING_GAMMA_CORRECTION
+
+  #define ENABLE_DEVFEATURE_LIGHTING__PRESET_LOAD_FROM_FILE
+  #define ENABLE_DEVFEATURE_LIGHTING__PRESETS
+  #define ENABLE_DEVFEATURE_LIGHTING__PRESETS_DEBUG
+  // #define ENABLE_DEVFEATURE_LIGHTING__PRESETS_DEBUG_LINES
+  #define ENABLE_FEATURE_LIGHTING__EFFECTS
+  #define ENABLE_DEVFEATURE_LIGHTING__PLAYLISTS
+  #define ENABLE_DEVFEATURE_LIGHTING__PLAYLISTS_DEBUG_LINES
+  // #define ENABLE_DEVFEATURE_LIGHTING__SETTINGS
+  
+  #define USE_MODULE_CORE_FILESYSTEM
+    #define ENABLE_DEVFEATURE_STORAGE_IS_LITTLEFS
+    #define WLED_ENABLE_FS_EDITOR
+    #define ENABLE_FEATURE_PIXEL__AUTOMATION_PRESETS
+    #define ENABLE_FEATURE_FILESYSTEM__LOAD_MODULE_CONFIG_JSON_ON_BOOT
+    #define ENABLE_FEATURE_TEMPLATES__LOAD_DEFAULT_PROGMEM_TEMPLATES_OVERRIDE_FILESYSTEM
+
+
+
+
+  #define ENABLE_DEVFEATURE_LIGHT__SWITCH_TO_JOINT_NAME_AND_DATA_PROGMEM
+
+  #define ENABLE_DEVFEATURE_LIGHT__PHASE_OUT_TIMEMS
+
+  #define ENABLE_DEVFEATURE_LIGHT__HIDE_CODE_NOT_ACTIVE_TO_BE_INTEGRATED_LATER
+
+  #define ENABLE_DEVFEATURE_LIGHT__LOAD_PULSAR_PALETTES_INTO_CRGBPALETTE_FOR_WLED_EFFECTS // If this works, all future WLED effects should simply use this method allowing faster CRGB performance. My effects will still work in my effects.
+  
+  
+
+
+  #define ENABLE_DEVFEATURE_LIGHTS__EFFECT_ROTATE_PREV_WITH_INTENSITY  
+  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__HARDWARE_TESTING      // effects that enable colour mapping for counting positions and testing hardware/pins
+  #define ENABLE_DEVFEATURE_JSON__ASYNCJSON_V6
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__MANUAL
+
+  
+  #define USE_BUILD_TYPE_LIGHTING
+  #define USE_MODULE_LIGHTS_INTERFACE
+  #define USE_MODULE_LIGHTS_ANIMATOR
+
+  /********* Group: Testing ************************/
+  #define ENABLE_DEVFEATURE_UNNEEDED_WLED_ONLY_PARAMETERS  // Phase out
+  #define ENABLE_DEVFEATURE_LIGHT__HYPERION
+  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING            // Development and testing only
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME             // Basic/Static just for home
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC        // ie shimmering. Used around house all year
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED     // ie christmas. Seasonal, flashing
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE     // ie all options
+  /********* Group: Debug options only ************************/
+  // #define ENABLE_DEBUG_LINE_HERE
+  #define ENABLE_DEBUG_SERIAL    
+ 
+  #define ENABLE_PIXEL_LIGHTING_GAMMA_CORRECTION
+
+  #define ENABLE_DEVFEATURE_LIGHTING__PRESET_LOAD_FROM_FILE
+  #define ENABLE_DEVFEATURE_LIGHTING__PRESETS
+  #define ENABLE_DEVFEATURE_LIGHTING__PRESETS_DEBUG
+  // #define ENABLE_DEVFEATURE_LIGHTING__PRESETS_DEBUG_LINES
+  #define ENABLE_FEATURE_LIGHTING__EFFECTS
+  #define ENABLE_DEVFEATURE_LIGHTING__PLAYLISTS
+  #define ENABLE_DEVFEATURE_LIGHTING__PLAYLISTS_DEBUG_LINES
+  // #define ENABLE_DEVFEATURE_LIGHTING__SETTINGS
+
+
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__HARDWARE_TESTING      // effects that enable colour mapping for counting positions and testing hardware/pins
+
+  // #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_OCTOBER_2023
+
+
+  #define ENABLE_DEBUG_SPLASH_SYSTEM_PERFORMANCE_METRICS_TO_SERIAL
+
+  #define DEBUG_ASYNC
+  #define ENABLE_DEVFEATURE_WEBPAGE__FORCE_NO_CACHE_WITH_RELOAD_ON_WEB_REFRESH
+
+  
+  // #define ENABLE_FEATURE_LIGHTING__SEQUENCER
+  //   #define ENABLE_FEATURE_SEQUENCER__LOAD_DEVICE_LIST
+  //   // #define ENABLE_FEATURE_SEQUENCE__DEVICE_SNOWTREE
+  //   #define ENABLE_FEATURE_SEQUENCE__DEVICE_OUTSIDETREE
+  //   #define ENABBLE_FEATURE_SEQUENCE__PLAYLIST_OUTSIDE_CHRISTMAS_TREE__VERSION_ONE__NO_TIME_RESTRAINTS 
+  //   // #define ENABBLE_FEATURE_SEQUENCE__PLAYLIST_OUTSIDE_CHRISTMAS_TREE__VERSION_TWO__ADDED_FLASHING_EFFECTS
+
+
+  #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 4000
+
+
+  #define ENABLE_DEVFEATURE_LIGHTING__BUS_MANAGER_SETGET_OPTIMISED
+  #define ENABLE_DEVFEATURE_LIGHTING__OCT24_TIMING
+  #define ENABLE_DEVFEATURE_LIGHTING__OCT24_COLOUR_ORDER
+  #define ENABLE_DEBUG_FEATURE_MQTT_ANIMATOR__DEBUG_PERFORMANCE
+  #define ENABLE_DEBUG_FEATURE_MQTT_ANIMATOR__DEBUG_PERFORMANCE_FAST_MQTT_UPDATE
+
+
+
+  #define ENABLE_NEOPIXELBUS_BUSMETHODS__I2S1_PARALLEL_8_CHANNELS_MODE
+
+  // 13, 18, 19, 22, 23, 25, 26, 27       USED
+  // 33, 32, 21, 17, 16, 15*, 14*, 5*, 4, NOTUSED
+  #define USE_LIGHTING_TEMPLATE
+  DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  R"=====(
+  {
+    "BusConfig":[
+      {
+        "Pin":16,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":0,
+        "Length":100
+      },
+      {
+        "Pin":17,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":100,
+        "Length":100
+      },
+      {
+        "Pin":2,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":200,
+        "Length":100
+      },
+      {
+        "Pin":4,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":300,
+        "Length":100
+      },
+      {
+        "Pin":5,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":400,
+        "Length":100
+      },
+      {
+        "Pin":12,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":500,
+        "Length":100
+      },
+      {
+        "Pin":14,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":600,
+        "Length":100
+      },
+      {
+        "Pin":15,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":700,
+        "Length":100
+      }
+    ],
+    "Segment0": {
+      "PixelRange": [
+        0,
+        800
+      ],
+      "ColourPalette":2,
+      "Effects": {
+        "Function":"Sweep Random",
+        "Speed":127,
+        "Intensity":127,
+        "Decimate":0,
+        "Grouping":1,
+        "RateMs": 25
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 0
+    },
+    "BrightnessRGB": 5,
+    "BrightnessCCT": 0
+  }
+  )=====";
+
+  
+  /***********************************
+   * SECTION: Template Configs
+  ************************************/    
+
+  #define USE_MODULE_TEMPLATE
+  DEFINE_PGM_CTR(MODULE_TEMPLATE) 
+  "{"
+    "\"" D_NAME          "\":\"" DEVICENAME_CTR "\","
+    "\"" D_FRIENDLYNAME  "\":\"" DEVICENAME_FRIENDLY_CTR "\","
+    "\"" D_GPIO_FUNCTION "\":{},"
+    "\"" D_BASE          "\":\"" D_MODULE_NAME_USERMODULE_CTR "\","
+    "\"" D_ROOMHINT      "\":\"" DEVICENAME_ROOMHINT_CTR "\""
+  "}";
+
+#endif // DEVICE_CHRISTMAS24__FINAL__8X_RED
+
 
 
 #ifdef DEVICE_CHRISTMAS24__FINAL__16X_SNOW_TREE

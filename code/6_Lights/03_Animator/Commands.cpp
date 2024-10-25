@@ -158,7 +158,7 @@ void mAnimatorLight::subparse_JSONCommand(JsonParserObject obj, uint8_t segment_
         SEGMENT_I(segment_index).stopY  = arrobj[4].getInt();
       }
 
-      ALOG_COM( PSTR(D_LOG_PIXEL "PixelRange = [%d,%d]"), SEGMENT_I(segment_index).start, SEGMENT_I(segment_index).stop );
+      ALOG_INF( PSTR(D_LOG_PIXEL "PixelRange = [%d,%d]"), SEGMENT_I(segment_index).start, SEGMENT_I(segment_index).stop );
       data_buffer.isserviced++;
     }
   }
@@ -295,7 +295,7 @@ void mAnimatorLight::subparse_JSONCommand(JsonParserObject obj, uint8_t segment_
         {
           auto& params_user = SEGMENT_I(segment_index).params_user;
           params_user[i] = jtok.getInt();
-          ALOG_COM(PSTR(D_LOG_PIXEL "Params %d = %d,%d,%d,%d"), segment_index, params_user[0], params_user[1], params_user[2], params_user[3]);
+          ALOG_INF(PSTR(D_LOG_PIXEL "Params %d = %d,%d,%d,%d"), segment_index, params_user[0], params_user[1], params_user[2], params_user[3]);
           data_buffer.isserviced++;
         }
       }

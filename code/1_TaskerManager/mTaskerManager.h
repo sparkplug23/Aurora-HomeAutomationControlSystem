@@ -395,7 +395,7 @@ enum MODULE_SUBTYPE_IDS{ //ignores the "interface"
 #endif
 #ifdef USE_MODULE_DRIVERS__CAMERA_TASMOTA
   #include "4_Drivers/61_WebCam_Tas/mWebCam.h"
-  #define pCONT_camera                              static_cast<mWebCamera*>(pCONT->pModule[EM_MODULE_DRIVERS__CAMERA_TASMOTA__ID])
+  #define pCONT_camera                              static_cast<mWebCamera*>(mTaskerManager::GetInstance()->GetModule(D_UNIQUE_MODULE_DRIVERS__CAMERA_TASMOTA__ID))
 #endif
 #ifdef USE_MODULE_DRIVERS__CAMERA_MULTICLIENT
   #include "4_Drivers/52_WebCamera/mWebCamera.h"

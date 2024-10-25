@@ -227,6 +227,7 @@ Bathroom
 // #define DEVICE_FLOORFAN6 // unused, but doing now
 // #define DEVICE_DEFAULT_SONOFF_BASIC__06
 // #define DEVICE_DEFAULT_SONOFF_BASIC__BLACK_SHORT // Desk floor mat
+// #define DEVICE_DEFAULT_SONOFF_R4_BASIC__24
 
 
 /**************************************************************************************************************************************************
@@ -238,9 +239,11 @@ Bathroom
 /**
  * @brief instead of ini, configure them here
  **/
-#ifdef DEVICE_DEFAULT_SONOFF_BASIC_x
+#ifdef DEVICE_DEFAULT_SONOFF_BASIC__01
   #define DEVICE_SOCKET_NUMBERED
   #define DEVICENAME_SOCKET_NUMBER_CTR 01
+  #define DEVICENAME_ROOMHINT_CTR "Roaming"  
+  #define D_MQTTSERVER_IP_ADDRESS_COMMA_DELIMITED   "192.168.1.70"
 #endif
 #ifdef DEVICE_DEFAULT_SONOFF_BASIC__BLACK_SHORT
   #define DEVICE_SOCKET_NUMBERED
@@ -260,9 +263,11 @@ Bathroom
   #define DEVICENAME_ROOMHINT_CTR "Livingroom"  
   #define D_MQTTSERVER_IP_ADDRESS_COMMA_DELIMITED   "192.168.1.70"
 #endif
-#ifdef DEVICE_DEFAULT_SONOFF_BASIC_x
+#ifdef DEVICE_DEFAULT_SONOFF_BASIC__05
   #define DEVICE_SOCKET_NUMBERED
   #define DEVICENAME_SOCKET_NUMBER_CTR 05
+  #define DEVICENAME_ROOMHINT_CTR "Roaming"  
+  #define D_MQTTSERVER_IP_ADDRESS_COMMA_DELIMITED   "192.168.1.70"
 #endif
 #ifdef DEVICE_DEFAULT_SONOFF_BASIC__06
   #define DEVICE_SOCKET_NUMBERED
@@ -270,13 +275,17 @@ Bathroom
   #define DEVICENAME_ROOMHINT_CTR "Roaming"  
   #define D_MQTTSERVER_IP_ADDRESS_COMMA_DELIMITED   "192.168.1.70"
 #endif
-#ifdef DEVICE_DEFAULT_SONOFF_BASIC_x
+#ifdef DEVICE_DEFAULT_SONOFF_BASIC__07
   #define DEVICE_SOCKET_NUMBERED
   #define DEVICENAME_SOCKET_NUMBER_CTR 07
+  #define DEVICENAME_ROOMHINT_CTR "Roaming"  
+  #define D_MQTTSERVER_IP_ADDRESS_COMMA_DELIMITED   "192.168.1.70"
 #endif
-#ifdef DEVICE_DEFAULT_SONOFF_BASIC_x
+#ifdef DEVICE_DEFAULT_SONOFF_BASIC__08
   #define DEVICE_SOCKET_NUMBERED
   #define DEVICENAME_SOCKET_NUMBER_CTR 08
+  #define DEVICENAME_ROOMHINT_CTR "Roaming"  
+  #define D_MQTTSERVER_IP_ADDRESS_COMMA_DELIMITED   "192.168.1.70"
 #endif
 #ifdef DEVICE_DEFAULT_SONOFF_BASIC_x
   #define DEVICE_SOCKET_NUMBERED
@@ -348,8 +357,8 @@ Bathroom
   #define DEVICENAME_ROOMHINT_CTR "Roaming"  
   #define D_MQTTSERVER_IP_ADDRESS_COMMA_DELIMITED   "192.168.1.70"
 #endif
-#ifdef DEVICE_DEFAULT_SONOFF_BASIC__24
-  #define DEVICE_SOCKET_NUMBERED
+#ifdef DEVICE_DEFAULT_SONOFF_R4_BASIC__24
+  #define DEVICE_SOCKET_NUMBERED_SONOFF_BASIC_R4
   #define DEVICENAME_SOCKET_NUMBER_CTR 24
   #define DEVICENAME_ROOMHINT_CTR "Roaming"  
   #define D_MQTTSERVER_IP_ADDRESS_COMMA_DELIMITED   "192.168.1.70"
@@ -543,6 +552,74 @@ Bathroom
   "}";
 
 #endif
+
+
+#ifdef DEVICE_SOCKET_NUMBERED_SONOFF_BASIC_R4
+  #define DEVICENAME_CTR          "socket_number_" STR2(DEVICENAME_SOCKET_NUMBER_CTR)
+  #define DEVICENAME_FRIENDLY_CTR "Socket Number " STR2(DEVICENAME_SOCKET_NUMBER_CTR)
+  
+  #define ENABLE_FEATURE_WATCHDOG_TIMER
+  #define ENABLE_DEVFEATURE_FASTBOOT_DETECTION
+  #define ENABLE_DEVFEATURE_FAST_REBOOT_OTA_SAFEMODE
+  #define ENABLE_DEVFEATURE_FASTBOOT_OTA_FALLBACK_DEFAULT_SSID
+
+  // #define ENABLE_DEVFEATURE_BUILD_REPAIR__FIXING_RELAY_KEYS_DEFINES_TO_SETTINGS_HEADER
+  
+
+  // #define ENABLE_DEBUGFEATURE__RELOAD_TEMPLATE__RULES_EVER_MINUTE
+
+  #define USE_MODULE_CORE_RULES
+  
+  #define USE_MODULE_SENSORS_INTERFACE
+  #define USE_MODULE_SENSORS_BUTTONS
+    #define ENABLE_DEVFEATURE_BUTTON__V1
+  
+  #define USE_MODULE_DRIVERS_INTERFACE
+  #define USE_MODULE_DRIVERS_RELAY
+    #define MAX_RELAYS 1
+    
+  #define USE_MODULE_TEMPLATE
+  DEFINE_PGM_CTR(MODULE_TEMPLATE) 
+  "{"
+    "\"" D_NAME "\":\"" DEVICENAME_CTR "\","
+    "\"" D_FRIENDLYNAME "\":\"" DEVICENAME_FRIENDLY_CTR "\","
+    "\"" D_BASE "\":\"" D_MODULE_NAME_SONOFF_BASIC_CTR  "\","
+    "\"" D_ROOMHINT "\":\"" DEVICENAME_ROOMHINT_CTR "\""
+  "}";
+
+  #define D_DEVICE_RELAY_0_FRIENDLY_NAME_LONG "Socket"
+  
+  #define USE_FUNCTION_TEMPLATE
+  DEFINE_PGM_CTR(FUNCTION_TEMPLATE)
+  "{"
+    "\"" D_DEVICENAME "\":{"
+      "\"" D_MODULE_DRIVERS_RELAY_CTR "\":["
+        "\"" D_DEVICE_RELAY_0_FRIENDLY_NAME_LONG "\""
+      "]"
+    "}"
+  "}";
+   
+  #define USE_RULES_TEMPLATE
+  DEFINE_PGM_CTR(RULES_TEMPLATE)
+  "{"
+    "\"Rule0\":{" //switch example
+      "\"Trigger\":{"
+        "\"Module\":\"Buttons\","    //sensor
+        "\"Function\":\"" D_TASK_EVENT_INPUT_STATE_CHANGED_CTR "\"," //eg. InputChange (TemperatureThreshold)
+        "\"DeviceName\":0," // eg Switch0, Switch1, Button#, Motion, # (number for index)  
+        "\"State\":2" //eg. On, Off, Toggle, Any, LongPress, ShortPress, RisingEdge, FallingEdge, Started, Ended, TimerOnStarted
+      "},"
+      "\"Command\":{"
+        "\"Module\":\"Relays\","
+        "\"Function\":\"SetPower\"," //eg. InputChange (TemperatureThreshold)
+        "\"DeviceName\":0," //number, name, or all
+        "\"State\":2" // toggle
+      "}"
+    "}"
+  "}";
+
+#endif
+
 
 
 /**

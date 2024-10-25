@@ -467,7 +467,7 @@ class mAnimatorLight :
     void CommandSet_PaletteID(uint16_t value, uint8_t segment_index = 0);
 
     void CommandSet_Flasher_FunctionID(uint8_t value, uint8_t segment_index = 0);
-    int8_t GetFlasherFunctionIDbyName(const char* f);
+    int16_t GetFlasherFunctionIDbyName(const char* f);
     const char* GetFlasherFunctionName(char* buffer, uint8_t buflen, uint8_t segment_index = 0);
     const char* GetFlasherFunctionNamebyID(uint8_t id, char* buffer, uint8_t buflen, bool return_first_option_if_not_found = false);
 
