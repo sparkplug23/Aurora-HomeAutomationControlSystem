@@ -1208,12 +1208,16 @@ void mInterfaceLight::CommandSet_Brt_255(uint8_t brt_new){
     
   // pCONT_lAni->SEGMENT_I(0).rgbcct_controller->setBrightness255(brt_new);
 
-  if(!pCONT_lAni->segments.size()){ return; }
+  // if(!pCONT_lAni->segments.size()){ return; } // Global does not rely on segments, and will be called before segments are created
 
   pCONT_lAni->force_update();
   
-  pCONT_lAni->SEGMENT_I(0).effect_anim_section = 0; // for effects that are only generated once, we need to trigger it again to make the brightness dim down
-  setBriRGB_Global(brt_new);
+  
+ if(pCONT_lAni->segments.size())
+  {
+    pCONT_lAni->SEGMENT_I(0).effect_anim_section = 0; // for effects that are only generated once, we need to trigger it again to make the brightness dim down
+  }
+   setBriRGB_Global(brt_new);
   // probably needs to check if they are linked here, or internally
   setBriCT_Global(brt_new);
 
@@ -1230,13 +1234,15 @@ void mInterfaceLight::CommandSet_Brt_255(uint8_t brt_new){
 
 void mInterfaceLight::CommandSet_Global_BrtRGB_255(uint8_t bri, uint8_t segment_index)
 {
-  if(!pCONT_lAni->segments.size()){ return; }
+  // if(!pCONT_lAni->segments.size()){ return; } // Global does not rely on segments, and will be called before segments are created
 
   // SEGMENT_I(segment_index).rgbcct_controller->setBrightnessRGB255(bri);
  pCONT_lAni->force_update();
  
- pCONT_lAni->SEGMENT_I(0).effect_anim_section = 0; // for effects that are only generated once, we need to trigger it again to make the brightness dim down
-  
+ if(pCONT_lAni->segments.size())
+  {
+    pCONT_lAni->SEGMENT_I(0).effect_anim_section = 0; // for effects that are only generated once, we need to trigger it again to make the brightness dim down
+  }
 
   _briRGB_Global = bri;
   setBriRGB_Global(bri);
@@ -1253,10 +1259,14 @@ void mInterfaceLight::CommandSet_Global_BrtRGB_255(uint8_t bri, uint8_t segment_
 
 void mInterfaceLight::CommandSet_Global_BrtCCT_255(uint8_t bri, uint8_t segment_index) 
 {
-  if(!pCONT_lAni->segments.size()){ return; }
+  // if(!pCONT_lAni->segments.size()){ return; }
   pCONT_lAni->force_update();
-  pCONT_lAni->SEGMENT_I(0).effect_anim_section = 0; // for effects that are only generated once, we need to trigger it again to make the brightness dim down
   
+ if(pCONT_lAni->segments.size())
+  {
+    pCONT_lAni->SEGMENT_I(0).effect_anim_section = 0; // for effects that are only generated once, we need to trigger it again to make the brightness dim down
+  }
+
   setBriCT_Global(bri);
   #ifdef ENABLE_LOG_LEVEL_COMMANDS
   // ALOG_INF(PSTR(D_LOG_LIGHT D_COMMAND_NVALUE_K(D_BRIGHTNESS_CCT)), SEGMENT_I(segment_index).rgbcct_controller->getBrightnessCCT255());
