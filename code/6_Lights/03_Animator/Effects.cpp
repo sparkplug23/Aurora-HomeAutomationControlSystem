@@ -13048,16 +13048,16 @@ void mAnimatorLight::EffectAnim__Hardware__View_Pixel_Range()
 
   SEGMENT.fill(SEGCOLOR_U32(0));
   
-  for (uint16_t i = SEGMENT.params_internal.aux0; i < SEGMENT.params_internal.aux1; i++)
+  for (uint32_t i = SEGMENT.params_user[0]; i < SEGMENT.params_user[1]; i++)
   {
-    SEGMENT.fill(SEGCOLOR_U32(1));
+    SEGMENT.SetPixelColor(i,SEGCOLOR_U32(1));
   }
     
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
   SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
   
 }
-static const char PM_EFFECT_CONFIG__HARDWARE__VIEW_PIXEL_RANGE[] PROGMEM = "Debug Pixel Range@Fg size,Bg size;Fg,!;!;;pal=19";
+static const char PM_EFFECT_CONFIG__HARDWARE__VIEW_PIXEL_RANGE[] PROGMEM = "Debug Pixel Range@Fg size,Bg size;Fg,!;!;;pal=0";
 #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__HARDWARE_TESTING
 
 /********************************************************************************************************************************************************************************************************************
