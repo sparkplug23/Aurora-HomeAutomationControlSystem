@@ -1242,6 +1242,239 @@ USE 2A BLACK WITH BLACK SONOFF FOR WREATH
 #endif // DEVICE_TESTBED_WEBCAM_ARDUINO
 
 
+/**
+ * @brief Device will be made that contains different GPIO testing for the esp32
+ * * leave 22,21 for possible OLED later
+ * * 4 Buttons  (Pull down when active) [12, 14, 18, 19]
+ * * 2 Touch Buttons [32,33]                                 (Solder wires to a pad, then tape or something over it so I can test touch through it (and other materials)) 
+ * * 2 Switches (Pull down when active) [25, 26, 27, 13]
+ * * 4 LEDs
+ * * * 2 as Relays
+ * * * 2 as LED module for status 
+ * 
+ */
+#ifdef DEVICE_ACTIVE_DEVELOPMENT__SWITCHES_AND_BUTTONS_COLORADO24
+  #define DEVICENAME_CTR          "dev_switches_and_buttons"
+  #define DEVICENAME_FRIENDLY_CTR "dev_switches_and_buttons #1"
+  #define DEVICENAME_ROOMHINT_CTR "Roaming"
+  #define D_MQTTSERVER_IP_ADDRESS_COMMA_DELIMITED   "192.168.1.70"
+    #define MQTT_PORT     1883
+    
+  /***********************************
+   * SECTION: System Debug Options
+  ************************************/  
+#define ENABLE_DEBUGFEATURE__OVERIDE_FASTBOOT_DISABLE
+ 
+  #define ENABLE_FEATURE_SYSTEM__BOOT_SPLASH__DISPLAY_BLOCK_TO_SHOW_END_OF_INIT
+  #define ENABLE_FEATURE_SYSTEM__SHOW_BOOT_MESSAGE
+
+  /***********************************
+   * SECTION: Enable with one line (to make it easier to switch on and off for debugging)
+  ************************************/  
+
+  // #define ENABLE_TEMPLATE_SECTION__SENSORS__BME
+
+  #define ENABLE_TEMPLATE_SECTION__ENERGY
+  #define ENABLE_TEMPLATE_SECTION__ENERGY__PZEM
+
+ 
+  /***********************************
+   * SECTION: Storage Configs
+  ************************************/  
+
+
+  /***********************************
+   * SECTION: System Configs
+  ************************************/     
+
+  #define USE_TEMPLATED_DEFAULT_OTA_RECOVERY_METHODS
+
+  #define DEVICENAMEBUFFER_NAME_BUFFER_LENGTH 800
+
+  /***********************************
+   * SECTION: Network Configs
+  ************************************/    
+
+  #define USE_MODULE_NETWORK_WEBSERVER
+  #define ENABLE_WEBSERVER_LIGHTING_WEBUI
+
+  /***********************************
+   * SECTION: Sensor Configs
+  ************************************/  
+
+  // #ifdef ENABLE_TEMPLATE_SECTION__SENSORS__BME
+  //   #define USE_MODULE_SENSORS_INTERFACE
+  //     #define USE_DEVFEATURE_INTERNALISE_UNIFIED_SENSOR_INTERFACE_COLOUR_HEATMAP
+  //   #define USE_MODULE_SENSORS_BME
+  // #endif
+
+  #define USE_MODULE_SENSORS_INTERFACE  
+  #define USE_MODULE_SENSORS_BUTTONS
+    #define ENABLE_DEVFEATURE_BUTTON__V2
+    #define SOC_TOUCH_VERSION_1
+
+  #define USE_MODULE_SENSORS_SWITCHES
+    #define ENABLE_DEVFEATURE_SWITCHES__V2
+
+  /***********************************
+   * SECTION: Display Configs
+  ************************************/  
+
+  // #define USE_MODULE_DISPLAYS_INTERFACE
+  // #define USE_MODULE_DISPLAYS_OLED_SH1106
+  //   #define SHOW_SPLASH
+ 
+  /***********************************
+   * SECTION: Driver Configs
+  ************************************/  
+ 
+  #define USE_MODULE_DRIVERS_INTERFACE
+  // #define USE_MODULE_DRIVERS_RELAY
+  #define USE_MODULE_DRIVERS_LEDS
+ 
+  /***********************************
+   * SECTION: Lighting Configs
+  ************************************/  
+        
+  /***********************************
+   * SECTION: Energy Configs
+  ************************************/  
+
+  // #ifdef ENABLE_TEMPLATE_SECTION__ENERGY
+  //   #define USE_MODULE_ENERGY_INTERFACE
+  // #endif
+  
+  // #ifdef ENABLE_TEMPLATE_SECTION__ENERGY__PZEM
+  //   #define USE_MODULE_ENERGY_PZEM004T_V3
+  //     #define ENABLE_DEVFEATURE_REDUCE_SUBORDINATE_MQTT_REPORTING_ENERGY // If energy_interface is primary reporting, reduce pzem to slower (debug only)
+  //   #define MAX_ENERGY_SENSORS 1
+  //   #define MAX_PZEM004T_DEVICES 17
+  //   #define ENABLE_DEVFEATURE_PZEM004T__AUTOSEARCH
+  // #endif
+
+  /***********************************
+   * SECTION: Controller Configs
+  ************************************/  
+
+  /***********************************
+   * SECTION: MQTT Template Test Loading
+  ************************************/  
+
+  /***********************************
+   * SECTION: GPIO Template
+  ************************************/  
+
+//  #define ENABLE_DEBUG_POINT_MODULE_TEMPLATE_BOOT_SPLASH
+
+  #define USE_MODULE_TEMPLATE
+  DEFINE_PGM_CTR(MODULE_TEMPLATE) 
+  "{"
+    "\"" D_NAME "\":\"" DEVICENAME_CTR "\","
+    "\"" D_FRIENDLYNAME "\":\"" DEVICENAME_FRIENDLY_CTR "\","
+    "\"" D_GPIOC "\":{"
+      #ifdef USE_MODULE_DRIVERS_LEDS
+      "\"27\":\"" D_GPIO_FUNCTION_LED1_CTR  "\","
+      "\"14\":\"" D_GPIO_FUNCTION_LED2_CTR  "\","
+      #ifndef USE_MODULE_DRIVERS_RELAY    // if no relays, we want to use all LEDs directly
+      "\"12\":\"" D_GPIO_FUNCTION_LED3_CTR  "\","
+      "\"13\":\"" D_GPIO_FUNCTION_LED4_CTR  "\","
+      "\"2\":\"" D_GPIO_FUNCTION_LED5_CTR  "\","
+      #else
+      "\"2\":\""  D_GPIO_FUNCTION_LED3_CTR  "\"," //builtin BLUE
+      #endif
+      #endif  
+      #ifdef USE_MODULE_SENSORS_BUTTONS
+      "\"5\":\"" D_GPIO_FUNCTION_KEY1_INV_CTR  "\","
+      "\"4\":\"" D_GPIO_FUNCTION_KEY2_INV_CTR  "\","
+      "\"26\":\"" D_GPIO_FUNCTION_KEY3_INV_CTR  "\","
+      "\"15\":\"" D_GPIO_FUNCTION_KEY4_INV_CTR  "\","
+      #ifdef SOC_TOUCH_VERSION_1
+      "\"32\":\"" D_GPIO_FUNCTION_KEY5_TOUCH_CTR  "\","
+      "\"33\":\"" D_GPIO_FUNCTION_KEY6_TOUCH_CTR  "\","
+      #endif
+      #endif
+      #ifdef USE_MODULE_SENSORS_SWITCHES
+      "\"18\":\"" D_GPIO_FUNCTION_SWT1_INV_CTR  "\","
+      "\"19\":\"" D_GPIO_FUNCTION_SWT2_INV_CTR  "\","
+      #endif  
+      #ifdef USE_MODULE_DRIVERS_RELAY
+      #ifndef USE_MODULE_DRIVERS_LEDS // When LEDs are not used, set 4 relays
+      "\"27\":\"" D_GPIO_FUNCTION_REL3_CTR  "\","
+      "\"14\":\"" D_GPIO_FUNCTION_REL4_CTR  "\","
+      #endif
+      "\"12\":\"" D_GPIO_FUNCTION_REL1_CTR  "\","
+      "\"13\":\"" D_GPIO_FUNCTION_REL2_CTR  "\""
+      #endif
+    "},"
+    "\"" D_BASE "\":\"" D_MODULE_NAME_USERMODULE_CTR "\","
+    "\"" D_ROOMHINT "\":\"" DEVICENAME_ROOMHINT_CTR "\""
+  "}";
+
+  /***********************************
+   * SECTION: Lighting Configs
+  ************************************/    
+
+
+  /***********************************
+   * SECTION: TEMPLATE: Names
+  ************************************/    
+
+  #define D_DEVICE_UNIQUE_NAME "OilRadiator01"
+  #define D_DEVICE_SENSOR_PZEM004T_0_ADDRESS "16"
+  #define D_DEVICE_SENSOR_ZONE_0_NAME "OilRadiator01-BME0"
+  #define D_DEVICE_DRIVER_RELAY_0_NAME "OilRadiator01-DriverZone0"
+  
+  #define D_DEVICE_SENSOR_DB18S20_0_NAME        "Radiator"
+  #define D_DEVICE_SENSOR_DB18S20_0_ADDRESS     "[40,143,81,7,51,20,1,189]"
+
+  #define D_DEVICE_HEATER_0_NAME "Dryer"
+  #define D_DEVICE_HEATER_1_NAME "FloorMat"
+  #define D_DEVICE_HEATER_2_NAME "FanHeater"
+  #define D_DEVICE_HEATER_3_NAME "OilRadiator"
+
+  #define USE_FUNCTION_TEMPLATE
+  DEFINE_PGM_CTR(FUNCTION_TEMPLATE)
+  "{"
+    "\"" D_DEVICENAME "\":{"
+      "\"" D_MODULE_SENSORS_PIR_CTR "\":["
+        "\"" D_DEVICE_UNIQUE_NAME "\""
+      "],"
+      "\"" D_MODULE_SENSORS_SWITCHES_CTR "\":["
+        "\"" D_DEVICE_UNIQUE_NAME "\""
+      "],"
+      "\"" D_MODULE_SENSORS_DB18S20_CTR "\":["
+        "\"" D_DEVICE_SENSOR_DB18S20_0_NAME "\""
+      "],"      
+      "\"" D_MODULE_ENERGY_INTERFACE_CTR "\":["
+        "\"" D_DEVICE_UNIQUE_NAME "\""
+      "],"
+      "\"" D_MODULE_SENSORS_BME_CTR "\":["
+        "\"" D_DEVICE_UNIQUE_NAME "\""
+      "],"
+      "\"" D_MODULE_DRIVERS_RELAY_CTR "\":["
+        "\"" D_DEVICE_HEATER_0_NAME "\","
+        "\"" D_DEVICE_HEATER_1_NAME "\","
+        "\"" D_DEVICE_HEATER_2_NAME "\","
+        "\"" D_DEVICE_HEATER_3_NAME "\""
+      "],"
+      "\"" D_MODULE_ENERGY_PZEM004T_CTR "\":["
+        "\"" D_DEVICE_UNIQUE_NAME "\""
+      "]"
+    "},"
+    "\"" D_SENSORADDRESS "\":{"
+      "\"" D_MODULE_SENSORS_DB18S20_CTR "\":{" 
+        "\"" D_DEVICE_SENSOR_DB18S20_0_NAME "\":" D_DEVICE_SENSOR_DB18S20_0_ADDRESS ","
+      "},"  
+      "\"" D_MODULE_ENERGY_INTERFACE_CTR "\":[" 
+        D_DEVICE_SENSOR_PZEM004T_0_ADDRESS ""
+      "]"  
+    "},"
+    "\"MQTTUpdateSeconds\":{\"IfChanged\":10,\"TelePeriod\":60,\"ConfigPeriod\":60}," 
+    "\"MQTT_Interface_Priority\":{\"" D_MODULE_ENERGY_INTERFACE_CTR "\":1}" // Each interface will have ability to reduce its subclass mqtt "ifchanged" rate
+  "}";
+
+
+#endif
 
 
 
