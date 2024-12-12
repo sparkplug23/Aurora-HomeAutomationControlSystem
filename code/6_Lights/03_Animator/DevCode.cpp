@@ -73,7 +73,7 @@ void mAnimatorLight::TestCode_Add16ParallelBus1()
   // pCONT_iLight->busConfigs
   uint8_t bus_index = 0;
 
-  COLOUR_ORDER_T colord = {COLOUR_ORDER_INIT_DISABLED};
+  uint8_t colord = {COLOUR_ORDER_INIT_DISABLED};
 
   colord.red   = 1;
   colord.green = 0;

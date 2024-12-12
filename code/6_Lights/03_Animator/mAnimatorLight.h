@@ -385,6 +385,24 @@ class mAnimatorLight :
      
     void EverySecond_AutoOff();
     void BootMessage();
+
+    #ifdef ENABLE_FEATURE_LIGHTS__KEY_INPUT_CONTROLS
+    struct KeyInput_ControlLights_s{
+      /**
+       * @brief 
+       * 0: Disabled
+       * 1: Single button demo/tester
+       * 2: Single button multifunction controller
+       * 3: Two button controler (mode, brightness)
+       */
+      uint8_t mode = 1; 
+      uint8_t demo_state = 0;
+    }keyinput_control;
+    void KeyInput__ControlLights();
+    #endif
+    #ifdef ENABLE_FEATURE_LIGHTS__DEMO_MODE
+    void SubTask_Demo();
+    #endif
                 
 
     IRAM_ATTR RgbcctColor ApplyBrightnesstoDesiredColourWithGamma(RgbcctColor full_range_colour, uint8_t brightness);
@@ -418,30 +436,26 @@ class mAnimatorLight :
     /************************************************************************************************
      * SECTION: Modes
      ************************************************************************************************/
-
     enum ANIMATION_MODE
-    {
-      ANIMATION_MODE__DISABLED,      
-      ANIMATION_MODE__EFFECTS,       // PulSar and WLED
-      ANIMATION_MODE__MQTT_SETPIXEL, // Using json encoded message to set the pixels directly
+    {    
+      ANIMATION_MODE__EFFECTS = 0, // Not realtime
+      ANIMATION_MODE__REALTIME_MQTT_SETPIXEL, // Using json encoded message to set the pixels directly
       ANIMATION_MODE__REALTIME_UDP,
       ANIMATION_MODE__REALTIME_HYPERION,
       ANIMATION_MODE__REALTIME_E131,
-      #ifdef ENABLE_FEATURE_PIXEL_MODE__REALTIME_ADALIGHT
       ANIMATION_MODE__REALTIME_ADALIGHT,
-      #endif
       ANIMATION_MODE__REALTIME_ARTNET,
       ANIMATION_MODE__REALTIME_TPM2NET,
       ANIMATION_MODE__REALTIME_DDP,  
       ANIMATION_MODE__LENGTH_ID
-    };             
-    
-    #ifdef ENABLE_DEVFEATURE_LIGHTING__COMMANDS_CHANGE_ANIMATION_MODE
+    };   
+    #ifdef ENABLE_FEATURE_LIGHTING__REALTIME_MODES 
+    void SubTask_RealTime_SetPixel();
     int8_t GetAnimationModeIDbyName(const char* c);
     const char* GetAnimationModeName(char* buffer, uint16_t buflen);
     const char* GetAnimationModeNameByID(uint8_t id, char* buffer, uint16_t buflen);
     void CommandSet_AnimationModeID(uint8_t value);
-    #endif // ENABLE_DEVFEATURE_LIGHTING__COMMANDS_CHANGE_ANIMATION_MODE
+    #endif // ENABLE_FEATURE_LIGHTING__REALTIME_MODES
 
 
     /************************************************************************************************
@@ -556,7 +570,7 @@ class mAnimatorLight :
     void initPresetsFile();
     bool applyPreset(byte index, byte callMode = CALL_MODE_DIRECT_CHANGE);
     void applyPresetWithFallback(uint8_t presetID, uint8_t callMode, uint8_t effectID = 0, uint8_t paletteID = 0);
-    void handlePresets();
+    void SubTask_Presets();
     inline bool applyTemporaryPreset() {return applyPreset(255);};
 
     #ifdef ENABLE_DEVFEATURE_JSON__ASYNCJSON_V6
@@ -597,7 +611,7 @@ class mAnimatorLight :
     void shufflePlaylist();
     void unloadPlaylist();
     int16_t loadPlaylist(JsonObject playlistObj, byte presetId);
-    void handlePlaylist();
+    void SubTask_Playlist();
     void serializePlaylist(JsonObject sObj);    
 
     #endif // ENABLE_DEVFEATURE_LIGHTING__PLAYLISTS
@@ -1849,7 +1863,7 @@ class mAnimatorLight :
 
   uint16_t getEffectsAmount(){ return effects.config.size(); }
 
-  void SubTask_Segments_Effects();
+  void SubTask_Effects();
   void Segments_RefreshLEDIndexPattern(uint8_t segment_index = 0);
   
   byte realtimeMode = REALTIME_MODE_INACTIVE;
@@ -2122,7 +2136,7 @@ class mAnimatorLight :
     #ifdef ENABLE_FEATURE_LIGHTING__SEQUENCER // Legacy mixer/playlist to enable hardcoded playlists while the file system playlists are underdevelopment
 
     void Init_Sequencer();
-    void handleSequencer();
+    void SubTask_Sequencer();
     void Load_Sequencer(uint8_t id);
     void SubLoad_Sequencer_Device(uint8_t id);
     void SetSequenceTimes(uint16_t secs);
@@ -3197,11 +3211,12 @@ bool wasConnected _INIT(false);
 // color
 byte lastRandomIndex _INIT(0);        // used to save last random color so the new one is not the same
 
-// transitions
-bool          transitionActive        _INIT(false);
-uint16_t      transitionDelayDefault  _INIT(transitionDelay); // default transition time (storec in cfg.json)
-uint16_t      transitionDelayTemp     _INIT(transitionDelay); // actual transition duration (overrides transitionDelay in certain cases)
-unsigned long transitionStartTime;
+// REMOVED
+// // transitions
+// bool          transitionActive        _INIT(false);
+// uint16_t      transitionDelayDefault  _INIT(transitionDelay); // default transition time (storec in cfg.json)
+// uint16_t      transitionDelayTemp     _INIT(transitionDelay); // actual transition duration (overrides transitionDelay in certain cases)
+// unsigned long transitionStartTime;
 float         tperLast                _INIT(0.0f);            // crossfade transition progress, 0.0f - 1.0f
 bool          jsonTransitionOnce      _INIT(false);           // flag to override transitionDelay (playlist, JSON API: "live" & "seg":{"i"} & "tt")
 uint8_t       randomPaletteChangeTime _INIT(5);               // amount of time [s] between random palette changes (min: 1s, max: 255s)
@@ -3356,12 +3371,6 @@ bool useMainSegmentOnly _INIT(false);
     
     #ifdef USE_MODULE_NETWORK_MQTT
       void MQTTHandler_Init();
-      void MQTTHandler_RefreshAll();
-      void MQTTHandler_Rate();  
-      void MQTTHandler_Sender();
-      #ifdef USE_MODULE_NETWORK_WEBSERVER
-      void MQTTHandler_AddWebURL_PayloadRequests();
-      #endif // USE_MODULE_NETWORK_WEBSERVER
       
       std::vector<struct handler<mAnimatorLight>*> mqtthandler_list;
     
@@ -3410,6 +3419,11 @@ bool useMainSegmentOnly _INIT(false);
       #ifdef USE_DEVFEATURE_ENABLE_ANIMATION_SPECIAL_DEBUG_FEEDBACK_OVER_MQTT_WITH_FUNCTION_CALLBACK
       struct handler<mAnimatorLight> mqtthandler_debug_animations_progress;
       #endif
+      
+      #ifdef USE_MODULE_NETWORK_WEBSERVER
+      void MQTTHandler_AddWebURL_PayloadRequests();
+      #endif // USE_MODULE_NETWORK_WEBSERVER
+      
     #endif // USE_MODULE_NETWORK_MQTT
 
     

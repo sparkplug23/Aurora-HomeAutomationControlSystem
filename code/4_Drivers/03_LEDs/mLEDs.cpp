@@ -66,7 +66,7 @@ void mLEDs::Pre_Init(void)
   inverted_bitmask = 0; // Reset all bits
 
   // Lets check each type on their own, normal, inverted etc
-  for(uint32_t ii=0; ii<MAX_LEDS; ii++)
+  for(uint32_t ii=0; ii<MODULE_LEDS_MAX; ii++)
   {
 
     int8_t pin = -1;
@@ -92,7 +92,7 @@ void mLEDs::Pre_Init(void)
 
     if(pin != -1)
     {
-      ALOG_INF(PSTR(D_LOG_LED "%d pin=%d %s"), ii, pin, toBinaryString(used_bitmask, MAX_LEDS).c_str() );
+      ALOG_INF(PSTR(D_LOG_LED "%d pin=%d %s"), ii, pin, toBinaryString(used_bitmask, MODULE_LEDS_MAX).c_str() );
     }
 
   }
@@ -138,7 +138,7 @@ void mLEDs::BootMessage()
   {
     mSupport::appendToBuffer(buffer, sizeof(buffer), "#%d ", UsedCount());  
     char buffer2[50];
-    for(uint8_t sensor_id = 0; sensor_id<MAX_LEDS; sensor_id++)
+    for(uint8_t sensor_id = 0; sensor_id<MODULE_LEDS_MAX; sensor_id++)
     {      
       //if bit0 is used as LEDSTATUS, then show this here too
       mSupport::appendToBuffer(buffer, sizeof(buffer), "%d, ", sensor_id);    

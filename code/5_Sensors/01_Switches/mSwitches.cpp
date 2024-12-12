@@ -530,42 +530,77 @@ void mSwitches::SwitchHandler(void) {
     }
 
 
-    if (switchflag <= POWER_TOGGLE) { // ie where <3 was before
-      if (!pCONT_set->Settings.flag_system.mqtt_switches) {                   // SetOption114 (0) - Detach Switches from relays and enable MQTT action state for all the SwitchModes
-        // if (!SendKey(KEY_SWITCH, i +1, switchflag)) {         // Execute command via MQTT
-        //   pCONT_mry->ExecuteCommandPower(i +1, switchflag, SRC_SWITCH);  // Execute command internally (if i < TasmotaGlobal.devices_present)
-        //   // Should the rules of mine be here?
-        // }                 // SetOption114 (0) - Detach Switches from relays and enable MQTT action state for all the SwitchModes
-        // if (!SendKey(KEY_SWITCH, i +1, switchflag)) {         // Execute command via MQTT
+    // if (switchflag <= POWER_TOGGLE) { // ie where <3 was before
+    //   if (!pCONT_set->Settings.flag_system.mqtt_switches) {                   // SetOption114 (0) - Detach Switches from relays and enable MQTT action state for all the SwitchModes
+    //     // if (!SendKey(KEY_SWITCH, i +1, switchflag)) {         // Execute command via MQTT
+    //     //   pCONT_mry->ExecuteCommandPower(i +1, switchflag, SRC_SWITCH);  // Execute command internally (if i < TasmotaGlobal.devices_present)
+    //     //   // Should the rules of mine be here?
+    //     // }                 // SetOption114 (0) - Detach Switches from relays and enable MQTT action state for all the SwitchModes
+    //     // if (!SendKey(KEY_SWITCH, i +1, switchflag)) {         // Execute command via MQTT
 
-        ALOG_INF(PSTR("WHERE MY RULE SHOULD BE"));
+    //     ALOG_INF(PSTR("WHERE MY RULE SHOULD BE"));
           
-          // #ifdef USE_MODULE_DRIVERS_RELAY    I DO NOT WANT INTERNAL RELAY CONTROL, BUT SHOULD BE RULE BASED!
-          // pCONT_mry->ExecuteCommandPower(i, switchflag, SRC_SWITCH);  // Execute command internally (if i < TasmotaGlobal.devices_present)
-          // #endif
-          // Should the rules of mine be here?
-        // }
-      } else { mqtt_action = switchflag; }
+    //       // #ifdef USE_MODULE_DRIVERS_RELAY    I DO NOT WANT INTERNAL RELAY CONTROL, BUT SHOULD BE RULE BASED!
+    //       // pCONT_mry->ExecuteCommandPower(i, switchflag, SRC_SWITCH);  // Execute command internally (if i < TasmotaGlobal.devices_present)
+    //       // #endif
+    //       // Should the rules of mine be here?
+    //     // }
+    //   } else { mqtt_action = switchflag; }
+    // }
+
+
+
+    if (switchflag <= POWER_TOGGLE)
+    {
+      #ifndef ENABLE_DEVFEATURE_TO_PARTIAL_DISABLE_SWITCH_FOR_DEBUG
+
+        #ifdef USE_MODULE_CORE_RULES
+          // Active high means start of motion always, so check for inversion
+          uint8_t new_state = (button);  // ? /*invert*/ !state : /*else, just follow*/ state;
+
+          ALOG_INF( PSTR("switchflag=%d, state=%d"), switchflag, new_state);
+
+          pCONT_rules->NewEventRun_NumArg(
+            D_UNIQUE_MODULE_SENSORS_SWITCHES_ID, // Unique module ID
+            TASK_EVENT_INPUT_STATE_CHANGED_ID,   // FUNC ID
+            i, // SWitch index
+            1, // Embedded data length
+            new_state); // Event has occured, save and check it            
+            
+        #endif
+        
+      #endif // ENABLE_DEVFEATURE_TO_PARTIAL_DISABLE_SWITCH_FOR_DEBUG
     }
-    if ((mqtt_action != POWER_NONE) && pCONT_set->Settings.flag_system.mqtt_switches) {  // SetOption114 (0) - Detach Switches from relays and enable MQTT action state for all the SwitchModes
-      // if (!pCONT_set->Settings.flag.hass_discovery) {                   // SetOption19 - Control Home Assistant automatic discovery (See SetOption59)
-      //   char mqtt_state_str[16];
-      //   char *mqtt_state = mqtt_state_str;
-      //   if (mqtt_action <= 3) {
-      //     if (mqtt_action != 3) { SendKey(KEY_SWITCH, i +1, mqtt_action); }
-      //     mqtt_state = SettingsText(SET_STATE_TXT1 + mqtt_action);
-      //   } else {
-      //     GetTextIndexed(mqtt_state_str, sizeof(mqtt_state_str), mqtt_action, kSwitchPressStates);
-      //   }
-      //   Response_P(S_JSON_SVALUE_ACTION_SVALUE, GetSwitchText(i).c_str(), mqtt_state);
-      //   char scommand[10];
-      //   snprintf_P(scommand, sizeof(scommand), PSTR(D_JSON_SWITCH "%d"), i +1);
-      //   MqttPublishPrefixTopicRulesProcess_P(RESULT_OR_STAT, scommand);
-      // }
-      mqtt_action = POWER_NONE;
-      ALOG_INF(PSTR("mqtt switch removed, should be to send the switch"));
-    }
-  }
+
+
+
+
+
+
+
+    // if ((mqtt_action != POWER_NONE) && pCONT_set->Settings.flag_system.mqtt_switches) {  // SetOption114 (0) - Detach Switches from relays and enable MQTT action state for all the SwitchModes
+    //   // if (!pCONT_set->Settings.flag.hass_discovery) {                   // SetOption19 - Control Home Assistant automatic discovery (See SetOption59)
+    //     char mqtt_state_str[16];
+    //     char *mqtt_state = mqtt_state_str;
+    //     if (mqtt_action <= 3) {
+    //       if (mqtt_action != 3) { SendKey(KEY_SWITCH, i +1, mqtt_action); }
+    //       mqtt_state = pCONT_set->SettingsText(SET_STATE_TXT1 + mqtt_action);
+    //     } else {
+    //       pCONT_sup->GetTextIndexed(mqtt_state_str, sizeof(mqtt_state_str), mqtt_action, kSwitchPressStates);
+    //     }
+    //     pCONT_sup->Response_P(S_JSON_SVALUE_ACTION_SVALUE, pCONT_sup->GetSwitchText(i).c_str(), mqtt_state);
+    //     char scommand[10];
+    //     snprintf_P(scommand, sizeof(scommand), PSTR(D_SWITCH "%d"), i +1);
+    //     ALOG_INF(PSTR("MqttPublishPrefixTopicRulesProcess_P %s %s"), RESULT_OR_STAT, scommand);
+    //     // MqttPublishPrefixTopicRulesProcess_P(RESULT_OR_STAT, scommand);
+    //   // }
+    //   mqtt_action = POWER_NONE;
+    //   ALOG_INF(PSTR("mqtt switch removed, should be to send the switch"));
+    // }
+
+    
+    
+  } // for switches
 }
 
 /**
@@ -1015,7 +1050,7 @@ DEBUG_LINE_HERE
                 i, // SWitch index
                 1, // Embedded data length
                 new_state); // Event has occured, save and check it            
-DEBUG_LINE_HERE
+                DEBUG_LINE_HERE
             #endif
             
           #endif // ENABLE_DEVFEATURE_TO_PARTIAL_DISABLE_SWITCH_FOR_DEBUG

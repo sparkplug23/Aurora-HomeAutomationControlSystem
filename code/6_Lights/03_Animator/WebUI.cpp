@@ -466,7 +466,6 @@ bool  mAnimatorLight::deserializeState(JsonObject root, byte callMode, byte pres
 
   if (root.containsKey("live")) {
     if (root["live"].as<bool>()) {
-      transitionDelayTemp = 0;
       jsonTransitionOnce = true;
       realtimeLock(65000);
     } else {
@@ -907,7 +906,7 @@ bool mAnimatorLight::deserializeConfig(JsonObject doc, bool fromFS) {
     doInitBusses = busesChanged;
     // finalization done in beginStrip()
   }
-  if (hw_led["rev"]) pCONT_iLight->bus_manager->getBus(0)->reversed = true; //set 0.11 global reversed setting for first bus
+  if (hw_led["rev"]) pCONT_iLight->bus_manager->getBus(0)->setReversed(true); //set 0.11 global reversed setting for first bus
 
   // read color order map configuration
   JsonArray hw_com = hw[F("com")];
@@ -940,7 +939,7 @@ bool mAnimatorLight::deserializeConfig(JsonObject doc, bool fromFS) {
   JsonObject light_tr = light["tr"];
   CJSON(fadeTransition, light_tr["mode"]);
   int tdd = light_tr["dur"] | -1;
-  if (tdd >= 0) transitionDelay = transitionDelayDefault = tdd * 100;
+  // if (tdd >= 0) transitionDelay = transitionDelayDefault = tdd * 100;
   CJSON(paletteFade, light_tr["pal"]);
   CJSON(randomPaletteChangeTime, light_tr[F("rpc")]);
 
@@ -1458,14 +1457,8 @@ bool mAnimatorLight::deserializeSegment(JsonObject elem, byte it, byte presetId)
     seg.map1D2D = M12_Pixels; // no mapping
 
     // set brightness immediately and disable transition
-    transitionDelayTemp = 0;
+    // transitionDelayTemp = 0;
     jsonTransitionOnce = true;
-    // setBrightness(scaledBri(
-    //   // bri
-      
-    //   pCONT_iLight->
-      
-    //   ), true);
 
     // freeze and init to black
     if (!seg.freeze) {
@@ -2805,7 +2798,7 @@ void mAnimatorLight::serveSettings(AsyncWebServerRequest* request, bool post)
   // if (!correctPIN && strlen(settingsPIN) > 0 && 
   if((subPage > 0 && subPage < 11)) {
     originalSubPage = subPage;
-    subPage = SUBPAGE_PINREQ; // require PIN
+    // subPage = SUBPAGE_PINREQ; // require PIN
   }
 
   if (post) { //settings/set POST request, saving

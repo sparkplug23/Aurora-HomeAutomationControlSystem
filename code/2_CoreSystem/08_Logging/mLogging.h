@@ -24,7 +24,7 @@
 #endif
 
 enum LoggingLevels {
-  LOG_LEVEL_NONE, 
+  LOG_LEVEL_NONE=0, 
 
   /**
    *  Highest level of trace debug that will always be shown when called, but should always be disabled via ifdef calls ie "ENABLE_DEBUG_TRACE__##"

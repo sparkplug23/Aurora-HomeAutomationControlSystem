@@ -131,7 +131,6 @@ void mSettings::SystemSettings_DefaultBody(void)
 
   runtime.seriallog_level_during_boot = SERIAL_LOG_LEVEL_DURING_BOOT;
   Settings.logging.serial_level = runtime.seriallog_level_during_boot;
-  Settings.logging.serial_level = SERIAL_LOG_LEVEL;
   Settings.logging.sys_port = SYS_LOG_PORT;
   Settings.logging.sys_level = SYS_LOG_LEVEL;
   Settings.logging.web_level = WEB_LOG_LEVEL;

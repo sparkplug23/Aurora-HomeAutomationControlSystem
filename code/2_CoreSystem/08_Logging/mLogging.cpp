@@ -27,7 +27,6 @@ void AddLog(uint8_t loglevel, PGM_P formatP, ...)
     pCONT_set->Settings.logging.serial_level = LOG_LEVEL_ALL;
   #endif
   // SERIAL_DEBUG.printf("%s %d\r\n","START",millis()); 
-  // pCONT_set->Settings.logging.serial_level = LOG_LEVEL_ALL;
 
   // Speed/stability improvements, check log level and return early if it doesnt apply to any log events
   if(

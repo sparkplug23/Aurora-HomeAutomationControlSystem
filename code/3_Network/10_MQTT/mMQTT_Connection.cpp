@@ -156,7 +156,7 @@ void MQTTConnection::MqttReconnect(void){ DEBUG_PRINT_FUNCTION_NAME;
   
   uint32_t elapsed_millis = millis() - before_millis;
 
-  ALOG_INF(PSTR("MqttReconnect elapsed_millis = %d"), elapsed_millis);
+  ALOG_INF(PSTR("MqttReconnect ElapsedTime = %d"), elapsed_millis);
 
 } // END function
 

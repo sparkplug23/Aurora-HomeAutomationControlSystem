@@ -30,6 +30,7 @@
 #define DEBUG_PRINT Serial.print
 #define DEBUG_PRINTLN Serial.println
 #define DEBUG_PRINTF Serial.printf
+#define DEBUG_PRINTF_P(x...) Serial.printf_P(x)
 
 #define DEBUG_TASMOTA_CORE
 

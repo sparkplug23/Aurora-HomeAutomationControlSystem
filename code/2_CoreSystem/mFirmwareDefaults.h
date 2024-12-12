@@ -110,6 +110,77 @@ void WifiWpsStatusCallback(wps_cb_status status);
 *******************************************************************************************************************************************/
 
   
+/**
+ * Lighting as default:
+ * ** no bus
+ * ** normal webui, presets, playlists are enabled
+ * 
+ * Update Date: 12 November 2024
+ * End Date: This should be removed
+*/
+#ifdef USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
+
+
+  /**
+   * Hardware 
+   */
+  #define ENABLE_FEATURE_LIGHTING__I2S_SINGLE_AND_PARALLEL_AUTO_DETECT
+
+  /**
+   * Software: Fully or largely incorporated
+   **/
+  #define USE_BUILD_TYPE_LIGHTING
+  #define USE_MODULE_LIGHTS_INTERFACE
+  #define USE_MODULE_LIGHTS_ANIMATOR
+  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__HARDWARE_TESTING      // effects that enable colour mapping for counting positions and testing hardware/pins
+  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING            // Development and testing only
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME             // Basic/Static just for home
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC        // ie shimmering. Used around house all year
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED     // ie christmas. Seasonal, flashing
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE     // ie all options
+
+
+  ///////// Presets ///////////////////////////////////////////////////////////////////////////////
+  #define ENABLE_DEVFEATURE_LIGHTING__PRESET_LOAD_FROM_FILE
+  #define ENABLE_DEVFEATURE_LIGHTING__PRESETS
+  #define ENABLE_DEVFEATURE_LIGHTING__PRESETS_DEBUG
+  // #define ENABLE_DEVFEATURE_LIGHTING__PRESETS_DEBUG_LINES
+  ///////// Playlists ///////////////////////////////////////////////////////////////////////////////
+  #define ENABLE_FEATURE_LIGHTING__EFFECTS
+  #define ENABLE_DEVFEATURE_LIGHT__PLAYLISTS_2024
+  #define ENABLE_DEVFEATURE_LIGHTING__PLAYLISTS
+  #define ENABLE_DEVFEATURE_LIGHTING__PLAYLISTS_DEBUG_LINES
+  // #define ENABLE_DEVFEATURE_LIGHTING__SETTINGS
+
+
+  /**
+   * Software: Testing and not yet considered "standard"
+   **/ 
+  #define ENABLE_PIXEL_LIGHTING_GAMMA_CORRECTION
+  #define ENABLE_DEVFEATURE_LIGHT__SWITCH_TO_JOINT_NAME_AND_DATA_PROGMEM
+  #define ENABLE_DEVFEATURE_LIGHTING__OCT24_COLOUR_ORDER
+  #define ENABLE_DEVFEATURE_LIGHT__PHASE_OUT_TIMEMS
+  #define ENABLE_DEVFEATURE_LIGHT__HIDE_CODE_NOT_ACTIVE_TO_BE_INTEGRATED_LATER
+  #define ENABLE_DEVFEATURE_LIGHT__LOAD_PULSAR_PALETTES_INTO_CRGBPALETTE_FOR_WLED_EFFECTS // If this works, all future WLED effects should simply use this method allowing faster CRGB performance. My effects will still work in my effects.
+  #define ENABLE_DEVFEATURE_LIGHTS__DECIMATE
+  #define ENABLE_DEVFEATURE_LIGHTS__EFFECT_ROTATE_PREV_WITH_INTENSITY  
+  #define ENABLE_DEVFEATURE_JSON__ASYNCJSON_V6
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__MANUAL
+
+
+  #define ENABLE_DEVFEATURE_TIME__TIME_SHORT_FUNCTIONS
+  #define ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
+  #define ENABLE_DEVFEATURE_LIGHTING__OCT24_TIMING
+  #define ENABLE_DEVFEATURE_LIGHTING__OCT24_COLOUR_ORDER
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__HARDWARE_TESTING      // effects that enable colour mapping for counting positions and testing hardware/pins
+  
+  #define DEBUG_ASYNC
+  #define ENABLE_DEVFEATURE_WEBPAGE__FORCE_NO_CACHE_WITH_RELOAD_ON_WEB_REFRESH
+  #define ENABLE_DEVFEATURE_LIGHTING__DEFAULT_ESP32_BUTTON_IS_DEMO_SEQUENCE
+
+#endif // USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
+
+
 
 /**
  * Going forward, here will support define that simply insert in firmwarecustom
@@ -134,7 +205,7 @@ void WifiWpsStatusCallback(wps_cb_status status);
     #define ENABLE_DEVFEATURE_NEOSPEED_ESP32_I2S_WS2812_METHOD
     
     #define ENABLE_DEVFEATURE_COLOR_WHEEL_CHANGED
-    #define ENABLE_DEVFEATURE_UNNEEDED_WLED_ONLY_PARAMETERS
+    
     
     // #define ENABLE_DEVFEATURE_CREATE_MINIMAL_BUSSES_SINGLE_OUTPUT
     // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING            // Development and testing only
@@ -264,7 +335,7 @@ void WifiWpsStatusCallback(wps_cb_status status);
     /********* Group: Testing ************************/
     // 
     #define ENABLE_DEVFEATURE_COLOR_WHEEL_CHANGED
-    #define ENABLE_DEVFEATURE_UNNEEDED_WLED_ONLY_PARAMETERS
+    
     
     #define ENABLE_DEVFEATURE_CREATE_MINIMAL_BUSSES_SINGLE_OUTPUT
     // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING            // Development and testing only
@@ -311,7 +382,7 @@ void WifiWpsStatusCallback(wps_cb_status status);
     // /********* Group: Testing ************************/
     // // 
     // #define ENABLE_DEVFEATURE_COLOR_WHEEL_CHANGED
-    // #define ENABLE_DEVFEATURE_UNNEEDED_WLED_ONLY_PARAMETERS
+    // 
     // 
     // #define ENABLE_DEVFEATURE_CREATE_MINIMAL_BUSSES_SINGLE_OUTPUT
     // // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING            // Development and testing only
@@ -359,12 +430,41 @@ void WifiWpsStatusCallback(wps_cb_status status);
 
 
 #endif // USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES_RGBCCT_PWM_H801
+
+
+/**************************************************************************************************************************************************
+***************************************************************************************************************************************************
+***************************************************************************************************************************************************
+*************************************************************************************************************************************************
+****** SECTION: Base defines for specialised hardware ******************************************************************************************************************
+****************************************************************************************************************************************************
+***************************************************************************************************************************************************
+***************************************************************************************************************************************************
+*******************************************************************************************************************************************/
+
+
+
+
+
+/**************************************************************************************************************************************************
+***************************************************************************************************************************************************
+***************************************************************************************************************************************************
+*************************************************************************************************************************************************
+****** SECTION: Base defines for just lighting ******************************************************************************************************************
+****************************************************************************************************************************************************
+***************************************************************************************************************************************************
+***************************************************************************************************************************************************
+*******************************************************************************************************************************************/
+
+
+
+
 /**
  * After WEBUI added and multipin testing, consolidate into one define
  * 
  * Update Date: 13 August 2023
+ * End Date: This should be removed
 */
-
 #ifdef USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_AUGUST_2023
 
   #error "switch to USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_SEPTEMBER_2023"
@@ -384,7 +484,7 @@ void WifiWpsStatusCallback(wps_cb_status status);
     
     
     #define ENABLE_DEVFEATURE_COLOR_WHEEL_CHANGED
-    #define ENABLE_DEVFEATURE_UNNEEDED_WLED_ONLY_PARAMETERS
+    
     
     #define ENABLE_DEVFEATURE_MOVE_HARDWARE_COLOUR_ORDER_TO_BUS
     #define ENABLE_DEVFEATURE_CREATE_MINIMAL_BUSSES_SINGLE_OUTPUT
@@ -432,7 +532,7 @@ void WifiWpsStatusCallback(wps_cb_status status);
   #define USE_MODULE_LIGHTS_INTERFACE
   #define USE_MODULE_LIGHTS_ANIMATOR
     /********* Group: Testing ************************/
-    #define ENABLE_DEVFEATURE_UNNEEDED_WLED_ONLY_PARAMETERS  // Phase out
+      // Phase out
     #define ENABLE_DEVFEATURE_LIGHT__HYPERION
     // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING            // Development and testing only
     // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME             // Basic/Static just for home
@@ -465,7 +565,7 @@ void WifiWpsStatusCallback(wps_cb_status status);
   #define USE_MODULE_LIGHTS_INTERFACE
   #define USE_MODULE_LIGHTS_ANIMATOR
     /********* Group: Testing ************************/
-    #define ENABLE_DEVFEATURE_UNNEEDED_WLED_ONLY_PARAMETERS  // Phase out
+      // Phase out
     #define ENABLE_DEVFEATURE_LIGHT__HYPERION
     // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING            // Development and testing only
     #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME             // Basic/Static just for home
@@ -500,7 +600,7 @@ void WifiWpsStatusCallback(wps_cb_status status);
   #define USE_MODULE_LIGHTS_INTERFACE
   #define USE_MODULE_LIGHTS_ANIMATOR
     /********* Group: Testing ************************/
-    #define ENABLE_DEVFEATURE_UNNEEDED_WLED_ONLY_PARAMETERS  // Phase out
+      // Phase out
     #define ENABLE_DEVFEATURE_LIGHT__HYPERION
     // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING            // Development and testing only
     #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME             // Basic/Static just for home
@@ -538,7 +638,7 @@ void WifiWpsStatusCallback(wps_cb_status status);
   #define USE_MODULE_LIGHTS_INTERFACE
   #define USE_MODULE_LIGHTS_ANIMATOR
     /********* Group: Testing ************************/
-    #define ENABLE_DEVFEATURE_UNNEEDED_WLED_ONLY_PARAMETERS  // Phase out
+      // Phase out
     #define ENABLE_DEVFEATURE_LIGHT__HYPERION
     // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING            // Development and testing only
     #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME             // Basic/Static just for home
@@ -565,6 +665,74 @@ void WifiWpsStatusCallback(wps_cb_status status);
   // #define ENABLE_DEVFEATURE_LIGHTING__SETTINGS
 
 #endif // USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES_SK6812_FOR_ROOM_SENSORS
+
+
+
+#ifdef ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
+/**
+ * @brief This section enables the use of a single button (as default, KEY1) that must be set outside of this
+ * When pressed, a few methods will automatically be useful for debugging and testing
+ * 
+ */
+ /**
+ * @brief 
+ * Button: Multipress
+ * ** (1) "Demo: 1 minute"
+ * ** (2) "Colour Test": 
+ *           Part 1: 20 seconds
+ *            Full brightness
+ *            First 4 pixels will show R, G, B, white always
+ *            Remaining pixels will sweep across with random colours
+ *           Part 2: 20 seconds
+ *            Rainbow Cycle
+ *           Part 3: 20 seconds
+ *            Spanned Palette with Rainbow 16
+ * ** (3) "Bus Test"
+ *            Part 1: 
+ *              Busses will show the "hardware test" effect, where the first pixel(s) of each bus is white (based on the bus index, ie bus 2 is 2 white pixels), then the remaining are a gradient of set colours
+ * ** (4) ""
+ * Button: Hold (Once, even though multiple can happen)
+ *        "Toggle Power"
+ *           Brightness from max to min
+ * 
+ */
+
+
+  #define USE_MODULE_SENSORS_INTERFACE  
+  #define USE_MODULE_SENSORS_BUTTONS
+    #define ENABLE_DEVFEATURE_BUTTON__V2
+
+  #define ENABLE_FEATURE_LIGHTS__KEY_INPUT_CONTROLS
+  #define ENABLE_FEATURE_LIGHTS__DEMO_MODE
+
+
+#endif // ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
+
+
+
+/**************************************************************************************************************************************************
+***************************************************************************************************************************************************
+**************************************************************************************************************************************************
+***************************************************************************************************************************************************
+**************************************************************************************************************************************************
+***************************************************************************************************************************************************
+***************************************************************************************************************************************************
+*************************************************************************************************************************************************
+****** SECTION: Boards for testing ******************************************************************************************************************
+**************************************************************************************************************************************************
+***************************************************************************************************************************************************
+**************************************************************************************************************************************************
+***************************************************************************************************************************************************
+**************************************************************************************************************************************************
+***************************************************************************************************************************************************
+****************************************************************************************************************************************************
+***************************************************************************************************************************************************
+***************************************************************************************************************************************************
+*******************************************************************************************************************************************/
+
+
+
+
 
 
 
@@ -782,7 +950,7 @@ void WifiWpsStatusCallback(wps_cb_status status);
   #define USE_MODULE_LIGHTS_INTERFACE
   #define USE_MODULE_LIGHTS_ANIMATOR
     /********* Group: Testing ************************/
-    #define ENABLE_DEVFEATURE_UNNEEDED_WLED_ONLY_PARAMETERS  // Phase out
+      // Phase out
     #define ENABLE_DEVFEATURE_LIGHT__HYPERION
     // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING            // Development and testing only
     #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME             // Basic/Static just for home

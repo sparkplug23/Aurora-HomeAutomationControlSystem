@@ -61,7 +61,8 @@
 
 #define BUSTYPE_NONE                 0            //light is not configured
 #define BUSTYPE_RESERVED             1            //unused. Might indicate a "virtual" light
-//Digital types (data pin only) (16-31)
+//Digital types (data pin only) (16-39)
+#define BUSTYPE_DIGITAL__MIN         16            // first usable digital type
 #define BUSTYPE_WS2812_1CH          18            //white-only chips (1 channel per IC) (unused)
 #define BUSTYPE_WS2812_1CH_X3       19            //white-only chips (3 channels per IC)
 #define BUSTYPE_WS2812_2CH_X3       20            //CCT chips (1st IC controls WW + CW of 1st zone and CW of 2nd zone, 2nd IC controls WW of 2nd zone and WW + CW of 3rd zone)
@@ -70,28 +71,44 @@
 #define BUSTYPE_GS8608              23            //same driver as WS2812, but will require signal 2x per second (else displays test pattern)
 #define BUSTYPE_WS2811_400KHZ       24            //half-speed WS2812 protocol, used by very old WS2811 units
 #define BUSTYPE_TM1829              25
-#define BUSTYPE_WS2805_RGBWW        29
+#define BUSTYPE_UCS8903             26
+#define BUSTYPE_APA106              27
+#define BUSTYPE_FW1906              28            //RGB + CW + WW + unused channel (6 channels per IC)
+#define BUSTYPE_UCS8904             29            //first RGBW digital type (hardcoded in busmanager.cpp, memUsage())
 #define BUSTYPE_SK6812_RGBW         30
 #define BUSTYPE_TM1814              31
-
-//"Analog" types (PWM) (32-47)
+#define BUSTYPE_WS2805              32            //RGB + WW + CW
+#define BUSTYPE_TM1914              33            //RGB
+#define BUSTYPE_SM16825             34            //RGB + WW + CW
+#define BUSTYPE_WS2805_RGBWW        35
+#define BUSTYPE_DIGITAL__MAX         39            // last usable digital type
+//"Analog" types (PWM) (40-47)
 #define BUSTYPE_ONOFF               40            //binary output (relays etc.)
+#define BUSTYPE_ANALOG__MIN         41            // first usable analog type
 #define BUSTYPE_ANALOG_1CH          41            //single channel PWM. Uses value of brightest RGBW channel
 #define BUSTYPE_ANALOG_2CH          42            //analog WW + CW
 #define BUSTYPE_ANALOG_3CH          43            //analog RGB
 #define BUSTYPE_ANALOG_4CH          44            //analog RGBW
 #define BUSTYPE_ANALOG_5CH          45            //analog RGB + WW + CW
+#define BUSTYPE_ANALOG_6CH          46            //analog RGB + WW + CW
+#define BUSTYPE_ANALOG__MAX         47            //analog RGB + WW + CW
 //Digital types (data + clock / SPI) (48-63)
+#define BUSTYPE_2PIN_MIN            48
 #define BUSTYPE_WS2801              50
 #define BUSTYPE_APA102              51
 #define BUSTYPE_LPD8806             52
 #define BUSTYPE_P9813               53
 #define BUSTYPE_LPD6803             54
+#define BUSTYPE_2PIN_MAX            63
 //Network types (master broadcast) (80-95)
+#define BUSTYPE_VIRTUAL_MIN         80
 #define BUSTYPE_NET_DDP_RGB         80            //network DDP RGB bus (master broadcast bus)
 #define BUSTYPE_NET_E131_RGB        81            //network E131 RGB bus (master broadcast bus, unused)
 #define BUSTYPE_NET_ARTNET_RGB      82            //network ArtNet RGB bus (master broadcast bus, unused)
 #define BUSTYPE_NET_DDP_RGBW        88            //network DDP RGBW bus (master broadcast bus)
+#define BUSTYPE_NET_ARTNET_RGBW     89            //network ArtNet RGB bus (master broadcast bus, unused)
+#define BUSTYPE_VIRTUAL_MAX         95
+
 
 /**
  * @brief Changing this to function will allow the types above to be changed to ENUM
@@ -195,7 +212,7 @@
 #ifdef ESP8266
 #define MAX_LEDS_NEO 1664 //can't rely on memory limit to limit this to 1600 LEDs
 #else
-#define MAX_LEDS_NEO 8192
+#define MAX_LEDS_NEO 8192 // MAX_LEDS as per WLED
 #endif
 #endif
 
@@ -214,6 +231,8 @@
 #ifndef MAX_LEDS_PER_BUS
 #define MAX_LEDS_PER_BUS 4000   // may not be enough for fast LEDs (i.e. APA102)
 #endif
+
+#define OUTPUT_BUSPWM_MAX_PINS 5
 
 // string temp buffer (now stored in stack locally)
 #ifdef ESP8266

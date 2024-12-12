@@ -210,9 +210,8 @@ const uint32_t PROJECT_VERSION_MINIMAL = ((FIRMWARE_VERSION_TYPE_MINIMAL & 0x03)
 
 
 #define PROJECT_NAME_CTR "Home Automation Control System (TBD)"
-// #ifndef DEVICENAME_FRIENDLY_CTR
-//   #define DEVICENAME_FRIENDLY_CTR DEVICENAME_CTR
-// #endif
+
+
 #ifdef DEVICE_FORCED_TO_BE_TESTER
   #warning "DEVICE_FORCED_TO_BE_TESTER is set!"
 #endif

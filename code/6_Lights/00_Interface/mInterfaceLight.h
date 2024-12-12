@@ -184,7 +184,7 @@ class mInterfaceLight :
       
     // }settings;
 
-    COLOUR_ORDER_T GetColourOrder_FromName(const char* c);
+    uint8_t GetColourOrder_FromName(const char* c);
     
     void EveryLoop();
     

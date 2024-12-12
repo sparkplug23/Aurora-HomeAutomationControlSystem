@@ -118,6 +118,11 @@ enum ExecuteCommandPowerOptions { POWER_OFF, POWER_ON, POWER_TOGGLE, POWER_BLINK
                                   POWER_SHOW_STATE = 16 };
 enum SendKeyPowerOptions { POWER_HOLD = 3, POWER_INCREMENT = 4, POWER_INV = 5, POWER_CLEAR = 6, POWER_RELEASE = 7,
                            POWER_100 = 8, CLEAR_RETAIN = 9, POWER_DELAYED = 10 };
+
+                           
+enum TopicOptions { CMND, STAT, TELE, nu1, RESULT_OR_CMND, RESULT_OR_STAT, RESULT_OR_TELE };
+
+
 /*********************************************************************************************\
  * Switch support with input filter
  *

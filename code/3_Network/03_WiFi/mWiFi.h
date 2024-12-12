@@ -85,7 +85,7 @@ class mWiFi :
     
     uint16_t wifi_counter_tester = 0;
     
-    uint8_t loglevel_with_connection_status = 4; // When connected
+    uint8_t loglevel_with_connection_status = 10; // When connected
     
     bool WifiCheckIpConnected();
 

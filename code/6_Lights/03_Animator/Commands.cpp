@@ -236,11 +236,28 @@ void mAnimatorLight::subparse_JSONCommand(JsonParserObject obj, uint8_t segment_
       ALOG_COM( PSTR(D_LOG_PIXEL  D_COMMAND_NVALUE_K(D_EFFECTS D_GROUPING)), SEGMENT_I(segment_index).grouping);
       data_buffer.isserviced++;
     }
+    
+    if(jtok = jobj["GroupingPerc"])
+    {
+      uint8_t percentage = jtok.getInt(); 
+      SEGMENT_I(segment_index).grouping = map(percentage,0,100,0,SEGMENT_I(segment_index).length());    
+      ALOG_COM( PSTR(D_LOG_PIXEL  D_COMMAND_NVALUE_K(D_EFFECTS D_GROUPING)), SEGMENT_I(segment_index).grouping);
+      data_buffer.isserviced++;
+    }
 
     
     if(jtok = jobj[PM_DECIMATE])
     {
       SEGMENT_I(segment_index).decimate = jtok.getInt();  
+      ALOG_COM( PSTR(D_LOG_PIXEL  D_COMMAND_NVALUE_K(D_EFFECTS D_DECIMATE)), SEGMENT_I(segment_index).decimate);
+      data_buffer.isserviced++;
+    }
+
+
+    if(jtok = jobj["DecimatePerc"])
+    {
+      uint8_t percentage = jtok.getInt(); 
+      SEGMENT_I(segment_index).decimate = map(percentage,0,100,0,SEGMENT_I(segment_index).length());  
       ALOG_COM( PSTR(D_LOG_PIXEL  D_COMMAND_NVALUE_K(D_EFFECTS D_DECIMATE)), SEGMENT_I(segment_index).decimate);
       data_buffer.isserviced++;
     }
@@ -663,6 +680,189 @@ void mAnimatorLight::subparse_JSONCommand(JsonParserObject obj, uint8_t segment_
     ALOG_COM(PSTR(D_LOG_PIXEL  D_COMMAND_SVALUE_K("ManualString")), lcd_display_show_string);
   }
   #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__LED_SEGMENT_CLOCK
+
+  #ifdef ENABLE_FEATURE_LIGHTING__REALTIME_MQTT_SETPIXEL
+  /**
+   * @brief When these are commanded, the "animation_mode" is switched and the setpixel will be set here directly
+   */
+  if(jtok = obj["MQTTPixel"])
+  {
+
+    JsonParserToken jtok_sub = 0;
+
+    realtimeMode = ANIMATION_MODE__REALTIME_MQTT_SETPIXEL;
+    
+    // Method 1: RGB control
+    // if(jtok_sub = jtok.getObject()["Index"])
+    // {
+    //   index = jtok_sub.getInt();
+    //   ALOG_DBM(PSTR("Index %d"), index);
+    // }
+
+    // Method 2: Set the "on pixels", which uses the configured palette on repeat
+    uint8_t index = 0;
+    if (jtok_sub = jtok.getObject()["OnPixels"]) {
+        if (jtok_sub.isArray()) {
+            ALOG_COM(PSTR("is ARRAY"));
+
+            SEGMENT.fill(0); // Clear all to off
+
+            uint8_t brightness = SEGMENT.getBrightnessRGB_WithGlobalApplied(); // Prefetch brightness
+
+            RgbcctColor colour;
+            uint16_t pixel = 0;
+            JsonParserArray array = jtok_sub;
+
+            JsonParserToken token = array;
+            token.nextOne(); // Skip the array itself and move to the first element
+
+            uint16_t count = 0; // Keep track of processed items
+            while (token.isValid()) { // Process tokens while valid
+                if (token.isNum()) { // Ensure the token is a number
+                    int pixelIndex = token.getInt();
+                    ALOG_INF(PSTR("OnPixel %d (processed %d)"), pixelIndex, count);
+
+                    // Get the color from the palette
+                    colour = SEGMENT.GetPaletteColour(pixel++, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE);
+
+                    // Set the pixel color with brightness
+                    SEGMENT.SetPixelColor(pixelIndex, colour.WithBrightness(brightness));
+
+                    count++;
+                } else {
+                    ALOG_ERR(PSTR("Invalid token type inside array"));
+                }
+
+                // Move to the next token
+                token.nextOne();
+            }
+
+            ALOG_INF(PSTR("Processed %d pixels in total"), count);
+
+            SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
+            SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+
+            show();
+        }
+    }
+
+
+  }
+  #endif // ENABLE_FEATURE_LIGHTING__REALTIME_MQTT_SETPIXEL
+  #ifdef ENABLE_FEATURE_LIGHTING__REALTIME_MQTT_SETPIXEL
+/**
+ * @brief Handles MQTT commands for setting pixel arrays with row mappings.
+ */
+if (jtok = obj["MQTTPixelArrays"]) {
+
+    JsonParserToken jtok_sub = 0;
+
+    ALOG_INF(PSTR("MQTTPixelArrays"));
+
+    realtimeMode = ANIMATION_MODE__REALTIME_MQTT_SETPIXEL;
+
+    if (jtok.isArray()) {
+        ALOG_INF(PSTR("Processing MQTTPixelArrays"));
+
+        SEGMENT.fill(0); // Clear all pixels
+
+        uint8_t brightness = SEGMENT.getBrightnessRGB_WithGlobalApplied(); // Prefetch brightness
+
+        JsonParserArray arrayOfArrays = jtok;
+        JsonParserToken outerToken = arrayOfArrays;
+
+        outerToken.nextOne(); // Move to the first array in the array of arrays
+        ALOG_INF(PSTR("Iterating over outer array of MQTTPixelArrays"));
+
+        uint16_t outerCount = 0; // Track outer array items processed
+        uint16_t paletteIndex = 0; // Start from palette index 0
+
+        while (outerToken.isValid()) { // Iterate through the outer array
+            ALOG_INF(PSTR("Outer token type: %d"), outerToken.getType());
+
+            // Process only valid arrays
+            if (outerToken.isArray()) {
+                JsonParserArray innerArray = outerToken;
+                JsonParserToken innerToken = innerArray;
+
+                innerToken.nextOne(); // Move to the first element in the inner array
+
+                int startPixel = -1, midPixel = -1, endPixel = -1;
+                uint16_t pixelCount = 0;
+
+                ALOG_INF(PSTR("Processing inner array"));
+
+                // Process inner array tokens to get start, middle, and end pixels
+                while (innerToken.isValid()) {
+                    if (innerToken.isNum()) { // Check if the token is a number
+                        int pixelIndex = innerToken.getInt();
+                        ALOG_INF(PSTR("Inner token type: %d, value: %d"), innerToken.getType(), pixelIndex);
+
+                        if (pixelCount == 0)
+                            startPixel = pixelIndex; // Start pixel
+                        else if (pixelCount == 1)
+                            midPixel = pixelIndex; // Mid (center) pixel
+                        else if (pixelCount == 2)
+                            endPixel = pixelIndex; // End pixel
+
+                        pixelCount++;
+                    }
+
+                    // Stop processing after three valid elements
+                    if (pixelCount == 3)
+                        break;
+
+                    innerToken.nextOne(); // Move to the next token in the inner array
+                }
+
+                if (pixelCount == 3) { // Ensure all three points are provided
+                    ALOG_INF(PSTR("Setting row: Start %d, Mid %d, End %d using palette index %d"),
+                             startPixel, midPixel, endPixel, paletteIndex);
+
+                    // Set pixels for the row
+                    for (int i = startPixel; i <= endPixel; i++) {
+                        RgbcctColor colour;
+
+                        if (i == midPixel) {
+                            // Center pixel is white
+                            colour = RgbcctColor(255, 255, 255, 255, 255);
+                        } else {
+                            // Get color from the palette using the current palette index
+                            colour = SEGMENT.GetPaletteColour(paletteIndex, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE);
+                        }
+
+                        // Apply brightness and set the pixel
+                        SEGMENT.SetPixelColor(i, colour.WithBrightness(brightness));
+                    }
+
+                    paletteIndex++; // Increment palette index for the next row
+
+                } else {
+                    ALOG_ERR(PSTR("Invalid row format. Expected exactly 3 pixels (start, mid, end). Parsed Count=%d, Start=%d, Mid=%d, End=%d"),
+                             pixelCount, startPixel, midPixel, endPixel);
+                }
+
+                outerCount++;
+            } else {
+                ALOG_INF(PSTR("Skipping non-array token in outer array: Type=%d"), outerToken.getType());
+            }
+
+            outerToken.nextOne(); // Move to the next token in the outer array
+        }
+
+        ALOG_INF(PSTR("Processed %d rows in total"), outerCount);
+
+        SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
+        SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+
+        show();
+    } else {
+        ALOG_ERR(PSTR("MQTTPixelArrays is not a valid array"));
+    }
+}
+#endif // ENABLE_FEATURE_LIGHTING__REALTIME_MQTT_SETPIXEL
+
+
 
 
   #if FIRMWARE_VERSION_MIN(0,126)

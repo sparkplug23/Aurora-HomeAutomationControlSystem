@@ -17,7 +17,12 @@ int8_t mWiFi::Tasker(uint8_t function, JsonParserObject obj){
 
   switch(function){
     case TASK_INIT:
+      #ifndef ENABLE_DEVFEATURE_WIFI_CONNECTION_VERSION2_2025
       WifiConnect();
+      #endif // ENABLE_DEVFEATURE_WIFI_CONNECTION_VERSION2_2025
+      #ifdef ENABLE_DEVFEATURE_WIFI_CONNECTION_VERSION2_2025
+
+      #endif 
     break;
     case TASK_LOOP: 
     
@@ -30,6 +35,7 @@ int8_t mWiFi::Tasker(uint8_t function, JsonParserObject obj){
       
       AddLog(loglevel_with_connection_status, PSTR(D_LOG_WIFI "network_wifi=%d"), pCONT_set->Settings.flag_network.network_wifi);
 
+      #ifndef ENABLE_DEVFEATURE_WIFI_CONNECTION_VERSION2_2025
       if (pCONT_set->Settings.flag_network.network_wifi) 
       {
         WifiCheck(pCONT_set->runtime.wifi_state_flag);
@@ -40,6 +46,7 @@ int8_t mWiFi::Tasker(uint8_t function, JsonParserObject obj){
       AddLog(loglevel_with_connection_status, PSTR(D_LOG_WIFI "sta_ssid[%d]=%s"),pCONT_set->Settings.sta_active, pCONT_set->SettingsText(SET_STASSID1 + pCONT_set->Settings.sta_active) );
       AddLog(loglevel_with_connection_status, PSTR(D_LOG_WIFI "sta_pwd[%d]=%s"), pCONT_set->Settings.sta_active, pCONT_set->SettingsText(SET_STAPWD1 + pCONT_set->Settings.sta_active) );
       #endif
+      #endif // ENABLE_DEVFEATURE_WIFI_CONNECTION_VERSION2_2025
 
     }
     break;
@@ -101,6 +108,98 @@ int8_t mWiFi::Tasker(uint8_t function, JsonParserObject obj){
 
 
 } // END function
+
+
+#ifdef ENABLE_DEVFEATURE_WIFI_CONNECTION_VERSION2_2025
+
+
+void mWiFi::initConnection()
+{
+  DEBUG_PRINTLN(F("initConnection() called."));
+
+  #ifdef WLED_ENABLE_WEBSOCKETS
+  ws.onEvent(wsEvent);
+  #endif
+
+#ifndef WLED_DISABLE_ESPNOW
+  if (statusESPNow == ESP_NOW_STATE_ON) {
+    DEBUG_PRINTLN(F("ESP-NOW stopping."));
+    quickEspNow.stop();
+    statusESPNow = ESP_NOW_STATE_UNINIT;
+  }
+#endif
+
+  WiFi.disconnect(true); // close old connections
+#ifdef ESP8266
+  WiFi.setPhyMode(force802_3g ? WIFI_PHY_MODE_11G : WIFI_PHY_MODE_11N);
+#endif
+
+  if (multiWiFi[selectedWiFi].staticIP != 0U && multiWiFi[selectedWiFi].staticGW != 0U) {
+    WiFi.config(multiWiFi[selectedWiFi].staticIP, multiWiFi[selectedWiFi].staticGW, multiWiFi[selectedWiFi].staticSN, dnsAddress);
+  } else {
+    WiFi.config(IPAddress((uint32_t)0), IPAddress((uint32_t)0), IPAddress((uint32_t)0));
+  }
+
+  lastReconnectAttempt = millis();
+
+  if (!WLED_WIFI_CONFIGURED) {
+    DEBUG_PRINTLN(F("No connection configured."));
+    if (!apActive) initAP();        // instantly go to ap mode
+  } else if (!apActive) {
+    if (apBehavior == AP_BEHAVIOR_ALWAYS) {
+      DEBUG_PRINTLN(F("Access point ALWAYS enabled."));
+      initAP();
+    } else {
+      DEBUG_PRINTLN(F("Access point disabled (init)."));
+      WiFi.softAPdisconnect(true);
+      WiFi.mode(WIFI_STA);
+    }
+  }
+
+  if (WLED_WIFI_CONFIGURED) {
+    showWelcomePage = false;
+    
+    DEBUG_PRINT(F("Connecting to "));
+    DEBUG_PRINT(multiWiFi[selectedWiFi].clientSSID);
+    DEBUG_PRINTLN(F("..."));
+
+    // convert the "serverDescription" into a valid DNS hostname (alphanumeric)
+    char hostname[25];
+    prepareHostname(hostname);
+    WiFi.begin(multiWiFi[selectedWiFi].clientSSID, multiWiFi[selectedWiFi].clientPass); // no harm if called multiple times
+
+#ifdef ARDUINO_ARCH_ESP32
+    WiFi.setTxPower(wifi_power_t(txPower));
+    WiFi.setSleep(!noWifiSleep);
+    WiFi.setHostname(hostname);
+#else
+    wifi_set_sleep_type((noWifiSleep) ? NONE_SLEEP_T : MODEM_SLEEP_T);
+    WiFi.hostname(hostname);
+#endif
+  }
+
+#ifndef WLED_DISABLE_ESPNOW
+  if (enableESPNow) {
+    quickEspNow.onDataSent(espNowSentCB);     // see udp.cpp
+    quickEspNow.onDataRcvd(espNowReceiveCB);  // see udp.cpp
+    bool espNowOK;
+    if (apActive) {
+      DEBUG_PRINTLN(F("ESP-NOW initing in AP mode."));
+      #ifdef ESP32
+      quickEspNow.setWiFiBandwidth(WIFI_IF_AP, WIFI_BW_HT20); // Only needed for ESP32 in case you need coexistence with ESP8266 in the same network
+      #endif //ESP32
+      espNowOK = quickEspNow.begin(apChannel, WIFI_IF_AP);  // Same channel must be used for both AP and ESP-NOW
+    } else {
+      DEBUG_PRINTLN(F("ESP-NOW initing in STA mode."));
+      espNowOK = quickEspNow.begin(); // Use no parameters to start ESP-NOW on same channel as WiFi, in STA mode
+    }
+    statusESPNow = espNowOK ? ESP_NOW_STATE_ON : ESP_NOW_STATE_ERROR;
+  }
+#endif
+}
+
+#endif // ENABLE_DEVFEATURE_WIFI_CONNECTION_VERSION2_2025
+
 
 
 void mWiFi::parse_JSONCommand(JsonParserObject obj){};

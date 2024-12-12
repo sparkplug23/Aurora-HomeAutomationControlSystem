@@ -21,7 +21,7 @@
 void mAnimatorLight::Init_Sequencer()
 {
 
-  Load_Sequencer(0); // Load default sequences
+  Load_Sequencer(100); // Load default sequences
 
   // Start with sequencer off, lights off, so a reset does not turn things on again without my permission
 
@@ -71,7 +71,7 @@ void mAnimatorLight::SetSequenceTimes(uint16_t secs)
 }
 
 
-void mAnimatorLight::handleSequencer()
+void mAnimatorLight::SubTask_Sequencer()
 {
 
   uint8_t flag_reset = false;
@@ -93,7 +93,17 @@ void mAnimatorLight::handleSequencer()
       {
         sequencer_runtime.seconds_remaining_on_item--;
         sequencer_runtime.tSaved_Tick = millis();
-        ALOG_INF(PSTR("sequencer_runtime.seconds_remaining_on_item = %d"), sequencer_runtime.seconds_remaining_on_item);
+        ALOG_DBM(PSTR("sequencer_runtime.seconds_remaining_on_item = %d"), sequencer_runtime.seconds_remaining_on_item);
+      
+        size_t prev_index = (sequencer_runtime.active_sequence_index + sequencer_item_list.size() - 1) % sequencer_item_list.size();
+
+        ALOG_INF(PSTR("Seq: %d/%d %ds \n\r                        %s"), 
+            prev_index, sequencer_item_list.size(),
+            sequencer_runtime.seconds_remaining_on_item,
+            sequencer_item_list[prev_index].description.c_str()
+        );
+     
+      
       }else 
       if(sequencer_runtime.seconds_remaining_on_item == 0) // still active
       {      
@@ -128,20 +138,9 @@ void mAnimatorLight::handleSequencer()
           if(sequencer_item_t.time_enabled.isArmed)
           {
 
-
-
-
           }
-
-
-
         }
         
-
-
-
-
-
         #endif
 
         ALOG_INF(PSTR("sequencer_runtime.seconds_remaining_on_item FINISHED, Trigger and move on"));
@@ -170,16 +169,14 @@ void mAnimatorLight::handleSequencer()
 
       // ALOG_INF(PSTR("Json = \"%s\""), sequencer_item_t.json_command);
       sequencer_runtime.tSaved_Tick = millis();
-      ALOG_INF(PSTR("Sequencer Progress >>>>>>>>>>>>>>>>>>>>>>>>>> %d/%d %d"), sequencer_runtime.active_sequence_index,sequencer_item_list.size(),sequencer_runtime.seconds_remaining_on_item);
-
-
+      
     }
 
 
   }
 
 
-} // handleSequencer
+} // SubTask_Sequencer
 
 
 uint8_t mAnimatorLight::ConstructJSON_Sequencer(uint8_t json_level, bool json_appending)
@@ -208,9 +205,16 @@ uint8_t mAnimatorLight::ConstructJSON_Sequencer(uint8_t json_level, bool json_ap
         JBI->Add("SecondsOn", seq_t.seconds_on);
         JBI->Add("Description", seq_t.description.c_str());
 
+        seq_t.time_enabled.start = mTime::MakeTimeShort(16,30,1);
+        seq_t.time_enabled.end   = mTime::MakeTimeShort(23,31,1);
+
+        
         JBI->Object_Start_F(PSTR("EnabledTimes"));
-          JBI->Add("Start", mTime::ConvertShortTimetoCtr(&seq_t.time_enabled.start, buffer, sizeof(buffer)) );
-          JBI->Add("End",   mTime::ConvertShortTimetoCtr(&seq_t.time_enabled.end, buffer, sizeof(buffer)) );
+
+        JBI->Add("Start", mTime::GetTimeStrFromTimeShort(seq_t.time_enabled.start).c_str() );
+        JBI->Add("End", mTime::GetTimeStrFromTimeShort(seq_t.time_enabled.end).c_str() );
+
+      
         JBI->Object_End();
 
         // JBI->Add("Json", seq_t.json_command);
