@@ -282,7 +282,7 @@ void mRuleEngine::NewEventRun_NumArg(uint16_t _module_id, uint16_t function_even
   va_end(arg);
 
   // AddLog_Array_Int(LOG_LEVEL_HIGHLIGHT, "data", event_triggered.value.data, ARRAY_SIZE(event_triggered.value.data));
-
+  AddLog_Array(LOG_LEVEL_INFO, PSTR("data"), event_triggered.value.data, ARRAY_SIZE(event_triggered.value.data));
   // DEBUG_LINE_HERE; ALOG_INF(PSTR("event_triggered.module_id = %d"), event_triggered.module_id);
 
   // ShowRuleEvent_AddLog();

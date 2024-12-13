@@ -627,6 +627,8 @@ const char S_JSON_COMMAND_XVALUE[] PROGMEM =                  "{\"%s\":%s}";  //
 
 const char S_LOG_I2C_FOUND_AT[] PROGMEM = D_LOG_I2C "%s " D_FOUND_AT " 0x%x";
 
+const char S_JSON_SVALUE_ACTION_SVALUE[] PROGMEM =            "{\"%s\":{\"Action\":\"%s\"}}";
+
 const char S_LOG_HTTP[] PROGMEM = D_LOG_HTTP;
 const char S_LOG_WIFI[] PROGMEM = D_LOG_WIFI;
 // const char S_LOG_MQTT[] PROGMEM = D_LOG_MQTT;

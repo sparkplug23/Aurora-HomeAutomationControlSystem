@@ -1,0 +1,256 @@
+
+{
+  "0": {},
+  "1": {
+    "n": "Static,Snowy02,S127,R4000,G1,D0",
+    "ColourPalette":"Snowy 02",
+    "Effects": {
+      "Function":"Static Palette",
+      "Intensity":127,
+      "Speed":127,
+      "Grouping":1,
+      "Decimate":0,
+      "Reverse":0,
+      "RateMs": 4000
+    },
+    "BrightnessRGB": 100
+  },
+  "2": {
+    "n": "FastPops,Snowy02,S255,R50,G1,D10",
+    "ColourPalette":"Snowy 02",
+    "Effects": {
+      "Function":"Slow Glow",
+      "Intensity":20,
+      "Speed":255,
+      "Grouping":1,
+      "Decimate":10,
+      "RateMs": 50
+    },
+    "BrightnessRGB": 100
+  },
+  "3": {
+    "n": "StepPalette,ColourfulPairs,S200,R2000,G1,D0",
+    "ColourPalette":"Colourful Pairs 01",
+    "Effects": {
+      "Function":"Stepping Palette",
+      "Intensity":20,
+      "Speed":200,
+      "Grouping":1,
+      "Decimate":0,
+      "RateMs": 2000
+    },
+    "BrightnessRGB": 100
+  },
+  "4": {
+    "n": "StepPalette,ColourfulPairs,S200,R3000,G10,D0",
+    "ColourPalette":"Colourful Pairs 01",
+    "Effects": {
+      "Function":"Stepping Palette",
+      "Intensity":20,
+      "Speed":200,
+      "Grouping":10,
+      "Decimate":0,
+      "RateMs": 3000
+    },
+    "BrightnessRGB": 100
+  },
+  "5": {
+    "n": "Static,Snowy02,S200,R4000,G10,D0",
+    "ColourPalette":"Snowy 02",
+    "Effects": {
+      "Function":"Static Palette",
+      "Intensity":20,
+      "Speed":200,
+      "Grouping":10,
+      "Decimate":0,
+      "RateMs": 4000
+    },
+    "BrightnessRGB": 100
+  },  
+  "6": {
+    "n":"RotatingPrevious,Snowy02,S255,R20,G1,D0",    
+    "ColourPalette":"Snowy 02",
+    "Effects": {
+      "Function":"Rotating Previous",
+      "Intensity":0,
+      "Speed":255,
+      "Grouping":1,
+      "Decimate":0,
+      "RateMs": 20
+    },
+    "BrightnessRGB": 100
+  },
+  "7": {
+    "n":"SpannedPalette,Random01,S126,R2000,G1,D0",    
+    "ColourPalette":"Random 01",
+    "Effects": {
+      "Function":"Spanned Palette",
+      "Intensity":255,
+      "Speed":126,
+      "Grouping":1,
+      "Decimate":0,
+      "RateMs": 2000
+    },
+    "BrightnessRGB": 100
+  },
+  "8": {
+    "n":"SweepRandom,Snowy02,S255,R25,G1,D0",    
+    "ColourPalette":"Snowy 02",
+    "Effects": {
+      "Function":"Sweep Random",
+      "Intensity":255,
+      "Speed":255,
+      "Grouping":1,
+      "Decimate":0,
+      "RateMs": 25
+    },
+    "BrightnessRGB": 100
+  },
+  "9": {
+    "n":"Twinkle Snowy on White, Snowy 02, 0/100, G1, D0",    
+    "ColourPalette":"Snowy 02",
+    "Effects": {
+      "Function":"Twinkle Palette Two on One",
+      "Intensity":3,
+      "Speed":255,
+      "Grouping":1,
+      "Decimate":0,
+      "Param0":99,
+      "RateMs": 50
+    },
+    "BrightnessRGB": 95
+  },
+  "10": {
+    "n":"Twinkle Snowy on White, Snowy 02, 0/100, G1, D0",    
+    "ColourPalette":"Cold White",
+    "Effects": {
+      "Function":"Twinkle Palette Two on One",
+      "Intensity":20,
+      "Speed":255,
+      "Grouping":1,
+      "Decimate":0,
+      "Param0":125,
+      "RateMs": 100
+    },
+    "BrightnessRGB": 20
+  },
+  "11": {
+    "n":"Shimmer, Snowy 02, 0/25, G1, D0",    
+    "ColourPalette":"Snowy 02",
+    "Effects": {
+      "Function":"Shimmer",
+      "Intensity":255,
+      "Speed":200,
+      "Grouping":1,
+      "Decimate":0,
+      "RateMs": 25
+    },
+    "BrightnessRGB": 100
+  },
+  "12": {
+    "n":"Meteor Smooth, Orange & Teal",    
+    "ColourPalette":"Orange & Teal",
+    "Effects": {
+      "Function":"Meteor Smooth",
+      "Intensity":142,
+      "Speed":70,
+      "Grouping":1,
+      "RateMs": 23
+    },
+    "BrightnessRGB": 100
+  },
+  "13": {
+    "n":"White Twinkle on Snowy2",    
+    "ColourPalette":"Snowy 02",
+    "Effects": {
+      "Function":"Twinkle Palette Two on One",
+      "Intensity":3,
+      "Speed":255,
+      "Grouping":1,
+      "Decimate":0,
+      "Param0":93,
+      "RateMs": 23
+    },
+    "BrightnessRGB": 95
+  },
+  "14": {
+    "n":"Snowy2 Twinkle on White",    
+    "ColourPalette":"Cold White",
+    "Effects": {
+      "Function":"Twinkle Palette Two on One",
+      "Intensity":20,
+      "Speed":255,
+      "Grouping":1,
+      "Decimate":0,
+      "Param0":125
+    },
+    "BrightnessRGB": 20
+  },
+  "15": {
+    "n":"Shimmer Snowy 02",    
+    "ColourPalette":"Cold White",
+    "Effects": {
+      "Function":"Twinkle Palette Two on One",
+      "Intensity":20,
+      "Speed":255,
+      "Grouping":1,
+      "DecimateAsPercent":10
+    },
+    "BrightnessRGB": 20
+  },
+  "40": {
+    "n":"Intensity Shift 2",    
+    "Effects": {
+      "Intensity":2
+    }
+  },
+  "41": {
+    "n":"Intensity Shift 7",    
+    "Effects": {
+      "Intensity":7
+    }
+  },
+  "42": {
+    "n":"Intensity Shift 20",    
+    "Effects": {
+      "Intensity":20
+    }
+  },
+  "43": {
+    "n":"Intensity Shift 100",    
+    "Effects": {
+      "Intensity":100
+    }
+  },
+  "44": {
+    "n":"Intensity Shift 150",    
+    "Effects": {
+      "Intensity":150
+    }
+  },
+  "30": {
+    "n":"Rotate Snowy 02 Group 150 (load) 1/2",    
+    "ColourPalette":"Cold White",
+    "Effects": {
+      "Function":"Twinkle Palette Two on One",
+      "Intensity":20,
+      "Speed":255,
+      "Grouping":1,
+      "DecimateAsPercent":10
+    },
+    "BrightnessRGB": 20
+  },
+  "31": {
+    "n":"Rotate Snowy 02 Group 150 (run) 2/2",    
+    "ColourPalette":"Cold White",
+    "Effects": {
+      "Function":"Twinkle Palette Two on One",
+      "Intensity":20,
+      "Speed":255,
+      "Grouping":1,
+      "DecimateAsPercent":10
+    },
+    "BrightnessRGB": 20
+  },
+  "90":{"playlist":{"ps":[12,1],"dur":[200,100],"repeat":-1,"end":0,"r":1},"on":true,"n":"PL Night02"}
+  }

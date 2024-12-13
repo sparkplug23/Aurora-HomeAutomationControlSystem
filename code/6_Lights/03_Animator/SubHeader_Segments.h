@@ -87,7 +87,7 @@ typedef struct Segment {
     
 
     // Effects (Scenes & Flasher), Ambilight, Adalight    
-    uint8_t animation_mode_id = ANIMATION_MODE__EFFECTS; // rename to "effect_id"
+    uint8_t animation_mode_id = 0; // rename to "effect_id"
 
     
     uint16_t get_transition_rate_ms() // Effect that require call for every update, must be called at FRAMETIME_MS, otherwise, can manually be set
@@ -210,7 +210,6 @@ typedef struct Segment {
 
     void setUp(uint16_t i1, uint16_t i2, uint8_t grp=1, uint8_t spc=0, uint16_t ofs=UINT16_MAX, uint16_t i1Y=0, uint16_t i2Y=1);
     
-    #ifdef ENABLE_DEVFEATURE_UNNEEDED_WLED_ONLY_PARAMETERS
     uint8_t  cct_slider;                 //0==1900K, 255==10091K
     uint8_t  custom1, custom2;    // custom FX parameters/sliders
     struct {
@@ -219,8 +218,7 @@ typedef struct Segment {
       bool    check2  : 1;        // checkmark 2
       bool    check3  : 1;        // checkmark 3
     };
-    #endif // ENABLE_DEVFEATURE_UNNEEDED_WLED_ONLY_PARAMETERS
-
+    
     uint8_t startY;  // start Y coodrinate 2D (top); there should be no more than 255 rows
     uint8_t stopY;   // stop Y coordinate 2D (bottom); there should be no more than 255 rows
     char *name = nullptr; // Keep, segment name to be added later by me

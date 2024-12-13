@@ -569,7 +569,7 @@ function populatePresets(fromls)
 	delete pJson["0"];
 	var cn = "";
 	var arr = Object.entries(pJson);
-	arr.sort(cmpP);
+	// arr.sort(cmpP); // remove sort
 	pQL = [];
 	var is = [];
 	pNum = 0;
@@ -584,10 +584,10 @@ function populatePresets(fromls)
 		cn += `<div class="pres lstI" id="p${i}o">`;
 		if (cfg.comp.pid) cn += `<div class="pid">${i}</div>`;
 		cn += `<div class="pname lstIname" onclick="setPreset(${i})">${isPlaylist(i)?"<i class='icons btn-icon'>&#xe139;</i>":""}${pName(i)}
-	<i class="icons edit-icon flr" id="p${i}nedit" onclick="tglSegn(${i+100})">&#xe2c6;</i></div>
-	<i class="icons e-icon flr" id="sege${i+100}" onclick="expand(${i+100})">&#xe395;</i>
-	<div class="presin lstIcontent" id="seg${i+100}"></div>
-</div>`;
+			<i class="icons edit-icon flr" id="p${i}nedit" onclick="tglSegn(${i+100})">&#xe2c6;</i></div>
+			<i class="icons e-icon flr" id="sege${i+100}" onclick="expand(${i+100})">&#xe395;</i>
+			<div class="presin lstIcontent" id="seg${i+100}"></div>
+		</div>`;
 		pNum++;
 	}
 

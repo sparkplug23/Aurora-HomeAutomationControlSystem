@@ -29,16 +29,6 @@ int8_t mButtons::Tasker(uint8_t function, JsonParserObject obj){
     case TASK_LOOP: 
       ButtonLoop();
     break;
-    case TASK_EVERY_SECOND:
-
-// pinMode(16, INPUT_PULLDOWN_16);
-//     ALOG_TST(PSTR("mButtons::Tasker %d"),digitalRead(16));
-
-    break;
-    // case TASK_EVENT_INPUT_STATE_CHANGED_ID:
-    //  // ALOG_TST(PSTR("mButtons::TASK_EVENT_INPUT_STATE_CHANGED_ID"));
-
-    // break;
     /************
      * EVENTS SECTION * 
     *******************/
@@ -90,13 +80,11 @@ int8_t mButtons::Tasker(uint8_t function, JsonParserObject obj){
  * */
 uint8_t mButtons::GetHardwareSpecificPullMethod(uint8_t real_pin)
 {
-
   #ifdef ESP8266
   return (real_pin == 16) ? INPUT_PULLDOWN_16 : INPUT_PULLUP;
   #else //esp32
   return INPUT_PULLUP;
   #endif
-
 }
 
 
@@ -365,7 +353,6 @@ void mButtons::ButtonProbe(void)
   for (uint32_t i = 0; i < MAX_KEYS_SET; i++) {
     if (!bitRead(Button.used, i)) { continue; }
 
-
     if (pCONT_pins->PinUsed(GPIO_KEY1_ID, i)) {
       not_activated = (digitalRead(pCONT_pins->GetPin(GPIO_KEY1_ID, i)) != bitRead(Button.inverted_mask, i));
     } else if (pCONT_pins->PinUsed(GPIO_KEY1_INV_ID, i)) { // Inverted pin, active low
@@ -573,6 +560,31 @@ void mButtons::ButtonHandler(void) {
     if (0){//XdrvCall(FUNC_BUTTON_PRESSED)) {
       // Serviced
     }
+#ifdef ESP8266
+    else if (SONOFF_4CHPRO == TasmotaGlobal.module_type) {
+      if (Button.hold_timer[button_index]) { Button.hold_timer[button_index]--; }
+
+      bool button_pressed = false;
+      if ((PRESSED == button) && (NOT_PRESSED == Button.last_state[button_index])) {
+        AddLog(LOG_LEVEL_DEBUG, PSTR("BTN: Button%d level 1-0"), button_index +1);
+        Button.hold_timer[button_index] = loops_per_second;
+        button_pressed = true;
+      }
+      if ((NOT_PRESSED == button) && (PRESSED == Button.last_state[button_index])) {
+        AddLog(LOG_LEVEL_DEBUG, PSTR("BTN: Button%d level 0-1"), button_index +1);
+        if (!Button.hold_timer[button_index]) { button_pressed = true; }  // Do not allow within 1 second
+      }
+      if (button_pressed) {
+        if (!Settings->flag3.mqtt_buttons) {                 // SetOption73 (0) - Decouple button from relay and send just mqtt topic
+          if (!SendKey(KEY_BUTTON, button_index +1, POWER_TOGGLE)) {  // Execute Toggle command via MQTT if ButtonTopic is set
+            ExecuteCommandPower(button_index +1, POWER_TOGGLE, SRC_BUTTON);  // Execute Toggle command internally
+          }
+        } else {
+          MqttButtonTopic(button_index +1, 1, 0);            // SetOption73 (0) - Decouple button from relay and send just mqtt topic
+        }
+      }
+    }
+#endif  // ESP8266
     else {
       if ((PRESSED == button) && (NOT_PRESSED == Button.last_state[button_index])) {
 
@@ -685,9 +697,6 @@ void mButtons::ButtonHandler(void) {
                 // Success
               } else {
                 if (Button.press_counter[button_index] < 6) { // Single to Penta press
-//                    if (WifiState() > WIFI_RESTART) {           // Wifimanager active
-//                      TasmotaGlobal.restart_flag = 1;
-//                    }
                   if (!pCONT_set->Settings.flag3.mqtt_buttons) {       // SetOption73 - Detach buttons from relays and enable MQTT action state for multipress
                     if (Button.press_counter[button_index] == 1) {  // By default first press always send a TOGGLE (2)
                       ALOG_INF(PSTR("By default first press always send a TOGGLE (2) ExecuteCommandPower(button_index + Button.press_counter[button_index], POWER_TOGGLE, SRC_BUTTON);"));
@@ -721,7 +730,6 @@ void mButtons::ButtonHandler(void) {
           }
         }
       }
-
     }
     Button.last_state[button_index] = button;
   }

@@ -251,7 +251,7 @@
   #define USE_MODULE_LIGHTS_ANIMATOR
 
   /********* Group: Testing ************************/
-  #define ENABLE_DEVFEATURE_UNNEEDED_WLED_ONLY_PARAMETERS  // Phase out
+    // Phase out
   #define ENABLE_DEVFEATURE_LIGHT__HYPERION
   // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING            // Development and testing only
   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME             // Basic/Static just for home
@@ -528,7 +528,7 @@
   #define USE_MODULE_LIGHTS_ANIMATOR
 
   /********* Group: Testing ************************/
-  #define ENABLE_DEVFEATURE_UNNEEDED_WLED_ONLY_PARAMETERS  // Phase out
+    // Phase out
   #define ENABLE_DEVFEATURE_LIGHT__HYPERION
   // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING            // Development and testing only
   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME             // Basic/Static just for home
@@ -756,7 +756,7 @@
   #define USE_MODULE_LIGHTS_INTERFACE
   #define USE_MODULE_LIGHTS_ANIMATOR
     /********* Group: Testing ************************/
-    #define ENABLE_DEVFEATURE_UNNEEDED_WLED_ONLY_PARAMETERS  // Phase out
+      // Phase out
     #define ENABLE_DEVFEATURE_LIGHT__HYPERION
     // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING            // Development and testing only
     #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME             // Basic/Static just for home
@@ -1177,7 +1177,7 @@
   #define USE_MODULE_LIGHTS_INTERFACE
   #define USE_MODULE_LIGHTS_ANIMATOR
     /********* Group: Testing ************************/
-    #define ENABLE_DEVFEATURE_UNNEEDED_WLED_ONLY_PARAMETERS  // Phase out
+      // Phase out
     #define ENABLE_DEVFEATURE_LIGHT__HYPERION
     // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING            // Development and testing only
     #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME             // Basic/Static just for home
@@ -1832,7 +1832,7 @@
   #define USE_MODULE_LIGHTS_INTERFACE
   #define USE_MODULE_LIGHTS_ANIMATOR
     /********* Group: Testing ************************/
-    #define ENABLE_DEVFEATURE_UNNEEDED_WLED_ONLY_PARAMETERS  // Phase out
+      // Phase out
     #define ENABLE_DEVFEATURE_LIGHT__HYPERION
     // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING            // Development and testing only
     #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME             // Basic/Static just for home
@@ -2280,7 +2280,7 @@
   #define USE_MODULE_LIGHTS_ANIMATOR
 
   /********* Group: Testing ************************/
-  #define ENABLE_DEVFEATURE_UNNEEDED_WLED_ONLY_PARAMETERS  // Phase out
+    // Phase out
   #define ENABLE_DEVFEATURE_LIGHT__HYPERION
   // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING            // Development and testing only
   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME             // Basic/Static just for home
@@ -2567,7 +2567,7 @@
   #define USE_MODULE_LIGHTS_ANIMATOR
 
   /********* Group: Testing ************************/
-  #define ENABLE_DEVFEATURE_UNNEEDED_WLED_ONLY_PARAMETERS  // Phase out
+    // Phase out
   #define ENABLE_DEVFEATURE_LIGHT__HYPERION
   // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING            // Development and testing only
   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME             // Basic/Static just for home
@@ -2831,7 +2831,7 @@
   #define USE_MODULE_LIGHTS_INTERFACE
   #define USE_MODULE_LIGHTS_ANIMATOR
     /********* Group: Testing ************************/
-    #define ENABLE_DEVFEATURE_UNNEEDED_WLED_ONLY_PARAMETERS  // Phase out
+      // Phase out
     #define ENABLE_DEVFEATURE_LIGHT__HYPERION
     // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING            // Development and testing only
     #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME             // Basic/Static just for home
@@ -3264,7 +3264,7 @@
   #define USE_MODULE_LIGHTS_INTERFACE
   #define USE_MODULE_LIGHTS_ANIMATOR
     /********* Group: Testing ************************/
-    #define ENABLE_DEVFEATURE_UNNEEDED_WLED_ONLY_PARAMETERS  // Phase out
+      // Phase out
     #define ENABLE_DEVFEATURE_LIGHT__HYPERION
     // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING            // Development and testing only
     #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME             // Basic/Static just for home
@@ -3946,7 +3946,7 @@
   #define USE_MODULE_LIGHTS_INTERFACE
   #define USE_MODULE_LIGHTS_ANIMATOR
     /********* Group: Testing ************************/
-    #define ENABLE_DEVFEATURE_UNNEEDED_WLED_ONLY_PARAMETERS  // Phase out
+      // Phase out
     #define ENABLE_DEVFEATURE_LIGHT__HYPERION
     // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING            // Development and testing only
     #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME             // Basic/Static just for home
@@ -4892,7 +4892,7 @@
   #define USE_MODULE_LIGHTS_ANIMATOR
 
   /********* Group: Testing ************************/
-  #define ENABLE_DEVFEATURE_UNNEEDED_WLED_ONLY_PARAMETERS  // Phase out
+    // Phase out
   #define ENABLE_DEVFEATURE_LIGHT__HYPERION
   // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING            // Development and testing only
   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME             // Basic/Static just for home
@@ -5190,7 +5190,7 @@
   #define USE_MODULE_LIGHTS_ANIMATOR
 
   /********* Group: Testing ************************/
-  #define ENABLE_DEVFEATURE_UNNEEDED_WLED_ONLY_PARAMETERS  // Phase out
+    // Phase out
   #define ENABLE_DEVFEATURE_LIGHT__HYPERION
   // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING            // Development and testing only
   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME             // Basic/Static just for home
@@ -5352,3 +5352,140 @@
 
 
 #endif // _CONFIG_USER_FIRMWARE_CUSTOM_SECRET_CHRISTMAS23_H
+
+
+
+/**
+ * @brief 
+ * 
+ * 
+ * 
+ 
+
+{
+  "BrightnessRGB":60,
+  "MQTTPixelArrays": [
+    [0,1,42],
+    [43,44,82],
+    [83,84,121],
+    [122,123,159],
+    [160,161,203],
+    [204,205,239],
+    [240,241,273],
+    [274,275,306],
+    [307,308,338],
+    [339,340,368],
+    [369,370,397],
+    [398,399,424],
+    [425,426,450],
+    [451,452,474],
+    [475,476,498],
+    [499,500,520],
+    [521,522,542],
+    [543,544,563],
+    [564,565,583],
+    [584,585,603],
+    [604,605,621],
+    [622,623,637],
+    [638,639,653],
+    [654,655,668],
+    [669,670,683],
+    [684,685,697],
+    [698,699,730]
+    
+    
+    
+    [800,801,803]
+  ]
+}
+
+{
+  "BrightnessRGB":60,
+  "MQTTPixelArrays": [
+    [0,1,42],
+    [43,44,82],
+    [83,84,121],
+    [122,123,159],
+    [160,161,203],
+    [204,205,239],
+    [240,241,273],
+    [274,275,306],
+    [307,308,338],
+    [339,340,368],
+    [369,370,397],
+    [398,399,424],
+    [425,426,450],
+    [451,452,474],
+    [475,476,498],
+    [499,500,520],
+    [521,522,542],
+    [543,544,563],
+    [564,565,583],
+    [584,585,603],
+    [604,605,621],
+    [622,623,637],
+    [638,639,653],
+    [654,655,668],
+    [669,670,683],
+    [684,685,697],
+    [698,699,711],
+    [712,713,725],
+    [725,726,736],
+    [737,738,747],
+    [748,749,758],
+    [759,760,768],
+    [769,770,777],
+    [778,779,785],
+    [786,787,792],
+    [793,794,798],
+    [799,800,803]
+  ]
+}
+
+// correct layout
+{
+  "BrightnessRGB":100,
+  "MQTTPixelArrays": [
+    [0,26,42],
+    [43,66,82],
+    [83,106,121],
+    [122,144,159],
+    [160,181,203],
+    [204,224,239],
+    [240,258,273],
+    [274,292,306],
+    [307,324,338],
+    [339,355,368],
+    [369,384,397],
+    [398,412,424],
+    [425,438,450],
+    [451,463,474],
+    [475,487,498],
+    [499,510,520],
+    [521,532,542],
+    [543,554,563],
+    [564,575,583],
+    [584,594,603],
+    [604,613,621],
+    [622,630,637],
+    [638,646,653],
+    [654,661,668],
+    [669,676,683],
+    [684,691,697],
+    [698,705,711],
+    [712,719,725],
+    [725,732,736],
+    [737,744,747],
+    [748,755,758],
+    [759,765,768],
+    [769,774,777],
+    [778,783,785],
+    [786,791,792],
+    [793,797,798],
+    [799,802,803]
+  ]
+}
+
+
+ * 
+ */

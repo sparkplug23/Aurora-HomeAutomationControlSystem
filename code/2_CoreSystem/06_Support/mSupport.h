@@ -402,6 +402,9 @@ class mSupport :
     uint16_t GetModuleUniqueID(){ return D_UNIQUE_MODULE_CORE_SUPPORT_ID; }
     
 
+    String GetSwitchText(uint32_t i);
+
+
     void CheckResetConditions();
 
     #ifdef USE_ARDUINO_OTA

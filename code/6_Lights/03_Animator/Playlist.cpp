@@ -122,7 +122,7 @@ int16_t mAnimatorLight::loadPlaylist(JsonObject playlistObj, byte presetId)
 }
 
 
-void mAnimatorLight::handlePlaylist() 
+void mAnimatorLight::SubTask_Playlist() 
 {
 
 
@@ -131,16 +131,17 @@ void mAnimatorLight::handlePlaylist()
   // if fileDoc is not null JSON buffer is in use so just quit
   if (currentPlaylist < 0 || playlistEntries == nullptr || pCONT_mfile->fileDoc != nullptr) 
   {
-    // ALOG_INF(PSTR("handlePlaylist return early"));    
+    // ALOG_INF(PSTR("SubTask_Playlist return early"));    
     return;
   }
 
 
   if(mTime::TimeReached(&tSaved_playlist_debug, 1000)){
-    ALOG_INF(PSTR("tSaved_playlist_debug currentPlaylist %d %d"), currentPlaylist, playlistEntryDur);
-
-
-    ALOG_INF(PSTR("tSaved_playlist_debug presetCycledTime %d %d %d"), millis() , presetCycledTime, (100*playlistEntryDur) );
+    uint32_t remaining = millis() - tSaved_playlist_debug;
+    remaining /= 1000;
+    ALOG_INF(PSTR("currentPlaylist i%d %d/%s secs"), currentPlaylist, (playlistEntryDur*100)/1000, remaining);
+    ALOG_INF(PSTR("playlistIndex i%d/%d"), playlistIndex, playlistLen);
+    //ALOG_INF(PSTR("presetCycledTime %d<%d %d"), millis() , presetCycledTime, (100*playlistEntryDur) );
   }
 
 
@@ -168,7 +169,6 @@ void mAnimatorLight::handlePlaylist()
     }
 
     jsonTransitionOnce = true;
-    transitionDelayTemp = playlistEntries[playlistIndex].tr * 100;
     playlistEntryDur = playlistEntries[playlistIndex].dur;
     applyPreset(playlistEntries[playlistIndex].preset);
 
@@ -176,16 +176,24 @@ void mAnimatorLight::handlePlaylist()
 
 }
 
-
+/***
+ * Playlist meanings
+ * 
+ * "repeat": [count] -1 means indefinitely, 0 to end is how many times
+ * "dur": [array] is the tengths of seconds
+ * "r":   [??] in this case appears to mean shuffle enabled, but not sure
+ * "end": [index] if repeat causes the playlist to end, then this is the index for the preset/playlist to switch to
+ * "ps":  [array] list of presets to load
+ * "transition": [array] no longer used, no WLED transitions remained
+ * 
+ */
 void mAnimatorLight::serializePlaylist(JsonObject sObj) 
 {
-
-  DEBUG_LINE_HERE;
 
   JsonObject playlist = sObj.createNestedObject(F("playlist"));
   JsonArray ps = playlist.createNestedArray("ps");
   JsonArray dur = playlist.createNestedArray("dur");
-  // JsonArray transition = playlist.createNestedArray(F("transition"));
+
   playlist[F("repeat")] = (playlistIndex < 0) ? playlistRepeat - 1 : playlistRepeat; // remove added repetition count (if not yet running)
   playlist["end"] = playlistEndPreset;
   playlist["r"] = playlistOptions & PL_OPTION_SHUFFLE;
@@ -194,7 +202,6 @@ void mAnimatorLight::serializePlaylist(JsonObject sObj)
   {
     ps.add(playlistEntries[i].preset);
     dur.add(playlistEntries[i].dur);
-    // transition.add(playlistEntries[i].tr);
   }
 
 }

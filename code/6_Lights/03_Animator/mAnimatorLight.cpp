@@ -49,7 +49,6 @@ int8_t mAnimatorLight::Tasker(uint8_t function, JsonParserObject obj)
       ALOG_INF( PSTR(PM_COMMAND_SVALUE_NVALUE), PM_LOOPSSEC, pCONT_sup->activity.cycles_per_sec);    
       #endif // ENABLE_DEBUGFEATURE_LIGHTING__TIME_CRITICAL_RECORDING
 
-
     }break;
     case TASK_LOOP:     
       EveryLoop();  
@@ -75,10 +74,13 @@ int8_t mAnimatorLight::Tasker(uint8_t function, JsonParserObject obj)
      * TRIGGERS SECTION * 
     *******************/
     case TASK_EVENT_INPUT_STATE_CHANGED_ID:
-      #ifdef USE_MODULE_LIGHTS_USER_INPUT_BASIC_BUTTONS
-      CommandSet_Physical_UserInput_Buttons();
+      #ifdef ENABLE_FEATURE_LIGHTS__KEY_INPUT_CONTROLS
+      KeyInput__ControlLights();
       #endif
     break;
+    // #ifdef USE_MODULE_LIGHTS_USER_INPUT_BASIC_BUTTONS
+    // CommandSet_Physical_UserInput_Buttons();
+    // #endif
     /************
      * MQTT SECTION * 
     *******************/   
@@ -86,16 +88,16 @@ int8_t mAnimatorLight::Tasker(uint8_t function, JsonParserObject obj)
     case TASK_MQTT_HANDLERS_INIT:
       MQTTHandler_Init();
     break;
+    case TASK_MQTT_STATUS_REFRESH_SEND_ALL:
+      pCONT_mqtt->MQTTHandler_RefreshAll(mqtthandler_list);
+    break;
     case TASK_MQTT_HANDLERS_SET_DEFAULT_TRANSMIT_PERIOD:
-      MQTTHandler_Rate();
+      pCONT_mqtt->MQTTHandler_Rate(mqtthandler_list);
     break;
     case TASK_MQTT_SENDER:
-      MQTTHandler_Sender();
+      pCONT_mqtt->MQTTHandler_Sender(mqtthandler_list, *this);
     break;
-    case TASK_MQTT_CONNECTED:
-      MQTTHandler_RefreshAll();
-    break;
-    #endif //USE_MODULE_NETWORK_MQTT
+    #endif // USE_MODULE_NETWORK_MQTT
     /************
      * WIFI SECTION * 
     *******************/   
@@ -116,6 +118,27 @@ int8_t mAnimatorLight::Tasker(uint8_t function, JsonParserObject obj)
 
 
 } // END FUNCTION
+
+
+#ifdef ENABLE_FEATURE_LIGHTS__KEY_INPUT_CONTROLS
+void mAnimatorLight::KeyInput__ControlLights()
+{
+  ALOG_INF(PSTR("KeyInput__ControlLights"));
+
+  if(!keyinput_control.mode) return;
+
+  switch(keyinput_control.mode)
+  {
+    case 1:
+
+
+    break; 
+  }
+
+
+
+}
+#endif // ENABLE_FEATURE_LIGHTS__KEY_INPUT_CONTROLS
 
 
 void mAnimatorLight::Save_Module()
@@ -198,17 +221,79 @@ void mAnimatorLight::Save_Module()
 void mAnimatorLight::EveryLoop()
 {
      
-  if (doInitBusses) {
+    
+  if (doInitBusses) 
+  {
     doInitBusses = false;
     ALOG_INF(PSTR("Re-init busses"));
     
     bool aligned = checkSegmentAlignment(); //see if old segments match old bus(ses)
     pCONT_iLight->bus_manager->removeAll();
+
     uint32_t mem = 0;
+
+    /*****************************************************************************
+     * Detect type of NPB methods
+    ******************************************************************************/
+    #ifdef ENABLE_FEATURE_LIGHTING__I2S_SINGLE_AND_PARALLEL_AUTO_DETECT
+      // determine if it is sensible to use parallel I2S outputs on ESP32 (i.e. more than 5 outputs = 1 I2S + 4 RMT)
+      bool useParallel = false;
+      #if defined(ARDUINO_ARCH_ESP32) && !defined(ARDUINO_ARCH_ESP32S2) && !defined(ARDUINO_ARCH_ESP32S3) && !defined(ARDUINO_ARCH_ESP32C3)
+      unsigned digitalCount = 0;
+      unsigned maxLedsOnBus = 0;
+      unsigned maxChannels = 0;
+      for (unsigned i = 0; i < WLED_MAX_BUSSES+WLED_MIN_VIRTUAL_BUSSES; i++) {
+        if (pCONT_iLight->busConfigs[i] == nullptr) break;
+        if (!Bus::isDigital(pCONT_iLight->busConfigs[i]->type)) continue;
+        if (!Bus::is2Pin(pCONT_iLight->busConfigs[i]->type)) {
+          digitalCount++;
+          unsigned channels = Bus::getNumberOfChannels(pCONT_iLight->busConfigs[i]->type);
+          if (pCONT_iLight->busConfigs[i]->count > maxLedsOnBus) maxLedsOnBus = pCONT_iLight->busConfigs[i]->count;
+          if (channels > maxChannels) maxChannels  = channels;
+        }
+      }
+      DEBUG_PRINTF_P(PSTR("Maximum LEDs on a bus: %u\nDigital buses: %u\n"), maxLedsOnBus, digitalCount);
+      /**
+       * Assign to use parallel only when pixels per bus are low, and channels are more than 2
+       * Will use combined I2Sx2 + RMTx8 when pixels per bus are more than 300
+       * 
+       */
+      if (maxLedsOnBus <= 300 && digitalCount > 2) 
+      {  // I will want >2, as I0 and I1 are for 2 pins only, then immediately switch to parallel
+        DEBUG_PRINTF_P(PSTR("Switching to parallel I2S"));
+        useParallel = true;
+        pCONT_iLight->bus_manager->useParallelOutput(true);
+        pCONT_iLight->bus_manager->setRequiredChannels(digitalCount);
+        mem = BusManager::memUsage(maxChannels, maxLedsOnBus, 8); // use alternate memory calculation (hse to be used *after* useParallelOutput())
+      }else{
+        ALOG_INF(PSTR("Parallel is not required for %d channels"), digitalCount);
+        pCONT_iLight->bus_manager->setRequiredChannels(digitalCount);
+        pCONT_iLight->bus_manager->useParallelOutput(false);
+      }
+      #endif
+    #endif // ENABLE_FEATURE_LIGHTING__I2S_SINGLE_AND_PARALLEL_AUTO_DETECT
+
+  
+    /*****************************************************************************
+     * Create NPB methods
+    ******************************************************************************/
     for (uint8_t i = 0; i < WLED_MAX_BUSSES+WLED_MIN_VIRTUAL_BUSSES; i++) 
     {
       if (pCONT_iLight->busConfigs[i] == nullptr) break;
-      mem += BusManager::memUsage(*pCONT_iLight->busConfigs[i]);
+      // mem += BusManager::memUsage(*pCONT_iLight->busConfigs[i]);
+
+      #ifdef ENABLE_FEATURE_LIGHTING__I2S_SINGLE_AND_PARALLEL_AUTO_DETECT
+      if (useParallel && i < 16) {
+        // if for some unexplained reason the above pre-calculation was wrong, update
+        unsigned memT = BusManager::memUsage(*pCONT_iLight->busConfigs[i]); // includes x8 memory allocation for parallel I2S
+        if (memT > mem) mem = memT; // if we have unequal LED count use the largest
+      } 
+      else
+      #endif // ENABLE_FEATURE_LIGHTING__I2S_SINGLE_AND_PARALLEL_AUTO_DETECT
+      {
+        mem += BusManager::memUsage(*pCONT_iLight->busConfigs[i]); // includes global buffer
+      }
+
       if (mem <= MAX_LED_MEMORY) 
       {        
         pCONT_iLight->bus_manager->add(*pCONT_iLight->busConfigs[i]);        
@@ -217,7 +302,8 @@ void mAnimatorLight::EveryLoop()
       {        
         ALOG_ERR(PSTR("MEMORY ISSUE"));        
       }
-      delete pCONT_iLight->busConfigs[i]; pCONT_iLight->busConfigs[i] = nullptr;
+      delete pCONT_iLight->busConfigs[i]; 
+      pCONT_iLight->busConfigs[i] = nullptr;
     }
     
     finalizeInit(); // also loads default ledmap if present
@@ -236,6 +322,7 @@ void mAnimatorLight::EveryLoop()
     doSerializeConfig = true;
     // serializeConfig(); // in WLED This saved everything to json memory
   }
+
   #ifdef ENABLE_DEVFEATURE_LIGHT__HARDCODE_MATRIX_SETUP
   // loadLedmap = 0;
   isMatrix = true;
@@ -338,6 +425,22 @@ void mAnimatorLight::EveryLoop()
 
 
 
+        #elif defined(ENABLE_DEVFEATURE_LIGHT__MATRIX_COLORADO_MATRIX_TREE)
+
+
+        Panel p;
+        p.bottomStart = 0; //, pnl["b"]);
+        p.rightStart = 0;//,  pnl["r"]);
+        p.vertical = 1;//,    pnl["v"]);` // works for 16x16
+        p.serpentine = true; //,  pnl["s"]);
+        p.xOffset = 0;//,     pnl["x"]);
+        p.yOffset = 0;//,     pnl["y"]);
+        p.height = 8;//,      pnl["h"]);
+        p.width = 32;//,       pnl["w"]);
+        panel.push_back(p);
+
+
+
         #else
         // default when not overriding
 
@@ -392,7 +495,7 @@ void mAnimatorLight::EveryLoop()
   
   // if (doSerializeConfig) serializeConfig();
 
-  
+  // This should be removed, as realtime mode will cause this to switch anyway
   /**
    * @brief If RealTime modes first
    * - when realtime is used, effects are not to keep performance up and since the realtime aspect (network) needs priority, it is not going to be
@@ -400,85 +503,84 @@ void mAnimatorLight::EveryLoop()
    * 
    * realtimeModes will always be loaded into the first segment, with other segments paused when realtimeMode is active
    */
-  if(realtimeMode)
+  switch(realtimeMode)
   {
-    switch(SEGMENT_I(0).animation_mode_id)    // needs to know the id 
-    {
-      #ifdef ENABLE_ANIMATION_MQTT_SETPIXEL
-      case ANIMATION_MODE__MQTT_SETPIXEL:
-        SubTask_Segments_Effects();
-      break;
-      #endif
-      #ifdef ENABLE_ANIMATION_REALTIME_UDP
-      case ANIMATION_MODE__REALTIME_UDP:
-        SubTask_Segments_Effects();
-      break;
-      #endif
-      #ifdef ENABLE_ANIMATION_MODE__REALTIME_HYPERION
-      case ANIMATION_MODE__REALTIME_HYPERION:
-        SubTask_Segments_Effects();
-      break;
-      #endif
-      #ifdef ENABLE_ANIMATION_MODE__REALTIME_E131
-      case ANIMATION_MODE__REALTIME_E131:
-        SubTask_Segments_Effects();
-      break;
-      #endif
-      #ifdef ENABLE_ANIMATION_MODE__REALTIME_ADALIGHT
-      case ANIMATION_MODE__REALTIME_ADALIGHT:
-        SubTask_Segments_Effects();
-      break;
-      #endif
-      #ifdef ENABLE_ANIMATION_MODE__REALTIME_ARTNET
-      case ANIMATION_MODE__REALTIME_ARTNET:
-        SubTask_Segments_Effects();
-      break;
-      #endif
-      #ifdef ENABLE_ANIMATION_MODE__REALTIME_TPM2NET
-      case ANIMATION_MODE__REALTIME_TPM2NET:
-        SubTask_Segments_Effects();
-      break;
-      #endif
-      #ifdef ENABLE_ANIMATION_MODE__REALTIME_DDP
-      case ANIMATION_MODE__REALTIME_DDP:
-        SubTask_Segments_Effects();
-      break;
-      #endif
-      case ANIMATION_MODE__DISABLED: default: return; // Leave function
-    } // END switch
+    case ANIMATION_MODE__EFFECTS:{ // Effects created on device, local control
 
-  } // END realtimeMode
+      #ifdef ENABLE_DEVFEATURE_NETWORK__CAPTIVE_PORTAL
+      if (apActive) dnsServer.processNextRequest();
+      #endif 
+
+      #ifdef ENABLE_FEATURE_LIGHTS__DEMO_MODE
+      SubTask_Demo();
+      #endif
+
+      #ifdef ENABLE_FEATURE_LIGHTING__EFFECTS
+      DEBUG_LIGHTING__START_TIME_RECORDING(1)
+      SubTask_Effects();
+      DEBUG_LIGHTING__SAVE_TIME_RECORDING(1, lighting_time_critical_logging.segment_effects);
+      #endif  
+
+      #ifdef ENABLE_DEVFEATURE_LIGHTING__PLAYLISTS
+      SubTask_Playlist();
+      #endif
+
+      #ifdef ENABLE_DEVFEATURE_LIGHTING__PRESETS
+      SubTask_Presets();
+      #endif
+
+      #ifdef ENABLE_FEATURE_LIGHTING__SEQUENCER
+      SubTask_Sequencer();
+      #endif
+
+    }break;
+    #ifdef ENABLE_FEATURE_LIGHTING__REALTIME_MQTT_SETPIXEL
+    case ANIMATION_MODE__REALTIME_MQTT_SETPIXEL:
+      SubTask_RealTime_SetPixel();
+    break;
+    #endif
+    #ifdef ENABLE_ANIMATION_REALTIME_UDP
+    case ANIMATION_MODE__REALTIME_UDP:
+      SubTask_Effects();
+    break;
+    #endif
+    #ifdef ENABLE_ANIMATION_MODE__REALTIME_HYPERION
+    case ANIMATION_MODE__REALTIME_HYPERION:
+      SubTask_Effects();
+    break;
+    #endif
+    #ifdef ENABLE_ANIMATION_MODE__REALTIME_E131
+    case ANIMATION_MODE__REALTIME_E131:
+      SubTask_Effects();
+    break;
+    #endif
+    #ifdef ENABLE_ANIMATION_MODE__REALTIME_ADALIGHT
+    case ANIMATION_MODE__REALTIME_ADALIGHT:
+      SubTask_Effects();
+    break;
+    #endif
+    #ifdef ENABLE_ANIMATION_MODE__REALTIME_ARTNET
+    case ANIMATION_MODE__REALTIME_ARTNET:
+      SubTask_Effects();
+    break;
+    #endif
+    #ifdef ENABLE_ANIMATION_MODE__REALTIME_TPM2NET
+    case ANIMATION_MODE__REALTIME_TPM2NET:
+      SubTask_Effects();
+    break;
+    #endif
+    #ifdef ENABLE_ANIMATION_MODE__REALTIME_DDP
+    case ANIMATION_MODE__REALTIME_DDP:
+      SubTask_Effects();
+    break;
+    #endif
+  } // END switch
 
   DEBUG_LINE_HERE
 
   yield();
 
-  if(!realtimeMode)
-  {
-    
-    #ifdef ENABLE_DEVFEATURE_NETWORK__CAPTIVE_PORTAL
-    if (apActive) dnsServer.processNextRequest();
-    #endif 
-
-    #ifdef ENABLE_FEATURE_LIGHTING__EFFECTS
-      DEBUG_LIGHTING__START_TIME_RECORDING(1)
-      SubTask_Segments_Effects();
-      DEBUG_LIGHTING__SAVE_TIME_RECORDING(1, lighting_time_critical_logging.segment_effects);
-    #endif  
-
-    #ifdef ENABLE_DEVFEATURE_LIGHTING__PLAYLISTS
-    handlePlaylist();
-    #endif
-
-    #ifdef ENABLE_DEVFEATURE_LIGHTING__PRESETS
-    handlePresets();
-    #endif
-
-    #ifdef ENABLE_FEATURE_LIGHTING__SEQUENCER
-    handleSequencer();
-    #endif
-
-  } // End of !realtimeMode and Effect methods
+  
 
 }
 
@@ -511,7 +613,7 @@ void mAnimatorLight::Init(void)
   #ifdef ENABLE_WEBSERVER_LIGHTING_WEBUI
 
   #ifdef ENABLE_DEBUGFEATURE_WEBUI__SHOW_BUILD_DATETIME_IN_FOOTER
-  snprintf(serverDescription, sizeof(serverDescription), "PulSar %s - %s", pCONT_set->Settings.system_name.friendly, pCONT_time->GetBuildDateAndTime().c_str() );
+  snprintf(serverDescription, sizeof(serverDescription), "PulSar %s \"%s\" [%s]", pCONT_set->Settings.system_name.friendly, DEVICENAME_DESCRIPTION_CTR, pCONT_time->GetBuildDateAndTime().c_str() );
   #else
   snprintf(serverDescription, sizeof(serverDescription), pCONT_set->Settings.system_name.friendly);
   #endif
@@ -576,6 +678,14 @@ void mAnimatorLight::Init(void)
   module_state.mode = ModuleStatus::Running;
 
 } // END "Init"
+
+
+#ifdef ENABLE_FEATURE_LIGHTING__REALTIME_MODES 
+void mAnimatorLight::SubTask_RealTime_SetPixel()
+{
+  // Do nothing
+}
+#endif
 
 
 void mAnimatorLight::Reset_CustomPalette_NamesDefault()
@@ -1327,7 +1437,7 @@ void mAnimatorLight:: addEffect(uint8_t id, RequiredFunction function, const cha
 }
 
 
-void mAnimatorLight::SubTask_Segments_Effects()
+void mAnimatorLight::SubTask_Effects()
 {
 
   uint32_t nowUp = millis(); // Be aware, millis() rolls over every 49 days
@@ -1421,9 +1531,7 @@ void mAnimatorLight::SubTask_Segments_Effects()
 
     } // IsAnimating
 
-    
 
-  
     #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PERFORMANCE_METRICS_SAFE_IN_RELEASE_MODE
     if(doShow)
     {
@@ -1432,8 +1540,6 @@ void mAnimatorLight::SubTask_Segments_Effects()
       seg.performance.fps = 1000.0f/seg.performance.elapsed_last_show;
     }
     #endif 
-
-
 
 
     /**
@@ -1452,7 +1558,7 @@ void mAnimatorLight::SubTask_Segments_Effects()
   _force_update = false;
   _isServicing = false;
   
-} // SubTask_Segments_Effects
+} // SubTask_Effects
 
 
 #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
@@ -1482,7 +1588,7 @@ void mAnimatorLight::AnimationProcess_LinearBlend_Dynamic_Buffer(const Animation
 
         // Ensure we don't exceed buffer limits
         if (pixel_start_i + pixel_size > buflen) {
-            ALOG_ERR(PSTR("Never reach this B"));
+            //ALOG_ERR(PSTR("Never reach this B"));
             continue;  // Skip if out of bounds
         }
     
@@ -1558,7 +1664,7 @@ void mAnimatorLight::AnimationProcess_LinearBlend_Dynamic_Buffer_BrtNotSet(const
 
         // Ensure we don't exceed buffer limits
         if (pixel_start_i + pixel_size > buflen) {
-            ALOG_ERR(PSTR("Never reach this A"));
+            //ALOG_ERR(PSTR("Never reach this A"));
             continue;  // Skip if out of bounds
         }
     
@@ -4510,6 +4616,12 @@ void IRAM_ATTR mAnimatorLight::Segment::SetPixelColor(uint16_t indexPixel, Rgbcc
 
   int vStrip = indexPixel>>16; // hack to allow running on virtual strips (2D segment columns/rows)
   indexPixel &= 0xFFFF;
+
+  // Debug feature to map a large number of virtual pixels to a smaller physical display
+  #ifdef ENABLE_DEBUGFEATURE__LIGHTING__MATCH_FEWER_PHYSICAL_PIXELS
+  indexPixel = indexPixel % ENABLE_DEBUGFEATURE__LIGHTING__MATCH_FEWER_PHYSICAL_PIXELS; // Map to fewer pixels
+  #endif
+
   if (indexPixel >= virtualLength() || indexPixel < 0) return;  // if pixel would fall out of segment just exit
 
   // Apply brightness if needed
@@ -6042,39 +6154,6 @@ void mAnimatorLight::MQTTHandler_Init()
   #endif // ENABLE_DEBUG_FEATURE_MQTT_ANIMATOR__DEBUG_PERFORMANCE
 
 } 
-
-/**
- * @brief Set flag for all mqtthandlers to send
- * */
-void mAnimatorLight::MQTTHandler_RefreshAll()
-{
-  for(auto& handle:mqtthandler_list){
-    handle->flags.SendNow = true;
-  }
-}
-
-/**
- * @brief Update 'tRateSecs' with shared teleperiod
- * */
-void mAnimatorLight::MQTTHandler_Rate()
-{
-  for(auto& handle:mqtthandler_list){
-    if(handle->topic_type == MQTT_TOPIC_TYPE_TELEPERIOD_ID)
-      handle->tRateSecs = pCONT_mqtt->dt.teleperiod_secs;
-    if(handle->topic_type == MQTT_TOPIC_TYPE_IFCHANGED_ID)
-      handle->tRateSecs = pCONT_mqtt->dt.ifchanged_secs;
-  }
-}
-
-/**
- * @brief MQTTHandler_Sender
- * */
-void mAnimatorLight::MQTTHandler_Sender()
-{    
-  for(auto& handle:mqtthandler_list){
-    pCONT_mqtt->MQTTHandler_Command_UniqueID(*this, GetModuleUniqueID(), handle);
-  }
-}
   
 #endif// USE_MODULE_NETWORK_MQTT
 
@@ -6571,7 +6650,7 @@ void handleNotifications()
 
     if (version > 3)
     {
-      pCONT_lAni->transitionDelayTemp = ((udpIn[17] << 0) & 0xFF) + ((udpIn[18] << 8) & 0xFF00);
+      // pCONT_lAni->transitionDelayTemp = ((udpIn[17] << 0) & 0xFF) + ((udpIn[18] << 8) & 0xFF00);
     }
 
     pCONT_lAni->nightlightActive = udpIn[6];

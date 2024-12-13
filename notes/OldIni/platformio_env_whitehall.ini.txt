@@ -1240,25 +1240,3 @@ upload_protocol = espota
 ; ROOM: COLORADO ONLY ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
 
-
-
-[env:rw_garsen]
-extends = env:whitehall_32
-build_flags             = ${esp32_defaults.build_flags} 
-                            -D DEVICE_COLORADO_GARAGESENSOR
-                            -w
-lib_extra_dirs = ${common.lib_extra_dirs}
-              lib/libesp32
-              lib/lib_basic
-              lib/lib_network
-              lib/lib_display
-              lib/lib_onewire2023 
-              lib/lib_sensor
-              
-              lib/lib_irremote
-upload_port = COM10
-; upload_protocol = espota
-; upload_port = 192.168.0.25
-; upload_port = kitchensensor.local
-; monitor_filters = esp32_exception_decoder
-; build_type = debug

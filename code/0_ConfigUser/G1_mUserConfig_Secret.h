@@ -35,16 +35,20 @@
 #else // garage or other
 
 // Dedicated SSID for home controllers
-#undef  STA_SSID1
+#ifndef  STA_SSID1
 #define STA_SSID1            "HACS2400"                // [Ssid2] Optional alternate AP Wifi SSID
-#undef  STA_PASS1
+#endif
+#ifndef  STA_PASS1
 #define STA_PASS1            "af4d8bc9ab"                // [Password2] Optional alternate AP Wifi password
+#endif
 
 // Dedicated SSID for home controllers
-#undef  STA_SSID2
+#ifndef  STA_SSID2
 #define STA_SSID2            "HACS2400"                // [Ssid2] Optional alternate AP Wifi SSID
-#undef  STA_PASS2
+#endif
+#ifndef  STA_PASS2
 #define STA_PASS2            "af4d8bc9ab"                // [Password2] Optional alternate AP Wifi password
+#endif
 
 #endif
 

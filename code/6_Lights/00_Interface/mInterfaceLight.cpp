@@ -836,7 +836,7 @@ void mInterfaceLight::parseJSONObject__BusConfig(JsonParserObject obj)
   uint16_t length = 10;
   int8_t bus_type = BUSTYPE_NONE;
   uint8_t reversed = 0;
-  COLOUR_ORDER_T ColourOrder = 0;//{COLOUR_ORDER_INIT_DISABLED};
+  uint8_t ColourOrder = 0;//{COLOUR_ORDER_INIT_DISABLED};
   uint8_t pins[5] = {255}; // 255 is unset
 
   if(jtok2 = obj["Pin"])
@@ -944,12 +944,15 @@ void mInterfaceLight::parseJSONObject__BusConfig(JsonParserObject obj)
 
 uint8_t mInterfaceLight::GetColourOrder_FromName(const char* c)
 {
+
     uint8_t colour_order = 0;  // Initialize as 0 (default to RGB with no whites)
 
     // Validate length (must be 3 to 5 characters)
     size_t len = strlen(c);
+    Serial.println("len");
+    Serial.println(len);
     if (!c || len < 3 || len > 5) {
-        ALOG_INF(PSTR("INVALID Length"));
+        ALOG_ERR(PSTR("INVALID Length"));
         return colour_order;
     }
 
@@ -973,7 +976,7 @@ uint8_t mInterfaceLight::GetColourOrder_FromName(const char* c)
     } else if (chars[0] == 'R' && chars[1] == 'B' && chars[2] == 'G') {
         colour_order = 0x05; // RBG
     } else {
-        ALOG_INF(PSTR("INVALID RGB Order"));
+        ALOG_ERR(PSTR("INVALID RGB Order"));
         return colour_order;  // Invalid RGB order
     }
 
@@ -993,7 +996,7 @@ uint8_t mInterfaceLight::GetColourOrder_FromName(const char* c)
     }
 
     #ifdef ENABLE_LOG_LEVEL_COMMANDS
-    ALOG_INF(PSTR("colour_order == %X"), colour_order);
+    ALOG_ERR(PSTR("colour_order == \n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r%X"), colour_order);
     #endif  
 
     return colour_order;
@@ -1003,10 +1006,10 @@ uint8_t mInterfaceLight::GetColourOrder_FromName(const char* c)
 #else
 
 
-COLOUR_ORDER_T mInterfaceLight::GetColourOrder_FromName(const char* c)
+uint8_t mInterfaceLight::GetColourOrder_FromName(const char* c)
 {
 
-  COLOUR_ORDER_T colour_order = {COLOUR_ORDER_INIT_DISABLED};
+  uint8_t colour_order = {COLOUR_ORDER_INIT_DISABLED};
 
   if(!c){ return colour_order; }
   if(strlen(c)<=5){
@@ -1418,7 +1421,7 @@ uint8_t mInterfaceLight::ConstructJSON_Debug__BusConfig(uint8_t json_level, bool
       JBI->Add("s", bus_manager->busses[bus_i]->_start);
       JBI->Add("l", bus_manager->busses[bus_i]->_len);
 
-      COLOUR_ORDER_T colour_order = bus_manager->busses[bus_i]->getColorOrder();
+      uint8_t colour_order = bus_manager->busses[bus_i]->getColorOrder();
       JBI->Array_Start("CO");
         JBI->Add(GetColourOrderString(colour_order).c_str());// colour_order.red);
         // JBI->Add(colour_order.green);
