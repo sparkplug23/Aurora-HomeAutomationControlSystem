@@ -46,6 +46,34 @@ With latest version, all longer term shared debug features should be added here 
 // #error "here"
 #endif // USE_USER_MICHAEL
 
+
+/*********************************************************************************************\
+ *
+ * Overrides for creating cloned test devices and renaming the templates
+ * Prefix
+ * 
+ * 
+ * 
+ * 
+ * 
+ * *****************************************************************************************************/
+// Store original defines into intermediate macros if USE_DEBUGFEATURE_DEVICE_CLONE_TESTBED is defined
+// #ifdef USE_DEBUGFEATURE_DEVICE_CLONE_TESTBED
+// // Directly redefine the macros with the prefix
+// #undef DEVICENAME_CTR
+// #undef DEVICENAME_FRIENDLY_CTR
+// #undef DEVICENAME_DESCRIPTION_CTR
+// #undef DEVICENAME_ROOMHINT_CTR
+
+// // Use stringification to directly concatenate
+// #define DEVICENAME_CTR          "tb_" DEVICENAME_CTR
+// #define DEVICENAME_FRIENDLY_CTR "tb_" DEVICENAME_FRIENDLY_CTR
+// #define DEVICENAME_DESCRIPTION_CTR "tb_" DEVICENAME_DESCRIPTION_CTR
+// #define DEVICENAME_ROOMHINT_CTR "tb_" DEVICENAME_ROOMHINT_CTR
+// #endif
+// #pragma message ("DEVICENAME_CTR: " DEVICENAME_CTR)
+
+
 /*********************************************************************************************\
  * This file is one of two user configurable files
  * 

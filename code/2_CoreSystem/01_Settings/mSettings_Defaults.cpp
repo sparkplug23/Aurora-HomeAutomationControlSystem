@@ -110,11 +110,21 @@ void mSettings::SystemSettings_DefaultBody(void)
   // ModuleDefault(WEMOS);  // to do
   for (uint8_t i = 0; i < sizeof(Settings.module_pins); i++) { Settings.module_pins.io[i] = GPIO_NONE_ID; }
   SettingsUpdateText(SET_FRIENDLYNAME1, PSTR(DEVICENAME_FRIENDLY_CTR)); // Init
+
+  #ifdef USE_DEBUGFEATURE_DEVICE_CLONE_TESTBED
+  #ifdef DEVICENAME_CTR
+  SettingsUpdateText(SET_DEVICENAME, PSTR("tb_" DEVICENAME_CTR));
+  #else
+  SettingsUpdateText(SET_DEVICENAME, SettingsText("tb_" SET_FRIENDLYNAME1));
+  #endif
+  #else
   #ifdef DEVICENAME_CTR
   SettingsUpdateText(SET_DEVICENAME, PSTR(DEVICENAME_CTR));
   #else
   SettingsUpdateText(SET_DEVICENAME, SettingsText(SET_FRIENDLYNAME1));
   #endif
+  #endif // USE_DEBUGFEATURE_DEVICE_CLONE_TESTBED
+  
 
   ALOG_INF(PSTR("switch_debounce %d"), Settings.switch_debounce);  DEBUG_LINE_HERE2
   /*********************************************************************************************

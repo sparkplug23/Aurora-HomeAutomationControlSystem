@@ -406,7 +406,7 @@ class PolyBus
   {
     
     // #ifdef ENABLE_DEBUGFEATURE__16PIN_PARALLEL_OUTPUT
-    DEBUG_PRINTF("PolyBus::show busType %d\n\r", busType);
+    // DEBUG_PRINTF("PolyBus::show busType %d\n\r", busType);
     // #endif 
     
     switch (busType) {
@@ -611,6 +611,11 @@ IRAM_ATTR
 setPixelColor(void* busPtr, uint8_t busType, uint16_t pix, RgbcctColor colour_internal, uint8_t colour_order = 0x00) 
 {
 
+  // #ifdef ENABLE_DEVFEATURE_LIGHTING__TEMPORARY_DISABLE_CODE_FOR_SPEED_TESTING
+  // DEBUG_TIME__START
+  // uint32_t __debug_time_start__ = micros();
+  // #endif
+
     RgbcctColor colour_hardware = colour_internal; // Start with original
 
   // Debug feature to map a large number of virtual pixels to a smaller physical display
@@ -786,6 +791,15 @@ setPixelColor(void* busPtr, uint8_t busType, uint16_t pix, RgbcctColor colour_in
     #endif
 
     }
+
+
+    // #ifdef ENABLE_DEVFEATURE_LIGHTING__TEMPORARY_DISABLE_CODE_FOR_SPEED_TESTING
+    // #define SERIAL_DEBUG Serial
+    // if(pix==0)
+    // SERIAL_DEBUG.printf("(%s:%d) %luus %dms\n\r", \
+    //                         __FILE__, __LINE__, micros() - __debug_time_start__, (micros() - __debug_time_start__)/1000); \
+    //     SERIAL_DEBUG.flush();
+    // #endif
 }
 
 

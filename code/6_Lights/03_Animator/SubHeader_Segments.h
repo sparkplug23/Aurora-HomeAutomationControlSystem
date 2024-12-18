@@ -46,7 +46,7 @@ typedef struct Segment {
      * @brief New setting to reduce pixels generated for speed, and will replicate the data out to proper seglen
      * For example, with 1000 led segment, if the same pattern is generated every 10 leds, then only 100 leds will be generated and pushed out 10 times on the bus
      * 
-     * Decimate is a multiplier, so 0 means none, with each value being a divisor. Decimate 10 would be only generate 10% of the leds
+     * Decimate is a multiplier, so 0 means none, with each value being a divisor. Decimate 10 would be only generate 10% of the leds, then repeat it 10 times on the output
      */
     uint8_t decimate = 0;
     uint8_t grouping = 1;
@@ -228,6 +228,8 @@ typedef struct Segment {
     uint32_t tSaved_EffectStartReferenceTime = 0;
     uint32_t step;  // custom "step" var
     uint32_t call;  // call counter
+
+    uint32_t tSaved_AnimateRunTime = 0; //tmp fix ofr xmas24 then remove
 
     uint8_t effect_anim_section = 0; // 0 draw, 1 stop draw
 

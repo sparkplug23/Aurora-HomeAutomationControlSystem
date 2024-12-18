@@ -15,21 +15,32 @@ void mHardwarePins::ModuleTemplate__ParseCJSONBuffer(char* buffer){
     ALOG_ERR(PSTR("DeserializationError with \"%s\""), buffer);
     return;
   }
-  
-
   if(jtok = rootObj[PM_NAME])
   {
     const char* name_ctr = jtok.getStr();
-    ALOG_COM(PSTR(D_LOG_CONFIG "system_name %s"), name_ctr);
-    snprintf(pCONT_set->Settings.system_name.device,sizeof(pCONT_set->Settings.system_name.device),"%s",name_ctr);  
+    #ifdef USE_DEBUGFEATURE_DEVICE_CLONE_TESTBED
+      char tb_name_ctr[64]; // Temporary buffer for modified name
+      snprintf(tb_name_ctr, sizeof(tb_name_ctr), "tb_%s", name_ctr);
+      name_ctr = tb_name_ctr; // Update name_ctr to point to modified name
+      ALOG_COM(PSTR(D_LOG_CONFIG "system_name [Debug Clone] %s"), name_ctr);
+    #else
+      ALOG_COM(PSTR(D_LOG_CONFIG "system_name %s"), name_ctr);
+    #endif
+    snprintf(pCONT_set->Settings.system_name.device, sizeof(pCONT_set->Settings.system_name.device), "%s", name_ctr);
   }
-
 
   if(jtok = rootObj[PM_FRIENDLYNAME])
   {
     const char* name_ctr = jtok.getStr();
-    ALOG_COM(PSTR(D_LOG_CONFIG "Template NAME %s"), name_ctr);
-    snprintf(pCONT_set->Settings.system_name.friendly,sizeof(pCONT_set->Settings.system_name.friendly),"%s",name_ctr);
+    #ifdef USE_DEBUGFEATURE_DEVICE_CLONE_TESTBED
+      char tb_friendly_ctr[64]; // Temporary buffer for modified friendly name
+      snprintf(tb_friendly_ctr, sizeof(tb_friendly_ctr), "tb_%s", name_ctr);
+      name_ctr = tb_friendly_ctr; // Update name_ctr to point to modified friendly name
+      ALOG_COM(PSTR(D_LOG_CONFIG "Template NAME [Debug Clone] %s"), name_ctr);
+    #else
+      ALOG_COM(PSTR(D_LOG_CONFIG "Template NAME %s"), name_ctr);
+    #endif
+    snprintf(pCONT_set->Settings.system_name.friendly, sizeof(pCONT_set->Settings.system_name.friendly), "%s", name_ctr);
   }
 
 

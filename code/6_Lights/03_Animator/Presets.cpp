@@ -366,9 +366,9 @@ void mAnimatorLight::SubTask_Presets()
   DEBUG_LINE_HERE;
   #endif
 
-  ALOG_HGL(PSTR("mAnimatorLight::SubTask_Presets is now being read as fileDoc and not compatable with my command structure"));
+  // ALOG_HGL(PSTR("mAnimatorLight::SubTask_Presets is now being read as fileDoc and not compatable with my command structure"));
 
-  delay(4000);
+  // delay(4000);
 
   /**
    * @brief Run through my command structure.

@@ -360,6 +360,10 @@ class mAnimatorLight :
     uint8_t fPixelsUpdated = false;
     uint16_t desired_pixel;
 
+    #ifdef ENABLE_DEBUGFEATURE_LIGHTING__EFFECT_LOOP_TIME_SERIAL
+    uint32_t tSaved_LoopTime = millis();
+    #endif
+
     void Load_Module(bool erase);
     void Save_Module(void);
     bool Default_Module(void);
@@ -368,6 +372,10 @@ class mAnimatorLight :
     /************************************************************************************************
      * SECTION: Internal Functions
      ************************************************************************************************/
+
+
+    void reset(); // tmp use wled reboot, later make sure to use the system reboot method
+
 
     void StartAnimation_AsAnimUpdateMemberFunction();
     
@@ -3157,7 +3165,7 @@ bool useAMPM _INIT(false);       // 12h/24h clock format
 #define FLASH_COUNT 4 
 #define LED_SKIP_AMOUNT  0
 // #define MIN_SHOW_DELAY  15
-#define MIN_SHOW_DELAY   (_frametime < 16 ? 8 : 15)
+#define MIN_SHOW_DELAY   1 //(_frametime < 16 ? 8 : 15)
 #define DEFAULT_LED_COUNT 30
 
 // byte overlayCurrent _INIT(0);    // 0: no overlay 1: analog clock 2: was single-digit clock 3: was cronixie

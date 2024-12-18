@@ -541,7 +541,11 @@ bool  mAnimatorLight::deserializeState(JsonObject root, byte callMode, byte pres
     currentPreset = root[F("pd")] | currentPreset;
     if (root["win"].isNull()) presetCycCurr = currentPreset; // otherwise it was set in handleSet() [set.cpp]
     presetToRestore = currentPreset; // stateUpdated() will clear the preset, so we need to restore it after
-    //unloadPlaylist(); // applying a preset unloads the playlist, may be needed here too?
+    
+      #ifdef ENABLE_DEVFEATURE_LIGHTING__PLAYLISTS
+      unloadPlaylist();// applying a preset unloads the playlist, may be needed here too?
+      #endif
+      
   } else if (!root["ps"].isNull()) {
     ps = presetCycCurr;
     if (root["win"].isNull() && getVal(root["ps"], &ps, 0, 0) && ps > 0 && ps < 251 && ps != currentPreset) {
@@ -566,6 +570,7 @@ bool  mAnimatorLight::deserializeState(JsonObject root, byte callMode, byte pres
   }else{
     ALOG_DBM(PSTR("playlist.isNull()"));
   }
+  DEBUG_PRINTLN("HERE");
   #endif
 
   if (root.containsKey(F("rmcpal")) && root[F("rmcpal")].as<bool>()) {
@@ -1365,7 +1370,13 @@ bool mAnimatorLight::deserializeSegment(JsonObject elem, byte it, byte presetId)
     ALOG_INF(PSTR("elem[\"fx\"].is<const char*>() == NUMBER"));
     if (getVal(elem["fx"], &fx, 0, getModeCount())) { //load effect ('r' random, '~' inc/dec, 0-255 exact value)
       ALOG_INF(PSTR("getVal(elem[\"fx\"], &fx, 0, getModeCount()) %d"), fx);
-      // if (!presetId && currentPlaylist>=0) unloadPlaylist();
+      
+
+      #ifdef ENABLE_DEVFEATURE_LIGHTING__PLAYLISTS
+      if (!presetId && currentPlaylist>=0) unloadPlaylist(); // applying a preset unloads the playlist, may be needed here too?
+      #endif
+
+
       // if (fx != seg.animation_mode_id)
       DEBUG_LINE_HERE; 
       seg.setMode(fx, elem[F("fxdef")]);
@@ -2963,7 +2974,7 @@ void mAnimatorLight::WebPage_Root_AddHandlers()
 
   pCONT_web->server->on("/reset", HTTP_GET, [this](AsyncWebServerRequest *request){
     pCONT_web->serveMessage(request, 200,F("Rebooting now..."),F("Please wait ~10 seconds..."),129);
-    // doReboot = true;
+    doReboot = true;
   });
 
   pCONT_web->server->on("/settings", HTTP_POST, [this](AsyncWebServerRequest *request){

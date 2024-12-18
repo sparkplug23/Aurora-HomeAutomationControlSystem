@@ -88,7 +88,7 @@ USE 2A BLACK WITH BLACK SONOFF FOR WREATH
  * Testing on plane, trying to make it so they can work with their own wifi and no access point.
  * MQTT will not be used.
 **/
-#define DEVICE_COLORADO24__STRING_06__AP_MODE_TESTING
+// #define DEVICE_COLORADO24__STRING_06__AP_MODE_TESTING
 
 /**
  * With White/Green 250 12V

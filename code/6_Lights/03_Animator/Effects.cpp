@@ -112,8 +112,8 @@ void mAnimatorLight::EffectAnim__Solid_Colour()
   SetTransitionColourBuffer_DesiredColour (SEGMENT.Data(), SEGMENT.DataLength(), 0, SEGMENT.colour_type__used_in_effect_generate, desired_colour); 
   SetTransitionColourBuffer_StartingColour(SEGMENT.Data(), SEGMENT.DataLength(), 0, SEGMENT.colour_type__used_in_effect_generate, starting_colour);
 
-  ALOG_ERR( PSTR("startin_colour = %d,%d,%d,%d,%d"), starting_colour.R,starting_colour.G,starting_colour.B,starting_colour.CW,starting_colour.WW);
-  ALOG_ERR( PSTR("desired_colour = %d,%d,%d,%d,%d"), desired_colour.R,desired_colour.G,desired_colour.B,desired_colour.CW,desired_colour.WW);
+  // ALOG_ERR( PSTR("startin_colour = %d,%d,%d,%d,%d"), starting_colour.R,starting_colour.G,starting_colour.B,starting_colour.CW,starting_colour.WW);
+  // ALOG_ERR( PSTR("desired_colour = %d,%d,%d,%d,%d"), desired_colour.R,desired_colour.G,desired_colour.B,desired_colour.CW,desired_colour.WW);
  
   SetSegment_AnimFunctionCallback( SEGIDX, [this](const AnimationParam& param){ this->AnimationProcess_SingleColour_LinearBlend_Dynamic_Buffer(param); } );
 
@@ -1691,6 +1691,9 @@ void mAnimatorLight::EffectAnim__Stepping_Palette()
         
   } 
 
+
+
+
   // ALOG_INF(PSTR("step %d,%d,%d"), colour.R, colour.G, colour.B);
 
 //messy
@@ -1707,10 +1710,8 @@ void mAnimatorLight::EffectAnim__Stepping_Palette()
   );
 
 }
-static const char PM_EFFECT_CONFIG__STEPPING_PALETTE[] PROGMEM = "Stepping Palette@,,,,,Repeat Rate (ms);!,!,!,!,!;!"; // 7 sliders + 4 options before first ;
+static const char PM_EFFECT_CONFIG__STEPPING_PALETTE[] PROGMEM = "Stepping Palette@BlendSpeed,ix,,,,Repeat Rate (ms);!,!,!,!,!;!;etp=1000"; // 7 sliders + 4 options before first ;
 #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-
-
 
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
@@ -2122,9 +2123,6 @@ void mAnimatorLight::EffectAnim__Twinkle_Palette_Onto_Palette()
 
   RgbcctColor overdraw_colour = RgbcctColor();
 
-
-  // colour = RgbcctColor(255,255,255);
-  uint16_t random_pixel = 0;
   
   uint16_t pixels_to_update = mapvalue(
                                       SEGMENT.intensity, 
@@ -2133,7 +2131,11 @@ void mAnimatorLight::EffectAnim__Twinkle_Palette_Onto_Palette()
                                     );
 
   uint16_t palette_to_draw_ontop = SEGMENT.params_user[0];
-  uint16_t palette_over_length = GetNumberOfColoursInPalette(palette_to_draw_ontop);
+  uint16_t palette_over_length = GetNumberOfColoursInPalette(palette_to_draw_ontop)-1; //since we need 0 to length-1 (eg 6 colours, means indexs 0 to 5)
+
+  // ALOG_INF(PSTR("palette_over_length %d"), palette_over_length);
+  // ALOG_INF(PSTR("[0] %d"), SEGMENT.params_user[0]);
+  // ALOG_INF(PSTR("[1] %d"), SEGMENT.params_user[1]);
 
   for(uint16_t pixel = 0; 
                 pixel < pixels_to_update; 
@@ -2146,9 +2148,18 @@ void mAnimatorLight::EffectAnim__Twinkle_Palette_Onto_Palette()
     //   colour = ApplyBrightnesstoDesiredColourWithGamma(colour, SEGMENT.getBrightnessRGB_WithGlobalApplied());
     // }
 
-    random_pixel = random(0, SEGMENT.length()); // Indexing must be relative to buffer
+    /**
+     * @brief 
+     * Contrary to expected, where we may want to select only from the colours by length in palette,
+     * we actually want to select by the segment length, and hence, gradients will be picked randomly on full calculated length.
+     * Discrete palettes, should still be retrieved as solid colours, as the modulo is used to wrap/iter over the palettes that are not gradients
+     */
+    uint16_t random_pic = random(0,SEGLEN);
 
-    overdraw_colour = GetColourFromUnloadedPalette2(SEGMENT.params_user[0], random_pixel);
+    overdraw_colour = GetColourFromUnloadedPalette3(SEGMENT.params_user[0], random_pic); // We want seglen, because gradient palettes should be drawn in their expected gradient
+    // overdraw_colour = GetColourFromUnloadedPalette3(0, random(0,palette_over_length));
+
+    // if(pixel==0) ALOG_INF(PSTR("overdraw %d %d %d %d %d"), SEGMENT.params_user[0], random_pic, overdraw_colour[0], overdraw_colour[1], overdraw_colour[2]);
 
     /**
      * @brief If palette is one of the segment colours, then use its built in brightness as the palette over brightness
@@ -2162,7 +2173,7 @@ void mAnimatorLight::EffectAnim__Twinkle_Palette_Onto_Palette()
 
     // overdraw_colour.debug_print("overdraw_colour");
 
-    SetTransitionColourBuffer_DesiredColour(SEGMENT.Data(), SEGMENT.DataLength(), random_pixel, SEGMENT.colour_type__used_in_effect_generate, overdraw_colour);
+    SetTransitionColourBuffer_DesiredColour(SEGMENT.Data(), SEGMENT.DataLength(), random(0,SEGMENT.length()), SEGMENT.colour_type__used_in_effect_generate, overdraw_colour);
 
     #ifdef ENABLE_DEBUG_TRACE__ANIMATOR_UPDATE_DESIRED_COLOUR
     ALOG_INF( PSTR("sIndexIO=%d %d,%d\t%d,pC %d, R%d"), SEGIDX, SEGMENT.start, SEGMENT.stop, pixel, GetNumberOfColoursInPalette(SEGMENT.palette_id), colour.R );
@@ -6413,7 +6424,8 @@ DEBUG_TIME__START
 
   // ALOG_INF(PSTR("aux0 %d aux1 %d"), SEGMENT.params_internal.aux0, SEGMENT.params_internal.aux1);
 
-
+  // DEBUG_TIME__RESET
+  
   for (uint16_t i = 0; i < SEGLEN; i++)
   {
     uint16_t indexPixel = (rev && back) ? SEGLEN -1 -i : i;
@@ -6444,10 +6456,12 @@ DEBUG_TIME__START
       if (i == ledIndex) SEGMENT.SetPixelColor(indexPixel, ColourBlend(back ? col_base : col_wipe, back ? col_wipe : col_base, rem));
     }
   } 
+  // DEBUG_TIME__SHOW_MESSAGE("wrtcols")
+
 
   SetSegment_AnimFunctionCallback_WithoutAnimator(SEGIDX);
 
-  // DEBUG_TIME__SHOW
+  DEBUG_TIME__SHOW
 
 }
 

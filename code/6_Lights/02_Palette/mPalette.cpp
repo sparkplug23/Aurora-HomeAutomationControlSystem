@@ -871,6 +871,8 @@ mPalette::GetColourFromPreloadedPaletteBuffer_2023(
   else if (palette_id >= PALETTELIST_STATIC_COLOURFUL_DEFAULT__ID && 
            palette_id < PALETTELIST_STATIC_LENGTH__ID) {
 
+    // if(millis()%10==0) ALOG_INF(PSTR("pal %d"), palette_id);
+
     uint16_t palette_adjusted_id = palette_id - PALETTELIST_STATIC_COLOURFUL_DEFAULT__ID; 
 
     uint8_t encoded_colour_width = GetEncodedColourWidth(static_palettes[palette_adjusted_id].encoding);

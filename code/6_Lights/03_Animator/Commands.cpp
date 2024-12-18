@@ -246,21 +246,39 @@ void mAnimatorLight::subparse_JSONCommand(JsonParserObject obj, uint8_t segment_
     }
 
     
-    if(jtok = jobj[PM_DECIMATE])
+    if (jtok = jobj[PM_DECIMATE])
     {
       SEGMENT_I(segment_index).decimate = jtok.getInt();  
-      ALOG_COM( PSTR(D_LOG_PIXEL  D_COMMAND_NVALUE_K(D_EFFECTS D_DECIMATE)), SEGMENT_I(segment_index).decimate);
+      ALOG_COM(PSTR(D_LOG_PIXEL  D_COMMAND_NVALUE_K(D_EFFECTS D_DECIMATE)), SEGMENT_I(segment_index).decimate);
       data_buffer.isserviced++;
     }
 
-
-    if(jtok = jobj["DecimatePerc"])
+    if (jtok = jobj["DecimatePerc"])
     {
-      uint8_t percentage = jtok.getInt(); 
-      SEGMENT_I(segment_index).decimate = map(percentage,0,100,0,SEGMENT_I(segment_index).length());  
-      ALOG_COM( PSTR(D_LOG_PIXEL  D_COMMAND_NVALUE_K(D_EFFECTS D_DECIMATE)), SEGMENT_I(segment_index).decimate);
-      data_buffer.isserviced++;
+      uint8_t percentage = jtok.getInt();  // Get the percentage from the JSON input
+      ALOG_INF(PSTR("TEST %d"), percentage);
+
+      if (percentage == 0)
+      {
+        // Disable decimation
+        SEGMENT_I(segment_index).decimate = 0;
+        ALOG_INF(PSTR(D_LOG_PIXEL  "Decimation disabled by DecimatePerc = 0."));
+        data_buffer.isserviced++;
+      }
+      else if (percentage > 0 && percentage <= 100)
+      {
+        // Calculate decimate as a replication factor
+        SEGMENT_I(segment_index).decimate = 100 / percentage;
+        ALOG_INF(PSTR(D_LOG_PIXEL  "DecimatePerc of %d is decimate %d"), percentage, SEGMENT_I(segment_index).decimate);
+        data_buffer.isserviced++;
+      }
+      else
+      {
+        ALOG_ERR(PSTR(D_LOG_PIXEL  "Invalid DecimatePerc value. Must be between 0 and 100."));
+      }
     }
+
+
 
 
     if(jtok = jobj[PM_SPACING])
@@ -708,6 +726,7 @@ void mAnimatorLight::subparse_JSONCommand(JsonParserObject obj, uint8_t segment_
             SEGMENT.fill(0); // Clear all to off
 
             uint8_t brightness = SEGMENT.getBrightnessRGB_WithGlobalApplied(); // Prefetch brightness
+            ALOG_INF(PSTR("brightness %d"), brightness);
 
             RgbcctColor colour;
             uint16_t pixel = 0;
@@ -725,6 +744,8 @@ void mAnimatorLight::subparse_JSONCommand(JsonParserObject obj, uint8_t segment_
                     // Get the color from the palette
                     colour = SEGMENT.GetPaletteColour(pixel++, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE);
 
+brightness = 255;
+// colour = RgbcctColor(255,255,255,255,255);
                     // Set the pixel color with brightness
                     SEGMENT.SetPixelColor(pixelIndex, colour.WithBrightness(brightness));
 
@@ -752,6 +773,42 @@ void mAnimatorLight::subparse_JSONCommand(JsonParserObject obj, uint8_t segment_
   #ifdef ENABLE_FEATURE_LIGHTING__REALTIME_MQTT_SETPIXEL
 /**
  * @brief Handles MQTT commands for setting pixel arrays with row mappings.
+ * 
+ * {
+  "BrightnessRGB": 255,
+  "Effects":{
+    "Param0":1605,
+    "Param1":1610
+  },
+  "MQTTPixel": {
+    "OnPixels": [
+      [1605],   // left side
+      [1606,1607,1608,1609,1611], //centres
+      [2100] //right side
+    ]
+  }
+}
+
+
+{
+  "BrightnessRGB": 255,
+  "MQTTPixel": {
+    "OnPixels": [
+        [0, 31, 63, 98, 134, 173, 214, 257, 302, 352, 400, 451, 502, 553, 604, 658, 710, 763, 815, 867, 920, 971, 
+        1022, 1071, 1119, 1168, 1215, 1260, 1303, 1345, 1385, 1423, 1461, 1498, 1535, 1572, 1607, 1640, 1671, 1702, 1732, 1759, 1785, 1820, 1841, 1860, 
+        1877, 1892, 1904, 1913, 1922, 1930, 1938, 1945, 1952, 1958, 1964, 1969, 1974, 1978],
+        [15, 47, 80, 116, 153, 193, 235, 279, 327, 376, 425, 476, 527, 578, 631, 684, 736, 789, 841, 893, 945, 996, 1046, 1095, 1144, 1191, 1237, 1281, 
+        1324, 1365, 1404, 1442, 1480, 1516, 1553, 1589, 1623, 1655, 1686, 1717, 1745, 
+        1772, 1802, 1829, 1850, 1868, 1884, 1898, 1917, 1926, 1934, 1941, 1948, 1955, 1961, 1967, 1971],
+        [30, 62, 97, 133, 172, 213, 256, 301, 351, 399, 450, 501, 552, 603, 657, 709, 762, 814, 866, 919, 970, 1021, 1070, 1118, 1167, 1214, 1259, 1302, 1344,
+        1384, 1422, 1460, 1497, 1534, 1571, 1606, 1639, 1670, 1701, 1731, 1758, 1784, 1819, 1840, 1859, 
+        1876, 1891, 1903, 1912, 1921, 1929, 1937, 1944, 1951, 1957, 1963, 1968, 1973, 2099]
+    ]
+  }
+}
+
+
+
  */
 if (jtok = obj["MQTTPixelArrays"]) {
 
@@ -825,6 +882,10 @@ if (jtok = obj["MQTTPixelArrays"]) {
 
                         if (i == midPixel) {
                             // Center pixel is white
+                            colour = RgbcctColor(255, 255, 255, 255, 255);
+                        }else
+                        if (i == endPixel) {
+                            // Right pixel is white, is easier contrast between start of row and end of row
                             colour = RgbcctColor(255, 255, 255, 255, 255);
                         } else {
                             // Get color from the palette using the current palette index

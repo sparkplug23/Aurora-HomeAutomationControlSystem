@@ -197,20 +197,7 @@ const uint32_t PROJECT_VERSION_MINIMAL = ((FIRMWARE_VERSION_TYPE_MINIMAL & 0x03)
 
 //--------------------------------[AUTOSET - DEFINE HARDWARE needed to run tasks requested]-------------------------------------
 
-#ifdef DEVICE_FORCED_TO_BE_TESTER
-  #undef DEVICENAME_CTR
-  #define DEVICENAME_CTR "testerdevice"
-#endif
-
-// #ifdef ENABLE_TRACING
-//   #define ARDUINOTRACE_ENABLE_FULLPATH
-//   #define ARDUINOTRACE_ENABLE
-//   #include <ArduinoTrace.h>
-// #endif
-
-
 #define PROJECT_NAME_CTR "Home Automation Control System (TBD)"
-
 
 #ifdef DEVICE_FORCED_TO_BE_TESTER
   #warning "DEVICE_FORCED_TO_BE_TESTER is set!"

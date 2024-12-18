@@ -299,7 +299,7 @@
         "BusType":"WS2812_RGB",
         "Start":1700,
         "Length":200
-      }
+      } 
     ],
     "Segment0": {
       "PixelRange": [

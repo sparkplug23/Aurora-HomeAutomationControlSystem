@@ -220,7 +220,7 @@ void mAnimatorLight::Save_Module()
 
 void mAnimatorLight::EveryLoop()
 {
-     
+    
     
   if (doInitBusses) 
   {
@@ -495,6 +495,9 @@ void mAnimatorLight::EveryLoop()
   
   // if (doSerializeConfig) serializeConfig();
 
+  if (doReboot && !doInitBusses) // if busses have to be inited & saved, wait until next iteration
+    reset();
+    
   // This should be removed, as realtime mode will cause this to switch anyway
   /**
    * @brief If RealTime modes first
@@ -518,7 +521,7 @@ void mAnimatorLight::EveryLoop()
       #ifdef ENABLE_FEATURE_LIGHTING__EFFECTS
       DEBUG_LIGHTING__START_TIME_RECORDING(1)
       SubTask_Effects();
-      DEBUG_LIGHTING__SAVE_TIME_RECORDING(1, lighting_time_critical_logging.segment_effects);
+      DEBUG_LIGHTING__SAVE_TIME_RECORDING(1, lighting_time_critical_logging.segment_effects); 
       #endif  
 
       #ifdef ENABLE_DEVFEATURE_LIGHTING__PLAYLISTS
@@ -612,10 +615,18 @@ void mAnimatorLight::Init(void)
 
   #ifdef ENABLE_WEBSERVER_LIGHTING_WEBUI
 
+  #ifdef USE_DEBUGFEATURE_DEVICE_CLONE_TESTBED
   #ifdef ENABLE_DEBUGFEATURE_WEBUI__SHOW_BUILD_DATETIME_IN_FOOTER
   snprintf(serverDescription, sizeof(serverDescription), "PulSar %s \"%s\" [%s]", pCONT_set->Settings.system_name.friendly, DEVICENAME_DESCRIPTION_CTR, pCONT_time->GetBuildDateAndTime().c_str() );
   #else
   snprintf(serverDescription, sizeof(serverDescription), pCONT_set->Settings.system_name.friendly);
+  #endif
+  #else
+  #ifdef ENABLE_DEBUGFEATURE_WEBUI__SHOW_BUILD_DATETIME_IN_FOOTER
+  snprintf(serverDescription, sizeof(serverDescription), "tb_PulSar %s \"%s\" [%s]", pCONT_set->Settings.system_name.friendly, DEVICENAME_DESCRIPTION_CTR, pCONT_time->GetBuildDateAndTime().c_str() );
+  #else
+  snprintf(serverDescription, sizeof(serverDescription), pCONT_set->Settings.system_name.friendly);
+  #endif
   #endif
 
   sprintf(ntpServerName, NTP_SERVER1);  
@@ -1455,9 +1466,16 @@ void mAnimatorLight::SubTask_Effects()
 
     if (!seg.isActive()) continue;   
 
+    // _force_update = true; // temp force it
+
     // last condition ensures all solid segments are updated at the same time
-    if(nowUp > seg.next_time || _force_update || (doShow && seg.effect_id == EFFECTS_FUNCTION__SOLID_COLOUR__ID))
-    {
+    // New method needs fixing
+    // if(nowUp > seg.next_time || _force_update || (doShow && seg.effect_id == EFFECTS_FUNCTION__SOLID_COLOUR__ID))
+    // {
+    if(
+      (mTime::TimeReached(&seg.tSaved_AnimateRunTime, seg.get_transition_rate_ms())) ||
+      (_force_update)
+    ){
 
       doShow = true;
             
@@ -1511,7 +1529,6 @@ void mAnimatorLight::SubTask_Effects()
                 
     } // END if effect needs to be called
 
-  
     /**
      * @brief If animator is used, then the animation will be called from the animator
      **/    
@@ -3732,6 +3749,7 @@ uint32_t mAnimatorLight::getPixelColor(uint16_t i)
  */
 void IRAM_ATTR mAnimatorLight::setPixelColor_Rgbcct(int i, RgbcctColor col)
 {
+  #ifndef ENABLE_DEVFEATURE_LIGHTING__TEMPORARY_DISABLE_CODE_FOR_SPEED_TESTING
   #ifdef ENABLE_DEBUGFEATURE_TRACE__LIGHT__DETAILED_PIXEL_INDEXING
   ALOG_INF(PSTR("i0--------setPixelColor %d, %d, %d, %d"), i, col.R, col.G, col.B);
   #endif 
@@ -3751,8 +3769,13 @@ void IRAM_ATTR mAnimatorLight::setPixelColor_Rgbcct(int i, RgbcctColor col)
   #endif
 
   // ALOG_INF(PSTR("busnum %d"), pCONT_iLight->bus_manager->getNumBusses());
+  #endif // ENABLE_DEVFEATURE_LIGHTING__TEMPORARY_DISABLE_CODE_FOR_SPEED_TESTING
 
+  // DEBUG_TIME__START
   pCONT_iLight->bus_manager->setPixelColor(i, col);
+  // if(i==0) DEBUG_TIME__SHOW_MESSAGE("set")
+
+
 }
 
 RgbcctColor mAnimatorLight::getPixelColor_Rgbcct(uint16_t i)
@@ -3853,6 +3876,23 @@ void mAnimatorLight::estimateCurrentAndLimitBri() {
   // currentMilliamps += pLen; //add standby power back to estimate
 }
 
+// turns all LEDs off and restarts ESP
+void mAnimatorLight::reset()
+{
+  // briT = 0;
+  #ifdef WLED_ENABLE_WEBSOCKETS
+  ws.closeAll(1012);
+  #endif
+  long dly = millis();
+  while (millis() - dly < 450) {
+    yield();        // enough time to send response to client
+  }
+  // applyBri();
+  DEBUG_PRINTLN(F("WLED RESET"));
+  ESP.restart();
+}
+
+
 void mAnimatorLight::show(void) 
 {  
 
@@ -3871,6 +3911,12 @@ void mAnimatorLight::show(void)
   _lastShow = now;
   // Serial.printf("%d lastshow\n\r", _lastShow);
 
+  #ifdef ENABLE_DEBUGFEATURE_LIGHTING__EFFECT_LOOP_TIME_SERIAL
+  DEBUG_TIME__START
+  uint32_t elapsed = millis() - tSaved_LoopTime;
+  if(elapsed > 10) Serial.printf("LoopElapsed %d\n\r", elapsed);
+  tSaved_LoopTime = millis();
+  #endif
 }
 
 /**
@@ -4725,7 +4771,7 @@ void IRAM_ATTR mAnimatorLight::Segment::SetPixelColor(uint16_t indexPixel, Rgbcc
       #ifdef ENABLE_DEVFEATURE_LIGHTS__DECIMATE
       for (uint8_t d = 0; d < decimate; d++) 
       {
-        if (group_i > 0) break;  // Skip decimate when grouping is on
+        if (group_i > 1) break;  // Skip decimate when grouping is on
 
         uint16_t new_indexSet = indexSet + (d * virtualLength());
         if (new_indexSet >= start && new_indexSet < stop) 
@@ -5312,6 +5358,8 @@ uint8_t mAnimatorLight::ConstructJSON_Segments(uint8_t json_level, bool json_app
     JBI->Add("BrightnessRGB_Master", pCONT_iLight->getBriRGB_Global());
     JBI->Add("BrightnessCCT_Master", pCONT_iLight->getBriCCT_Global());
 
+  JBI->Add("FPS", getFps());
+
     uint8_t seg_count = getSegmentsNum();
     seg_count = seg_count < 3 ? seg_count : 3; //limit memory overrun, or else later instead of reducing the seg count, reduce the data shared in another topic as overview
 
@@ -5700,7 +5748,7 @@ uint8_t mAnimatorLight::ConstructJSON_Debug_Segments(uint8_t json_level, bool js
   JBI->Add("Brightness_Master",    pCONT_iLight->getBri_Global());
   JBI->Add("BrightnessRGB_Master", pCONT_iLight->getBriRGB_Global());
   JBI->Add("BrightnessCCT_Master", pCONT_iLight->getBriCCT_Global());
-
+  
   uint8_t seg_count = getSegmentsNum();
   seg_count = seg_count < 3 ? seg_count : 3; //limit memory overrun, or else later instead of reducing the seg count, reduce the data shared in another topic as overview
 
