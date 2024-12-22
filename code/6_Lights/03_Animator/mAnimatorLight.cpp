@@ -583,8 +583,6 @@ void mAnimatorLight::EveryLoop()
 
   yield();
 
-  
-
 }
 
 

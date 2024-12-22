@@ -500,14 +500,14 @@ enum MODULE_SUBTYPE_IDS{ //ignores the "interface"
   #include "5_Sensors/UltraSonic/mUltraSonicSensor.h"
   #define pCONT_ult                             static_cast<mUltraSonicSensor*>(pCONT->pModule[EM_MODULE_SENSORS_ULTRASONIC_ID])
 #endif
-#ifdef USE_MODULE_SENSORS_ADC_INTERNAL_ESP8266
-  #include "5_Sensors/30_ADCInternal_ESP82/mADCInternal.h"
-  #define pCONT_adc_internal                      static_cast<mADCInternal*>(pCONT->pModule[EM_MODULE_SENSORS_ADC_INTERNAL_ID])
+#ifdef USE_MODULE_SENSORS_ADC_INTERNAL
+  #include "5_Sensors/30_ADCInternal/mADCInternal.h"
+  #define pCONT_adc_internal                          static_cast<mADCInternal*>(mTaskerManager::GetInstance()->GetModule(D_UNIQUE_MODULE_SENSORS_ADC_INTERNAL_ID))
 #endif
-#ifdef USE_MODULE_SENSORS_ADC_INTERNAL_ESP32
-  #include "5_Sensors/31_ADCInternal_ESP32/mADCInternal.h"
-  #define pCONT_adc_internal                      static_cast<mADCInternal*>(pCONT->pModule[EM_MODULE_SENSORS_ADC_INTERNAL_ID])
-#endif
+// #ifdef USE_MODULE_SENSORS_ADC_INTERNAL  I2S may be best phased into above as option, since most code remains the same
+//   #include "5_Sensors/31_ADCInternal_ESP32/mADCInternal.h"
+//   #define pCONT_iLight                          static_cast<mADCInternal*>(mTaskerManager::GetInstance()->GetModule(D_UNIQUE_MODULE_SENSORS_ADC_INTERNAL_ID))
+// #endif
 #ifdef USE_MODULE_SENSORS__DS18X20_ESP8266_2023
   #include "5_Sensors/40_ds18x20/mDB18x20.h"
   #define pCONT_db18                      static_cast<mDB18x20_ESP32*>(pCONT->pModule[EM_MODULE_SENSORS__DS18X20__ID])

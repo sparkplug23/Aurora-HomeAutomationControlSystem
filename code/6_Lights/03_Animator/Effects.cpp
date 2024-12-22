@@ -9253,8 +9253,8 @@ static const char PM_EFFECT_CONFIG__METEOR[] PROGMEM = "Meteor@!,Trail length;!;
  ********************************************************************************************************************************************************************************************************************/
 void mAnimatorLight::EffectAnim__Metoer_Smooth()
 {
-  if (!SEGMENT.allocateData(SEGLEN)){return;}// return EffectAnim__Solid_Colour(); //allocation failed
-
+  if (!SEGMENT.allocateData(SEGLEN)){return;}
+  
   byte* trail = SEGMENT.data;
   
   byte meteorSize= 1+ SEGLEN / 10;

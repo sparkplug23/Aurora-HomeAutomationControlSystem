@@ -128,6 +128,7 @@ typedef enum
   SENSOR_TYPE_HEART_BEAT_ID,
   SENSOR_TYPE_ACCELEROMETER_UNCALIBRATED_ID,
   SENSOR_TYPE_HINGE_ANGLE_ID,
+  SENSOR_TYPE_ADC_READING_ID, // to be used when not assigned to a specific sensor (eg rule maps adc into another sensor type, otherwise, the GetSensorValue will default to this for analog readings)
   /**
    * @brief Door states
    **/
@@ -301,6 +302,8 @@ static const char* GetUnifiedSensor_NameByTypeID(uint8_t id)
     case SENSOR_TYPE_FREQUENCY_ID:              return PSTR("Frequency");
     case SENSOR_TYPE_POWER_FACTOR_ID:           return PSTR("PowerFactor");
     case SENSOR_TYPE_ENERGY_ID:                 return PSTR("Energy");
+
+    case SENSOR_TYPE_ADC_READING_ID:                 return PSTR("ADCValue");
 
     case SENSOR_TYPE_STATE_ACTIVE_ID:           return PSTR("State");
     // Strings

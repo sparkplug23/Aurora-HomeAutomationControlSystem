@@ -466,7 +466,7 @@ uint8_t mTaskerManager::Instance_Init()
   #ifdef USE_MODULE_SENSORS_ULTRASONICS
   addTasker(new mUltraSonicSensor());
   #endif
-  #ifdef USE_MODULE_SENSORS_ADC_INTERNAL_ESP8266
+  #ifdef USE_MODULE_SENSORS_ADC_INTERNAL
   addTasker(new mADCInternal());
   #endif
   #ifdef USE_MODULE_SENSORS_ADC_INTERNAL_ESP32

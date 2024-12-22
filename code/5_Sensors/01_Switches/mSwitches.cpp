@@ -678,7 +678,7 @@ void mSwitches::SwitchLoop(void) {
 uint8_t mSwitches::ConstructJSON_Settings(uint8_t json_level, bool json_appending){
 
   JBI->Start();
-    JBI->Add(D_SENSOR_COUNT, 0);
+    JBI->Add(D_SENSOR_COUNT, GetSensorCount());
   return JBI->End();
 
 }
@@ -699,7 +699,7 @@ void mSwitches::SwitchInit(void)
   ALOG_HGL( PSTR("D_LOG_STARTUP" "Switches Init") );
 
   // Init states
-  for(uint8_t pin_id=0;pin_id<MAX_SWITCHES;pin_id++){
+  for(uint8_t pin_id=0;pin_id<MAX_SWITCHES_SET;pin_id++){
     switches[pin_id].lastwallswitch = 1;  // Init global to virtual switch state;
     switches[pin_id].active_state_value = 1; // default is active high
     switches[pin_id].switch_virtual = switches[pin_id].lastwallswitch;
@@ -707,9 +707,9 @@ void mSwitches::SwitchInit(void)
 
   // Check all possible pin options
   settings.switches_found = 0;    
-  for(uint8_t pin_id=GPIO_SWT1_ID;pin_id<GPIO_SWT1_ID+(MAX_SWITCHES*4);pin_id++){
+  for(uint8_t pin_id=GPIO_SWT1_ID;pin_id<GPIO_SWT1_ID+(MAX_SWITCHES_SET*4);pin_id++){
 
-        Serial.printf("pin=%d/%d\n\r",pin_id,GPIO_SWT1_ID+(MAX_SWITCHES*4));
+        Serial.printf("pin=%d/%d\n\r",pin_id,GPIO_SWT1_ID+(MAX_SWITCHES_SET*4));
     if(pCONT_pins->PinUsed(pin_id)){
         Serial.printf("PinUsed\t\tpin=%d\n\r",pin_id);
       
@@ -718,7 +718,7 @@ void mSwitches::SwitchInit(void)
       // Standard pin, active high, with pulls 
       if(
         (pin_id >= GPIO_SWT1_ID)&&
-        (pin_id < GPIO_SWT1_ID+MAX_SWITCHES)
+        (pin_id < GPIO_SWT1_ID+MAX_SWITCHES_SET)
       ){
         pinMode(switches[settings.switches_found].pin, INPUT_PULLUP);
         switches[settings.switches_found].active_state_value = HIGH;
@@ -726,7 +726,7 @@ void mSwitches::SwitchInit(void)
       // Inverted pin, active low, with pulls
       if(
         (pin_id >= GPIO_SWT1_INV_ID)&&
-        (pin_id < GPIO_SWT1_INV_ID+MAX_SWITCHES)
+        (pin_id < GPIO_SWT1_INV_ID+MAX_SWITCHES_SET)
       ){
         pinMode(switches[settings.switches_found].pin, INPUT_PULLUP);
         switches[settings.switches_found].active_state_value = LOW;
@@ -734,7 +734,7 @@ void mSwitches::SwitchInit(void)
       // Standard pin, active high, NO pulls
       if(
         (pin_id >= GPIO_SWT1_NP_ID)&&
-        (pin_id < GPIO_SWT1_NP_ID+MAX_SWITCHES)
+        (pin_id < GPIO_SWT1_NP_ID+MAX_SWITCHES_SET)
       ){
         Serial.printf("GPIO_SWT1_NP_ID pin=%d\n\r\n\r\n\r\n\r\n\r\n\r",pin_id);
         pinMode(switches[settings.switches_found].pin, INPUT);
@@ -743,7 +743,7 @@ void mSwitches::SwitchInit(void)
       // 
       if(
         (pin_id >= GPIO_SWT1_INV_NP_ID)&&
-        (pin_id < GPIO_SWT1_INV_NP_ID+MAX_SWITCHES)
+        (pin_id < GPIO_SWT1_INV_NP_ID+MAX_SWITCHES_SET)
       ){
         pinMode(switches[settings.switches_found].pin, INPUT);
         switches[settings.switches_found].active_state_value = LOW;
@@ -760,7 +760,7 @@ void mSwitches::SwitchInit(void)
         ALOG_TST(PSTR("Switch %d %d %d"), pin_id, settings.switches_found, switches[settings.switches_found].pin);
       #endif // ENABLE_LOG_LEVEL_INFO
       
-      if(settings.switches_found++ >= MAX_SWITCHES){ break; }
+      if(settings.switches_found++ >= MAX_SWITCHES_SET){ break; }
 
     } // if PinUsed
 
@@ -811,7 +811,7 @@ void mSwitches::SwitchProbe(void)
   uint8_t force_high = (pCONT_set->Settings.switch_debounce % 50) &1;                   // 51, 101, 151 etc
   uint8_t force_low = (pCONT_set->Settings.switch_debounce % 50) &2;                    // 52, 102, 152 etc
 
-  for (uint8_t i = 0; i < MAX_SWITCHES; i++) {
+  for (uint8_t i = 0; i < MAX_SWITCHES_SET; i++) {
 
     // if (pCONT_pins->PinUsed(GPIO_SWT1_ID,i)) {      
     if(switches[i].pin != -1){
@@ -943,7 +943,7 @@ DEBUG_LINE_HERE
   // DEBUG_LINE_HERE
   uint8_t active_state = LOW;
 
-  for (uint8_t i = 0; i < MAX_SWITCHES; i++) {
+  for (uint8_t i = 0; i < MAX_SWITCHES_SET; i++) {
     if (
       (switches[i].pin != -1) // pCONT_pins->PinUsed(GPIO_SWT1_ID,i)
       || (mode)

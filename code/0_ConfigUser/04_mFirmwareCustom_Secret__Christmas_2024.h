@@ -30,6 +30,7 @@
 #define DEVICE_CHRISTMAS24__FINAL__16X_SIDEDOOR_TREE
 // #define DEVICE_CHRISTMAS24__FINAL__SIDEDOOR_WREATH
 // #define DEVICE_CHRISTMAS24__FINAL__SNOW_TREE_SILVER
+// #define DEVICE_XMAS_LIVINGROOM_TREE_WATER_LEVEL_2024
 
 // new method that lets me use the ini to override prepend the naming and make a desk/tester for serial
 // add an ifdef inside the main code, that adds the "tb_" before the mqtt, otherwise it comepiles the same
@@ -3665,9 +3666,12 @@
    * SECTION: Lighting BusConfig Set
   ************************************/  
 
-  #define ENABLE_BUSCONFIG_8X_2400
+  // #define ENABLE_BUSCONFIG_8X_2400
+  // #define ENABLE_BUSCONFIG_12X_3200
   // #define ENABLE_BUSCONFIG_16X_3200
   // #define ENABLE_BUSCONFIG_10X_2000
+  // #define ENABLE_BUSCONFIG_16X_2400_200
+  #define ENABLE_BUSCONFIG_16X_2000_200
 
 
   #ifdef ENABLE_BUSCONFIG_8X_2400
@@ -3784,8 +3788,619 @@
 
   #endif // ENABLE_BUSCONFIG_8X_2400
 
- 
+  #ifdef ENABLE_BUSCONFIG_12X_3200
 
+  // 4, 16, 17, 18, 19, 21, 22, 23, 2, 13, 14, 27, 26, 25, 33, 32
+  /**
+   * @brief 2023 Snow Tree physical wiring connections
+   * 16 outputs
+   */
+  #define USE_LIGHTING_TEMPLATE
+  DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  R"=====(
+  {
+    "BusConfig":[
+      {
+        "Pin":4,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":0,
+        "Length":250
+      },
+      {
+        "Pin":18,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":250,
+        "Length":250
+      },
+      {
+        "Pin":19,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":500,
+        "Length":250
+      },
+      {
+        "Pin":21,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":750,
+        "Length":250
+      },
+      {
+        "Pin":16,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":1000,
+        "Length":250
+      },
+      {
+        "Pin":17,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":1250,
+        "Length":250
+      },
+      {
+        "Pin":22,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":1500,
+        "Length":250
+      },
+      {
+        "Pin":23,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":1750,
+        "Length":250
+      },
+      {
+        "Pin":13,
+        "ColourOrder":"BGR",
+        "BusType":"WS2812_RGB",
+        "Start":2000,
+        "Length":100
+      },
+      {
+        "Pin":12,
+        "ColourOrder":"BGR",
+        "BusType":"WS2812_RGB",
+        "Start":2100,
+        "Length":100
+      },
+      {
+        "Pin":26,
+        "ColourOrder":"BGR",
+        "BusType":"WS2812_RGB",
+        "Start":2200,
+        "Length":100
+      },
+      {
+        "Pin":32,
+        "ColourOrder":"BGR",
+        "BusType":"WS2812_RGB",
+        "Start":2300,
+        "Length":100
+      }
+    ],
+    "Segment0": {
+      "PixelRange": [
+        0,
+        2400
+      ],
+      "ColourPalette":"Snowy 02",
+      "Effects": {
+        "Function":"Static Palette",
+        "Speed":127,
+        "Intensity":127,
+        "Grouping":1,
+        "RateMs": 25
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 0
+    },
+    "BrightnessRGB": 10,
+    "BrightnessCCT": 0
+  }
+  )=====";
+
+  
+  #define USE_MODULE_TEMPLATE
+  DEFINE_PGM_CTR(MODULE_TEMPLATE) 
+  "{"
+    "\"" D_NAME         "\":\"" DEVICENAME_CTR "\","
+    "\"" D_FRIENDLYNAME "\":\"" DEVICENAME_FRIENDLY_CTR "\","
+    "\"" D_GPIO_NUMBER "\":{"    
+      // "\"13\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      // "\"12\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      // "\"26\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      // "\"32\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"14\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"27\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"25\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"33\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      // "\"28\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\"," // Bus8
+      #ifdef USE_MODULE_SENSORS_BUTTONS
+      "\"35\":\"" D_GPIO_FUNCTION_KEY1_INV_CTR  "\","
+      "\"34\":\"" D_GPIO_FUNCTION_KEY2_INV_CTR  "\","
+      "\"0\":\"" D_GPIO_FUNCTION_KEY3_INV_CTR  "\""
+      #endif
+    "},"
+    "\"" D_BASE     "\":\"" D_MODULE_NAME_USERMODULE_CTR "\","
+    "\"" D_ROOMHINT "\":\"" DEVICENAME_ROOMHINT_CTR "\""
+  "}";
+  #endif
+
+ 
+  #ifdef ENABLE_BUSCONFIG_16X_3200
+
+  /**
+   * @brief tree physical wiring connections
+   * 16 outputs
+   */
+  #define USE_LIGHTING_TEMPLATE
+  DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  R"=====(
+  {
+    "BusConfig":[
+      {
+        "Pin":4,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":0,
+        "Length":250
+      },
+      {
+        "Pin":18,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":250,
+        "Length":250
+      },
+      {
+        "Pin":19,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":500,
+        "Length":250
+      },
+      {
+        "Pin":21,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":750,
+        "Length":250
+      },
+      {
+        "Pin":16,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":1000,
+        "Length":250
+      },
+      {
+        "Pin":17,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":1250,
+        "Length":250
+      },
+      {
+        "Pin":22,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":1500,
+        "Length":250
+      },
+      {
+        "Pin":23,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":1750,
+        "Length":250
+      },
+      {
+        "Pin":13,
+        "ColourOrder":"BGR",
+        "BusType":"WS2812_RGB",
+        "Start":2000,
+        "Length":100
+      },
+      {
+        "Pin":12,
+        "ColourOrder":"BGR",
+        "BusType":"WS2812_RGB",
+        "Start":2100,
+        "Length":100
+      },
+      {
+        "Pin":26,
+        "ColourOrder":"BGR",
+        "BusType":"WS2812_RGB",
+        "Start":2200,
+        "Length":100
+      },
+      {
+        "Pin":32,
+        "ColourOrder":"BGR",
+        "BusType":"WS2812_RGB",
+        "Start":2300,
+        "Length":100
+      },
+      {
+        "Pin":14,
+        "ColourOrder":"BGR",
+        "BusType":"WS2812_RGB",
+        "Start":2400,
+        "Length":100
+      },
+      {
+        "Pin":27,
+        "ColourOrder":"BGR",
+        "BusType":"WS2812_RGB",
+        "Start":2500,
+        "Length":100
+      },
+      {
+        "Pin":25,
+        "ColourOrder":"BGR",
+        "BusType":"WS2812_RGB",
+        "Start":2600,
+        "Length":100
+      },
+      {
+        "Pin":33,
+        "ColourOrder":"BGR",
+        "BusType":"WS2812_RGB", 
+        "Start":2700,
+        "Length":100
+      }
+    ],
+    "Segment0": {
+      "PixelRange": [
+        0,
+        2800
+      ],
+      "ColourPalette":"Snowy 02",
+      "Effects": {
+        "Function":"Sweep Random",
+        "Speed":127,
+        "Intensity":127,
+        "Grouping":1,
+        "RateMs": 25
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 0
+    },
+    "BrightnessRGB": 10,
+    "BrightnessCCT": 0
+  }
+  )=====";
+
+  
+  #define USE_MODULE_TEMPLATE
+  DEFINE_PGM_CTR(MODULE_TEMPLATE) 
+  "{"
+    "\"" D_NAME         "\":\"" DEVICENAME_CTR "\","
+    "\"" D_FRIENDLYNAME "\":\"" DEVICENAME_FRIENDLY_CTR "\","
+    "\"" D_GPIO_NUMBER "\":{"    
+      #ifdef USE_MODULE_SENSORS_BUTTONS
+      "\"35\":\"" D_GPIO_FUNCTION_KEY1_INV_CTR  "\","
+      "\"34\":\"" D_GPIO_FUNCTION_KEY2_INV_CTR  "\","
+      "\"0\":\"" D_GPIO_FUNCTION_KEY3_INV_CTR  "\""
+      #endif
+    "},"
+    "\"" D_BASE     "\":\"" D_MODULE_NAME_USERMODULE_CTR "\","
+    "\"" D_ROOMHINT "\":\"" DEVICENAME_ROOMHINT_CTR "\""
+  "}";
+  #endif
+
+
+  
+  #ifdef ENABLE_BUSCONFIG_16X_2400_200
+
+  /**
+   * @brief tree physical wiring connections
+   * 16 outputs
+   */
+  #define USE_LIGHTING_TEMPLATE
+  DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  R"=====(
+  {
+    "BusConfig":[
+      {
+        "Pin":4,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":0,
+        "Length":200
+      },
+      {
+        "Pin":18,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":200,
+        "Length":200
+      },
+      {
+        "Pin":19,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":400,
+        "Length":200
+      },
+      {
+        "Pin":21,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":600,
+        "Length":200
+      },
+      {
+        "Pin":16,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":800,
+        "Length":200
+      },
+      {
+        "Pin":17,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":1000,
+        "Length":200
+      },
+      {
+        "Pin":22,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":1200,
+        "Length":200
+      },
+      {
+        "Pin":23,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":1400,
+        "Length":200
+      },
+      {
+        "Pin":13,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":1600,
+        "Length":100
+      },
+      {
+        "Pin":12,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":1700,
+        "Length":100
+      },
+      {
+        "Pin":26,
+        "ColourOrder":"BGR",
+        "BusType":"WS2812_RGB",
+        "Start":1800,
+        "Length":100
+      },
+      {
+        "Pin":32,
+        "ColourOrder":"BGR",
+        "BusType":"WS2812_RGB",
+        "Start":1900,
+        "Length":100
+      },
+      {
+        "Pin":14,
+        "ColourOrder":"BGR",
+        "BusType":"WS2812_RGB",
+        "Start":2000,
+        "Length":100
+      },
+      {
+        "Pin":27,
+        "ColourOrder":"BGR",
+        "BusType":"WS2812_RGB",
+        "Start":2100,
+        "Length":100
+      },
+      {
+        "Pin":25,
+        "ColourOrder":"BGR",
+        "BusType":"WS2812_RGB",
+        "Start":2200,
+        "Length":100
+      },
+      {
+        "Pin":33,
+        "ColourOrder":"BGR",
+        "BusType":"WS2812_RGB", 
+        "Start":2300,
+        "Length":100
+      }
+    ],
+    "Segment0": {
+      "PixelRange": [
+        0,
+        2400
+      ],
+      "ColourPalette":"RGPBO",
+      "Effects": {
+        "Function":"Static Palette",
+        "Speed":127,
+        "Intensity":127,
+        "Grouping":20,
+        "RateMs": 25
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 0
+    },
+    "BrightnessRGB": 100,
+    "BrightnessCCT": 0
+  }
+  )=====";
+
+  
+  #define USE_MODULE_TEMPLATE
+  DEFINE_PGM_CTR(MODULE_TEMPLATE) 
+  "{"
+    "\"" D_NAME         "\":\"" DEVICENAME_CTR "\","
+    "\"" D_FRIENDLYNAME "\":\"" DEVICENAME_FRIENDLY_CTR "\","
+    "\"" D_GPIO_NUMBER "\":{"    
+      // "\"13\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      // "\"12\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"26\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"32\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      // "\"14\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      // "\"27\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      // "\"25\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      // "\"33\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      // "\"28\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\"," // Bus8
+      #ifdef USE_MODULE_SENSORS_BUTTONS
+      "\"35\":\"" D_GPIO_FUNCTION_KEY1_INV_CTR  "\","
+      "\"34\":\"" D_GPIO_FUNCTION_KEY2_INV_CTR  "\","
+      "\"0\":\"" D_GPIO_FUNCTION_KEY3_INV_CTR  "\""
+      #endif
+    "},"
+    "\"" D_BASE     "\":\"" D_MODULE_NAME_USERMODULE_CTR "\","
+    "\"" D_ROOMHINT "\":\"" DEVICENAME_ROOMHINT_CTR "\""
+  "}";
+  #endif
+
+
+  #ifdef ENABLE_BUSCONFIG_16X_2000_200
+
+  /**
+   * @brief tree physical wiring connections
+   * 16 outputs
+   */
+  #define USE_LIGHTING_TEMPLATE
+  DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  R"=====(
+  {
+    "BusConfig":[
+      {
+        "Pin":4,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":0,
+        "Length":200
+      },
+      {
+        "Pin":18,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":200,
+        "Length":200
+      },
+      {
+        "Pin":19,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":400,
+        "Length":200
+      },
+      {
+        "Pin":21,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":600,
+        "Length":200
+      },
+      {
+        "Pin":16,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":800,
+        "Length":200
+      },
+      {
+        "Pin":17,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":1000,
+        "Length":200
+      },
+      {
+        "Pin":22,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":1200,
+        "Length":200
+      },
+      {
+        "Pin":23,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":1400,
+        "Length":200
+      },
+      {
+        "Pin":13,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":1600,
+        "Length":200
+      },
+      {
+        "Pin":12,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":1800,
+        "Length":200
+      }
+    ],
+    "Segment0": {
+      "PixelRange": [
+        0,
+        2000
+      ],
+      "ColourPalette":"RGPBO",
+      "Effects": {
+        "Function":"Static Palette",
+        "Speed":127,
+        "Intensity":127,
+        "Grouping":20,
+        "RateMs": 25
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 0
+    },
+    "BrightnessRGB": 100,
+    "BrightnessCCT": 0
+  }
+  )=====";
+
+  
+  #define USE_MODULE_TEMPLATE
+  DEFINE_PGM_CTR(MODULE_TEMPLATE) 
+  "{"
+    "\"" D_NAME         "\":\"" DEVICENAME_CTR "\","
+    "\"" D_FRIENDLYNAME "\":\"" DEVICENAME_FRIENDLY_CTR "\","
+    "\"" D_GPIO_NUMBER "\":{"    
+      // "\"28\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\"," // Bus8
+      // "\"13\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      // "\"12\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"26\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"32\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"14\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"27\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"25\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"33\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      #ifdef USE_MODULE_SENSORS_BUTTONS
+      "\"35\":\"" D_GPIO_FUNCTION_KEY1_INV_CTR  "\","
+      "\"34\":\"" D_GPIO_FUNCTION_KEY2_INV_CTR  "\","
+      "\"0\":\"" D_GPIO_FUNCTION_KEY3_INV_CTR  "\""
+      #endif
+    "},"
+    "\"" D_BASE     "\":\"" D_MODULE_NAME_USERMODULE_CTR "\","
+    "\"" D_ROOMHINT "\":\"" DEVICENAME_ROOMHINT_CTR "\""
+  "}";
+  #endif
 
 #endif // DEVICE_CHRISTMAS24__FINAL__16X_SIDEDOOR_TREE
 
@@ -4352,6 +4967,120 @@
 #endif // DEVICE_CHRISTMAS24__FINAL__SNOW_TREE_SILVER
 
 
+#ifdef DEVICE_XMAS_LIVINGROOM_TREE_WATER_LEVEL_2024
+  #ifndef DEVICENAME_CTR
+  #define DEVICENAME_CTR          "xmas_tree_water"
+  #endif
+  #ifndef DEVICENAME_FRIENDLY_CTR
+  #define DEVICENAME_FRIENDLY_CTR DEVICENAME_CTR
+  #endif
+  #ifndef DEVICENAME_DESCRIPTION_CTR
+  #define DEVICENAME_DESCRIPTION_CTR DEVICENAME_FRIENDLY_CTR
+  #endif
+  #define DEVICENAME_ROOMHINT_CTR "Living Room"
+  #define D_MQTTSERVER_IP_ADDRESS_COMMA_DELIMITED   "192.168.1.70"
+    #define MQTT_PORT     1883
+
+  /***********************************
+   * SECTION: System Debug Options
+  ************************************/    
+  
+  ///////////////////////////////////////////// Enable Logs
+  // #define DISABLE_SERIAL
+  // #define DISABLE_SERIAL0_CORE
+  // #define DISABLE_SERIAL_LOGGING
+  // #define ENABLE_DEBUG_MANUAL_DELAYS // permits blocking delays
+  
+  ///////////////////////////////////////////// System Logs
+  // #define ENABLE_ADVANCED_DEBUGGING
+  // #define ENABLE_FEATURE_EVERY_SECOND_SPLASH_UPTIME
+  // #define ENABLE_FEATURE_DEBUG_TASKER_INTERFACE_LOOP_TIMES
+  // #define ENABLE_DEBUG_FEATURE__TASKER_INTERFACE_SPLASH_LONG_LOOPS_WITH_MS 50
+  // #define ENABLE_DEBUG_FUNCTION_NAMES
+  #define ENABLE_DEBUGFEATURE_WEBUI__SHOW_BUILD_DATETIME_IN_FOOTER
+  #define SERIAL_LOG_LEVEL_DURING_BOOT 8
+  // #define ENABLE_DEBUG_LINE_HERE3
+  // #define ENABLE_DEBUGFEATURE_TASKERMANAGER__ADVANCED_METRICS
+  // #define USE_DEBUG_PRINT
+
+  ///////////////////////////////////////////// Module Logs
+  // #define ENABLE_DEVFEATURE__PIXEL_COLOUR_VALUE_IN_MULTIPIN_SHOW_LOGS  
+  #define ENABLE_FREERAM_APPENDING_SERIAL
+  // #define ENABLE_DEBUGFEATURE_LIGHTING__TIME_CRITICAL_RECORDING
+
+  /***********************************
+   * SECTION: System Configs
+  ************************************/    
+
+  #define SETTINGS_HOLDER 1239 
+
+  #define ENABLE_DEVFEATURE_STORAGE__SYSTEM_CONFIG__LOAD_WITH_TEMPLATES_OVERRIDE
+  #define ENABLE_DEVFEATURE_STORAGE__ANIMATION_PLAYLISTS
+  #define ENABLE_DEVFEATURE__SAVE_MODULE_DATA
+  #define ENABLE_DEVFEATURE__SAVE_CRITICAL_BOOT_DATA_FOR_DEBUG_BUT_ONLY_SPLASH_ON_BOOT_FOR_NOW__EG_SSID_MQTT_SERVER_IP_ADDRESS // until devices can reliably be used without compiling per device
+  #define ENABLE_DEVFEATURE_ADD_TIMESTAMP_ON_SAVE_FILES
+
+  /***********************************
+   * SECTION: Network Configs
+  ************************************/    
+
+  #define ENABLE_DEVFEATURE_JSON__ASYNCJSON_V6
+  #define USE_MODULE_NETWORK_WEBSERVER
+  // #define ENABLE_WEBSERVER_LIGHTING_WEBUI  
+
+  /***********************************
+   * SECTION: Sensor Configs
+  ************************************/  
+
+  #define USE_MODULE_SENSORS_INTERFACE
+    #define ENABLE_FEATURE_SENSOR_INTERFACE_UNIFIED_SENSOR_REPORTING
+  #define USE_MODULE_SENSORS_ADC_INTERNAL
+  #define USE_MODULE_SENSORS_SWITCHES
+    #define ENABLE_DEVFEATURE_SWITCHES__V2
+
+  /***********************************
+   * SECTION: Lighting Configs
+  ************************************/
+ 
+  /***********************************
+   * SECTION: Template Configs
+  ************************************/    
+
+  #define USE_MODULE_TEMPLATE
+  DEFINE_PGM_CTR(MODULE_TEMPLATE) 
+  "{"
+    "\"" D_NAME "\":\"" DEVICENAME_CTR "\","
+    "\"" D_FRIENDLYNAME "\":\"" DEVICENAME_FRIENDLY_CTR "\","
+    "\"" D_GPIOC "\":{"
+      #ifdef USE_MODULE_SENSORS_ADC_INTERNAL
+      "\"34\":\"" D_GPIO_FUNCTION_ADC1_CH7_CTR "\","
+      // "\"35\":\"" D_GPIO_FUNCTION_ADC1_CH7_CTR "\","
+      #endif
+      "\"23\":\"" D_GPIO_FUNCTION_SWT1_CTR "\","
+      "\"2\":\"" D_GPIO_FUNCTION_LED1_INV_CTR "\""
+    "},"
+    "\"" D_BASE "\":\"" D_MODULE_NAME_USERMODULE_CTR "\","
+    "\"" D_ROOMHINT "\":\"" DEVICENAME_ROOMHINT_CTR "\""
+  "}";
+  
+  
+  #define D_DEVICE_SENSORS_ANALOG_1_CTR       "WaterProbe"
+
+  #define USE_FUNCTION_TEMPLATE
+  DEFINE_PGM_CTR(FUNCTION_TEMPLATE)
+  "{"
+    "\"" D_DEVICENAME "\":{"
+      "\"" D_MODULE_SENSORS_ADC_INTERNAL_CTR "\":["
+        "\"" D_DEVICE_SENSORS_ANALOG_1_CTR "\""
+      "],"
+      "\"" D_MODULE_SENSORS_SWITCHES_CTR "\":["
+        "\"" D_DEVICE_SENSORS_ANALOG_1_CTR "\""
+      "]"
+    "},"
+    "\"MQTTUpdateSeconds\":{\"IfChanged\":1}"
+  "}";
+
+#endif
 
 /**************************************************************************************************************************************************
 ***************************************************************************************************************************************************
