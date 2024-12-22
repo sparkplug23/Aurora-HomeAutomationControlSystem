@@ -284,8 +284,8 @@ bool mAnimatorLight::applyPreset(byte index, byte callMode)
 void mAnimatorLight::applyPresetWithFallback(uint8_t index, uint8_t callMode, uint8_t effectID, uint8_t paletteID)
 {
   applyPreset(index, callMode);  
-  effectCurrent = effectID; // these two will be overwritten if preset exists in handlePresets()
-  effectPalette = paletteID; // these two will be overwritten if preset exists in handlePresets()
+  effectCurrent = effectID; // these two will be overwritten if preset exists in SubTask_Presets()
+  effectPalette = paletteID; // these two will be overwritten if preset exists in SubTask_Presets()
 }
 
 
@@ -293,7 +293,7 @@ void mAnimatorLight::applyPresetWithFallback(uint8_t index, uint8_t callMode, ui
  * @brief Gets called every loop, returns if none are waiting
  * 
  */
-void mAnimatorLight::handlePresets()
+void mAnimatorLight::SubTask_Presets()
 {
 
   if (presetToSave) 
@@ -309,7 +309,7 @@ void mAnimatorLight::handlePresets()
     return; // no preset waiting to apply, or JSON buffer is already allocated, return to loop until free
   }
 
-  ALOG_INF(PSTR("mAnimatorLight::handlePresets presetToApply %d"), presetToApply);
+  ALOG_INF(PSTR("mAnimatorLight::SubTask_Presets presetToApply %d"), presetToApply);
 
 
   #ifdef ENABLE_DEVFEATURE_LIGHTING__PRESETS_DEBUG_LINES
@@ -366,9 +366,9 @@ void mAnimatorLight::handlePresets()
   DEBUG_LINE_HERE;
   #endif
 
-  ALOG_HGL(PSTR("mAnimatorLight::handlePresets is now being read as fileDoc and not compatable with my command structure"));
+  // ALOG_HGL(PSTR("mAnimatorLight::SubTask_Presets is now being read as fileDoc and not compatable with my command structure"));
 
-  delay(4000);
+  // delay(4000);
 
   /**
    * @brief Run through my command structure.
@@ -461,6 +461,14 @@ void mAnimatorLight::handlePresets()
   Serial.println("updateInterfaces() missing");
 
 }
+
+#ifdef ENABLE_FEATURE_LIGHTS__DEMO_MODE
+void mAnimatorLight::SubTask_Demo()
+{
+
+}
+#endif
+
 
 //called from handleSet(PS=) [network callback (fileDoc==nullptr), IR (irrational), deserializeState, UDP] and deserializeState() [network callback (filedoc!=nullptr)]
 void mAnimatorLight::savePreset(byte index, const char* pname, JsonObject sObj)

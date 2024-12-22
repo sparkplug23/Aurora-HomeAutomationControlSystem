@@ -69,21 +69,15 @@ class mInterfaceNetwork :
     uint8_t ConstructJSON_Settings(uint8_t json_level = 0, bool json_appending = true);
     uint8_t ConstructJSON_State(uint8_t json_level = 0, bool json_appending = true);
     
-    #ifdef USE_MODULE_NETWORK_MQTT
-  
-    void MQTTHandler_Init();
-    void MQTTHandler_RefreshAll();
-    void MQTTHandler_Rate();
-    void MQTTHandler_Sender();
     
-    struct handler<mInterfaceNetwork>  mqtthandler_settings;
-    struct handler<mInterfaceNetwork>  mqtthandler_state_ifchanged;
-
-    struct handler<mInterfaceNetwork>* mqtthandler_list[2] = {
-      &mqtthandler_settings,
-      &mqtthandler_state_ifchanged
-    };
-
+    /************************************************************************************************
+     * SECITON: MQTT
+     ************************************************************************************************/
+    #ifdef USE_MODULE_NETWORK_MQTT
+    void MQTTHandler_Init();
+    std::vector<struct handler<mInterfaceNetwork>*> mqtthandler_list;
+    struct handler<mInterfaceNetwork> mqtthandler_settings;
+    struct handler<mInterfaceNetwork> mqtthandler_state_ifchanged;
     #endif // USE_MODULE_NETWORK_MQTT
 
 };

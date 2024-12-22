@@ -950,17 +950,19 @@ Serial.print("Fractional part (raw): "); Serial.println(tmp_fraction);
 // Convert fractional part from 32-bit fixed point (2^-32) to nanoseconds (1e-9)
 uint64_t fraction = (((uint64_t)tmp_fraction) * 1000000000ULL) >> 32;
 
-Serial.print("Fractional part (nanoseconds): "); Serial.println(fraction);
 
 // Subtract the NTP epoch (1900-01-01) to Unix epoch (1970-01-01)
 uint64_t unix_seconds = ((uint64_t)secs_since_1900) - 2208988800ULL;
 
-Serial.print("Unix seconds: "); Serial.println(unix_seconds);
 
 // Combine the seconds and fractional parts to get the final result in nanoseconds
 uint64_t result = (unix_seconds * 1000000000ULL) + fraction;
 
+#ifdef ESP32
+Serial.print("Fractional part (nanoseconds): "); Serial.println(fraction);
+Serial.print("Unix seconds: "); Serial.println(unix_seconds);
 Serial.print("Final NTP result (nanoseconds): "); Serial.println(result);
+#endif
 
 
       return result;
@@ -1233,6 +1235,63 @@ uint16_t mTime::SunMinutes(uint32_t dawn)
 
 
 #endif  // USE_SUNRISE
+
+
+
+#ifdef ENABLE_DEVFEATURE_TIME__TIME_SHORT_FUNCTIONS
+uint32_t mTime::EncodeTimeShortToU32(const time_short_t& time) 
+{
+  return (time.day_of_week << 24) | (time.hour << 16) | (time.minute << 8) | time.second;
+}
+
+time_short_t mTime::DecodeU32ToTimeShort(uint32_t encoded_time) 
+{
+  time_short_t time;
+  time.day_of_week = (encoded_time >> 24) & 0xFF;
+  time.hour        = (encoded_time >> 16) & 0xFF;
+  time.minute      = (encoded_time >> 8) & 0xFF;
+  time.second      = encoded_time & 0xFF;
+  return time;
+}
+
+const char* mTime::GetFormattedTime(uint32_t encoded_time, char* buffer, uint8_t buflen, bool include_weekday) 
+{
+  time_short_t time = DecodeU32ToTimeShort(encoded_time);
+  if (include_weekday) {
+    snprintf_P(buffer, buflen, PSTR("D%d" D_DATE_TIME_SEPARATOR "%02d" D_HOUR_MINUTE_SEPARATOR "%02d" D_MINUTE_SECOND_SEPARATOR "%02d"),
+                time.day_of_week, time.hour, time.minute, time.second);
+  } else {
+    snprintf_P(buffer, buflen, PSTR("%02d" D_HOUR_MINUTE_SEPARATOR "%02d" D_MINUTE_SECOND_SEPARATOR "%02d"),
+                time.hour, time.minute, time.second);
+  }
+  return buffer;
+}
+
+time_short_t mTime::MakeTimeShort(uint8_t hour, uint8_t minute, uint8_t second, uint8_t day_of_week) 
+{
+  time_short_t time;
+  time.hour = hour;
+  time.minute = minute;
+  time.second = second;
+  time.day_of_week = day_of_week;
+  return time;
+}
+
+String mTime::GetTimeStrFromTimeShort(const time_short_t& time, bool include_day_of_week) {
+    char dt[20];
+    if (include_day_of_week) {
+        snprintf_P(dt, sizeof(dt), PSTR("D%dT%02d:%02d:%02d"), 
+                   time.day_of_week, time.hour, time.minute, time.second);
+    } else {
+        snprintf_P(dt, sizeof(dt), PSTR("%02d:%02d:%02d"), 
+                   time.hour, time.minute, time.second);
+    }
+    return String(dt);  // e.g., "D3T11:08:02" or "11:08:02"
+}
+
+#endif
+
+
 
 
 #ifdef ENABLE_PHASEOUT_TIME__LEGACY_CODE

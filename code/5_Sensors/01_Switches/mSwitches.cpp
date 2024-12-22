@@ -530,42 +530,77 @@ void mSwitches::SwitchHandler(void) {
     }
 
 
-    if (switchflag <= POWER_TOGGLE) { // ie where <3 was before
-      if (!pCONT_set->Settings.flag_system.mqtt_switches) {                   // SetOption114 (0) - Detach Switches from relays and enable MQTT action state for all the SwitchModes
-        // if (!SendKey(KEY_SWITCH, i +1, switchflag)) {         // Execute command via MQTT
-        //   pCONT_mry->ExecuteCommandPower(i +1, switchflag, SRC_SWITCH);  // Execute command internally (if i < TasmotaGlobal.devices_present)
-        //   // Should the rules of mine be here?
-        // }                 // SetOption114 (0) - Detach Switches from relays and enable MQTT action state for all the SwitchModes
-        // if (!SendKey(KEY_SWITCH, i +1, switchflag)) {         // Execute command via MQTT
+    // if (switchflag <= POWER_TOGGLE) { // ie where <3 was before
+    //   if (!pCONT_set->Settings.flag_system.mqtt_switches) {                   // SetOption114 (0) - Detach Switches from relays and enable MQTT action state for all the SwitchModes
+    //     // if (!SendKey(KEY_SWITCH, i +1, switchflag)) {         // Execute command via MQTT
+    //     //   pCONT_mry->ExecuteCommandPower(i +1, switchflag, SRC_SWITCH);  // Execute command internally (if i < TasmotaGlobal.devices_present)
+    //     //   // Should the rules of mine be here?
+    //     // }                 // SetOption114 (0) - Detach Switches from relays and enable MQTT action state for all the SwitchModes
+    //     // if (!SendKey(KEY_SWITCH, i +1, switchflag)) {         // Execute command via MQTT
 
-        ALOG_INF(PSTR("WHERE MY RULE SHOULD BE"));
+    //     ALOG_INF(PSTR("WHERE MY RULE SHOULD BE"));
           
-          // #ifdef USE_MODULE_DRIVERS_RELAY    I DO NOT WANT INTERNAL RELAY CONTROL, BUT SHOULD BE RULE BASED!
-          // pCONT_mry->ExecuteCommandPower(i, switchflag, SRC_SWITCH);  // Execute command internally (if i < TasmotaGlobal.devices_present)
-          // #endif
-          // Should the rules of mine be here?
-        // }
-      } else { mqtt_action = switchflag; }
+    //       // #ifdef USE_MODULE_DRIVERS_RELAY    I DO NOT WANT INTERNAL RELAY CONTROL, BUT SHOULD BE RULE BASED!
+    //       // pCONT_mry->ExecuteCommandPower(i, switchflag, SRC_SWITCH);  // Execute command internally (if i < TasmotaGlobal.devices_present)
+    //       // #endif
+    //       // Should the rules of mine be here?
+    //     // }
+    //   } else { mqtt_action = switchflag; }
+    // }
+
+
+
+    if (switchflag <= POWER_TOGGLE)
+    {
+      #ifndef ENABLE_DEVFEATURE_TO_PARTIAL_DISABLE_SWITCH_FOR_DEBUG
+
+        #ifdef USE_MODULE_CORE_RULES
+          // Active high means start of motion always, so check for inversion
+          uint8_t new_state = (button);  // ? /*invert*/ !state : /*else, just follow*/ state;
+
+          ALOG_INF( PSTR("switchflag=%d, state=%d"), switchflag, new_state);
+
+          pCONT_rules->NewEventRun_NumArg(
+            D_UNIQUE_MODULE_SENSORS_SWITCHES_ID, // Unique module ID
+            TASK_EVENT_INPUT_STATE_CHANGED_ID,   // FUNC ID
+            i, // SWitch index
+            1, // Embedded data length
+            new_state); // Event has occured, save and check it            
+            
+        #endif
+        
+      #endif // ENABLE_DEVFEATURE_TO_PARTIAL_DISABLE_SWITCH_FOR_DEBUG
     }
-    if ((mqtt_action != POWER_NONE) && pCONT_set->Settings.flag_system.mqtt_switches) {  // SetOption114 (0) - Detach Switches from relays and enable MQTT action state for all the SwitchModes
-      // if (!pCONT_set->Settings.flag.hass_discovery) {                   // SetOption19 - Control Home Assistant automatic discovery (See SetOption59)
-      //   char mqtt_state_str[16];
-      //   char *mqtt_state = mqtt_state_str;
-      //   if (mqtt_action <= 3) {
-      //     if (mqtt_action != 3) { SendKey(KEY_SWITCH, i +1, mqtt_action); }
-      //     mqtt_state = SettingsText(SET_STATE_TXT1 + mqtt_action);
-      //   } else {
-      //     GetTextIndexed(mqtt_state_str, sizeof(mqtt_state_str), mqtt_action, kSwitchPressStates);
-      //   }
-      //   Response_P(S_JSON_SVALUE_ACTION_SVALUE, GetSwitchText(i).c_str(), mqtt_state);
-      //   char scommand[10];
-      //   snprintf_P(scommand, sizeof(scommand), PSTR(D_JSON_SWITCH "%d"), i +1);
-      //   MqttPublishPrefixTopicRulesProcess_P(RESULT_OR_STAT, scommand);
-      // }
-      mqtt_action = POWER_NONE;
-      ALOG_INF(PSTR("mqtt switch removed, should be to send the switch"));
-    }
-  }
+
+
+
+
+
+
+
+    // if ((mqtt_action != POWER_NONE) && pCONT_set->Settings.flag_system.mqtt_switches) {  // SetOption114 (0) - Detach Switches from relays and enable MQTT action state for all the SwitchModes
+    //   // if (!pCONT_set->Settings.flag.hass_discovery) {                   // SetOption19 - Control Home Assistant automatic discovery (See SetOption59)
+    //     char mqtt_state_str[16];
+    //     char *mqtt_state = mqtt_state_str;
+    //     if (mqtt_action <= 3) {
+    //       if (mqtt_action != 3) { SendKey(KEY_SWITCH, i +1, mqtt_action); }
+    //       mqtt_state = pCONT_set->SettingsText(SET_STATE_TXT1 + mqtt_action);
+    //     } else {
+    //       pCONT_sup->GetTextIndexed(mqtt_state_str, sizeof(mqtt_state_str), mqtt_action, kSwitchPressStates);
+    //     }
+    //     pCONT_sup->Response_P(S_JSON_SVALUE_ACTION_SVALUE, pCONT_sup->GetSwitchText(i).c_str(), mqtt_state);
+    //     char scommand[10];
+    //     snprintf_P(scommand, sizeof(scommand), PSTR(D_SWITCH "%d"), i +1);
+    //     ALOG_INF(PSTR("MqttPublishPrefixTopicRulesProcess_P %s %s"), RESULT_OR_STAT, scommand);
+    //     // MqttPublishPrefixTopicRulesProcess_P(RESULT_OR_STAT, scommand);
+    //   // }
+    //   mqtt_action = POWER_NONE;
+    //   ALOG_INF(PSTR("mqtt switch removed, should be to send the switch"));
+    // }
+
+    
+    
+  } // for switches
 }
 
 /**
@@ -643,7 +678,7 @@ void mSwitches::SwitchLoop(void) {
 uint8_t mSwitches::ConstructJSON_Settings(uint8_t json_level, bool json_appending){
 
   JBI->Start();
-    JBI->Add(D_SENSOR_COUNT, 0);
+    JBI->Add(D_SENSOR_COUNT, GetSensorCount());
   return JBI->End();
 
 }
@@ -664,7 +699,7 @@ void mSwitches::SwitchInit(void)
   ALOG_HGL( PSTR("D_LOG_STARTUP" "Switches Init") );
 
   // Init states
-  for(uint8_t pin_id=0;pin_id<MAX_SWITCHES;pin_id++){
+  for(uint8_t pin_id=0;pin_id<MAX_SWITCHES_SET;pin_id++){
     switches[pin_id].lastwallswitch = 1;  // Init global to virtual switch state;
     switches[pin_id].active_state_value = 1; // default is active high
     switches[pin_id].switch_virtual = switches[pin_id].lastwallswitch;
@@ -672,9 +707,9 @@ void mSwitches::SwitchInit(void)
 
   // Check all possible pin options
   settings.switches_found = 0;    
-  for(uint8_t pin_id=GPIO_SWT1_ID;pin_id<GPIO_SWT1_ID+(MAX_SWITCHES*4);pin_id++){
+  for(uint8_t pin_id=GPIO_SWT1_ID;pin_id<GPIO_SWT1_ID+(MAX_SWITCHES_SET*4);pin_id++){
 
-        Serial.printf("pin=%d/%d\n\r",pin_id,GPIO_SWT1_ID+(MAX_SWITCHES*4));
+        Serial.printf("pin=%d/%d\n\r",pin_id,GPIO_SWT1_ID+(MAX_SWITCHES_SET*4));
     if(pCONT_pins->PinUsed(pin_id)){
         Serial.printf("PinUsed\t\tpin=%d\n\r",pin_id);
       
@@ -683,7 +718,7 @@ void mSwitches::SwitchInit(void)
       // Standard pin, active high, with pulls 
       if(
         (pin_id >= GPIO_SWT1_ID)&&
-        (pin_id < GPIO_SWT1_ID+MAX_SWITCHES)
+        (pin_id < GPIO_SWT1_ID+MAX_SWITCHES_SET)
       ){
         pinMode(switches[settings.switches_found].pin, INPUT_PULLUP);
         switches[settings.switches_found].active_state_value = HIGH;
@@ -691,7 +726,7 @@ void mSwitches::SwitchInit(void)
       // Inverted pin, active low, with pulls
       if(
         (pin_id >= GPIO_SWT1_INV_ID)&&
-        (pin_id < GPIO_SWT1_INV_ID+MAX_SWITCHES)
+        (pin_id < GPIO_SWT1_INV_ID+MAX_SWITCHES_SET)
       ){
         pinMode(switches[settings.switches_found].pin, INPUT_PULLUP);
         switches[settings.switches_found].active_state_value = LOW;
@@ -699,7 +734,7 @@ void mSwitches::SwitchInit(void)
       // Standard pin, active high, NO pulls
       if(
         (pin_id >= GPIO_SWT1_NP_ID)&&
-        (pin_id < GPIO_SWT1_NP_ID+MAX_SWITCHES)
+        (pin_id < GPIO_SWT1_NP_ID+MAX_SWITCHES_SET)
       ){
         Serial.printf("GPIO_SWT1_NP_ID pin=%d\n\r\n\r\n\r\n\r\n\r\n\r",pin_id);
         pinMode(switches[settings.switches_found].pin, INPUT);
@@ -708,7 +743,7 @@ void mSwitches::SwitchInit(void)
       // 
       if(
         (pin_id >= GPIO_SWT1_INV_NP_ID)&&
-        (pin_id < GPIO_SWT1_INV_NP_ID+MAX_SWITCHES)
+        (pin_id < GPIO_SWT1_INV_NP_ID+MAX_SWITCHES_SET)
       ){
         pinMode(switches[settings.switches_found].pin, INPUT);
         switches[settings.switches_found].active_state_value = LOW;
@@ -725,7 +760,7 @@ void mSwitches::SwitchInit(void)
         ALOG_TST(PSTR("Switch %d %d %d"), pin_id, settings.switches_found, switches[settings.switches_found].pin);
       #endif // ENABLE_LOG_LEVEL_INFO
       
-      if(settings.switches_found++ >= MAX_SWITCHES){ break; }
+      if(settings.switches_found++ >= MAX_SWITCHES_SET){ break; }
 
     } // if PinUsed
 
@@ -776,7 +811,7 @@ void mSwitches::SwitchProbe(void)
   uint8_t force_high = (pCONT_set->Settings.switch_debounce % 50) &1;                   // 51, 101, 151 etc
   uint8_t force_low = (pCONT_set->Settings.switch_debounce % 50) &2;                    // 52, 102, 152 etc
 
-  for (uint8_t i = 0; i < MAX_SWITCHES; i++) {
+  for (uint8_t i = 0; i < MAX_SWITCHES_SET; i++) {
 
     // if (pCONT_pins->PinUsed(GPIO_SWT1_ID,i)) {      
     if(switches[i].pin != -1){
@@ -908,7 +943,7 @@ DEBUG_LINE_HERE
   // DEBUG_LINE_HERE
   uint8_t active_state = LOW;
 
-  for (uint8_t i = 0; i < MAX_SWITCHES; i++) {
+  for (uint8_t i = 0; i < MAX_SWITCHES_SET; i++) {
     if (
       (switches[i].pin != -1) // pCONT_pins->PinUsed(GPIO_SWT1_ID,i)
       || (mode)
@@ -1015,7 +1050,7 @@ DEBUG_LINE_HERE
                 i, // SWitch index
                 1, // Embedded data length
                 new_state); // Event has occured, save and check it            
-DEBUG_LINE_HERE
+                DEBUG_LINE_HERE
             #endif
             
           #endif // ENABLE_DEVFEATURE_TO_PARTIAL_DISABLE_SWITCH_FOR_DEBUG

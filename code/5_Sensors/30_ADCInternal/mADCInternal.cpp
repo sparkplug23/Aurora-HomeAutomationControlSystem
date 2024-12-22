@@ -27,7 +27,7 @@
  * */
 #include "mADCInternal.h"
 
-#ifdef USE_MODULE_SENSORS_ADC_INTERNAL_ESP32
+#ifdef USE_MODULE_SENSORS_ADC_INTERNAL
 
 #ifdef ENABLE_ADC_INTERNAL_PIN_INTERRUPT_ADC_TRIGGER
 
@@ -144,7 +144,7 @@ int8_t mADCInternal::Tasker(uint8_t function, JsonParserObject obj)
     break;   
     case TASK_EVERY_SECOND:
     {
-      // Update_Channel1_ADC_Readings();
+      Update_Channel1_ADC_Readings();
       int reading = adc1_get_raw(ADC1_CHANNEL_7);
       Serial.println(reading);
       average_DEMA.value = average_DEMA.filter->AddValue(reading); 
@@ -164,12 +164,15 @@ int8_t mADCInternal::Tasker(uint8_t function, JsonParserObject obj)
     case TASK_MQTT_HANDLERS_INIT:
       MQTTHandler_Init();
       break;
+    case TASK_MQTT_STATUS_REFRESH_SEND_ALL:
+      pCONT_mqtt->MQTTHandler_RefreshAll(mqtthandler_list);
+    break;
     case TASK_MQTT_HANDLERS_SET_DEFAULT_TRANSMIT_PERIOD:
-      // MQTTHandler_Rate();
-      break;
+      pCONT_mqtt->MQTTHandler_Rate(mqtthandler_list);
+    break;
     case TASK_MQTT_SENDER:
-      MQTTHandler_Sender();
-      break;
+      pCONT_mqtt->MQTTHandler_Sender(mqtthandler_list, *this);
+    break;
     #endif //USE_MODULE_NETWORK_MQTT
   }
 
@@ -323,9 +326,11 @@ void mADCInternal::Update_Channel1_ADC_Readings()
   }
   #else
     readings[0].adc_level = adc1_get_raw(ADC1_CHANNEL_6);
+    readings[0].utc_measured_timestamp = pCONT_time->UtcTime();
     ets_delay_us(1);
     readings[1].adc_level = adc1_get_raw(ADC1_CHANNEL_7);
-    ALOG_TST(PSTR("adc_level = \t%d\t%d"), readings[0].adc_level, readings[1].adc_level);
+    readings[1].utc_measured_timestamp = pCONT_time->UtcTime();
+    ALOG_INF(PSTR("adc_level = \t%d\t%d"), readings[0].adc_level, readings[1].adc_level);
   #endif
 
 #endif // ESP32
@@ -468,39 +473,6 @@ void mADCInternal::MQTTHandler_Init(){
   mqtthandler_list.push_back(ptr);
   
 } 
-
-/**
- * @brief Set flag for all mqtthandlers to send
- * */
-void mADCInternal::MQTTHandler_RefreshAll()
-{
-  for(auto& handle:mqtthandler_list){
-    handle->flags.SendNow = true;
-  }
-}
-
-/**
- * @brief Update 'tRateSecs' with shared teleperiod
- * */
-void mADCInternal::MQTTHandler_Rate()
-{
-  for(auto& handle:mqtthandler_list){
-    if(handle->topic_type == MQTT_TOPIC_TYPE_TELEPERIOD_ID)
-      handle->tRateSecs = pCONT_mqtt->dt.teleperiod_secs;
-    if(handle->topic_type == MQTT_TOPIC_TYPE_IFCHANGED_ID)
-      handle->tRateSecs = pCONT_mqtt->dt.ifchanged_secs;
-  }
-}
-
-/**
- * @brief Check all handlers if they require action
- * */
-void mADCInternal::MQTTHandler_Sender()
-{
-  for(auto& handle:mqtthandler_list){
-    pCONT_mqtt->MQTTHandler_Command_UniqueID(*this, GetModuleUniqueID(), handle);
-  }
-}
 
 #endif // USE_MODULE_NETWORK_MQTT
 

@@ -40,7 +40,7 @@ void MQTTConnection::MqttConnected(void)
 
 void MQTTConnection::Send_LWT_Online()
 {
-  char lwt_topic[40]; snprintf_P(lwt_topic, sizeof(lwt_topic), PM_MQTT_LWT_TOPIC_FORMATED, prefix_topic);
+  char lwt_topic[80]; snprintf_P(lwt_topic, sizeof(lwt_topic), PM_MQTT_LWT_TOPIC_FORMATED, prefix_topic);
   char payload[40];   snprintf_P(payload, sizeof(payload), PM_MQTT_LWT_PAYLOAD_ONLINE); // Required for ESP8266
   pubsub->publish(lwt_topic, payload, true);
 }
@@ -156,7 +156,7 @@ void MQTTConnection::MqttReconnect(void){ DEBUG_PRINT_FUNCTION_NAME;
   
   uint32_t elapsed_millis = millis() - before_millis;
 
-  ALOG_INF(PSTR("MqttReconnect elapsed_millis = %d"), elapsed_millis);
+  ALOG_INF(PSTR("MqttReconnect ElapsedTime = %d"), elapsed_millis);
 
 } // END function
 

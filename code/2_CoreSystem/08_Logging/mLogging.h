@@ -24,7 +24,7 @@
 #endif
 
 enum LoggingLevels {
-  LOG_LEVEL_NONE, 
+  LOG_LEVEL_NONE=0, 
 
   /**
    *  Highest level of trace debug that will always be shown when called, but should always be disabled via ifdef calls ie "ENABLE_DEBUG_TRACE__##"
@@ -211,7 +211,7 @@ enum LoggingLevels {
 
     // Macro to show the elapsed time with a custom message
     #define DEBUG_TIME__SHOW_MESSAGE(message) \
-        SERIAL_DEBUG.printf("%s - Time elapsed: %lu us\n", message, micros() - __debug_time_start__); \
+        SERIAL_DEBUG.printf("%s - Time elapsed: %lu us\n\r", message, micros() - __debug_time_start__); \
         SERIAL_DEBUG.flush();
 
     // Macro to show the elapsed time with file, function, and line information
@@ -244,10 +244,19 @@ enum LoggingLevels {
     #define DEBUG_LIGHTING__START_TIME_RECORDING(X) lighting_time_critical_logging.start_value[X] = micros();
     #define DEBUG_LIGHTING__SAVE_TIME_RECORDING(X, Y)  Y = micros() - lighting_time_critical_logging.start_value[X];
 
+    #define DEBUG_LIGHTING__START_TIME_RECORDING_TASK(X) pCONT_lAni->lighting_time_critical_logging.start_value[X] = micros();
+    #define DEBUG_LIGHTING__SAVE_TIME_RECORDING_TASK(X, Y)  pCONT_lAni->Y = micros() - pCONT_lAni->lighting_time_critical_logging.start_value[X];
+
+
+
+    
+
 #else
 
   #define DEBUG_LIGHTING__START_TIME_RECORDING(X) //none
   #define DEBUG_LIGHTING__SAVE_TIME_RECORDING(X,Y) //none
+  #define DEBUG_LIGHTING__START_TIME_RECORDING_TASK(X) //none
+  #define DEBUG_LIGHTING__SAVE_TIME_RECORDING_TASK(X,Y) //none
 
 #endif // ENABLE_DEBUGFEATURE_LIGHTING__TIME_CRITICAL_RECORDING
 

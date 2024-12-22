@@ -219,6 +219,8 @@ void mAnimatorLight::serializeState(JsonObject root, bool forPreset, bool includ
 
 void mAnimatorLight::serializeInfo(JsonObject root)
 {
+  
+  pCONT_lAni->force_update(); // New data in, so we should update
 
   root[F("ver")] = "versionString";
   root[F("vid")] = PROJECT_VERSION;
@@ -464,7 +466,6 @@ bool  mAnimatorLight::deserializeState(JsonObject root, byte callMode, byte pres
 
   if (root.containsKey("live")) {
     if (root["live"].as<bool>()) {
-      transitionDelayTemp = 0;
       jsonTransitionOnce = true;
       realtimeLock(65000);
     } else {
@@ -540,7 +541,11 @@ bool  mAnimatorLight::deserializeState(JsonObject root, byte callMode, byte pres
     currentPreset = root[F("pd")] | currentPreset;
     if (root["win"].isNull()) presetCycCurr = currentPreset; // otherwise it was set in handleSet() [set.cpp]
     presetToRestore = currentPreset; // stateUpdated() will clear the preset, so we need to restore it after
-    //unloadPlaylist(); // applying a preset unloads the playlist, may be needed here too?
+    
+      #ifdef ENABLE_DEVFEATURE_LIGHTING__PLAYLISTS
+      unloadPlaylist();// applying a preset unloads the playlist, may be needed here too?
+      #endif
+      
   } else if (!root["ps"].isNull()) {
     ps = presetCycCurr;
     if (root["win"].isNull() && getVal(root["ps"], &ps, 0, 0) && ps > 0 && ps < 251 && ps != currentPreset) {
@@ -565,6 +570,7 @@ bool  mAnimatorLight::deserializeState(JsonObject root, byte callMode, byte pres
   }else{
     ALOG_DBM(PSTR("playlist.isNull()"));
   }
+  DEBUG_PRINTLN("HERE");
   #endif
 
   if (root.containsKey(F("rmcpal")) && root[F("rmcpal")].as<bool>()) {
@@ -905,7 +911,7 @@ bool mAnimatorLight::deserializeConfig(JsonObject doc, bool fromFS) {
     doInitBusses = busesChanged;
     // finalization done in beginStrip()
   }
-  if (hw_led["rev"]) pCONT_iLight->bus_manager->getBus(0)->reversed = true; //set 0.11 global reversed setting for first bus
+  if (hw_led["rev"]) pCONT_iLight->bus_manager->getBus(0)->setReversed(true); //set 0.11 global reversed setting for first bus
 
   // read color order map configuration
   JsonArray hw_com = hw[F("com")];
@@ -938,7 +944,7 @@ bool mAnimatorLight::deserializeConfig(JsonObject doc, bool fromFS) {
   JsonObject light_tr = light["tr"];
   CJSON(fadeTransition, light_tr["mode"]);
   int tdd = light_tr["dur"] | -1;
-  if (tdd >= 0) transitionDelay = transitionDelayDefault = tdd * 100;
+  // if (tdd >= 0) transitionDelay = transitionDelayDefault = tdd * 100;
   CJSON(paletteFade, light_tr["pal"]);
   CJSON(randomPaletteChangeTime, light_tr[F("rpc")]);
 
@@ -1313,7 +1319,7 @@ bool mAnimatorLight::deserializeSegment(JsonObject elem, byte it, byte presetId)
         ALOG_INF(PSTR("seg.setColor(%d, RGBW32(rgbw[%d],rgbw[%d],rgbw[%d],rgbw[%d]));"),i, rgbw[0], rgbw[1], rgbw[2], rgbw[3]);
     
         seg.setColor(i, RGBW32(rgbw[0],rgbw[1],rgbw[2],rgbw[3]));
-        if (seg.animation_mode_id == 0) trigger(); //instant refresh
+        if (seg.animation_mode_id == 0) force_update(); //instant refresh
       }
     } else {
       // non RGB & non White segment (usually On/Off bus)
@@ -1364,7 +1370,13 @@ bool mAnimatorLight::deserializeSegment(JsonObject elem, byte it, byte presetId)
     ALOG_INF(PSTR("elem[\"fx\"].is<const char*>() == NUMBER"));
     if (getVal(elem["fx"], &fx, 0, getModeCount())) { //load effect ('r' random, '~' inc/dec, 0-255 exact value)
       ALOG_INF(PSTR("getVal(elem[\"fx\"], &fx, 0, getModeCount()) %d"), fx);
-      // if (!presetId && currentPlaylist>=0) unloadPlaylist();
+      
+
+      #ifdef ENABLE_DEVFEATURE_LIGHTING__PLAYLISTS
+      if (!presetId && currentPlaylist>=0) unloadPlaylist(); // applying a preset unloads the playlist, may be needed here too?
+      #endif
+
+
       // if (fx != seg.animation_mode_id)
       DEBUG_LINE_HERE; 
       seg.setMode(fx, elem[F("fxdef")]);
@@ -1456,14 +1468,8 @@ bool mAnimatorLight::deserializeSegment(JsonObject elem, byte it, byte presetId)
     seg.map1D2D = M12_Pixels; // no mapping
 
     // set brightness immediately and disable transition
-    transitionDelayTemp = 0;
+    // transitionDelayTemp = 0;
     jsonTransitionOnce = true;
-    // setBrightness(scaledBri(
-    //   // bri
-      
-    //   pCONT_iLight->
-      
-    //   ), true);
 
     // freeze and init to black
     if (!seg.freeze) {
@@ -1504,7 +1510,7 @@ bool mAnimatorLight::deserializeSegment(JsonObject elem, byte it, byte presetId)
       }
     }
     seg.map1D2D = oldMap1D2D; // restore mapping
-    trigger(); // force segment update
+    force_update(); // force segment update
   }
 
   
@@ -2584,19 +2590,18 @@ bool mAnimatorLight::serveLiveLeds(AsyncWebServerRequest* request, uint32_t wsCl
   #endif
 
   uint16_t used = getLengthTotal();
-  uint16_t n = (used -1) /MAX_LIVE_LEDS +1; //only serve every n'th LED if count over MAX_LIVE_LEDS
+  uint16_t n = (used-1) /MAX_LIVE_LEDS +1; //only serve every n'th LED if count over MAX_LIVE_LEDS
   char buffer[2000];
   strcpy_P(buffer, PSTR("{\"leds\":["));
   obuf = buffer;
   olen = 9;
 
-  for (size_t i= 0; i < used; i += n)
+  for (size_t i=0; i < used; i += n)
   {
-    // uint32_t c = BUS_getPixelColor(i);
     uint32_t c = getPixelColor(i);
 
     // if(i==0)
-    //   ALOG_INF(PSTR("c %d,%d,%d,%d"), R(c), G(c), B(c), W(c));
+      // ALOG_INF(PSTR("%d c %d,%d,%d,%d"), i, R(c), G(c), B(c), W(c));
 
     #ifdef ENABLE_FEATURE_LIGHTS__ADD_WHITE_TO_LIVEVIEW
     uint8_t r = qadd8(W(c), R(c)); //add white channel to RGB channels as a simple RGBW -> RGB map
@@ -2720,12 +2725,7 @@ void mAnimatorLight::serveJson(AsyncWebServerRequest* request)
       JsonObject info = lDoc.createNestedObject("info");
       serializeInfo(info);
 
-      if( segments.size() )
-      {
-        SEGMENT_I(0).flags.fForceUpdate = true; // New data in, so we should update
-      }
-
-      // ALOG_INF(PSTR("default==================================="));
+      pCONT_lAni->force_update(); // New data in, so we should update
 
       if (subJson != JSON_PATH_STATE_INFO)
       {
@@ -2809,7 +2809,7 @@ void mAnimatorLight::serveSettings(AsyncWebServerRequest* request, bool post)
   // if (!correctPIN && strlen(settingsPIN) > 0 && 
   if((subPage > 0 && subPage < 11)) {
     originalSubPage = subPage;
-    subPage = SUBPAGE_PINREQ; // require PIN
+    // subPage = SUBPAGE_PINREQ; // require PIN
   }
 
   if (post) { //settings/set POST request, saving
@@ -2974,7 +2974,7 @@ void mAnimatorLight::WebPage_Root_AddHandlers()
 
   pCONT_web->server->on("/reset", HTTP_GET, [this](AsyncWebServerRequest *request){
     pCONT_web->serveMessage(request, 200,F("Rebooting now..."),F("Please wait ~10 seconds..."),129);
-    // doReboot = true;
+    doReboot = true;
   });
 
   pCONT_web->server->on("/settings", HTTP_POST, [this](AsyncWebServerRequest *request){

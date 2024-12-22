@@ -282,7 +282,7 @@ void mRuleEngine::NewEventRun_NumArg(uint16_t _module_id, uint16_t function_even
   va_end(arg);
 
   // AddLog_Array_Int(LOG_LEVEL_HIGHLIGHT, "data", event_triggered.value.data, ARRAY_SIZE(event_triggered.value.data));
-
+  AddLog_Array(LOG_LEVEL_INFO, PSTR("data"), event_triggered.value.data, ARRAY_SIZE(event_triggered.value.data));
   // DEBUG_LINE_HERE; ALOG_INF(PSTR("event_triggered.module_id = %d"), event_triggered.module_id);
 
   // ShowRuleEvent_AddLog();
@@ -439,22 +439,22 @@ rules_active_index = 0;
 
 #ifdef ESP8266
   #ifdef USE_MODULE_TEMPLATE_SONOFF_4CHPRO
-    if(pCONT_set->Settings.module == MODULE_SONOFF_4CHPRO_ID){
+    if(pCONT_set->Settings.module == mHardwarePins::MODULE_SONOFF_4CHPRO_ID){
       DefaultRule_Sonoff_4CHPRO();
     }else
   #endif // USE_MODULE_TEMPLATE_SONOFF_IFAN03
   #ifdef USE_MODULE_TEMPLATE_SONOFF_IFAN03
-    if(pCONT_set->Settings.module == MODULE_SONOFF_IFAN03_ID){
+    if(pCONT_set->Settings.module == mHardwarePins::MODULE_SONOFF_IFAN03_ID){
       DefaultRule_Sonoff_iFan03();
     }else
   #endif // USE_MODULE_TEMPLATE_SONOFF_IFAN03
   #ifdef USE_MODULE_TEMPLATE_SHELLY_DIMMER2
-    if(pCONT_set->Settings.module == MODULE_SHELLY_DIMMER2_ID){
+    if(pCONT_set->Settings.module == mHardwarePins::MODULE_SHELLY_DIMMER2_ID){
       DefaultRule_Shelly_Dimmer2();
     }else
   #endif // USE_MODULE_TEMPLATE_SHELLY_DIMMER2
   #ifdef USE_MODULE_TEMPLATE_SHELLY_2P5
-    if(pCONT_set->Settings.module == MODULE_SHELLY2P5_ID){
+    if(pCONT_set->Settings.module == mHardwarePins::MODULE_SHELLY2P5_ID){
       DefaultRule_Shelly_2p5();
     }
   #endif // USE_MODULE_TEMPLATE_SHELLY_2P5

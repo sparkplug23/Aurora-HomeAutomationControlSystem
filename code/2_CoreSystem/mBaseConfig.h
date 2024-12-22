@@ -36,6 +36,7 @@ With latest version, all longer term shared debug features should be added here 
 #include "0_ConfigUser/03_mFirmware_Secret__ActiveDevelopment.h"
 #include "0_ConfigUser/04_mFirmwareCustom_Secret__Christmas_2023.h"
 #include "0_ConfigUser/04_mFirmwareCustom_Secret__Christmas_2024.h"
+#include "0_ConfigUser/05_mFirmwareCustom_Secret__Colorado_2024.h"
   #include "0_ConfigUser/TestGroups/FirmwareGroup_LightingEffects.h"
   #include "0_ConfigUser/TestGroups/FirmwareGroup_HVAC.h"
   #include "0_ConfigUser/TestGroups/FirmwareGroup_PZEM.h"
@@ -44,6 +45,34 @@ With latest version, all longer term shared debug features should be added here 
 #else
 // #error "here"
 #endif // USE_USER_MICHAEL
+
+
+/*********************************************************************************************\
+ *
+ * Overrides for creating cloned test devices and renaming the templates
+ * Prefix
+ * 
+ * 
+ * 
+ * 
+ * 
+ * *****************************************************************************************************/
+// Store original defines into intermediate macros if USE_DEBUGFEATURE_DEVICE_CLONE_TESTBED is defined
+// #ifdef USE_DEBUGFEATURE_DEVICE_CLONE_TESTBED
+// // Directly redefine the macros with the prefix
+// #undef DEVICENAME_CTR
+// #undef DEVICENAME_FRIENDLY_CTR
+// #undef DEVICENAME_DESCRIPTION_CTR
+// #undef DEVICENAME_ROOMHINT_CTR
+
+// // Use stringification to directly concatenate
+// #define DEVICENAME_CTR          "tb_" DEVICENAME_CTR
+// #define DEVICENAME_FRIENDLY_CTR "tb_" DEVICENAME_FRIENDLY_CTR
+// #define DEVICENAME_DESCRIPTION_CTR "tb_" DEVICENAME_DESCRIPTION_CTR
+// #define DEVICENAME_ROOMHINT_CTR "tb_" DEVICENAME_ROOMHINT_CTR
+// #endif
+// #pragma message ("DEVICENAME_CTR: " DEVICENAME_CTR)
+
 
 /*********************************************************************************************\
  * This file is one of two user configurable files
@@ -164,10 +193,10 @@ With latest version, all longer term shared debug features should be added here 
   #define WIFI_DNS                      "192.168.1.1"     // [IpAddress4] If not using DHCP set DNS IP address (might be equal to WIFI_GATEWAY)
   #define WIFI_DNS2              "0.0.0.0"         // [IpAddress5] If not using DHCP set DNS2 IP address (might be equal to WIFI_GATEWAY)
 
-  #define STA_SSID1                     ""                // [Ssid1] Wifi SSID
-  #define STA_PASS1                     ""                // [Password1] Wifi password
-  #define STA_SSID2                     ""                // [Ssid2] Optional alternate AP Wifi SSID
-  #define STA_PASS2                     ""                // [Password2] Optional alternate AP Wifi password
+  // #define STA_SSID1                     ""                // [Ssid1] Wifi SSID
+  // #define STA_PASS1                     ""                // [Password1] Wifi password
+  // #define STA_SSID2                     ""                // [Ssid2] Optional alternate AP Wifi SSID
+  // #define STA_PASS2                     ""                // [Password2] Optional alternate AP Wifi password
 
   #define WIFI_CONFIG_TOOL              4//WIFI_RETRY        // [WifiConfig] Default tool if wifi fails to connect
                                                           //   (WIFI_RESTART, WIFI_SMARTCONFIG, WIFI_MANAGER, WIFI_WPSCONFIG, WIFI_RETRY, WIFI_WAIT, WIFI_SERIAL)
@@ -209,7 +238,7 @@ With latest version, all longer term shared debug features should be added here 
   #define ENABLE_DEVFEATURE_PALETTE__FIX_WEBUI_GRADIENT_PREVIEW // Phase in
   #define ENABLE_DEVFEATURE_CREATE_MINIMAL_BUSSES_SINGLE_OUTPUT // Phase in
   #define ENABLE_DEVFEATURE_COLOR_WHEEL_CHANGED // Phase in
-  #define ENABLE_DEVFEATURE_LIGHT__MOVE_ALL_BUS_STARTING_CODE_UNTIL_LOOP // Phase in
+   // Phase in
   #define ENABLE_DEVFEATURE_LIGHT__BRIGHTNESS_GET_IN_SEGMENTS_INCLUDES_BOTH_SEGMENT_AND_GLOBAL // Phase in
   #define ENABLE_DEVFEATURE_NEOPIXELBUS_INTO_SEGMENTS_STRUCT // Phase in
    // Phase in
@@ -754,6 +783,8 @@ With latest version, all longer term shared debug features should be added here 
   #endif
 #endif
 
+// Maximum number of pins per output. 5 for RGBCCT analog LEDs.
+#define OUTPUT_MAX_PINS_WLED 5
 
 
 #ifdef ESP8266

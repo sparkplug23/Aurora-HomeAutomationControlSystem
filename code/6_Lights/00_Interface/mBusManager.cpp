@@ -8,50 +8,34 @@
 #ifdef USE_MODULE_LIGHTS_INTERFACE
 
 
-void ColorOrderMap::add(uint16_t start, uint16_t len, COLOUR_ORDER_T colorOrder) 
-{
+/*****************************************************************************************************************************************************************
+ ***************************************************************************************************************************************************************** 
+ ** ColorOrderMap *************************************************************************************************************************************************** 
+ ***************************************************************************************************************************************************************** 
+ *****************************************************************************************************************************************************************/
 
-  // Serial.println("ColorOrderMap::add");
-
-  if (_count >= WLED_MAX_COLOR_ORDER_MAPPINGS) {
-  // Serial.printf("ColorOrderMap::add %d return \n\r",_count);
-    return;
-  }
-  if (len == 0) {
-  // Serial.printf("ColorOrderMap::add %d len == 0\n\r",_count);
-    return;
-  }
-  _mappings[_count].start = start;
-  _mappings[_count].len = len;  
-  _mappings[_count].colorOrder = colorOrder;  
-  _count++;
-  Serial.printf("ColorOrderMap::add %d\n\r",_count);
+bool ColorOrderMap::add(uint16_t start, uint16_t len, uint8_t colorOrder) {
+  if (count() >= WLED_MAX_COLOR_ORDER_MAPPINGS || len == 0 || (colorOrder & 0x0F) > COL_ORDER_MAX) return false; // upper nibble contains W swap information
+  _mappings.push_back({start,len,colorOrder});
+  return true;
 }
 
-
-COLOUR_ORDER_T IRAM_ATTR ColorOrderMap::getPixelColorOrder(uint16_t pix, COLOUR_ORDER_T defaultColorOrder) const 
-{
-
-  // COLOUR_ORDER_T colourtmp = {COLOUR_ORDER_INIT_DISABLED};
-  // colourtmp.red = 0;
-  // colourtmp.green = 1;
-  // colourtmp.blue = 2;
-  // Serial.println("getPixelColorOrder");
-  // return colourtmp;
-
-  if (_count == 0) return defaultColorOrder;
-  for (uint8_t i = 0; i < _count; i++) 
-  {
-    if(
-      pix >= _mappings[i].start && 
-      pix < (_mappings[i].start + _mappings[i].len)
-    ){
-      return _mappings[i].colorOrder;
+uint8_t IRAM_ATTR ColorOrderMap::getPixelColorOrder(uint16_t pix, uint8_t defaultColorOrder) const {
+  // upper nibble contains W swap information
+  // when ColorOrderMap's upper nibble contains value >0 then swap information is used from it, otherwise global swap is used
+  for (unsigned i = 0; i < count(); i++) {
+    if (pix >= _mappings[i].start && pix < (_mappings[i].start + _mappings[i].len)) {
+      return _mappings[i].colorOrder | ((_mappings[i].colorOrder >> 4) ? 0 : (defaultColorOrder & 0xF0));
     }
   }
   return defaultColorOrder;
 }
 
+/*****************************************************************************************************************************************************************
+ ***************************************************************************************************************************************************************** 
+ ** Bus: Parent class of BusDigital, BusPwm, and BusNetwork *************************************************************************************************************************************************** 
+ ***************************************************************************************************************************************************************** 
+ *****************************************************************************************************************************************************************/
 
 const char* Bus::getTypeName()
 {
@@ -135,6 +119,10 @@ uint8_t Bus::getTypeIDbyName(const char* c)
   
 }
 
+uint8_t *Bus::allocateData(size_t size) {
+  if (_data) free(_data); // should not happen, but for safety
+  return _data = (uint8_t *)(size>0 ? calloc(size, sizeof(uint8_t)) : nullptr);
+}
 
 
 /*****************************************************************************************************************************************************************
@@ -156,11 +144,12 @@ BusDigital::BusDigital(BusConfig &bc, uint8_t digital_bus_number, const ColorOrd
   {
     _pins[1] = bc.pins[1];
   }
-  reversed = bc.reversed;
+  _reversed = bc.reversed;
   _needsRefresh = bc.refreshReq || bc.type == BUSTYPE_TM1814;
   _skip = bc.skipAmount;    //sacrificial pixels
   _len = bc.count + _skip;
   _iType = PolyBus::getI(bc.type, _pins, digital_bus_number);
+  ALOG_INF(PSTR("iType%d"),_iType);
   if (_iType == BUSTYPE__NONE__ID)
   {
     ALOG_ERR(PSTR("BusDigital"));
@@ -185,30 +174,48 @@ void BusDigital::show()
 }
 
 
-bool BusDigital::canShow() 
+bool BusDigital::canShow() const
 {
   return PolyBus::canShow(_busPtr, _iType);
 }
 
 
+//If LEDs are skipped, it is possible to use the first as a status LED.
+//TODO only show if no new show due in the next 50ms
+void BusDigital::setStatusPixel(uint32_t c) {
+  if (_valid && _skip) {
+    PolyBus::setPixelColor(_busPtr, _iType, 0, c, _colorOrderMap.getPixelColorOrder(_start, _colorOrder));
+    if (canShow()) PolyBus::show(_busPtr, _iType);
+  }
+}
+
+
 void IRAM_ATTR BusDigital::setPixelColor(uint16_t pix, RgbcctColor c) 
 {
-  if (reversed) pix = _len - pix -1;
+  // ALOG_INF(PSTR("p\t%d"), pix);
+  if (_reversed) pix = _len - pix -1;
   else pix += _skip;
-  COLOUR_ORDER_T co = _colorOrderMap.getPixelColorOrder(pix+_start, _colorOrder);
+  uint8_t co = _colorOrderMap.getPixelColorOrder(pix+_start, _colorOrder);
   PolyBus::setPixelColor(_busPtr, _iType, pix, c, co);
 }
 
-RgbcctColor BusDigital::getPixelColor(uint16_t pix) 
+RgbcctColor BusDigital::getPixelColor(uint16_t pix) const
 {
-  if (reversed) pix = _len - pix -1;
+  DEBUG_LIGHTING__START_TIME_RECORDING_TASK(6)
+  DEBUG_LIGHTING__START_TIME_RECORDING_TASK(5)
+  if (_reversed) pix = _len - pix -1;
   else pix += _skip;
-  COLOUR_ORDER_T co = _colorOrderMap.getPixelColorOrder(pix+_start, _colorOrder);
-  return PolyBus::getPixelColor(_busPtr, _iType, pix, co);
+  uint8_t co = _colorOrderMap.getPixelColorOrder(pix+_start, _colorOrder);
+  DEBUG_LIGHTING__SAVE_TIME_RECORDING_TASK(5, lighting_time_critical_logging.dynamic_buffer__starting_colour_part1);
+  RgbcctColor tmp = PolyBus::getPixelColor(_busPtr, _iType, pix, co);
+  DEBUG_LIGHTING__SAVE_TIME_RECORDING_TASK(6, lighting_time_critical_logging.dynamic_buffer__starting_colour_part2);
+
+
+  return tmp;
 }
 
 
-uint8_t BusDigital::getPins(uint8_t* pinArray) 
+uint8_t BusDigital::getPins(uint8_t* pinArray) const
 {
   uint8_t numPins = IS_BUSTYPE_2PIN(_type) ? 2 : 1;
   for (uint8_t i = 0; i < numPins; i++) 
@@ -218,7 +225,7 @@ uint8_t BusDigital::getPins(uint8_t* pinArray)
   return numPins;
 }
 
-void BusDigital::setColorOrder(COLOUR_ORDER_T colorOrder) 
+void BusDigital::setColorOrder(uint8_t colorOrder) 
 {
   _colorOrder = colorOrder;
 }
@@ -236,13 +243,11 @@ void BusDigital::cleanup()
   _busPtr = nullptr;
 }
 
-
 /*****************************************************************************************************************************************************************
  ***************************************************************************************************************************************************************** 
  ** BusPwm *************************************************************************************************************************************************** 
  ***************************************************************************************************************************************************************** 
  *****************************************************************************************************************************************************************/
-
 
 /* see https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/api-reference/peripherals/gpio.html
  * The ESP32-S3 chip features 45 physical GPIO pins (GPIO0 ~ GPIO21 and GPIO26 ~ GPIO48). Each pin can be used as a general-purpose I/O
@@ -342,7 +347,7 @@ BusPwm::BusPwm(BusConfig &bc) : Bus(bc.type, bc.start, bc.autoWhite)
     ledcAttachPin(_pins[i], _ledcStart + i);
     #endif
   }
-  reversed = bc.reversed;
+  _reversed = bc.reversed;
   _valid = true;
 }
 
@@ -358,7 +363,7 @@ void BusPwm::setPixelColor(uint16_t pix, RgbcctColor c)
 }
 
 
-RgbcctColor BusPwm::getPixelColor(uint16_t pix) 
+RgbcctColor BusPwm::getPixelColor(uint16_t pix) const
 {
   #ifdef ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
   ALOG_INF(PSTR(DEBUG_INSERT_PAGE_BREAK "BusPwm::getPixelColor ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^seg%d, pix%d"), pCONT_lAni->getCurrSegmentId(), pix);
@@ -446,14 +451,33 @@ void BusPwm::show()
 }
 
 
-uint8_t BusPwm::getPins(uint8_t* pinArray) 
-{
+uint8_t BusPwm::getPins(uint8_t* pinArray) const {
   if (!_valid) return 0;
-  uint8_t numPins = NUM_BUSTYPE_PWM_PINS(_type);
-  for (uint8_t i = 0; i < numPins; i++) {
-    pinArray[i] = _pins[i];
-  }
+  unsigned numPins = numPWMPins(_type);
+  if (pinArray) for (unsigned i = 0; i < numPins; i++) pinArray[i] = _pins[i];
   return numPins;
+}
+// uint8_t BusPwm::getPins(uint8_t* pinArray) 
+// {
+//   if (!_valid) return 0;
+//   uint8_t numPins = NUM_BUSTYPE_PWM_PINS(_type);
+//   for (uint8_t i = 0; i < numPins; i++) {
+//     pinArray[i] = _pins[i];
+//   }
+//   return numPins;
+// }
+
+
+// credit @willmmiles & @netmindz https://github.com/Aircoookie/WLED/pull/4056
+std::vector<LEDType> BusPwm::getLEDTypes() {
+  return {
+    {BUSTYPE_ANALOG_1CH, "A",      PSTR("PWM White")},
+    {BUSTYPE_ANALOG_2CH, "AA",     PSTR("PWM CCT")},
+    {BUSTYPE_ANALOG_3CH, "AAA",    PSTR("PWM RGB")},
+    {BUSTYPE_ANALOG_4CH, "AAAA",   PSTR("PWM RGBW")},
+    {BUSTYPE_ANALOG_5CH, "AAAAA",  PSTR("PWM RGB+CCT")},
+    //{TYPE_ANALOG_6CH, "AAAAAA", PSTR("PWM RGB+DCCT")}, // unimplementable ATM
+  };
 }
 
 
@@ -472,17 +496,11 @@ void BusPwm::deallocatePins()
   #endif
 }
 
-void BusPwm::setColorOrder(COLOUR_ORDER_T colorOrder) 
-{
-  _colorOrder = colorOrder;
-}
-
 /*****************************************************************************************************************************************************************
  ***************************************************************************************************************************************************************** 
  ** BusOnOff *************************************************************************************************************************************************** 
  ***************************************************************************************************************************************************************** 
  *****************************************************************************************************************************************************************/
-
 
 BusOnOff::BusOnOff(BusConfig &bc) : Bus(bc.type, bc.start, bc.autoWhite) 
 {
@@ -491,36 +509,49 @@ BusOnOff::BusOnOff(BusConfig &bc) : Bus(bc.type, bc.start, bc.autoWhite)
   uint8_t currentPin = bc.pins[0];
   _pin = currentPin; // store only after allocatePin() succeeds
   pinMode(_pin, OUTPUT);
-  reversed = bc.reversed;
+  _reversed = bc.reversed;
   _valid = true;
 }
 
-void BusOnOff::setPixelColor(uint16_t pix, RgbcctColor c) 
-{
-  if (pix != 0 || !_valid) return; // only react to first pixel
-  uint32_t colour = c.getU32();
-  _data = bool(colour) ? 0xFF : 0;
+
+void BusOnOff::setPixelColor(uint16_t pix, RgbcctColor c) {
+  if (pix != 0 || !_valid) return; //only react to first pixel
+  // c = autoWhiteCalc(c);
+  uint8_t r = c.R;
+  uint8_t g = c.G;
+  uint8_t b = c.B;
+  uint8_t w = c.W;
+  _data[0] = bool(r|g|b|w) && bool(_bri) ? 0xFF : 0;
 }
 
-RgbcctColor BusOnOff::getPixelColor(uint16_t pix) 
-{
+
+// RgbcctColor BusOnOff::getPixelColor(uint16_t pix) const
+// {
+//   if (!_valid) return RgbcctColor();
+//   return RgbcctColor(_data);
+// }
+
+
+RgbcctColor BusOnOff::getPixelColor(uint16_t pix) const {
   if (!_valid) return RgbcctColor();
-  return RgbcctColor(_data);
+  return RgbcctColor(_data[0], _data[0], _data[0], _data[0]);
 }
+
+
+
 
 void BusOnOff::show() 
 {
   if (!_valid) return;
-  digitalWrite(_pin, reversed ? !(bool)_data : (bool)_data);
+  digitalWrite(_pin, _reversed ? !(bool)_data : (bool)_data);
 }
 
-uint8_t BusOnOff::getPins(uint8_t* pinArray) 
+uint8_t BusOnOff::getPins(uint8_t* pinArray) const
 {
   if (!_valid) return 0;
   pinArray[0] = _pin;
   return 1;
 }
-
 
 /*****************************************************************************************************************************************************************
  ***************************************************************************************************************************************************************** 
@@ -528,55 +559,53 @@ uint8_t BusOnOff::getPins(uint8_t* pinArray)
  ***************************************************************************************************************************************************************** 
  *****************************************************************************************************************************************************************/
 
-
-BusNetwork::BusNetwork(BusConfig &bc) : Bus(bc.type, bc.start, bc.autoWhite) {
-  _valid = false;
-//      switch (bc.type) {
-//        case BUSTYPE_NET_ARTNET_RGB:
-//          _rgbw = false;
-//          _UDPtype = 2;
-//          break;
-//        case BUSTYPE_NET_E131_RGB:
-//          _rgbw = false;
-//          _UDPtype = 1;
-//          break;
-//        case BUSTYPE_NET_DDP_RGB:
-//          _rgbw = false;
-//          _UDPtype = 0;
-//          break;
-//        default: // BUSTYPE_NET_DDP_RGB / BUSTYPE_NET_DDP_RGBW
-      _rgbw = bc.type == BUSTYPE_NET_DDP_RGBW;
+BusNetwork::BusNetwork(BusConfig &bc)
+: Bus(bc.type, bc.start, bc.autoWhite, bc.count)
+, _broadcastLock(false)
+{
+  switch (bc.type) {
+    case BUSTYPE_NET_ARTNET_RGB:
+      _UDPtype = 2;
+      break;
+    case BUSTYPE_NET_ARTNET_RGBW:
+      _UDPtype = 2;
+      break;
+    case BUSTYPE_NET_E131_RGB:
+      _UDPtype = 1;
+      break;
+    default: // TYPE_NET_DDP_RGB / TYPE_NET_DDP_RGBW
       _UDPtype = 0;
-//          break;
-//      }
-  _UDPchannels = _rgbw ? 4 : 3;
-  _data = (byte *)malloc(bc.count * _UDPchannels);
-  if (_data == nullptr) return;
-  memset(_data, 0, bc.count * _UDPchannels);
-  _len = bc.count;
+      break;
+  }
+  _hasRgb = hasRGB(bc.type);
+  _hasWhite = hasWhite(bc.type);
+  _hasCCT = false;
+  _UDPchannels = _hasWhite + 3;
   _client = IPAddress(bc.pins[0],bc.pins[1],bc.pins[2],bc.pins[3]);
-  _broadcastLock = false;
-  _valid = true;
+  _valid = (allocateData(_len * _UDPchannels) != nullptr);
+  DEBUG_PRINTF_P(PSTR("%successfully inited virtual strip with type %u and IP %u.%u.%u.%u\n"), _valid?"S":"Uns", bc.type, bc.pins[0], bc.pins[1], bc.pins[2], bc.pins[3]);
 }
 
-void BusNetwork::setPixelColor(uint16_t pix, RgbcctColor c) 
-{
-//   if (!_valid || pix >= _len) return;
-//   if (hasWhite()) c = autoWhiteCalc(c);
-// //   if (_cct >= 1900) c = colorBalanceFromKelvin(_cct, c); //color correction from CCT
-//   uint16_t offset = pix * _UDPchannels;
-//   _data[offset]   = R(c);
-//   _data[offset+1] = G(c);
-//   _data[offset+2] = B(c);
-//   if (_rgbw) _data[offset+3] = W(c);
+
+void BusNetwork::setPixelColor(uint16_t pix, RgbcctColor c) {
+  if (!_valid || pix >= _len) return;
+  // if (_hasWhite) c = autoWhiteCalc(c);
+  // if (Bus::_cct >= 1900) c = colorBalanceFromKelvin(Bus::_cct, c); //color correction from CCT
+  unsigned offset = pix * _UDPchannels;
+  _data[offset]   = c.R;
+  _data[offset+1] = c.G;
+  _data[offset+2] = c.B;
+  if (_hasWhite) _data[offset+3] = c.W;
 }
 
-RgbcctColor BusNetwork::getPixelColor(uint16_t pix) 
-{
-  // if (!_valid || pix >= _len) return 0;
-  // uint16_t offset = pix * _UDPchannels;
-  // return RGBW32(_data[offset], _data[offset+1], _data[offset+2], _rgbw ? (_data[offset+3] << 24) : 0);
+
+RgbcctColor BusNetwork::getPixelColor(uint16_t pix) const {
+  if (!_valid || pix >= _len) return RgbcctColor();
+  unsigned offset = pix * _UDPchannels;
+  return RGBW32(_data[offset], _data[offset+1], _data[offset+2], (hasWhite() ? _data[offset+3] : 0));
 }
+
+
 
 void BusNetwork::show() 
 {
@@ -586,7 +615,7 @@ void BusNetwork::show()
   _broadcastLock = false;
 }
 
-uint8_t BusNetwork::getPins(uint8_t* pinArray) 
+uint8_t BusNetwork::getPins(uint8_t* pinArray) const
 {
   for (uint8_t i = 0; i < 4; i++) {
     pinArray[i] = _client[i];
@@ -605,47 +634,34 @@ void BusNetwork::cleanup()
 
 /*****************************************************************************************************************************************************************
  ***************************************************************************************************************************************************************** 
- ***************************************************************************************************************************************************************** 
- ***************************************************************************************************************************************************************** 
- ***************************************************************************************************************************************************************** 
- ***************************************************************************************************************************************************************** 
- ***************************************************************************************************************************************************************** 
- ***************************************************************************************************************************************************************** 
  ** BusManager *************************************************************************************************************************************************** 
- ***************************************************************************************************************************************************************** 
- ***************************************************************************************************************************************************************** 
- ***************************************************************************************************************************************************************** 
- ***************************************************************************************************************************************************************** 
- ***************************************************************************************************************************************************************** 
- ***************************************************************************************************************************************************************** 
- ***************************************************************************************************************************************************************** 
  ***************************************************************************************************************************************************************** 
  *****************************************************************************************************************************************************************/
 
-
-
 //utility to get the approx. memory usage of a given BusConfig
-uint32_t BusManager::memUsage(BusConfig &bc) 
-{
-  uint8_t type = bc.type;
-  uint16_t len = bc.count + bc.skipAmount;
-  if (type > 15 && type < 32) 
-  {
+uint32_t BusManager::memUsage(BusConfig &bc) {
+  if (Bus::isOnOff(bc.type) || Bus::isPWM(bc.type)) return OUTPUT_MAX_PINS_WLED;
+
+  unsigned len = bc.count + bc.skipAmount;
+  unsigned channels = Bus::getNumberOfChannels(bc.type);
+  unsigned multiplier = 1;
+  if (Bus::isDigital(bc.type)) { // digital types
+    if (Bus::is16bit(bc.type)) len *= 2; // 16-bit LEDs
     #ifdef ESP8266
       if (bc.pins[0] == 3) { //8266 DMA uses 5x the mem
-        if (type > 29) return len*20; //RGBW
-        return len*15;
+        multiplier = 5;
       }
-      if (type > 29) return len*4; //RGBW
-      return len*3;
-    #else //ESP32 RMT uses double buffer?
-      if (type > 29) return len*8; //RGBW
-      return len*6;
+    #else //ESP32 RMT uses double buffer, parallel I2S uses 8x buffer (3 times)
+      multiplier = PolyBus::isParallelOutput() ? 24 : 2;
     #endif
   }
-  if (type > 31 && type < 48)   return 5;
-  if (type == 44 || type == 45) return len*4; //RGBW
-  return len*3; //RGB
+  return (len * multiplier + bc.doubleBuffer * (bc.count + bc.skipAmount)) * channels;
+}
+
+uint32_t BusManager::memUsage(unsigned maxChannels, unsigned maxCount, unsigned minBuses) {
+  //ESP32 RMT uses double buffer, parallel I2S uses 8x buffer (3 times)
+  unsigned multiplier = PolyBus::isParallelOutput() ? 3 : 2;
+  return (maxChannels * maxCount * minBuses * multiplier);
 }
 
 int BusManager::add(BusConfig &bc) 
@@ -690,6 +706,21 @@ int BusManager::add(BusConfig &bc)
 
 }
 
+
+void BusManager::useParallelOutput(bool enable) // workaround for inaccessible PolyBus
+{
+  PolyBus::useParallelOutput(enable);
+}
+
+void BusManager::setRequiredChannels(uint8_t channels)
+{
+  PolyBus::setRequiredChannels(channels);
+}
+
+
+
+
+
 //do not call this method from system context (network callback)
 void BusManager::removeAll() 
 {
@@ -711,6 +742,7 @@ void BusManager::removeAll()
   DEBUG_LINE_HERE;
   
   numBusses = 0;
+  PolyBus::useParallelOutput(false);
 }
 
 void BusManager::show() 
@@ -726,66 +758,9 @@ void BusManager::show()
 }
 
 
-void IRAM_ATTR BusManager::setPixelColor(uint16_t pix, RgbcctColor c, int16_t cct) 
-{
-  // DEBUG_LINE_HERE;
-  // ALOG_ERR(PSTR("numBusses = %d"),numBusses);
-  // c.debug_print("BusManager::setPixelColor");
-  
-  #ifdef ENABLE_DEBUGFEATURE_TRACE__LIGHT__DETAILED_PIXEL_INDEXING
-  ALOG_ERR(PSTR("BusManagersetPixelColor %d, %d, %d, %d"), pix, c.R, c.G, c.B);
-  #endif
-
-  for (uint8_t i = 0; i < numBusses; i++) 
-  {
-    Bus* b = busses[i];
-    uint16_t bstart = b->getStart();
-    if (pix < bstart || pix >= bstart + b->getLength()){
-      // ALOG_ERR(PSTR("breaking here %d %d %d"), pix, bstart, b->getLength());
-      continue;
-    }
-    // ALOG_ERR(PSTR("busses %d pix %d"), i, pix);
-    busses[i]->setPixelColor(pix - bstart, c);
-  }
-}
-
-
-RgbcctColor BusManager::getPixelColor(uint16_t pix) 
-{
-  for (uint8_t i = 0; i < numBusses; i++) {
-    Bus* b = busses[i];
-    uint16_t bstart = b->getStart();  // Cache the start value to avoid repeated function calls
-    uint16_t blength = b->getLength(); // Cache the length value
-
-    if (pix >= bstart && pix < bstart + blength) {
-      return b->getPixelColor(pix - bstart);  // Direct return once a match is found
-    }
-  }
-  return RgbcctColor();  // Default return when no bus matches
-}
-
-
-void BusManager::setSegmentCCT(int16_t cct, bool allowWBCorrection) {
-  ALOG_ERR(PSTR("BusManager::setSegmentCCT needs WLED converted to PulSar CCT typing.")); // these functions are likely still needed to pass into the proper functions. 
-  // if (cct > 255) cct = 255;
-  // if (cct >= 0) {
-  //   //if white balance correction allowed, save as kelvin value instead of 0-255
-  //   if (allowWBCorrection) cct = 1900 + (cct << 5);
-  // } else cct = -1;
-  // Bus::setCCT(cct);
-}
-
-
 bool BusManager::canAllShow() {
-  ALOG_INF(PSTR("BusManager::canAllShow::numBusses=%d"),numBusses);
-  for (uint8_t i = 0; i < numBusses; i++) {
-    if(busses[i])
-    {
-      if (!busses[i]->canShow())
-      {
-        return false;
-      }
-    }
+  for (unsigned i = 0; i < numBusses; i++) {
+    if (!busses[i]->canShow()) return false;
   }
   return true;
 }
@@ -803,20 +778,22 @@ uint16_t BusManager::getTotalLength() {
   return len;
 }
 
-
-const char* BusManager::getColourOrderName(COLOUR_ORDER_T _colorOrder, char* buffer, uint8_t len)
-{
-  Serial.println(_colorOrder.data, BIN);
-
-  if(len>=5)
-  {
-    if(_colorOrder.red < 5) buffer[_colorOrder.red] = 'r';
-    if(_colorOrder.green < 5) buffer[_colorOrder.green] = 'g';
-    if(_colorOrder.blue < 5) buffer[_colorOrder.blue] = 'b';
-    if(_colorOrder.white_cold < 5) buffer[_colorOrder.white_cold] = 'c';
-    if(_colorOrder.white_warm < 5) buffer[_colorOrder.white_warm] = 'w';
+void IRAM_ATTR BusManager::setPixelColor(uint16_t pix, RgbcctColor c) {
+  for (unsigned i = 0; i < numBusses; i++) {
+    unsigned bstart = busses[i]->getStart();
+    if (pix < bstart || pix >= bstart + busses[i]->getLength()) continue;
+    busses[i]->setPixelColor(pix - bstart, c);
   }
-  return buffer;
+}
+
+
+RgbcctColor BusManager::getPixelColor(uint16_t pix) {
+  for (unsigned i = 0; i < numBusses; i++) {
+    unsigned bstart = busses[i]->getStart();
+    if (!busses[i]->containsPixel(pix)) continue;
+    return busses[i]->getPixelColor(pix - bstart);
+  }
+  return RgbcctColor();
 }
 
 
@@ -843,5 +820,14 @@ uint32_t Bus::autoWhiteCalc(uint32_t c)
 #ifdef ENABLE_DEVFEATURE_LIGHT__BUS_AUTO_WHITE_MODES
 uint8_t Bus::_gAWM = 255; // auto white mode
 #endif // ENABLE_DEVFEATURE_LIGHT__BUS_AUTO_WHITE_MODES
+
+uint16_t BusDigital::_milliAmpsTotal = 0;
+
+// uint16_t      BusManager::_milliAmpsUsed = 0;
+// uint16_t      BusManager::_milliAmpsMax = ABL_MILLIAMPS_DEFAULT;
+
+bool PolyBus::useParallelI2S = false;
+uint8_t PolyBus::required_channels = 0;
+
 
 #endif // USE_MODULE_LIGHTS_INTERFACE

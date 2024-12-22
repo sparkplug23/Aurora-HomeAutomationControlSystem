@@ -47,7 +47,7 @@ void mAnimatorLight::setUpMatrix() {
     ALOG_INF(PSTR("maxHeight %d\n\r"), Segment::maxHeight);
 
     // safety check
-    if (Segment::maxWidth * Segment::maxHeight > MAX_LEDS || Segment::maxWidth <= 1 || Segment::maxHeight <= 1) {
+    if (Segment::maxWidth * Segment::maxHeight > MAX_LEDS_NEO || Segment::maxWidth <= 1 || Segment::maxHeight <= 1) {
       DEBUG_PRINTLN(F("2D Bounds error."));
       isMatrix = false;
       Segment::maxWidth = _length;

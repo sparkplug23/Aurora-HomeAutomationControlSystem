@@ -24,6 +24,13 @@ int8_t mDevelopmentDebugging::Tasker(uint8_t function, JsonParserObject obj){
   switch(function){
     case TASK_INIT:
       //
+
+      #ifdef ENABLE_DEBUGFEATURE_TASKERMANAGER__ADVANCED_METRICS
+      // pCONT->monitor_task.push_back(TASK_LOOP);           // Add TASK_LOOP to the monitor list
+      // pCONT->monitor_task.push_back(TASK_EVERY_SECOND);   // Add TASK_EVERY_SECOND to the monitor list
+      pCONT->monitor_task.push_back(TASKER_FUNCTION_TYPES(0));   // Any
+      #endif
+
     break;
   }
 
@@ -42,7 +49,17 @@ int8_t mDevelopmentDebugging::Tasker(uint8_t function, JsonParserObject obj){
       // ALOG_INF( PSTR("loops_per_second %d"), pCONT_sup->loops_per_second);
       // ALOG_INF( PSTR("this_cycle_ratio %d"), pCONT_sup->this_cycle_ratio);
       // ALOG_INF( PSTR("loop_load_avg %d"), pCONT_set->loop_load_avg);
-    
+
+      #ifdef ENABLE_DEBUGFEATURE_TASKERMANAGER__ADVANCED_METRICS
+      for (const auto& metrics : pCONT->task_metrics) {
+          // Get the module name based on the unique ID
+          const char* module_name = pCONT->GetModuleName(metrics.unique_id);
+
+          Serial.printf("Task: %d|%S, \tMax: %d us, \tMin: %d us, \tAvg: %d us\n\r", 
+                        metrics.task_id, module_name, metrics.max_time, metrics.min_time, metrics.avg_time);
+      }
+      #endif
+        
     }break;
     case TASK_EVERY_FIVE_SECOND:
 
@@ -76,6 +93,20 @@ void mDevelopmentDebugging::parse_JSONCommand(JsonParserObject obj)
     mSupport::float2CString(debug_data.input_float1, JSON_VARIABLE_FLOAT_PRECISION_LENGTH, buffer);    
     ALOG_INF(PSTR("DebugInput Float1: %s"), buffer);
 	}
+
+  #ifdef ENABLE_DEBUGFEATURE_TASKERMANAGER__ADVANCED_METRICS
+	if(jtok = obj["Debug"].getObject()["ResetTaskMetrics"])
+	{
+    // Reset all task metrics
+    for (auto& metrics : pCONT->task_metrics) {
+        metrics.max_time = 0;        // Reset max time to 0
+        metrics.min_time = UINT32_MAX; // Set min time to the highest possible value to ensure it gets updated correctly
+        metrics.total_time = 0;      // Reset total time
+        metrics.count = 0;           // Reset count
+        metrics.avg_time = 0;        // Reset average time
+    }
+	}
+  #endif // ENABLE_DEBUGFEATURE_TASKERMANAGER__ADVANCED_METRICS
 
 
 

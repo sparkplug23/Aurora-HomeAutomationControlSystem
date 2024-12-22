@@ -82,11 +82,75 @@ int8_t mTaskerManager::Tasker_Interface(uint16_t task)
       DEBUG_LINE_HERE_MILLIS
     }
     
+    #ifdef ENABLE_DEBUGFEATURE_TASKERMANAGER__ADVANCED_METRICS
+    // Record start time in microseconds
+    uint32_t start_time = micros();
+    #endif
     
     /****************************************************************************************************************
      * Thread: Call each module with the task
      *****************************************************************************************************************/ 
-    mod->Tasker(task, obj);    
+    #ifdef ENABLE_DEBUGFEATURE_TASKERMANAGER__ADVANCED_METRICS
+      // Check if the current task is in the list of tasks to monitor
+      bool shouldMonitorAllTasks = (std::find(monitor_task.begin(), monitor_task.end(), TASKER_FUNCTION_TYPES(0)) != monitor_task.end());
+
+      // If monitoring all tasks, or if the current task is in the monitored list
+      if (shouldMonitorAllTasks || std::find(monitor_task.begin(), monitor_task.end(), static_cast<TASKER_FUNCTION_TYPES>(task)) != monitor_task.end()) {
+          // Record start time in microseconds
+          uint32_t start_time = micros();
+
+          /****************************************************************************************************************
+           * Thread: Call each module with the task
+           *****************************************************************************************************************/ 
+          mod->Tasker(task, obj);
+
+          // Calculate elapsed time
+          uint32_t elapsed_time = micros() - start_time;
+
+          // Get the unique ID of the module
+          uint16_t unique_id = mod->GetModuleUniqueID();
+
+          // Update task metrics
+          auto it = std::find_if(task_metrics.begin(), task_metrics.end(), [unique_id](const TaskMetrics& metrics) {
+              return metrics.unique_id == unique_id;
+          });
+
+          if (it != task_metrics.end()) {
+              // Update existing metrics
+              it->total_time += elapsed_time;
+              it->count++;
+              it->avg_time = it->total_time / it->count;
+
+              // Check if this task took the longest time for this tasker
+              if (elapsed_time > it->max_time) {
+                  it->max_time = elapsed_time;
+                  it->task_id = static_cast<TASKER_FUNCTION_TYPES>(task);  // Save the task ID that took the longest
+              }
+
+              // Update min time
+              it->min_time = std::min(it->min_time, elapsed_time);
+
+          } else {
+              // Add new entry for this tasker
+              TaskMetrics new_metrics;
+              new_metrics.task_id = static_cast<TASKER_FUNCTION_TYPES>(task);
+              new_metrics.unique_id = unique_id;
+              new_metrics.max_time = elapsed_time;
+              new_metrics.min_time = elapsed_time;
+              new_metrics.total_time = elapsed_time;
+              new_metrics.count = 1;
+              new_metrics.avg_time = elapsed_time;
+              task_metrics.push_back(new_metrics);
+          }
+      } else {
+          // If the task is not being monitored, just run it
+          mod->Tasker(task, obj);
+      }
+  #else
+      // If metrics are disabled, just run the task
+      mod->Tasker(task, obj);
+  #endif
+
     
 
     /****************************************************************************************************************
@@ -402,7 +466,7 @@ uint8_t mTaskerManager::Instance_Init()
   #ifdef USE_MODULE_SENSORS_ULTRASONICS
   addTasker(new mUltraSonicSensor());
   #endif
-  #ifdef USE_MODULE_SENSORS_ADC_INTERNAL_ESP8266
+  #ifdef USE_MODULE_SENSORS_ADC_INTERNAL
   addTasker(new mADCInternal());
   #endif
   #ifdef USE_MODULE_SENSORS_ADC_INTERNAL_ESP32

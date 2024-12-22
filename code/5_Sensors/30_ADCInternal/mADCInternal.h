@@ -18,14 +18,14 @@
 */
 //https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/gpio.html
 
-#ifndef mADCInternal_esp32_H
-#define mADCInternal_esp32_H
+#ifndef mADCInternal_H
+#define mADCInternal_H
 
 #define D_UNIQUE_MODULE_SENSORS_ADC_INTERNAL_ID 5030 // [(Folder_Number*100)+ID_File]
 
 #include "1_TaskerManager/mTaskerManager.h"
 
-#ifdef USE_MODULE_SENSORS_ADC_INTERNAL_ESP32
+#ifdef USE_MODULE_SENSORS_ADC_INTERNAL
 
 #include "1_TaskerManager/mTaskerManager.h"
 
@@ -63,23 +63,41 @@ class mADCInternal :
 {
   
   public:
+    /************************************************************************************************
+     * SECTION: Construct Class Base
+     ************************************************************************************************/
     mADCInternal(){};
-
-
-    void Start(void (*ISR_callback)(void));
-    void IRAM_ATTR button_ISR();
-
-    uint8_t interruptPin = 12;
-
-
-
     void Pre_Init(void);
     void Init(void);
     int8_t Tasker(uint8_t function, JsonParserObject obj = 0);
+    void BootMessage();
     
     static constexpr const char* PM_MODULE_SENSORS_ADC_INTERNAL_CTR = D_MODULE_SENSORS_ADC_INTERNAL_CTR;
     PGM_P GetModuleName(){          return PM_MODULE_SENSORS_ADC_INTERNAL_CTR; }
     uint16_t GetModuleUniqueID(){ return D_UNIQUE_MODULE_SENSORS_ADC_INTERNAL_ID; }
+    
+    struct ClassState
+    {
+      uint8_t devices = 0; // sensors/drivers etc, if class operates on multiple items how many are present.
+      uint8_t mode = ModuleStatus::Initialising; // Disabled,Initialise,Running
+    }module_state;
+
+    /************************************************************************************************
+     * SECTION: DATA_RUNTIME saved/restored on boot with filesystem
+     ************************************************************************************************/
+
+    struct MODULE_RUNTIME{ // these will be saved and recovered on boot
+
+    }rt;
+
+    /************************************************************************************************
+     * SECTION: Internal Functions
+     ************************************************************************************************/
+          
+    void Start(void (*ISR_callback)(void));
+    void IRAM_ATTR button_ISR();
+
+    uint8_t interruptPin = 12;
 
 
     struct SETTINGS{
@@ -203,6 +221,7 @@ struct ISR_DUAL_CAPTURE{
         // static size for stability of stack
         uint16_t adc[STORED_VALUE_ADC_MAX] = {0};
       }stored_values;
+      uint32_t utc_measured_timestamp = 0;
     }readings[2];
 
     std::vector<int> samples;
@@ -255,6 +274,10 @@ void Update_Channel1_ADC_Readings();
     // }sensor[MAX_SENSORS];
 
     
+    /************************************************************************************************
+     * SECTION: Unified Sensor Reporting
+     ************************************************************************************************/
+
     uint8_t GetSensorCount(void) override
     {
       return settings.fSensorCount;
@@ -262,38 +285,35 @@ void Update_Channel1_ADC_Readings();
     
     void GetSensorReading(sensors_reading_t* value, uint8_t index = 0) override
     {
-      // Serial.printf("OVERRIDE ACCESSED DHT %d\n\r",index);Serial.println(sensor[index].instant.temperature);
-      // if(index > MAX_SENSORS-1) {
-      value->sensor_type.push_back(0);// return ;//}
-      // value->type.push_back(SENSOR_TYPE_TEMPERATURE_ID);
-      // value->type.push_back(SENSOR_TYPE_RELATIVE_HUMIDITY_ID);
-      value->data_f.push_back(0);
-      // value->data.push_back(sensor[index].humidity);
-      // value->sensor_id = index;
+      if(index > ADC_CHANNELS_MAX-1) {value->sensor_type.push_back(0); return ;}
+      value->timestamp = readings[index].utc_measured_timestamp;
+      value->sensor_type.push_back(SENSOR_TYPE_ADC_READING_ID);
+      value->data_f.push_back(readings[index].adc_level);
+      value->sensor_id = index;
     };
 
+    /************************************************************************************************
+     * SECTION: Commands
+     ************************************************************************************************/
 
+    /************************************************************************************************
+     * SECTION: Construct Messages
+     ************************************************************************************************/
 
-        
-    uint8_t ConstructJSON_Settings(uint8_t json_level = 0, bool json_appending = false);
-    uint8_t ConstructJSON_Sensor(uint8_t json_level = 0, bool json_appending = false);
+    uint8_t ConstructJSON_Settings(uint8_t json_level = 0, bool json_appending = true);
+    uint8_t ConstructJSON_Sensor(uint8_t json_level = 0, bool json_appending = true);
   
-    #ifdef USE_MODULE_NETWORK_MQTT
 
-    void MQTTHandler_Init();
-    void MQTTHandler_RefreshAll();
-    void MQTTHandler_Rate();
-    void MQTTHandler_Sender();
-    
+    /************************************************************************************************
+     * SECITON: MQTT
+     ************************************************************************************************/
+
+    #ifdef USE_MODULE_NETWORK_MQTT
+    void MQTTHandler_Init();    
+    std::vector<struct handler<mADCInternal>*> mqtthandler_list;
     struct handler<mADCInternal> mqtthandler_settings;
     struct handler<mADCInternal> mqtthandler_sensor_ifchanged;
-    struct handler<mADCInternal> mqtthandler_sensor_teleperiod;
- 
-    std::vector<struct handler<mADCInternal>*> mqtthandler_list;
-
-    // No specialised payload therefore use system default instead of enum
-    
-    
+    struct handler<mADCInternal> mqtthandler_sensor_teleperiod;    
     #endif // USE_MODULE_NETWORK_MQTT
 
 };

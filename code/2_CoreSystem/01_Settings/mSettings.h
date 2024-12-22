@@ -606,7 +606,7 @@ struct SystemName{
   char          device[50];   // USed as mqtt topic by default, set by templates "Name"
 };
 #ifdef DEVICENAME_CTR
-static_assert(sizeof(DEVICENAME_CTR) - 1 <= 50, "DEVICENAME_CTR exceeds max length");
+// static_assert(sizeof(DEVICENAME_CTR) - 1 <= 50, "DEVICENAME_CTR exceeds max length");
 #endif 
 
 

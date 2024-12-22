@@ -499,6 +499,19 @@ void mSupport::AppendDList(char* buffer, uint16_t buflen, const char* formatP, .
 }
 
 
+String mSupport::GetSwitchText(uint32_t i) {
+  String switch_text = "";
+  if (i < MAX_SWITCHES_TXT) {
+    switch_text = pCONT_set->SettingsText(SET_SWITCH_TXT1 + i);
+  }
+  if ('\0' == switch_text[0]) {
+    switch_text = F("D_JSON_SWITCH");
+    switch_text += String(i+1);
+  }
+  return switch_text;
+}
+
+
 #ifdef USE_ARDUINO_OTA
 
 /*********************************************************************************************\

@@ -367,7 +367,7 @@
       "\"27\":\"" D_GPIO_FUNCTION_KEY1_INV_CTR  "\","
       #endif
       #ifdef USE_MODULE_DRIVERS_RELAY
-      "\"26\":\"" D_GPIO_FUNCTION_REL1_INV_CTR  "\""
+      "\"26\":\"" D_GPIO_FUNCTION_REL1_CTR  "\""
       #endif  
 
     "},"

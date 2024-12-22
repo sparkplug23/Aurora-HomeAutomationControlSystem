@@ -184,10 +184,11 @@ class mInterfaceLight :
       
     // }settings;
 
-    COLOUR_ORDER_T GetColourOrder_FromName(const char* c);
+    uint8_t GetColourOrder_FromName(const char* c);
     
     void EveryLoop();
-    void ShowInterface();
+    
+    inline void ShowInterface(){ if(bus_manager) bus_manager->show(); }   
 
     void LightCalcPWMRange();
     void parseJSONObject__BusConfig(JsonParserObject obj); 
@@ -220,6 +221,7 @@ class mInterfaceLight :
       uint16_t time_decounter_secs = 0;
     }auto_off_settings;
 
+    String GetColourOrderString(uint8_t colour_order);
 
     #ifdef ENABLE_PIXEL_LIGHTING_GAMMA_CORRECTION
     uint16_t change8to10(uint8_t v);
@@ -239,14 +241,14 @@ class mInterfaceLight :
     uint8_t  _briRGB_Global = 255;  // 0..255 // Used for ws28xx
     uint8_t  _briCT_Global = 255;
 
-    uint8_t getBri_Global(void) { // return the max of _briCT and _briRGB
+    inline uint8_t getBri_Global(void) { // return the max of _briCT and _briRGB
       return (_briRGB_Global >= _briCT_Global) ? _briRGB_Global : _briCT_Global;
     }
-    uint8_t getBriRGB_Global()
+    inline uint8_t getBriRGB_Global()
     {
       return _briRGB_Global;
     }
-    uint8_t getBriCCT_Global()
+    inline uint8_t getBriCCT_Global()
     {
       return _briCT_Global;
     }

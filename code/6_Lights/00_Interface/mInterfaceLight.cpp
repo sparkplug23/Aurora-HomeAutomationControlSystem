@@ -271,13 +271,32 @@ void mInterfaceLight::Init(void)
 }
 
 
-void mInterfaceLight::ShowInterface()
+String mInterfaceLight::GetColourOrderString(uint8_t colour_order) 
 {
+    String result = "";
 
-  if(bus_manager){ bus_manager->show(); }
-        
+    // Decode the RGB part (lower 3 bits)
+    switch (colour_order & 0x0F) {  // Masking to get the lower 4 bits
+        case 0x00: result += "RGB"; break;
+        case 0x01: result += "GRB"; break;
+        case 0x02: result += "BRG"; break;
+        case 0x03: result += "BGR"; break;
+        case 0x04: result += "GBR"; break;
+        case 0x05: result += "RBG"; break;
+        default: result += "Invalid"; break;
+    }
+
+    // Decode the white part (upper 4 bits)
+    switch (colour_order & 0xF0) {  // Masking to get the upper 4 bits
+        case 0x00: break;  // No white channels
+        case 0x10: result += "C"; break;  // Cold White only
+        case 0x20: result += "W"; break;  // Warm White only
+        case 0x40: result += "WC"; break;  // Warm and Cold White
+        default: result += " Invalid"; break;
+    }
+
+    return result;
 }
-
 
 
 
@@ -370,7 +389,7 @@ void mInterfaceLight::Save_Module()
         JBI->Add("Length", bus_manager->busses[bus_i]->getLength());
         JBI->Add_P("BusType", bus_manager->busses[bus_i]->getTypeName());
 
-        JBI->Add_P("ColourOrder", bus_manager->getColourOrderName(bus_manager->busses[bus_i]->getColorOrder(), buffer, sizeof(buffer)) );
+        // JBI->Add_P("ColourOrder", bus_manager->getColourOrderName(bus_manager->busses[bus_i]->getColorOrder(), buffer, sizeof(buffer)) );
 
       JBI->Object_End();
     }
@@ -817,7 +836,7 @@ void mInterfaceLight::parseJSONObject__BusConfig(JsonParserObject obj)
   uint16_t length = 10;
   int8_t bus_type = BUSTYPE_NONE;
   uint8_t reversed = 0;
-  COLOUR_ORDER_T ColourOrder = {COLOUR_ORDER_INIT_DISABLED};
+  uint8_t ColourOrder = 0;//{COLOUR_ORDER_INIT_DISABLED};
   uint8_t pins[5] = {255}; // 255 is unset
 
   if(jtok2 = obj["Pin"])
@@ -894,7 +913,7 @@ void mInterfaceLight::parseJSONObject__BusConfig(JsonParserObject obj)
     pins[0],
     start,
     length,
-    ColourOrder.data
+    ColourOrder
   );
 
 
@@ -919,10 +938,78 @@ void mInterfaceLight::parseJSONObject__BusConfig(JsonParserObject obj)
 }
 
 
-COLOUR_ORDER_T mInterfaceLight::GetColourOrder_FromName(const char* c)
+#ifdef ENABLE_DEVFEATURE_LIGHTING__OCT24_COLOUR_ORDER
+
+#include <ctype.h>  // for toupper
+
+uint8_t mInterfaceLight::GetColourOrder_FromName(const char* c)
 {
 
-  COLOUR_ORDER_T colour_order = {COLOUR_ORDER_INIT_DISABLED};
+    uint8_t colour_order = 0;  // Initialize as 0 (default to RGB with no whites)
+
+    // Validate length (must be 3 to 5 characters)
+    size_t len = strlen(c);
+    Serial.println("len");
+    Serial.println(len);
+    if (!c || len < 3 || len > 5) {
+        ALOG_ERR(PSTR("INVALID Length"));
+        return colour_order;
+    }
+
+    // Convert all characters to uppercase to simplify checks
+    char chars[5] = {0};  // Array to hold converted characters
+    for (size_t i = 0; i < len; i++) {
+        chars[i] = toupper(c[i]);
+    }
+
+    // Check RGB order from the first three characters
+    if (chars[0] == 'R' && chars[1] == 'G' && chars[2] == 'B') {
+        colour_order = 0x00; // RGB
+    } else if (chars[0] == 'G' && chars[1] == 'R' && chars[2] == 'B') {
+        colour_order = 0x01; // GRB
+    } else if (chars[0] == 'B' && chars[1] == 'R' && chars[2] == 'G') {
+        colour_order = 0x02; // BRG
+    } else if (chars[0] == 'B' && chars[1] == 'G' && chars[2] == 'R') {
+        colour_order = 0x03; // BGR
+    } else if (chars[0] == 'G' && chars[1] == 'B' && chars[2] == 'R') {
+        colour_order = 0x04; // GBR
+    } else if (chars[0] == 'R' && chars[1] == 'B' && chars[2] == 'G') {
+        colour_order = 0x05; // RBG
+    } else {
+        ALOG_ERR(PSTR("INVALID RGB Order"));
+        return colour_order;  // Invalid RGB order
+    }
+
+    // Check for optional white channel settings (4th and 5th characters)
+    if (len >= 4) {
+        if (chars[3] == 'W') {
+            if (len == 4) {
+                colour_order |= 0x20;  // Only WW (Warm White)
+            } else if (chars[4] == 'C') {
+                colour_order |= 0x40;  // Both WW and CW
+            }
+        } else if (chars[3] == 'C') {
+            if (len == 4) {
+                colour_order |= 0x10;  // Only CW (Cold White)
+            }
+        }
+    }
+
+    #ifdef ENABLE_LOG_LEVEL_COMMANDS
+    ALOG_ERR(PSTR("colour_order == \n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r%X"), colour_order);
+    #endif  
+
+    return colour_order;
+}
+
+
+#else
+
+
+uint8_t mInterfaceLight::GetColourOrder_FromName(const char* c)
+{
+
+  uint8_t colour_order = {COLOUR_ORDER_INIT_DISABLED};
 
   if(!c){ return colour_order; }
   if(strlen(c)<=5){
@@ -966,6 +1053,8 @@ COLOUR_ORDER_T mInterfaceLight::GetColourOrder_FromName(const char* c)
   return colour_order;
 
 }
+
+#endif // ENABLE_DEVFEATURE_LIGHTING__OCT24_COLOUR_ORDER
 
 
 /******************************************************************************************************************
@@ -1084,7 +1173,7 @@ void mInterfaceLight::CommandSet_LightPowerState(uint8_t state)
     pSEGMENT_I(0).intensity = 255;    
     pSEGMENT_I(0).single_animation_override.time_ms =  pSEGMENT_I(0).single_animation_override_turning_off.time_ms; // slow turn on
     ALOG_INF(PSTR("Setting override for off %d"), pSEGMENT_I(0).single_animation_override.time_ms);
-    pSEGMENT_I(0).flags.fForceUpdate = true;
+    pCONT_lAni->force_update();
     pSEGMENT_I(0).effect_anim_section = 0; // for effects that are only generated once, we need to trigger it again to make the brightness dim down
     CommandSet_Brt_255(0);    
   }
@@ -1095,7 +1184,7 @@ void mInterfaceLight::CommandSet_LightPowerState(uint8_t state)
     // CommandSet_Animation_Transition_Time_Ms(1000);
 
     pSEGMENT_I(0).single_animation_override.time_ms = 1000; // slow turn on
-    pSEGMENT_I(0).flags.fForceUpdate = true;
+    pCONT_lAni->force_update();
 
 
     // CommandSet_Animation_Transition_Rate_Ms(1000);
@@ -1122,12 +1211,16 @@ void mInterfaceLight::CommandSet_Brt_255(uint8_t brt_new){
     
   // pCONT_lAni->SEGMENT_I(0).rgbcct_controller->setBrightness255(brt_new);
 
-  if(!pCONT_lAni->segments.size()){ return; }
+  // if(!pCONT_lAni->segments.size()){ return; } // Global does not rely on segments, and will be called before segments are created
 
-  pCONT_lAni->SEGMENT_I(0).flags.fForceUpdate = true;
+  pCONT_lAni->force_update();
   
-  pCONT_lAni->SEGMENT_I(0).effect_anim_section = 0; // for effects that are only generated once, we need to trigger it again to make the brightness dim down
-  setBriRGB_Global(brt_new);
+  
+ if(pCONT_lAni->segments.size())
+  {
+    pCONT_lAni->SEGMENT_I(0).effect_anim_section = 0; // for effects that are only generated once, we need to trigger it again to make the brightness dim down
+  }
+   setBriRGB_Global(brt_new);
   // probably needs to check if they are linked here, or internally
   setBriCT_Global(brt_new);
 
@@ -1144,13 +1237,15 @@ void mInterfaceLight::CommandSet_Brt_255(uint8_t brt_new){
 
 void mInterfaceLight::CommandSet_Global_BrtRGB_255(uint8_t bri, uint8_t segment_index)
 {
-  if(!pCONT_lAni->segments.size()){ return; }
+  // if(!pCONT_lAni->segments.size()){ return; } // Global does not rely on segments, and will be called before segments are created
 
   // SEGMENT_I(segment_index).rgbcct_controller->setBrightnessRGB255(bri);
- pCONT_lAni->SEGMENT_I(segment_index).flags.fForceUpdate = true;
+ pCONT_lAni->force_update();
  
- pCONT_lAni->SEGMENT_I(0).effect_anim_section = 0; // for effects that are only generated once, we need to trigger it again to make the brightness dim down
-  
+ if(pCONT_lAni->segments.size())
+  {
+    pCONT_lAni->SEGMENT_I(0).effect_anim_section = 0; // for effects that are only generated once, we need to trigger it again to make the brightness dim down
+  }
 
   _briRGB_Global = bri;
   setBriRGB_Global(bri);
@@ -1167,10 +1262,14 @@ void mInterfaceLight::CommandSet_Global_BrtRGB_255(uint8_t bri, uint8_t segment_
 
 void mInterfaceLight::CommandSet_Global_BrtCCT_255(uint8_t bri, uint8_t segment_index) 
 {
-  if(!pCONT_lAni->segments.size()){ return; }
-  pCONT_lAni->SEGMENT_I(segment_index).flags.fForceUpdate = true; 
-  pCONT_lAni->SEGMENT_I(0).effect_anim_section = 0; // for effects that are only generated once, we need to trigger it again to make the brightness dim down
+  // if(!pCONT_lAni->segments.size()){ return; }
+  pCONT_lAni->force_update();
   
+ if(pCONT_lAni->segments.size())
+  {
+    pCONT_lAni->SEGMENT_I(0).effect_anim_section = 0; // for effects that are only generated once, we need to trigger it again to make the brightness dim down
+  }
+
   setBriCT_Global(bri);
   #ifdef ENABLE_LOG_LEVEL_COMMANDS
   // ALOG_INF(PSTR(D_LOG_LIGHT D_COMMAND_NVALUE_K(D_BRIGHTNESS_CCT)), SEGMENT_I(segment_index).rgbcct_controller->getBrightnessCCT255());
@@ -1322,13 +1421,13 @@ uint8_t mInterfaceLight::ConstructJSON_Debug__BusConfig(uint8_t json_level, bool
       JBI->Add("s", bus_manager->busses[bus_i]->_start);
       JBI->Add("l", bus_manager->busses[bus_i]->_len);
 
-      COLOUR_ORDER_T colour_order = bus_manager->busses[bus_i]->getColorOrder();
+      uint8_t colour_order = bus_manager->busses[bus_i]->getColorOrder();
       JBI->Array_Start("CO");
-        JBI->Add(colour_order.red);
-        JBI->Add(colour_order.green);
-        JBI->Add(colour_order.blue);
-        JBI->Add(colour_order.white_cold);
-        JBI->Add(colour_order.white_warm);
+        JBI->Add(GetColourOrderString(colour_order).c_str());// colour_order.red);
+        // JBI->Add(colour_order.green);
+        // JBI->Add(colour_order.blue);
+        // JBI->Add(colour_order.white_cold);
+        // JBI->Add(colour_order.white_warm);
       JBI->Array_End();
 
       JBI->Add("getType", (uint8_t)bus_manager->busses[bus_i]->getType());

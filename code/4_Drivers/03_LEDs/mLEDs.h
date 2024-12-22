@@ -124,6 +124,8 @@ class mLEDs :
 
     uint16_t GetLED_Output(uint8_t index);
 
+    #define MODULE_LEDS_MAX 4
+
     /**
      * @brief Bitpacked LEDs
      * 

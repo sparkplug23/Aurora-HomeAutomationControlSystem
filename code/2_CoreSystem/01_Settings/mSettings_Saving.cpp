@@ -66,7 +66,7 @@ void mSettings::SettingsLoad(void)
     while (slot <= max_slots) {                                  // Read all config pages in search of valid and latest
       if (slot > 0) {
         flash_location = (1 == slot) ? EEPROM_LOCATION : (2 == slot) ? SETTINGS_LOCATION : flash_location -1;
-        ESP.flashRead(flash_location * SPI_FLASH_SEC_SIZE, &Settings, sizeof(SETTINGS_HOLDER));
+        ESP.flashRead(flash_location * SPI_FLASH_SEC_SIZE, (uint32*)&Settings, sizeof(SETTINGS));
       }
       if ((Settings.cfg_crc32 != 0xFFFFFFFF) && (Settings.cfg_crc32 != 0x00000000) && (Settings.cfg_crc32 == GetSettingsCrc32())) {
         if (Settings.save_flag > save_flag) {                    // Find latest page based on incrementing save_flag
@@ -88,7 +88,7 @@ void mSettings::SettingsLoad(void)
       } else
       #endif  // ENABLE_DEVFEATURE_SETTINGS__TFS
       {
-        ESP.flashRead(settings_location * SPI_FLASH_SEC_SIZE, &Settings, sizeof(SETTINGS));
+        ESP.flashRead(settings_location * SPI_FLASH_SEC_SIZE, (uint32*)&Settings, sizeof(SETTINGS));
         ALOG_INF(PSTR(D_LOG_CONFIG D_LOADED_FROM_FLASH_AT " %X, " D_COUNT " %lu"), settings_location, Settings.save_flag);
       }
     }
@@ -270,7 +270,7 @@ void mSettings::SettingsSave(uint8_t rotate)
       pCONT_mfile->TfsSaveFile(TASM_FILE_SETTINGS, &Settings, sizeof(SETTINGS));
     #endif  // ENABLE_DEVFEATURE_SETTINGS__TFS
       if (ESP.flashEraseSector(settings_location)) {
-        ESP.flashWrite(settings_location * SPI_FLASH_SEC_SIZE, &Settings, sizeof(SETTINGS));
+        ESP.flashWrite(settings_location * SPI_FLASH_SEC_SIZE, (uint32*)&Settings, sizeof(SETTINGS));
       }
 
       if (!Settings.flag_system.stop_flash_rotate && rotate) {  // SetOption12 - (Settings) Switch between dynamic (0) or fixed (1) slot flash save location
@@ -386,6 +386,8 @@ void mSettings::SettingsErase(uint8_t type)
     1 = Erase SDK parameter area at end of linker memory model (0x0FDxxx - 0x0FFFFF) solving possible wifi errors
   */
 
+#ifdef ESP32
+
   int32_t r1, r2, r3 = 0;
   switch (type) {
     case 0:               // Reset 2 = Erase all flash from program end to end of physical flash
@@ -421,6 +423,9 @@ void mSettings::SettingsErase(uint8_t type)
       AddLog(LOG_LEVEL_DEBUG, PSTR(D_LOG_APPLICATION D_ERASE " Tasmota data (%d,%d,%d)"), r1, r2, r3);
       break;
   }
+
+#endif // ESP32
+
 }
 
 // Copied from 2.4.0 as 2.3.0 is incomplete

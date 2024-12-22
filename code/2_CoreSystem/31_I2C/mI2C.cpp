@@ -117,7 +117,7 @@ void mI2C::Pre_Init()
     {
       #ifdef ESP8266
       wire = new TwoWire();
-      wire->begin(GetPin(GPIO_I2C_SDA_ID), GetPin(GPIO_I2C_SCL_ID)); // no return to check status
+      wire->begin(pCONT_pins->GetPin(GPIO_I2C_SDA_ID), pCONT_pins->GetPin(GPIO_I2C_SCL_ID)); // no return to check status
       #else
       wire = new TwoWire(0);
       ALOG_DBM( PSTR("Trying to start i2c 2-wire"));

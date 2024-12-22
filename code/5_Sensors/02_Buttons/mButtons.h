@@ -180,6 +180,17 @@ bool ModuleEnabled();
 #endif // MAX_KEYS
 
 #endif
+Ticker* TickerButton;
+
+void SetPullupFlag(uint8_t button_bit);
+void SetInvertFlag(uint8_t button_bit);
+void ButtonHandler(void);
+
+void ButtonLoop(void);
+bool IsButtonActive(uint8_t id);
+char* IsButtonActiveCtr(uint8_t id, char* buffer, uint8_t buflen);
+
+
 
 uint8_t GetHardwareSpecificPullMethod(uint8_t real_pin);
 
@@ -233,22 +244,12 @@ uint32_t tsaved_button_debounce;
 
 uint16_t dual_button_code = 0;              // Sonoff dual received code
 
-void SetPullupFlag(uint8_t button_bit);
-void SetInvertFlag(uint8_t button_bit);
-void Pre_Init(void);
-uint8_t ButtonSerial(uint8_t serial_in_byte);
-void ButtonHandler(void);
-void ButtonLoop(void);
-
-char* IsButtonActiveCtr(uint8_t id, char* buffer, uint8_t buflen);
-
-bool IsButtonActive(uint8_t id);
 
 
     uint8_t ConstructJSON_Settings(uint8_t json_level = 0, bool json_appending = true);
     uint8_t ConstructJSON_Sensor(uint8_t json_level = 0, bool json_appending = true);
   
-
+  
 #endif // ENABLE_DEVFEATURE_BUTTON__V1
 
 };

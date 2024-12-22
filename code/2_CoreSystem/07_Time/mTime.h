@@ -226,6 +226,17 @@ class mTime :
     time_t GetStartOfDayUTC(time_t utc_time);
 
 
+    #ifdef ENABLE_DEVFEATURE_TIME__TIME_SHORT_FUNCTIONS
+    static uint32_t EncodeTimeShortToU32(const time_short_t& time);
+    static time_short_t DecodeU32ToTimeShort(uint32_t encoded_time);
+    static const char* GetFormattedTime(uint32_t encoded_time, char* buffer, uint8_t buflen, bool include_weekday);
+    static time_short_t MakeTimeShort(uint8_t hour, uint8_t minute, uint8_t second, uint8_t day_of_week = 0);
+    static String GetTimeStrFromTimeShort(const time_short_t& time, bool include_day_of_week = false); 
+    #endif
+
+
+
+
     uint8_t hour(uint32_t time);
     uint8_t minute(uint32_t time);
     uint8_t second(uint32_t time);

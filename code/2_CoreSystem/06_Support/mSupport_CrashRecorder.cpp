@@ -1,27 +1,77 @@
 
 #include "mSupport.h"
 
+// #ifdef ESP8266
+// extern "C" {
+// #include <cont.h>
+//   extern cont_t* g_pcont;
+// }
+
+// void mSupport::DebugFreeMem(void)
+// {
+//   //https://www.esp8266.com/viewtopic.php?p=69937
+//   //https://i.stack.imgur.com/waoHN.gif
+//   register uint32_t *sp asm("a1");
+
+//     #ifdef ENABLE_LOG_LEVEL_INFO
+//   ALOG_DBG(PSTR(D_LOG_DEBUG "FreeRam %d, FreeStack %d"), 
+//       ESP.getFreeHeap(), 4 * (sp - g_pcont->stack));
+//     #endif// ENABLE_LOG_LEVEL_INFO
+// }
+
+// // #endif  // ARDUINO_ESP8266_RELEASE_2_x_x
+
+// #endif // ESP8266
+
+
+
 #ifdef ESP8266
+// All version from core 2.4.2
+// https://github.com/esp8266/Arduino/pull/5018
+// https://github.com/esp8266/Arduino/pull/4553
+
 extern "C" {
 #include <cont.h>
   extern cont_t* g_pcont;
 }
 
-void mSupport::DebugFreeMem(void)
-{
-  //https://www.esp8266.com/viewtopic.php?p=69937
-  //https://i.stack.imgur.com/waoHN.gif
+void DebugFreeMem(void) {
   register uint32_t *sp asm("a1");
 
-    #ifdef ENABLE_LOG_LEVEL_INFO
-  ALOG_DBG(PSTR(D_LOG_DEBUG "FreeRam %d, FreeStack %d"), 
-      ESP.getFreeHeap(), 4 * (sp - g_pcont->stack));
-    #endif// ENABLE_LOG_LEVEL_INFO
+  // AddLog(LOG_LEVEL_DEBUG, PSTR(D_LOG_DEBUG "FreeRam %d, FreeStack %d (%s)"), ESP.getFreeHeap(), 4 * (sp - g_pcont->stack), XdrvMailbox.data);
 }
 
-// #endif  // ARDUINO_ESP8266_RELEASE_2_x_x
+uint32_t FreeStack(void) {
+  register uint32_t *sp asm("a1");
+  return 4 * (sp - g_pcont->stack);
+}
 
-#endif // ESP8266
+void AddLogMem(const char* function) {
+  register uint32_t *sp asm("a1");
+  AddLog(LOG_LEVEL_DEBUG, PSTR(D_LOG_DEBUG "== %s FreeRam %d, FreeStack %d"), function, ESP.getFreeHeap(), 4 * (sp - g_pcont->stack));
+}
+
+#endif  // ESP8266
+#ifdef ESP32
+
+void DebugFreeMem(void) {
+  register uint8_t *sp asm("a1");
+
+  // AddLog(LOG_LEVEL_DEBUG, PSTR(D_LOG_DEBUG "FreeRam %d, FreeStack %d (%s)"), ESP.getFreeHeap(), sp - pxTaskGetStackStart(NULL), XdrvMailbox.data);
+}
+
+uint32_t FreeStack(void) {
+  register uint8_t *sp asm("a1");
+  return sp - pxTaskGetStackStart(NULL);
+}
+
+void AddLogMem(const char* function) {
+  register uint8_t *sp asm("a1");
+  AddLog(LOG_LEVEL_DEBUG, PSTR(D_LOG_DEBUG "== %s FreeRam %d, FreeStack %d"), function, ESP.getFreeHeap(), sp - pxTaskGetStackStart(NULL));
+}
+
+#endif  // ESP8266 - ESP32
+
 
 //#ifdef ENABLE_CRASH_RECORDING
 
