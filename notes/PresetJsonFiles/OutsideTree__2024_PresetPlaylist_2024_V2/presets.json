@@ -2,7 +2,7 @@
 {
   "0": {},
   "1": {
-    "n":"Static,Snowy02,S127,R4000,G1,D0",
+    "n":"Static Snowy02",
     "ColourPalette":"Snowy 02",
     "Effects": {
       "Function":"Static Palette",
@@ -16,7 +16,7 @@
     "BrightnessRGB": 100
   },
   "2": {
-    "n":"FastPops,Snowy02,S255,R50,G1,D10",
+    "n":"FastPops Snowy02",
     "ColourPalette":"Snowy 02",
     "Effects": {
       "Function":"Slow Glow",
@@ -29,7 +29,7 @@
     "BrightnessRGB": 100
   },
   "3": {
-    "n":"StepPalette,ColourfulPairs,S200,R2000,G1,D0",
+    "n":"Steps ColourfulPairs G1",
     "ColourPalette":"Colourful Pairs 01",
     "Effects": {
       "Function":"Stepping Palette",
@@ -42,7 +42,7 @@
     "BrightnessRGB": 100
   },
   "4": {
-    "n":"StepPalette,ColourfulPairs,S200,R3000,G10,D0",
+    "n":"Steps ColourfulPairs G210",
     "ColourPalette":"Colourful Pairs 01",
     "Effects": {
       "Function":"Stepping Palette",
@@ -55,7 +55,7 @@
     "BrightnessRGB": 100
   },
   "5": {
-    "n":"Static,Snowy02,S200,R4000,G10,D0",
+    "n":"Static Snowy02 G210",
     "ColourPalette":"Snowy 02",
     "Effects": {
       "Function":"Static Palette",
@@ -68,8 +68,7 @@
     "BrightnessRGB": 100
   },  
   "6": {
-    "n":"8RotatingPrevious,Snowy02,S255,R20,G1,D0",    
-    "ColourPalette":"Snowy 02",
+    "n":"RotatingPrevious",    
     "Effects": {
       "Function":"Rotating Previous",
       "Intensity":8,
@@ -80,21 +79,9 @@
     },
     "BrightnessRGB": 100
   },
-  "55": {
-    "n":"12RotatingPrevious,Snowy02,S255,R20,G1,D0",    
-    "ColourPalette":"Snowy 02",
-    "Effects": {
-      "Function":"Rotating Previous",
-      "Intensity":12,
-      "Speed":255,
-      "Grouping":1,
-      "Decimate":0,
-      "RateMs": 20
-    },
-    "BrightnessRGB": 100
-  },
+
   "7": {
-    "n":"SpannedCRGB16Grad,Random01,S126,R2000,G1,D0",    
+    "n":"Spanned Random Gradient",    
     "ColourPalette":"Random 01",
     "Effects": {
       "Function":"Spanned Palette",
@@ -107,7 +94,7 @@
     "BrightnessRGB": 100
   },
   "8": {
-    "n":"SweepRandom,Snowy02,S255,R25,G1,D0",    
+    "n":"Sweep Random",    
     "ColourPalette":"Snowy 02",
     "Effects": {
       "Function":"Sweep Random",
@@ -120,14 +107,14 @@
     "BrightnessRGB": 100
   },
   "9": {
-    "n":"30Twinkle WhiteONSnow, Snowy 02, 0/100, G1, D0",    
+    "n":"Twinkle White/Snow",    
     "ColourPalette":"Snowy 02",
     "Effects": {
       "Function":"Twinkle Palette Two on One",
       "Intensity":3,
       "Speed":255,
       "Grouping":1,
-      "Decimate":3,
+      "Decimate":6,
       "Param0":99,
       "Param1":255,
       "RateMs": 20
@@ -135,80 +122,35 @@
     "BrightnessRGB": 95
   },
   "10": {
-    "n":"30Twinkle SnowyONWhite, Snowy 02, 0/100, G1, D0",    
+    "n":"Twinkle Snowy/White",    
     "ColourPalette":"Cold White",
     "Effects": {
       "Function":"Twinkle Palette Two on One",
       "Intensity":20,
       "Speed":255,
       "Grouping":1,
-      "Decimate":3,
+      "Decimate":6,
       "Param0":125,
       "Param1":255,
       "RateMs": 20
-    },
-    "BrightnessRGB": 30
-  },
-  "21": {
-    "n":"Twinkle SnowyONBlue, Snowy 02, 0/100, G1, D0",    
-    "ColourPalette":"Blue",
-    "Effects": {
-      "Function":"Twinkle Palette Two on One",
-      "Intensity":20,
-      "Speed":255,
-      "Grouping":1,
-      "Decimate":3,
-      "Param0":125,
-      "Param1":255,
-      "RateMs": 20
-    },
-    "BrightnessRGB": 30
-  },
-  "22": {
-    "n":"Twinkle SnowyONGreen, Snowy 02, 0/100, G1, D0",    
-    "ColourPalette":"Green",
-    "Effects": {
-      "Function":"Twinkle Palette Two on One",
-      "Intensity":20,
-      "Speed":255,
-      "Grouping":1,
-      "Decimate":3,
-      "Param0":125,
-      "Param1":255,
-      "RateMs": 20
-    },
-    "BrightnessRGB": 30
-  },
-  "100": {
-    "n":"30Twinkle SnowyONWhite, Snowy 02, 0/100, G1, D0",    
-    "ColourPalette":"Cold White",
-    "Effects": {
-      "Function":"Twinkle Palette Two on One",
-      "Intensity":20,
-      "Speed":255,
-      "Grouping":1,
-      "Decimate":0,
-      "Param0":125,
-      "Param1":255,
-      "RateMs": 100
     },
     "BrightnessRGB": 30
   },
   "11": {
-    "n":"Candles, Snowy 02, 0/25, G1, D0",    
+    "n":"Candles Snowy 02",    
     "ColourPalette":"Snowy 02",
     "Effects": {
       "Function":"Candles",
       "Intensity":255,
       "Speed":255,
       "Grouping":1,
-      "Decimate":20,
+      "Decimate":7,
       "RateMs": 0
     },
     "BrightnessRGB": 100
   },
   "12": {
-    "n":"Meteor Smooth, Orange & Teal",    
+    "n":"Meteor Orange&Teal",    
     "ColourPalette":"Orange & Teal",
     "Effects": {
       "Function":"Meteor Smooth",
@@ -221,45 +163,76 @@
     "BrightnessRGB": 100
   },
   "13": {
-    "n":"NOWhite Twinkle on Snowy2",    
-    "ColourPalette":"Snowy 02",
+    "n":"Meteor Colours Warm",    
+    "ColourPalette":"Colours Warm",
     "Effects": {
-      "Function":"Twinkle Palette Two on One",
-      "Intensity":3,
-      "Speed":255,
+      "Function":"Meteor Smooth",
+      "Intensity":142,
+      "Speed":70,
       "Grouping":1,
       "Decimate":0,
-      "Param0":93,
       "RateMs": 23
     },
-    "BrightnessRGB": 95
-  },
-  "14": {
-    "n":"NOSnowy2 Twinkle on White",    
-    "ColourPalette":"Cold White",
-    "Effects": {
-      "Function":"Twinkle Palette Two on One",
-      "Intensity":20,
-      "Speed":255,
-      "Grouping":1,
-      "Decimate":0,
-      "Param0":125
-    },
-    "BrightnessRGB": 20
-  },
-  "15": {
-    "n":"NOCandles Snowy 02",    
-    "ColourPalette":"Cold White",
-    "Effects": {
-      "Function":"Twinkle Palette Two on One",
-      "Intensity":20,
-      "Speed":255,
-      "Grouping":1,
-      "Decimate":7
-    },
-    "BrightnessRGB": 20
+    "BrightnessRGB": 100
   },
 
+
+  "21": {
+    "n":"Twinkle Snowy/Blue",    
+    "ColourPalette":"Blue",
+    "Effects": {
+      "Function":"Twinkle Palette Two on One",
+      "Intensity":20,
+      "Speed":255,
+      "Grouping":1,
+      "Decimate":6,
+      "Param0":125,
+      "Param1":255,
+      "RateMs": 20
+    },
+    "BrightnessRGB": 30
+  },
+  "22": {
+    "n":"Twinkle Snowy/Green",    
+    "ColourPalette":"Green",
+    "Effects": {
+      "Function":"Twinkle Palette Two on One",
+      "Intensity":20,
+      "Speed":255,
+      "Grouping":1,
+      "Decimate":6,
+      "Param0":125,
+      "Param1":255,
+      "RateMs": 20
+    },
+    "BrightnessRGB": 30
+  },
+  "23": {
+    "n":"Juggle Snowy 02",    
+    "ColourPalette": "Snowy 02",
+    "Effects": {
+      "Function": "Juggle",
+      "RateMs":0,
+      "Speed":255,
+      "Intensity":49,
+      "Decimate":0,
+      "Grouping":1
+    },
+    "BrightnessRGB": 100
+  },
+  "24": {
+    "n":"Colour Waves Snowy02",    
+    "ColourPalette": "Snowy 02",
+    "Effects": {
+      "Function": "Colour Waves",
+      "RateMs":0,
+      "Speed":255,
+      "Intensity":49,
+      "Decimate":0,
+      "Grouping":1
+    },
+    "BrightnessRGB": 100
+  },
 
 
   "32": {
@@ -275,12 +248,12 @@
     },
     "BrightnessRGB": 100
   },
+
+
   "34": {
     "n":"Meteor Smooth Snowy 02",    
     "ColourPalette": "Berry Orange"
   },
-
-
   "35": {
     "n":"Twinkle Out Palette",    
     "ColourPalette": "Snowy 02",
@@ -294,34 +267,6 @@
     },
     "BrightnessRGB": 100
   },
-
-  "47": {
-    "n":"Candles Pastel+",    
-    "ColourPalette":"IceCream Floats+",
-    "Effects": {
-      "Function":"Candles",
-      "Intensity":255,
-      "Speed":255,
-      "Grouping":1,
-      "Decimate":7,
-      "RateMs":23
-    },
-    "BrightnessRGB": 100
-  },
-  "48": {
-    "n":"Candles Snowy02",    
-    "ColourPalette":"Snowy 02",
-    "Effects": {
-      "Function":"Candles",
-      "Intensity":255,
-      "Speed":255,
-      "Grouping":1,
-      "Decimate":7,
-      "RateMs":23
-    },
-    "BrightnessRGB": 100
-  },
-
 
   "40": {
     "n":"Intensity 2,G1",    
@@ -372,33 +317,29 @@
       "Grouping":1
     }
   },
-  "58": {
-    "n":"Twinkle FastIn/SlowOut",    
-    "ColourPalette":"Party 16",
+  "47": {
+    "n":"Candles Pastel+",    
+    "ColourPalette":"IceCream Floats+",
     "Effects": {
-      "Function":"Twinkle FastIn/SlowOut",
+      "Function":"Candles",
       "Intensity":255,
-      "Speed":213,
+      "Speed":255,
       "Grouping":1,
-      "Decimate":0,
+      "Decimate":7,
       "RateMs":23
     },
     "BrightnessRGB": 100
   },
-  "59": {
-    "n":"Running 2",    
+  "48": {
+    "n":"Candles Snowy02",    
     "ColourPalette":"Snowy 02",
     "Effects": {
-      "Function":"Running 2",
+      "Function":"Candles",
       "Intensity":255,
-      "Speed":64,
+      "Speed":255,
       "Grouping":1,
-      "Decimate":0,
+      "Decimate":7,
       "RateMs":23
-    },
-    "SegColour1":{
-      "Manual":[53,49,53,0,0],
-      "BrightnessRGB":20
     },
     "BrightnessRGB": 100
   },
@@ -423,51 +364,8 @@
     },
     "BrightnessRGB": 100
   },
-  "56": {
-    "n":"Tri Wipe",    
-    "ColourPalette":"Snowy 01",
-    "Effects": {
-      "Function":"Tri Wipe",
-      "Intensity":255,
-      "Speed":151,
-      "Grouping":1,
-      "Decimate":0,
-      "RateMs":23
-    },
-    "SegColour0":{
-      "Manual":[255,0,0,0,0],
-      "BrightnessRGB":100
-    },
-    "SegColour1":{
-      "Manual":[0,255,0,0,0],
-      "BrightnessRGB":100
-    },
-    "BrightnessRGB": 100
-  },
-  "30": {
-    "n":"NORotate Snowy 02 Group 150 (load) 1/2",    
-    "ColourPalette":"Cold White",
-    "Effects": {
-      "Function":"Twinkle Palette Two on One",
-      "Intensity":20,
-      "Speed":255,
-      "Grouping":1,
-      "Decimate":7
-    },
-    "BrightnessRGB": 20
-  },
-  "31": {
-    "n":"NORotate Snowy 02 Group 150 (run) 2/2",    
-    "ColourPalette":"Cold White",
-    "Effects": {
-      "Function":"Twinkle Palette Two on One",
-      "Intensity":20,
-      "Speed":255,
-      "Grouping":1,
-      "Decimate":7
-    },
-    "BrightnessRGB": 20
-  },  
+
+
   "50": {
     "n":"Day: B&W,G210",    
     "ColourPalette":"Blue and White",
@@ -481,6 +379,21 @@
     },
     "BrightnessRGB":100
   },
+
+  "51": {
+    "n":"Static G20 Snowy02",    
+    "ColourPalette":"Snowy 02",
+    "Effects": {
+      "Function":"Static Palette",
+      "Intensity":255,
+      "Speed":0,
+      "Grouping":20,
+      "Decimate":0,
+      "RateMs":2000
+    },
+    "BrightnessRGB": 100
+  },
+
   "52": {
     "n":"Day: C&W,G210",    
     "ColourPalette":"Colour and White Stripe",
@@ -530,6 +443,76 @@
     },
     "BrightnessRGB": 100
   },
+  "55": {
+    "n":"12RotatingPrevious,Snowy02,S255,R20,G1,D0",    
+    "ColourPalette":"Snowy 02",
+    "Effects": {
+      "Function":"Rotating Previous",
+      "Intensity":12,
+      "Speed":255,
+      "Grouping":1,
+      "Decimate":0,
+      "RateMs": 20
+    },
+    "BrightnessRGB": 100
+  },
+  "56": {
+    "n":"Tri Wipe",    
+    "ColourPalette":"Snowy 01",
+    "Effects": {
+      "Function":"Tri Wipe",
+      "Intensity":255,
+      "Speed":151,
+      "Grouping":1,
+      "Decimate":0,
+      "RateMs":23
+    },
+    "SegColour0":{
+      "Manual":[255,0,0,0,0],
+      "BrightnessRGB":100
+    },
+    "SegColour1":{
+      "Manual":[0,255,0,0,0],
+      "BrightnessRGB":100
+    },
+    "BrightnessRGB": 100
+  },
+
+  "58": {
+    "n":"Twinkle FastIn/SlowOut",    
+    "ColourPalette":"Party 16",
+    "Effects": {
+      "Function":"Twinkle FastIn/SlowOut",
+      "Intensity":255,
+      "Speed":213,
+      "Grouping":1,
+      "Decimate":0,
+      "RateMs":23
+    },
+    "BrightnessRGB": 100
+  },
+  "59": {
+    "n":"Running 2",    
+    "ColourPalette":"Snowy 02",
+    "Effects": {
+      "Function":"Running 2",
+      "Intensity":255,
+      "Speed":64,
+      "Grouping":1,
+      "Decimate":0,
+      "RateMs":23
+    },
+    "SegColour1":{
+      "Manual":[53,49,53,0,0],
+      "BrightnessRGB":20
+    },
+    "BrightnessRGB": 100
+  },
+
+
+
+
+ 
 
   "60": {
     "n":"Day: C&W,G210",    
@@ -568,8 +551,6 @@
     "n":"Day: C&W,G210",    
     "ColourPalette":"Colourful Greenless"
   },
-
-
   "67": {
     "n":"Day: C&W,G210",    
     "ColourPalette":"Snowy 01",
@@ -591,7 +572,6 @@
     },
     "BrightnessRGB": 100
   },
-
   "68": {
     "n":"Day: C&W,G210",    
     "ColourPalette":"Rainbow 16",
@@ -607,7 +587,6 @@
     },
     "BrightnessRGB": 100
   },
-
   "69": {
     "n":"Span-PinkBlueCyan",    
     "ColourPalette":"Hult",
@@ -621,7 +600,6 @@
     },
     "BrightnessRGB": 100
   },
-
   "70": {
     "n":"Brightness 100%",    
     "BrightnessRGB": 100
@@ -694,6 +672,23 @@
   },
 
 
+  "86": {
+    "n":"30Twinkle SnowyONWhite, Snowy 02, 0/100, G1, D0",    
+    "ColourPalette":"Cold White",
+    "Effects": {
+      "Function":"Twinkle Palette Two on One",
+      "Intensity":20,
+      "Speed":255,
+      "Grouping":1,
+      "Decimate":6,
+      "Param0":125,
+      "Param1":255,
+      "RateMs": 100
+    },
+    "BrightnessRGB": 30
+  },
+
+
   "90":{
     "playlist":{
     "ps" :[ 73, 71,  74, 75,   76,  77,  78,  79,  80,  81, 82],
@@ -724,8 +719,8 @@
   "95":{
     "n":"Candles Sidedoor",
     "playlist":{
-      "ps" :[ 58,  59, 9],
-      "dur":[300, 300, 300],
+      "ps" :[ 47,  48, 9, 51],
+      "dur":[300, 300, 300, 300],
       "repeat":0,
       "end":0,
       "r":1

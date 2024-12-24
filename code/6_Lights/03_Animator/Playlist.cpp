@@ -187,6 +187,30 @@ void mAnimatorLight::SubTask_Playlist()
 
   }
 
+  /**
+   * @brief 
+   
+   "94":{
+    "playlist":{
+      "ps" :[ 32,  34,  64, 65,   66,  74,  75,  76,  77,  79,  80],    // the preset index to load
+      "dur":[300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300],    // the duration, in 100ths of ms to load. So 300*100 is 30000ms or 30 seconds
+      "repeat":0,"end":0,"r":1,                                         // repeat 0 means forever, repeat number means an amount of times. "end" would be the last preset to stop at. 
+      "time_window":{  // If only one in array, then its the whole playlist limit. If the same length as the playlist, then each entry is the limit for that preset
+        "start":[1600, 1830],  // as HHMM only
+        "end":[1700, 1900]  // as HHMM only
+      }    
+    },
+    "on":true,
+    "n":"Meteor Colours"
+  }
+
+
+
+
+
+   * 
+   */
+
 }
 
 /***

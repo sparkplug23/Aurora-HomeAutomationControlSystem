@@ -253,9 +253,6 @@ DEFINE_PGM_CTR(PM_MQTT_HANDLER_POSTFIX_TOPIC__AUTOMATION_PRESETS_CTR)   "presets
 #ifdef ENABLE_FEATURE_PIXEL__AUTOMATION_PLAYLISTS
 DEFINE_PGM_CTR(PM_MQTT_HANDLER_POSTFIX_TOPIC__AUTOMATION_PLAYLISTS_CTR)   "playlists";
 #endif
-#ifdef ENABLE_FEATURE_LIGHTING__SEQUENCER
-DEFINE_PGM_CTR(PM_MQTT_HANDLER_POSTFIX_TOPIC__SEQUENCER)   "sequencer";
-#endif
 #ifdef ENABLE_DEBUG_FEATURE_MQTT_ANIMATOR_DEBUG_PALETTE
 DEFINE_PGM_CTR(PM_MQTT_HANDLER_POSTFIX_TOPIC__DEBUG_PALETTE__CTR)         "debug/palette";
 #endif
@@ -2132,59 +2129,6 @@ class mAnimatorLight :
   #endif // ENABLE_DEVFEATURE_LIGHT__INCLUDE_AUDIOREACTIVE_USERMOD
 
 
-
-    /*****************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************
-    *** Subtask:   SEQUENCER   *****************************************************************************************************************************
-    ******************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************/
-
-    #ifdef ENABLE_FEATURE_LIGHTING__SEQUENCER // Legacy mixer/playlist to enable hardcoded playlists while the file system playlists are underdevelopment
-
-    void Init_Sequencer();
-    void SubTask_Sequencer();
-    void Load_Sequencer(uint8_t id);
-    void SubLoad_Sequencer_Device(uint8_t id);
-    void SetSequenceTimes(uint16_t secs);
-
-    enum FLASH_LEVEL{
-      Static=0,
-      Gentle=1,
-      Flashing=2,
-      FastFlashing=3
-    }FlashLevel;
-
-    struct SEQUENCER_ITEM
-    {
-      uint16_t seconds_on = 10;
-      struct TIMES {
-        struct time_short start = {0};
-        struct time_short end = {0};
-        bool isArmed = false;
-      }time_enabled;
-      struct DISABLE{
-        uint8_t flash_level = 0; // let use 3, 0 is static, 1 is gentle, 2 is flashing, 3 is fast flashing
-
-      }limit;
-      String json_command;
-      String description;
-    }sequencer_item;
-    std::vector<struct SEQUENCER_ITEM> sequencer_item_list;
-
-    struct SEQUENCER{
-      uint16_t seconds_remaining_on_item = 0;
-      uint8_t active_sequence_index = 0;
-      uint32_t tSaved_Tick = 0;
-      uint8_t loaded_sequence_set = 1; // 0 means disabled 
-      bool Enable_TimeRestraints = false;
-      uint8_t remote_openhab_limit_flashing = 1; // default is no block. Openhab will send enable at 9am, and disable at 8pm
-    }sequencer_runtime;
-
-    #endif // ENABLE_FEATURE_LIGHTING__SEQUENCER
-
-
     /*****************************************************************************************************************************************************************************
     ********************************************************************************************************************************************************************************
     ******************************************************************************************************************************************************************************
@@ -3342,10 +3286,7 @@ bool useMainSegmentOnly _INIT(false);
     #endif
     #ifdef ENABLE_FEATURE_PIXEL__AUTOMATION_PRESETS
     uint8_t ConstructJSON_Auto_Presets(uint8_t json_level = 0, bool json_appending = true);
-    #endif
-    #ifdef ENABLE_FEATURE_LIGHTING__SEQUENCER
-    uint8_t ConstructJSON_Sequencer(uint8_t json_level = 0, bool json_appending = true);
-    #endif  
+    #endif 
     #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS 
     uint8_t ConstructJSON_Matrix(uint8_t json_level = 0, bool json_appending = true);
     #endif
@@ -3399,10 +3340,7 @@ bool useMainSegmentOnly _INIT(false);
       #endif
       #ifdef ENABLE_FEATURE_PIXEL__AUTOMATION_PLAYLISTS
       struct handler<mAnimatorLight> mqtthandler_automation_playlists;
-      #endif   
-      #ifdef ENABLE_FEATURE_LIGHTING__SEQUENCER
-      struct handler<mAnimatorLight> mqtthandler_automation_sequencer;
-      #endif    
+      #endif
       #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS 
       struct handler<mAnimatorLight> mqtthandler_matrix_teleperiod;
       #endif
