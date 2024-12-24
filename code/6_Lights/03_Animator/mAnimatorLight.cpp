@@ -532,10 +532,6 @@ void mAnimatorLight::EveryLoop()
       SubTask_Presets();
       #endif
 
-      #ifdef ENABLE_FEATURE_LIGHTING__SEQUENCER
-      SubTask_Sequencer();
-      #endif
-
     }break;
     #ifdef ENABLE_FEATURE_LIGHTING__REALTIME_MQTT_SETPIXEL
     case ANIMATION_MODE__REALTIME_MQTT_SETPIXEL:
@@ -679,10 +675,6 @@ void mAnimatorLight::Init(void)
   LoadEffects();
 
   Init_Segments();
-
-  #ifdef ENABLE_FEATURE_LIGHTING__SEQUENCER
-  Init_Sequencer();
-  #endif // ENABLE_FEATURE_LIGHTING__SEQUENCER
 
   module_state.mode = ModuleStatus::Running;
 
@@ -6054,19 +6046,6 @@ void mAnimatorLight::MQTTHandler_Init()
   ptr->ConstructJSON_function = &mAnimatorLight::ConstructJSON_Matrix;
   mqtthandler_list.push_back(ptr);
   #endif // ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
-
-  #ifdef ENABLE_FEATURE_LIGHTING__SEQUENCER
-  ptr = &mqtthandler_automation_sequencer;
-  ptr->tSavedLastSent = 0;
-  ptr->flags.PeriodicEnabled = true;
-  ptr->flags.SendNow = true;
-  ptr->tRateSecs = pCONT_mqtt->dt.ifchanged_secs; 
-  ptr->topic_type = MQTT_TOPIC_TYPE_TELEPERIOD_ID;
-  ptr->json_level = JSON_LEVEL_DETAILED;
-  ptr->postfix_topic = PM_MQTT_HANDLER_POSTFIX_TOPIC__SEQUENCER;
-  ptr->ConstructJSON_function = &mAnimatorLight::ConstructJSON_Sequencer;
-  mqtthandler_list.push_back(ptr);
-  #endif // ENABLE_FEATURE_LIGHTING__SEQUENCER
   
   #ifdef ENABLE_FEATURE_PIXEL__MODE_AMBILIGHT
   ptr = &mqtthandler_mode_ambilight_teleperiod;

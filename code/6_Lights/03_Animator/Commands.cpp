@@ -1128,27 +1128,6 @@ if (jtok = obj["MQTTPixelArrays"]) {
     }
   
   }
-
-  #ifdef ENABLE_FEATURE_LIGHTING__SEQUENCER
-
-  if(jtok = obj["Sequencer"].getObject()["LoadSet"])
-  {
-    Load_Sequencer(jtok.getInt());
-  }
-  if(jtok = obj["Sequencer"].getObject()["EnableTimeRestraints"])
-  {
-    sequencer_runtime.Enable_TimeRestraints = jtok.getInt();
-  }
-  if(jtok = obj["Sequencer"].getObject()["ItemTime"])
-  {
-    SetSequenceTimes(jtok.getInt());
-  }  
-
-  if(jtok = obj["Sequencer"].getObject()["LimitFlashing"])
-  {
-    sequencer_runtime.remote_openhab_limit_flashing = jtok.getInt();
-  }  
-  #endif // ENABLE_FEATURE_LIGHTING__SEQUENCER
  
 
   /***********************************************************************************************************************************************************************************
