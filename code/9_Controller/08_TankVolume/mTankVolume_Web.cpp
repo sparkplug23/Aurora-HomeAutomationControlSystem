@@ -191,7 +191,7 @@
 //   request->send(200,CONTENT_TYPE_APPLICATION_JSON_ID,data_buffer.payload.ctr);
     
 //   uint16_t freemem_used = freemem_start - ESP.getFreeHeap();
-//   AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_ASYNC WEB_HANLDE_JSON_WEB_TOP_BAR " Ef::%s=%d"),"freemem_used",freemem_used);
+//   AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_ASYNC WEB_HANLDE_JSON_WEB_TOP_BAR " Ef::%s=%d"),"freemem_used",freemem_used);
 //   //freemem_usage.WebSend_JSON_WebServer_TopBar = freemem_used;
 
 // } // end function

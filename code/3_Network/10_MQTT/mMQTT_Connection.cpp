@@ -126,7 +126,7 @@ void MQTTConnection::MqttReconnect(void){ DEBUG_PRINT_FUNCTION_NAME;
 
   uint8_t loglevel = LOG_LEVEL_INFO;
   #ifdef ENABLE_DEVFEATURE_DEBUG_MQTT_RECONNECT
-  loglevel = LOG_LEVEL_TEST;
+  loglevel = LOG_LEVEL_DEV_TEST;
   #endif
   #ifdef ENABLE_LOG_LEVEL_INFO
   AddLog(loglevel, PSTR("client_name = %s"), client_name);
@@ -207,7 +207,7 @@ void MQTTConnection::MqttDataHandler(char* mqtt_topic, uint8_t* mqtt_data, unsig
       // if (LOG_LEVEL_DEBUG_MORE <= pCONT_set->Settings.logging.serial_level) {
         LoggingLevels level = LOG_LEVEL_DEBUG_MORE;
         #ifdef ENABLE_DEVFEATURE_SHOW_INCOMING_MQTT_COMMANDS
-        level = LOG_LEVEL_TEST;
+        level = LOG_LEVEL_DEV_TEST;
         #endif
         #ifdef ENABLE_LOG_LEVEL_INFO
           AddLog(level, PSTR(D_LOG_MQTT "<-- Topic   [len:%d] %s"), data_buffer.topic.length_used,  data_buffer.topic.ctr);

@@ -383,7 +383,7 @@ void mAnimatorLight::SubTask_Presets()
 
     LoggingLevels level = LOG_LEVEL_INFO;
     #ifdef ENABLE_DEVFEATURE_SHOW_INCOMING_MQTT_COMMANDS
-    level = LOG_LEVEL_TEST;
+    level = LOG_LEVEL_DEV_TEST;
     #endif
     #ifdef ENABLE_LOG_LEVEL_INFO
     AddLog(level, PSTR(D_LOG_LIGHT "My parser payload [len:%d] %s"), data_buffer.payload.length_used,data_buffer.payload.ctr);

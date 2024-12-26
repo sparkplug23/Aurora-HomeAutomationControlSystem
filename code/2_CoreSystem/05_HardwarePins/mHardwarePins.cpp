@@ -1000,7 +1000,7 @@ void mHardwarePins::ModuleSettings_FlashSerial()
     // }
 
 #ifdef ENABLE_DEBUG_MODULE_HARDWAREPINS_SUBSECTION_TEMPLATES
-    AddLog(LOG_LEVEL_TEST,PSTR("\t%d(%d):%d"),gpio,real_gpio,pCONT_set->Settings.user_template.hardware.gp.io[gpio]);
+    AddLog(LOG_LEVEL_DEV_TEST,PSTR("\t%d(%d):%d"),gpio,real_gpio,pCONT_set->Settings.user_template.hardware.gp.io[gpio]);
 #endif
   }
   // DEBUG_PRINTF("FLAGS: %08X\n\r",pCONT_set->Settings.user_template.flags);
@@ -1297,7 +1297,7 @@ void mHardwarePins::DigitalWrite(uint32_t gpio_pin, uint32_t state)
 {
   DigitalWrite(gpio_pin, 0, state);
   // if (pCONT_set->pin[gpio_pin] < 99) {
-        // AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_RELAYS "DigitalWrite(%d[%d],%d)"),pCONT_set->pin[gpio_pin],gpio_pin,state);
+        // AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_RELAYS "DigitalWrite(%d[%d],%d)"),pCONT_set->pin[gpio_pin],gpio_pin,state);
     // digitalWrite(pCONT_set->pin[gpio_pin], state &1);
   // }
 }

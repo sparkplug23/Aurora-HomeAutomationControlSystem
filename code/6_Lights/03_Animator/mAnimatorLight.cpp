@@ -38,7 +38,7 @@ int8_t mAnimatorLight::Tasker(uint8_t function, JsonParserObject obj)
 
 
       #ifdef ENABLE_DEBUGFEATURE_LIGHTING__TIME_CRITICAL_RECORDING
-      uint8_t log_level = pCONT_time->UpTime() < 3600 ? LOG_LEVEL_TEST : LOG_LEVEL_DEBUG_MORE;
+      uint8_t log_level = pCONT_time->UpTime() < 3600 ? LOG_LEVEL_DEV_TEST : LOG_LEVEL_DEBUG_MORE;
       AddLog(log_level, PSTR("getFPS %d"), getFps());
       AddLog(log_level, PSTR("starting %d%s"), lighting_time_critical_logging.time_unit_output_ms ? lighting_time_critical_logging.dynamic_buffer__starting_colour / 1000 : lighting_time_critical_logging.dynamic_buffer__starting_colour, lighting_time_critical_logging.time_unit_output_ms ? "ms" : "us");
       AddLog(log_level, PSTR("part1  ---------> %d%s"), lighting_time_critical_logging.time_unit_output_ms ? lighting_time_critical_logging.dynamic_buffer__starting_colour_part1 / 1000 : lighting_time_critical_logging.dynamic_buffer__starting_colour_part1, lighting_time_critical_logging.time_unit_output_ms ? "ms" : "us");
@@ -1633,7 +1633,7 @@ void mAnimatorLight::AnimationProcess_LinearBlend_Dynamic_Buffer(const Animation
                 
         // ALOG_TST(PSTR("StartingColour=           =   %d,%d,%d,%d,%d"),startingColour.R,startingColour.G,startingColour.B,startingColour.CW,startingColour.WW);
         // ALOG_TST(PSTR("DesiredColour=           -->  %d,%d,%d,%d,%d"),desiredColour.R,desiredColour.G,desiredColour.B,desiredColour.CW,desiredColour.WW);
-        // AddLog_Array_Block(LOG_LEVEL_TEST, PSTR("segdata"), &c[0] , 30, 6, true);
+        // AddLog_Array_Block(LOG_LEVEL_DEV_TEST, PSTR("segdata"), &c[0] , 30, 6, true);
 
         // if(pixel==0) //force pixel 1 for debug
         // updatedColor = RgbcctColor(0,255,0);
@@ -1709,7 +1709,7 @@ void mAnimatorLight::AnimationProcess_LinearBlend_Dynamic_Buffer_BrtNotSet(const
                 
         // ALOG_TST(PSTR("StartingColour=           =   %d,%d,%d,%d,%d"),startingColour.R,startingColour.G,startingColour.B,startingColour.CW,startingColour.WW);
         // ALOG_TST(PSTR("DesiredColour=           -->  %d,%d,%d,%d,%d"),desiredColour.R,desiredColour.G,desiredColour.B,desiredColour.CW,desiredColour.WW);
-        // AddLog_Array_Block(LOG_LEVEL_TEST, PSTR("segdata"), &c[0] , 30, 6, true);
+        // AddLog_Array_Block(LOG_LEVEL_DEV_TEST, PSTR("segdata"), &c[0] , 30, 6, true);
 
         // if(pixel==0) //force pixel 1 for debug
         // updatedColor = RgbcctColor(0,255,0);
@@ -2193,7 +2193,7 @@ void mAnimatorLight::SetTransitionColourBuffer_DesiredColour(
         break;
     }
     
-    // AddLog_Array_Block(LOG_LEVEL_TEST, PSTR("updated"), buffer, 30, 6, true);
+    // AddLog_Array_Block(LOG_LEVEL_DEV_TEST, PSTR("updated"), buffer, 30, 6, true);
   }
 }
 

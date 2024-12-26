@@ -163,7 +163,7 @@ int8_t kButtonTitle_Temps_Boiler_Value[] = {-1,30,40,50};
           sprintf(buffer, "#4d8d90");
           // sprintf(buffer, "%d==%d %d",program_timers[row].time_minutes_on_start,_kButtonTitle[row], row, button_Counter);
         }
-        // AddLog(LOG_LEVEL_TEST,PSTR("mins start %d == button[%d]%d"),program_timers[row].time_minutes_on_start,row,_kButtonTitle[row]);
+        // AddLog(LOG_LEVEL_DEV_TEST,PSTR("mins start %d == button[%d]%d"),program_timers[row].time_minutes_on_start,row,_kButtonTitle[row]);
         JBI->Add("bc",buffer);//program_timers[row].time_minutes_on_start ? "#00ff00" : "#ee2200" );
       JBI->Object_End();
     }
@@ -258,7 +258,7 @@ int8_t kButtonTitle_Temps_Boiler_Value[] = {-1,30,40,50};
             sprintf(buffer, "#4d8d90");
             // sprintf(buffer, "%d==%d %d",program_temps[row].time_minutes_on_start,_kButtonTitle[row], row, button_Counter);
           }
-           //AddLog(LOG_LEVEL_TEST,PSTR("mins start %d == button[%d]%d"),program_temps[row].temp.desired,row,_kButtonTitle[row]);
+           //AddLog(LOG_LEVEL_DEV_TEST,PSTR("mins start %d == button[%d]%d"),program_temps[row].temp.desired,row,_kButtonTitle[row]);
         }else{
           
             sprintf(buffer, "#4d8d90");

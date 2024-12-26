@@ -326,8 +326,8 @@ class DeviceNameList{
 //         if(pCONT_set->Settings.device_name_buffer.class_id[delimeter_count] == class_id){
 //           delimeter_within_class_count++;
 //           // #ifdef ENABLE_LOG_LEVEL_INFO
-//           // // AddLog(LOG_LEVEL_TEST,PSTR("\n\r%s\n\r found wclass_count\n\r %s\n\r %d %d\n\r\n\r"),haystack,read,delimeter_within_class_count,Settings.device_name_buffer.class_id[delimeter_count]);
-//           // AddLog(LOG_LEVEL_TEST,
+//           // // AddLog(LOG_LEVEL_DEV_TEST,PSTR("\n\r%s\n\r found wclass_count\n\r %s\n\r %d %d\n\r\n\r"),haystack,read,delimeter_within_class_count,Settings.device_name_buffer.class_id[delimeter_count]);
+//           // AddLog(LOG_LEVEL_DEV_TEST,
 //           //   PSTR(
 //           //     "Searching \"%s\"\n\r"
 //           //     "Found \"%s\" @ index %d\n\r"
@@ -352,7 +352,7 @@ class DeviceNameList{
 //   }
 
 //   #ifdef ENABLE_LOG_LEVEL_INFO
-//           // AddLog(LOG_LEVEL_TEST,PSTR("\n\r%s\n\r found wclass_count\n\r %s\n\r %d %d\n\r\n\r"),haystack,read,delimeter_within_class_count,Settings.device_name_buffer.class_id[delimeter_count]);
+//           // AddLog(LOG_LEVEL_DEV_TEST,PSTR("\n\r%s\n\r found wclass_count\n\r %s\n\r %d %d\n\r\n\r"),haystack,read,delimeter_within_class_count,Settings.device_name_buffer.class_id[delimeter_count]);
 //           AddLog(LOG_LEVEL_DEBUG_MORE,
 //             PSTR(
 //               "\n\rSearching \"%s\"\n\r"
@@ -601,8 +601,8 @@ class DeviceNameList{
 //         if(pCONT_set->Settings.device_name_buffer.class_id[delimeter_count] == class_id){
 //           delimeter_within_class_count++;
 //           // #ifdef ENABLE_LOG_LEVEL_INFO
-//           // // AddLog(LOG_LEVEL_TEST,PSTR("\n\r%s\n\r found wclass_count\n\r %s\n\r %d %d\n\r\n\r"),haystack,read,delimeter_within_class_count,Settings.device_name_buffer.class_id[delimeter_count]);
-//           // AddLog(LOG_LEVEL_TEST,
+//           // // AddLog(LOG_LEVEL_DEV_TEST,PSTR("\n\r%s\n\r found wclass_count\n\r %s\n\r %d %d\n\r\n\r"),haystack,read,delimeter_within_class_count,Settings.device_name_buffer.class_id[delimeter_count]);
+//           // AddLog(LOG_LEVEL_DEV_TEST,
 //           //   PSTR(
 //           //     "Searching \"%s\"\n\r"
 //           //     "Found \"%s\" @ index %d\n\r"
@@ -627,7 +627,7 @@ class DeviceNameList{
 //   }
 
 //   #ifdef ENABLE_LOG_LEVEL_INFO
-//           // AddLog(LOG_LEVEL_TEST,PSTR("\n\r%s\n\r found wclass_count\n\r %s\n\r %d %d\n\r\n\r"),haystack,read,delimeter_within_class_count,Settings.device_name_buffer.class_id[delimeter_count]);
+//           // AddLog(LOG_LEVEL_DEV_TEST,PSTR("\n\r%s\n\r found wclass_count\n\r %s\n\r %d %d\n\r\n\r"),haystack,read,delimeter_within_class_count,Settings.device_name_buffer.class_id[delimeter_count]);
 //           AddLog(LOG_LEVEL_DEBUG_MORE,
 //             PSTR(
 //               "\n\rSearching \"%s\"\n\r"

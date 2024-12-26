@@ -948,7 +948,7 @@ void mEnergyInterface::MQTTHandler_Sender()
 //   uint8_t index = Energy.stats.kwh_per_minute_index;
 //   uint8_t last_index = (index==0)?59:index-1;
 
-//   AddLog(LOG_LEVEL_TEST,PSTR("index=%d,last_index=%d"),index,last_index);
+//   AddLog(LOG_LEVEL_DEV_TEST,PSTR("index=%d,last_index=%d"),index,last_index);
 
 //   // Get new power last minute
 //   Energy.stats.last_minutes_energy = Energy.stats.kwh_per_minute[last_index];
@@ -960,9 +960,9 @@ void mEnergyInterface::MQTTHandler_Sender()
 //   // Energy.stats.kwh_each_minute[index] = pCONT_pzem->PzemAc.last_energy;
 //   Energy.stats.kwh_per_minute[index] = Energy.stats.this_minutes_energy;
   
-//   AddLog(LOG_LEVEL_TEST,PSTR(D_COMMAND_NVALUE),"last_minutes_energy",(int)Energy.stats.last_minutes_energy);
-//   AddLog(LOG_LEVEL_TEST,PSTR(D_COMMAND_NVALUE),"current_energy",(int)Energy.stats.current_energy);
-//   AddLog(LOG_LEVEL_TEST,PSTR(D_COMMAND_NVALUE),"this_minutes_energy",(int)Energy.stats.this_minutes_energy);
+//   AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_COMMAND_NVALUE),"last_minutes_energy",(int)Energy.stats.last_minutes_energy);
+//   AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_COMMAND_NVALUE),"current_energy",(int)Energy.stats.current_energy);
+//   AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_COMMAND_NVALUE),"this_minutes_energy",(int)Energy.stats.this_minutes_energy);
 
 //   //increment index and save
 //   Energy.stats.kwh_per_minute_index = (index+1);
@@ -1929,7 +1929,7 @@ void mEnergyInterface::MQTTHandler_Sender()
 //     //     EnergyFormat(value_chr, current_chr[0], json));
 //     // }
 
-//     // AddLog(LOG_LEVEL_TEST,PSTR(" mEnergyInterface::TASK_JSON_APPEND "));
+//     // AddLog(LOG_LEVEL_DEV_TEST,PSTR(" mEnergyInterface::TASK_JSON_APPEND "));
 
 //     // Tasker(TASK_JSON_APPEND);
 //     // pCONT_sup->ResponseJsonEnd();

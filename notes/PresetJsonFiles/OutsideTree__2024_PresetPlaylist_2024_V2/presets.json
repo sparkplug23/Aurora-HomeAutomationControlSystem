@@ -233,6 +233,19 @@
     },
     "BrightnessRGB": 100
   },
+  "25": {
+    "n":"FastPops C&W",    
+    "ColourPalette": "Colour and White Swipe",
+    "Effects": {
+      "Function": "Slow Glow",
+      "RateMs":0,
+      "Speed":255,
+      "Intensity":49,
+      "Decimate":0,
+      "Grouping":1
+    },
+    "BrightnessRGB": 100
+  },
 
 
   "32": {

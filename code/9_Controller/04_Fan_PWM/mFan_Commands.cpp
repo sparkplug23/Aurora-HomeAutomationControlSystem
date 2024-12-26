@@ -59,7 +59,7 @@ void mFan::CommandSet_FanSpeed_Manual(uint16_t value){
 
   analogWrite(pin, value);
 
-AddLog(LOG_LEVEL_TEST,PSTR("pwm %d value = %d"),pin,value);
+AddLog(LOG_LEVEL_DEV_TEST,PSTR("pwm %d value = %d"),pin,value);
 
 
 } 

@@ -200,9 +200,9 @@ void mPulseCounter::EveryLoop(){
 // for(
   uint8_t sensor_id=0;
   //sensor_id<sensors_active;sensor_id++){
-  // AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_PIR "PIR %s %d"),Change_Detected_Ctr(sensor_id),sensor_id);
+  // AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_PIR "PIR %s %d"),Change_Detected_Ctr(sensor_id),sensor_id);
     if(Change_Detected(sensor_id)!=sensor[sensor_id].instant.state){
-  // AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_PIR "PIR %s %d"),"Change_Detected_Ctr(sensor_id)",sensor_id);
+  // AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_PIR "PIR %s %d"),"Change_Detected_Ctr(sensor_id)",sensor_id);
       //if(pCONT_time->RtcTime.seconds_nonreset<20){ break; }
       // pCONT->mqt->publish_device("status/motion/event",Change_Detected_Ctr(sensor_id),false);
 
@@ -225,7 +225,7 @@ void mPulseCounter::EveryLoop(){
       sensor[sensor_id].instant.tDeltaTime = sensor[sensor_id].instant.tEndedTime - sensor[sensor_id].instant.tDetectTime;
       
       if(!WithinLimits(settings.min_reading_ms,(uint16_t)sensor[sensor_id].instant.tDeltaTime,settings.max_reading_ms)){
-        AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_PIR "PIR %s %d"),"Out of range",sensor_id);
+        AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_PIR "PIR %s %d"),"Out of range",sensor_id);
         sensor[sensor_id].instant.ischanged = true;
         mqtthandler_sensor_ifchanged.flags.SendNow = true;
       }

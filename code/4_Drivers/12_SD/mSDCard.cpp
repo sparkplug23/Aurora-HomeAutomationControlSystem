@@ -1146,7 +1146,7 @@ void mSDCard::CommandSet_CreateFile_WithName(char* value){
 //   analogWrite(pin, value);
   createDir(SD, "/mydir");
 
-// AddLog(LOG_LEVEL_TEST,PSTR("pwm %d value = %d"),pin,value);
+// AddLog(LOG_LEVEL_DEV_TEST,PSTR("pwm %d value = %d"),pin,value);
 
 
   #ifdef ENABLE_LOG_LEVEL_COMMANDS

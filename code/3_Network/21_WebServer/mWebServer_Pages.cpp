@@ -194,7 +194,7 @@
 //   ALOG_TST(PSTR("mWebServer::HandlePage_Root"));
 //     #endif //  ENABLE_LOG_LEVEL_INFO
 
-//   //AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_ASYNC WEB_HANDLER_SCRIPT_WEB_DATA_FETCHER_RUNTIME_URLS_RATES_VAR "Sf::%s"),"HandlePage_Root");
+//   //AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_ASYNC WEB_HANDLER_SCRIPT_WEB_DATA_FETCHER_RUNTIME_URLS_RATES_VAR "Sf::%s"),"HandlePage_Root");
 
 //   // if (CaptivePortal(request)) { return; }  // If captive portal redirect instead of displaying the page.
 
@@ -1309,7 +1309,7 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 
 //   if (request->hasParam("rst")) {
 //     #ifdef ENABLE_LOG_LEVEL_INFO
-//     AddLog(LOG_LEVEL_TEST,PSTR("hasParam rst"));
+//     AddLog(LOG_LEVEL_DEV_TEST,PSTR("hasParam rst"));
 //     #endif// ENABLE_LOG_LEVEL_INFO
 //     WebRestart(request, 0);
 //     return;
@@ -2224,10 +2224,10 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 // //   // }
 
 // //   if (!request->hasParam("m")) {     // Status refresh requested
-// //     // AddLog(LOG_LEVEL_TEST,PSTR("!request->hasParam(\"m\")"));
+// //     // AddLog(LOG_LEVEL_DEV_TEST,PSTR("!request->hasParam(\"m\")"));
 // //     return false; 
 // //   }else{
-// //     AddLog(LOG_LEVEL_TEST,PSTR("request->hasParam(\"m\")"));
+// //     AddLog(LOG_LEVEL_DEV_TEST,PSTR("request->hasParam(\"m\")"));
 // //     // continue through root function
 // //   }
 

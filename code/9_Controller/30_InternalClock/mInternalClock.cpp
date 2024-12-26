@@ -246,7 +246,7 @@ void mInternalClock::SetFanSpeed(uint8_t fanspeed, bool sequence)
 
 bool mInternalClock::SerialInput(void)
 {
-  AddLog(LOG_LEVEL_TEST,PSTR("mInternalClock::SerialInput"));
+  AddLog(LOG_LEVEL_DEV_TEST,PSTR("mInternalClock::SerialInput"));
 //   if (INTERNAL_CLOCK03 == my_module_type) {
 //     if (0xAA == serial_in_byte) {               // 0xAA - Start of text
 //       serial_in_byte_counter = 0;

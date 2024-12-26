@@ -66,7 +66,7 @@ void mDoorBell::RingDoorBellSet(uint8_t seconds, uint16_t freq){
   ringer.end_millis = millis()+(seconds*1000);
   ringer.freq = freq;
   ringer.seconds = seconds;
-  AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_CHIME "Set"));
+  AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_CHIME "Set"));
   // memcpy(ringer.trigger_time_ctr,pCONT_time->RtcTime.hhmmss_ctr,sizeof(pCONT_time->RtcTime.hhmmss_ctr)); 
 }
 
@@ -83,20 +83,20 @@ uint8_t mDoorBell::RingDoorBellLoop(uint8_t reset){
         ringer.closed_millis_end = millis()+500;
       }
       ringer.toggle_millis = millis()+(ringer.freq);//*500); //set new toggle millis
-      AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_CHIME "Toggled"));
+      AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_CHIME "Toggled"));
     }
 
     //timeout/finished reset
     if(mTime::MillisReached(&ringer.end_millis)){
       BellChime_Set(BELLCHIME_OFF); // turn off
       ringer.fIsRinging = false;
-      AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_CHIME "Ended ringer.end_millis"));
+      AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_CHIME "Ended ringer.end_millis"));
     }
 
     //Only have relay on for short time
     if(mTime::TimeReached(&ringer.closed_millis_end,500)){
       //BELLCHIME_SET(BELLCHIME_OFF); // turn off
-      AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_CHIME "Ended ringer.closed_millis_end"));
+      AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_CHIME "Ended ringer.closed_millis_end"));
     }
 
   }

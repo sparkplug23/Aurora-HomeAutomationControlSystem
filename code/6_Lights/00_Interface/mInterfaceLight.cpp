@@ -568,7 +568,7 @@ void mInterfaceLight::LightCalcPWMRange(void) {
 
     pwm_min = _pwm_min;
     pwm_max = _pwm_max;
-  // AddLog_P2(LOG_LEVEL_TEST, PSTR("LightCalcPWMRange %d %d - %d %d"), settings.dimmer_hw_min, settings.dimmer_hw_max, pwm_min, pwm_max);
+  // AddLog_P2(LOG_LEVEL_DEV_TEST, PSTR("LightCalcPWMRange %d %d - %d %d"), settings.dimmer_hw_min, settings.dimmer_hw_max, pwm_min, pwm_max);
 }
 // Calculate the gamma corrected value for LEDS
 uint16_t mInterfaceLight::ledGamma_internal(uint16_t v, const struct gamma_table_t *gt_ptr) {

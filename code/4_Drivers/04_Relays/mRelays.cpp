@@ -575,7 +575,7 @@ DEBUG_LINE;
       power_t state = rpower &1;
       if (i < MAX_RELAYS) {
 
-//        AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_RELAYS "i=%d,state=%d"),i,state);
+//        AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_RELAYS "i=%d,state=%d"),i,state);
 
         //tmp fix
         if(bitRead(rt.bitpacked.rel_inverted, i))
@@ -591,7 +591,7 @@ DEBUG_LINE;
 
 
       }else{
-        AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_RELAYS "ELSE i=%d,state=%d"),i,state);
+        AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_RELAYS "ELSE i=%d,state=%d"),i,state);
       }
       rpower >>= 1;
     }

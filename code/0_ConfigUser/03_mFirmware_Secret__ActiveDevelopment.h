@@ -25,7 +25,7 @@
 // #define DEVICE_DESK_SENSOR
 // #define DEVICE_TREADMILL_POWER_MONITOR
 // #define DEVICE_LIGHTING__LED_MATRIX_BOX_01
-// #define DEVICE_TESTBED__NEXTION_DISPLAY__GENERIC_WITH_WEBUI__10INCH
+#define DEVICE_TESTBED__NEXTION_DISPLAY__GENERIC_WITH_WEBUI__10INCH
 // #define DEVICE_TESTBED__NEXTION_DISPLAY__GENERIC_WITH_WEBUI__7INCH
 // #define DEVICE_TESTBED__NEXTION_DISPLAY__TREADMILL_01
 // #define DEVICE_TESTBED__NEXTION_DISPLAY__TREADMILL_02
@@ -6051,25 +6051,75 @@ new 26GHz radar sensor
 
 
 #ifdef DEVICE_TESTBED__NEXTION_DISPLAY__GENERIC_WITH_WEBUI__10INCH //10inch display
-  #define DEVICENAME_CTR            "nextion_testbed"
-  #define DEVICENAME_FRIENDLY_CTR   "Testbed Nextion Display"
-  #define DEVICENAME_ROOMHINT_CTR                   "Testbed"
+  #ifndef DEVICENAME_CTR
+  #define DEVICENAME_CTR          "nextion_testbed"
+  #endif
+  #ifndef DEVICENAME_FRIENDLY_CTR
+  #define DEVICENAME_FRIENDLY_CTR DEVICENAME_CTR
+  #endif
+  #ifndef DEVICENAME_DESCRIPTION_CTR
+  #define DEVICENAME_DESCRIPTION_CTR DEVICENAME_FRIENDLY_CTR
+  #endif
+  #define DEVICENAME_ROOMHINT_CTR "testgroup"
   #define D_MQTTSERVER_IP_ADDRESS_COMMA_DELIMITED   "192.168.1.70"
-    #define MQTT_PORT 1883
+    #define MQTT_PORT     1883
 
-  #define ENABLE_FEATURE_WATCHDOG_TIMER
-  #define ENABLE_DEVFEATURE_FASTBOOT_DETECTION
-  #define ENABLE_DEVFEATURE_FAST_REBOOT_OTA_SAFEMODE
-  #define ENABLE_DEVFEATURE_FASTBOOT_OTA_FALLBACK_DEFAULT_SSID
-
+  /***********************************
+   * SECTION: System Debug Options
+  ************************************/    
+  ///////////////////////////////////////////// Enable Logs
+  // #define DISABLE_SERIAL
+  // #define DISABLE_SERIAL0_CORE
+  // #define DISABLE_SERIAL_LOGGING
+  #define ENABLE_DEBUG_MANUAL_DELAYS // permits blocking delays
+  
+  ///////////////////////////////////////////// System Logs
   // #define ENABLE_ADVANCED_DEBUGGING
   // #define ENABLE_FEATURE_EVERY_SECOND_SPLASH_UPTIME
   // #define ENABLE_FEATURE_DEBUG_TASKER_INTERFACE_LOOP_TIMES
   // #define ENABLE_DEBUG_FEATURE__TASKER_INTERFACE_SPLASH_LONG_LOOPS_WITH_MS 50
   // #define ENABLE_DEBUG_FUNCTION_NAMES
+  #define ENABLE_DEBUGFEATURE_WEBUI__SHOW_BUILD_DATETIME_IN_FOOTER
+  #define SERIAL_LOG_LEVEL_DURING_BOOT 8
+  // #define ENABLE_DEBUG_LINE_HERE3
+  // #define ENABLE_DEBUGFEATURE_TASKERMANAGER__ADVANCED_METRICS
+  // #define USE_DEBUG_PRINT
 
-  // #define   ENABLE_DEBUG_LINE_HERE
+  ///////////////////////////////////////////// Module Logs
+  // #define ENABLE_DEVFEATURE__PIXEL_COLOUR_VALUE_IN_MULTIPIN_SHOW_LOGS  
+  #define ENABLE_FREERAM_APPENDING_SERIAL
+  
+  /***********************************
+   * SECTION: System Configs
+  ************************************/   
+ 
+  #define SETTINGS_HOLDER 1239
 
+  #define ENABLE_DEVFEATURE_STORAGE__SYSTEM_CONFIG__LOAD_WITH_TEMPLATES_OVERRIDE
+  #define ENABLE_DEVFEATURE_STORAGE__ANIMATION_PLAYLISTS
+  #define ENABLE_DEVFEATURE__SAVE_MODULE_DATA
+  #define ENABLE_DEVFEATURE__SAVE_CRITICAL_BOOT_DATA_FOR_DEBUG_BUT_ONLY_SPLASH_ON_BOOT_FOR_NOW__EG_SSID_MQTT_SERVER_IP_ADDRESS // until devices can reliably be used without compiling per device
+  #define ENABLE_DEVFEATURE_ADD_TIMESTAMP_ON_SAVE_FILES
+
+  /***********************************
+   * SECTION: Network Configs
+  ************************************/    
+
+  #define ENABLE_DEVFEATURE_JSON__ASYNCJSON_V6
+  #define USE_MODULE_NETWORK_WEBSERVER
+  #define ENABLE_WEBSERVER_LIGHTING_WEBUI  
+
+  /***********************************
+   * SECTION: Sensor Configs
+  ************************************/  
+
+  /***********************************
+   * SECTION: Lighting Configs
+  ************************************/  
+
+  /***********************************
+   * SECTION: Display Configs
+  ************************************/  
 
   #define ENABLE_DEVFEATURE_NEEXTION_SWITCH_TO_GLOBAL_WEBSERVER
   #define ENABLE_DEVFEATURE_NETWORK__MOVE_LIGHTING_WEBUI_INTO_SHARED_MODULE 
@@ -6080,10 +6130,6 @@ new 26GHz radar sensor
     #define USE_MODULE_NETWORK_WEBSERVER
   #endif // ENABLE_DEVFEATURE_NEEXTION_SWITCH_TO_GLOBAL_WEBSERVER
   // #define ENABLE_FREERAM_APPENDING_SERIAL
-
-  // #define USE_MODULE_SENSORS_INTERFACE
-  // #define USE_MODULE_SENSORS_BME
-  // #define USE_MODULE_SENSORS_PIR
 
     // #define ENABLE_DEVFEATURE_NEXTION__BAUDRETE_DEFAULT 115200
     #define ENABLE_DEVFEATURE_NEXTION__BAUDRETE_DEFAULT 921600
@@ -6100,6 +6146,11 @@ new 26GHz radar sensor
         #define ENABLE_DEVFEATURE_NEXTION__TEMPORARY_FIX_SERIAL_PORT_NUMBER_SERIAL1_HVAC_DESK
 
 
+
+// #define USE_FEATURE_NEXTION__SERIAL_DEFAULT_BUAD_NEW_PANEL_FIRST_OTA
+
+// #define USE_FEATURE_NEXTION__FORCE_SERIAL_BAUDRATE_FROM_DEFAULT 115200
+
   
   #define USE_MODULE_DISPLAYS_NEXTION
     #define ENABLE_DEVFEATURE_NEXTION_DISPLAY
@@ -6114,26 +6165,7 @@ new 26GHz radar sensor
   #define ENABLE_DEVFEATURE_NEXTION_WEBUI
 
   // #define USE_MODULE_NETWORK_WEBSERVER
-
-  #define USE_MODULE_TEMPLATE
-  DEFINE_PGM_CTR(MODULE_TEMPLATE) 
-  "{"
-    "\"" D_NAME "\":\"" DEVICENAME_CTR "\","
-    "\"" D_FRIENDLYNAME "\":\"" DEVICENAME_FRIENDLY_CTR "\","
-    "\"" D_GPIOC "\":{"
-      "\"17\":\"" D_GPIO_FUNCTION_NEXTION_TX_CTR "\","
-      "\"16\":\"" D_GPIO_FUNCTION_NEXTION_RX_CTR "\""
-    "},"
-    "\"" D_BASE "\":\"" D_MODULE_NAME_USERMODULE_CTR "\","
-    "\"" D_ROOMHINT "\":\"" DEVICENAME_ROOMHINT_CTR "\""
-  "}";
-
-
-// #define USE_FEATURE_NEXTION__SERIAL_DEFAULT_BUAD_NEW_PANEL_FIRST_OTA
-
-// #define USE_FEATURE_NEXTION__FORCE_SERIAL_BAUDRATE_FROM_DEFAULT 115200
-
-
+  
   DEFINE_PGM_CTR(DISPLAY_TEMPLATE)
   R"=====(
   {
@@ -6161,6 +6193,26 @@ new 26GHz radar sensor
     }
   }
   )=====";
+
+
+  /***********************************
+   * SECTION: Template Configs
+  ************************************/    
+
+  #define USE_MODULE_TEMPLATE
+  DEFINE_PGM_CTR(MODULE_TEMPLATE) 
+  "{"
+    "\"" D_NAME "\":\"" DEVICENAME_CTR "\","
+    "\"" D_FRIENDLYNAME "\":\"" DEVICENAME_FRIENDLY_CTR "\","
+    "\"" D_GPIOC "\":{"
+      "\"17\":\"" D_GPIO_FUNCTION_NEXTION_TX_CTR "\","
+      "\"16\":\"" D_GPIO_FUNCTION_NEXTION_RX_CTR "\""
+    "},"
+    "\"" D_BASE "\":\"" D_MODULE_NAME_USERMODULE_CTR "\","
+    "\"" D_ROOMHINT "\":\"" DEVICENAME_ROOMHINT_CTR "\""
+  "}";
+
+
 
   #define USE_FUNCTION_TEMPLATE
   DEFINE_PGM_CTR(FUNCTION_TEMPLATE)
