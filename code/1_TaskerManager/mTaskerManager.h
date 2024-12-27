@@ -276,6 +276,10 @@ enum MODULE_SUBTYPE_IDS{ //ignores the "interface"
 //   #include "2_CoreSystem/04b_SerialUART/mSerialUART.h"
 //   #define pCONT_uart                                static_cast<mSerialUART*>(pCONT->pModule[EM_MODULE_CORE_SERIAL_UART_ID])
 // #endif
+#ifdef USE_MODULE_CORE__CRASH_RECORDER
+  #include "2_CoreSystem/17_CrashRecorder/mCrashRecorder.h"
+  #define   tkr_CrashRecorder                           static_cast<mCrashRecorder*>(mTaskerManager::GetInstance()->GetModule(D_UNIQUE_MODULE_CORE__CRASH_RECORDER_ID))
+#endif
 #ifdef USE_MODULE_CORE_I2C
   #include "2_CoreSystem/31_I2C/mI2C.h"
   #define pCONT_i2c                       static_cast<mI2C*>(mTaskerManager::GetInstance()->GetModule(D_UNIQUE_MODULE_CORE__I2C__ID))

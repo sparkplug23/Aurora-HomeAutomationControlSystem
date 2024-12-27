@@ -54,6 +54,7 @@
 #define D_MODULE_NETWORK_MQTT_CELLULAR_CTR        "mqtt_cellular"
 #define D_MODULE__NETWORK_CELLULAR__CTR           "cellular"
 #define D_MODULE_CORE__SERIAL__CTR                "Serial"
+#define D_MODULE_CORE__CRASH_RECORDER_CTR         "crash_recorder"
 #define D_MODULE_NETWORK_WEBSERVER_CTR            "webserver"
 #define D_MODULE_DISPLAYS_INTERFACE_CTR           "interface_displays"
 #define D_MODULE_DISPLAYS_NEXTION_CTR             "nextion"

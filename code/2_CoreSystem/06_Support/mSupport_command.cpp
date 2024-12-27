@@ -65,10 +65,10 @@ void mSupport::CommandSet_Restart(int8_t command)
     // //ResponseCmndChar(D_RESTARTING);
     // break;
     case -1:
-      CmndCrash();    // force a crash
+      tkr_CrashRecorder->CmndCrash();    // force a crash
     break;
     case -2:
-      CmndWDT();
+      tkr_CrashRecorder->CmndWDT();
     break;
     // case -3:
     // // OSWATCH_RESET_TIME

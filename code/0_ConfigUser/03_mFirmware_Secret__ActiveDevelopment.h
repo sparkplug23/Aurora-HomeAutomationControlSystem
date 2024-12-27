@@ -25,7 +25,7 @@
 // #define DEVICE_DESK_SENSOR
 // #define DEVICE_TREADMILL_POWER_MONITOR
 // #define DEVICE_LIGHTING__LED_MATRIX_BOX_01
-#define DEVICE_TESTBED__NEXTION_DISPLAY__GENERIC_WITH_WEBUI__10INCH
+// #define DEVICE_TESTBED__NEXTION_DISPLAY__GENERIC_WITH_WEBUI__10INCH
 // #define DEVICE_TESTBED__NEXTION_DISPLAY__GENERIC_WITH_WEBUI__7INCH
 // #define DEVICE_TESTBED__NEXTION_DISPLAY__TREADMILL_01
 // #define DEVICE_TESTBED__NEXTION_DISPLAY__TREADMILL_02
@@ -41,6 +41,7 @@
 // #define DEVICE_ACTIVE_DEVELOPMENT__DOOR_LIGHTING__OFFICE
 // #define DEVICE_TESTBED__GPS_SERIAL
 // #define DEVICE_ACTIVE_DEVELOPMENT__SWITCHES_AND_BUTTONS
+#define DEVICE_ACTIVE_DEVELOPMENT__CRASH_RECORDER__ESP32
 
 
 /**************************************************************************************************************************************************
@@ -7985,6 +7986,124 @@ new 26GHz radar sensor
 
 
 #endif
+
+
+
+
+/**
+ * @brief New controller to be made, with 16X outputs
+ * Left and right side should be split power, so both 5V and 12V can be wired in
+ * Actually, may be better to make it all 5V board, but have the 12V skip the green connector voltage and wire manually
+ * 
+ */
+#ifdef DEVICE_ACTIVE_DEVELOPMENT__CRASH_RECORDER__ESP32
+  #ifndef DEVICENAME_CTR
+  #define DEVICENAME_CTR          "xmas24__final__16x_sidedoor_tree"
+  #endif
+  #ifndef DEVICENAME_FRIENDLY_CTR
+  #define DEVICENAME_FRIENDLY_CTR DEVICENAME_CTR
+  #endif
+  #ifndef DEVICENAME_DESCRIPTION_CTR
+  #define DEVICENAME_DESCRIPTION_CTR DEVICENAME_FRIENDLY_CTR
+  #endif
+  #define DEVICENAME_ROOMHINT_CTR "testgroup"
+  #define D_MQTTSERVER_IP_ADDRESS_COMMA_DELIMITED   "192.168.1.70"
+    #define MQTT_PORT     1883
+
+  /***********************************
+   * SECTION: System Debug Options
+  ************************************/    
+  ///////////////////////////////////////////// Enable Logs
+  // #define DISABLE_SERIAL
+  // #define DISABLE_SERIAL0_CORE
+  // #define DISABLE_SERIAL_LOGGING
+  #define ENABLE_DEBUG_MANUAL_DELAYS // permits blocking delays
+  
+  ///////////////////////////////////////////// System Logs
+  // #define ENABLE_ADVANCED_DEBUGGING
+  // #define ENABLE_FEATURE_EVERY_SECOND_SPLASH_UPTIME
+  // #define ENABLE_FEATURE_DEBUG_TASKER_INTERFACE_LOOP_TIMES
+  // #define ENABLE_DEBUG_FEATURE__TASKER_INTERFACE_SPLASH_LONG_LOOPS_WITH_MS 50
+  // #define ENABLE_DEBUG_FUNCTION_NAMES
+  #define ENABLE_DEBUGFEATURE_WEBUI__SHOW_BUILD_DATETIME_IN_FOOTER
+  #define SERIAL_LOG_LEVEL_DURING_BOOT 8
+  // #define ENABLE_DEBUG_LINE_HERE3
+  // #define ENABLE_DEBUGFEATURE_TASKERMANAGER__ADVANCED_METRICS
+  // #define USE_DEBUG_PRINT
+
+  ///////////////////////////////////////////// Module Logs
+  // #define ENABLE_DEVFEATURE__PIXEL_COLOUR_VALUE_IN_MULTIPIN_SHOW_LOGS  
+  #define ENABLE_FREERAM_APPENDING_SERIAL
+  
+  /***********************************
+   * SECTION: System Configs
+  ************************************/    
+ 
+  #define SETTINGS_HOLDER 1239
+
+  #define USE_MODULE_CORE__CRASH_RECORDER
+
+  #define ENABLE_DEVFEATURE_STORAGE__SYSTEM_CONFIG__LOAD_WITH_TEMPLATES_OVERRIDE
+  #define ENABLE_DEVFEATURE_STORAGE__ANIMATION_PLAYLISTS
+  #define ENABLE_DEVFEATURE__SAVE_MODULE_DATA
+  #define ENABLE_DEVFEATURE__SAVE_CRITICAL_BOOT_DATA_FOR_DEBUG_BUT_ONLY_SPLASH_ON_BOOT_FOR_NOW__EG_SSID_MQTT_SERVER_IP_ADDRESS // until devices can reliably be used without compiling per device
+  #define ENABLE_DEVFEATURE_ADD_TIMESTAMP_ON_SAVE_FILES
+      
+  /***********************************
+   * SECTION: Network Configs
+  ************************************/    
+
+  #define ENABLE_DEVFEATURE_JSON__ASYNCJSON_V6
+  #define USE_MODULE_NETWORK_WEBSERVER
+  #define ENABLE_WEBSERVER_LIGHTING_WEBUI  
+
+  /***********************************
+   * SECTION: Sensor Configs
+  ************************************/  
+
+  #define USE_MODULE_SENSORS_INTERFACE  
+  #define USE_MODULE_SENSORS_BUTTONS
+    #define ENABLE_DEVFEATURE_BUTTON__V2
+    /**
+     * @brief 
+     * Button 1: Preset iter is press, hold in back to playlist
+     * Button 2: Demo/Test mode (Do rainbow moving), or bus show, bus count,
+     * 
+     */
+
+  /***********************************
+   * SECTION: Lighting Configs
+  ************************************/  
+
+  // #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
+  // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
+  
+  #define USE_MODULE_TEMPLATE
+  DEFINE_PGM_CTR(MODULE_TEMPLATE) 
+  "{"
+    "\"" D_NAME         "\":\"" DEVICENAME_CTR "\","
+    "\"" D_FRIENDLYNAME "\":\"" DEVICENAME_FRIENDLY_CTR "\","
+    "\"" D_GPIO_NUMBER "\":{"    
+      // "\"28\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\"," // Bus8
+      // "\"13\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"12\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"26\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"32\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"14\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"27\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"25\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"33\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      #ifdef USE_MODULE_SENSORS_BUTTONS
+      "\"35\":\"" D_GPIO_FUNCTION_KEY1_INV_CTR  "\","
+      "\"34\":\"" D_GPIO_FUNCTION_KEY2_INV_CTR  "\","
+      "\"0\":\"" D_GPIO_FUNCTION_KEY3_INV_CTR  "\""
+      #endif
+    "},"
+    "\"" D_BASE     "\":\"" D_MODULE_NAME_USERMODULE_CTR "\","
+    "\"" D_ROOMHINT "\":\"" DEVICENAME_ROOMHINT_CTR "\""
+  "}";
+
+#endif // DEVICE_ACTIVE_DEVELOPMENT__CRASH_RECORDER__ESP32
 
 
 

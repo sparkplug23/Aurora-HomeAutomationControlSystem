@@ -295,6 +295,9 @@ uint8_t mTaskerManager::Instance_Init()
   #ifdef USE_MODULE_CORE_UPDATES
   addTasker(new mUpdates());
   #endif
+  #ifdef USE_MODULE_CORE__CRASH_RECORDER
+  addTasker(new mCrashRecorder());
+  #endif
   #ifdef USE_MODULE_CORE__SERIAL
   addTasker(new mSerial());
   #endif

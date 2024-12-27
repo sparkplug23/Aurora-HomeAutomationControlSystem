@@ -529,13 +529,6 @@ class mSupport :
 
     void CommandSet_Restart(int8_t command);
 
-    void CrashDump_AddJson();
-    void CmndCrash(void);
-    void CmndWDT(void);
-    void CmndBlockedLoop(void);
-    void CrashDumpClear(void);
-    bool CrashFlag(void);
-    void CrashDump(void);
     
     int Response_P(const char* format, ...);
     int ResponseAppend_P(const char* format, ...);

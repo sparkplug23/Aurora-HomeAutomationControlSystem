@@ -57,7 +57,6 @@ void mHardwarePins::ModuleTemplate__ParseCJSONBuffer(char* buffer){
     }
   }
 
-ALOG_ERR(PSTR("HERE WE ARE"));
 
   if(jtok = rootObj[PM_GPIOC])
   {
@@ -113,8 +112,6 @@ ALOG_ERR(PSTR("HERE WE ARE"));
     // }
 
   }
-ALOG_ERR(PSTR("HERE WE ARE"));
-// delay(3000);
 
   // New method that assumes the function is the key, and the pin(s) are the values
   // pins may be represented as single ints, or array of ints (e.g. Lighting pins)
