@@ -126,6 +126,8 @@ static const char PM_EFFECT_CONFIG__SOLID_COLOUR[] PROGMEM = "Solid Colour@;!,!,
  * @name           : Static Palette
  * @description:   : Palettes should be showed all as banded/descrete, regardless of type
  * 
+ * Version should be made that has no blend, and hence, no dynamic buffer (ie, just set the colour)
+ * 
  * @param Intensity: None
  * @param Speed    : None
  * @param rate     : None
@@ -2079,6 +2081,11 @@ static const char PM_EFFECT_CONFIG__BLEND_TWO_PALETTES[] PROGMEM = "Blend Two Pa
  * 
      * Desc: Draws palette_primary in order, then randomly takes from a second palette (saved by aux0)
      *       This will allow white palettes to work, or else applying coloured twinkles over a white palette too
+     * 
+     * 
+     * This needs split, this version should be "Glow palette over another" in NPB animations, then "Twinkle" should be instant version without animator
+     * Then have a special case that is white twinkles without setting the palette 2
+     * Lets create brand new ones, then phase these out when happy to remove confusion with old and new?
      * 
  *******************************************************************************************************************************************************************************************************************
  ********************************************************************************************************************************************************************************************************************/
