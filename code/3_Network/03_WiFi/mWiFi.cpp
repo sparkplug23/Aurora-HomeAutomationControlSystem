@@ -334,14 +334,14 @@ void mWiFi::WifiBegin(uint8_t flag, uint8_t channel)
 
   // Set static IP  // Set static IP
   // if (pCONT_set->Settings.ip_address[0]) {
-  //   AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_WIFI "Settings.ip_address=%s"),"true");
+  //   AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_WIFI "Settings.ip_address=%s"),"true");
   //   WiFi.config(pCONT_set->Settings.ip_address[0], 
   //               pCONT_set->Settings.ip_address[1], 
   //               pCONT_set->Settings.ip_address[2], 
   //               pCONT_set->Settings.ip_address[3]
   //               );  // Set static IP
   // }else{
-  //   AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_WIFI "Settings.ip_address=%s"),"false");
+  //   AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_WIFI "Settings.ip_address=%s"),"false");
   // }
   
   #ifdef ESP8266
@@ -550,7 +550,7 @@ if(WiFi.scanComplete() == WIFI_SCAN_RUNNING){
                 memcpy((void*) &connection.bssid, (void*) bssid_scan, sizeof(connection.bssid));
 
                 
-            AddLog_Array(LOG_LEVEL_TEST, "break", connection.bssid, (uint8_t)6);
+            AddLog_Array(LOG_LEVEL_DEV_TEST, "break", connection.bssid, (uint8_t)6);
 
             
               }
@@ -1003,8 +1003,8 @@ void mWiFi::WifiCheck(uint8_t param)
   // ALOG_TST(PSTR("connection.config_counter=%d"),connection.config_counter);
 
 
-  // AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_WIFI D_COMMAND_NVALUE ", " D_COMMAND_NVALUE),"connection.counter",connection.counter,"param",param);
-  // AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_WIFI D_COMMAND_NVALUE ", " D_COMMAND_NVALUE),"config_counter",connection.config_counter,"counter",connection.counter);
+  // AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_WIFI D_COMMAND_NVALUE ", " D_COMMAND_NVALUE),"connection.counter",connection.counter,"param",param);
+  // AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_WIFI D_COMMAND_NVALUE ", " D_COMMAND_NVALUE),"config_counter",connection.config_counter,"counter",connection.counter);
 
   // if ((WL_CONNECTED != WiFi.status()) || (static_cast<uint32_t>(WiFi.localIP()) == 0)) {
   //   AddLog(LOG_LEVEL_DEBUG,PSTR(D_LOG_WIFI "%s=%d,%s=%d,%s=%d"),"connection.+_counter",connection.config_counter,"connection.counter",connection.counter,"connection.+_state",connection.scan_state);

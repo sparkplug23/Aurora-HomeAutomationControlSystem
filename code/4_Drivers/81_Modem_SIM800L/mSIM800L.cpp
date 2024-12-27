@@ -1394,7 +1394,7 @@ void mSIM800L::ATParse_CMGD__CommandNameInTextDeleteMessage(char* buffer, uint8_
 
       ALOG_INF(PSTR(D_LOG_CELLULAR "MATCHED \"CMGD\" >>%s<<"), result2);
 
-      response_loglevel = LOG_LEVEL_TEST;
+      response_loglevel = LOG_LEVEL_DEV_TEST;
 
       tok = strtok(NULL, delims); //skip 
 

@@ -399,7 +399,7 @@ bool DeviceNameList::GetModuleAndSensorIDs(uint16_t module_id, const char* senso
 //       number_buffer.unique_group_ids[i]==module_id)&&(number_buffer.index_ids[i]==device_id)){
 //       found_index = i;
 //       #ifdef ENABLE_LOG_LEVEL_INFO
-//       // AddLog(LOG_LEVEL_TEST,PSTR("DeviceNameList::GetDeviceNameWithEnumNumber found_index %d"),i);
+//       // AddLog(LOG_LEVEL_DEV_TEST,PSTR("DeviceNameList::GetDeviceNameWithEnumNumber found_index %d"),i);
 //       #endif // ENABLE_LOG_LEVEL_INFO
 //       break;
 //     }
@@ -656,7 +656,7 @@ int16_t DeviceNameList::GetDeviceIDbyName(const char* name_tofind, int16_t uniqu
 //         if(number_buffer.unique_group_ids[delimeter_count] == unique_module_id){
 //           delimeter_within_class_count++;
 //           #ifdef ENABLE_LOG_LEVEL_INFO
-//           // AddLog(LOG_LEVEL_TEST,PSTR("\n\r%s\n\r found wclass_count\n\r %s\n\r %d %d\n\r\n\r"),haystack,read,delimeter_within_class_count,number_buffer.unique_group_ids[delimeter_count]);
+//           // AddLog(LOG_LEVEL_DEV_TEST,PSTR("\n\r%s\n\r found wclass_count\n\r %s\n\r %d %d\n\r\n\r"),haystack,read,delimeter_within_class_count,number_buffer.unique_group_ids[delimeter_count]);
 //           ALOG_INF( 
 //             PSTR(
 //               "Searching \"%s in Module %d\"\n\r"
@@ -800,7 +800,7 @@ int16_t DeviceNameList::GetDeviceIDbyName(const char* name_tofind, int16_t uniqu
 //         if(number_buffer.unique_group_ids[delimeter_count] == unique_module_id){
 //           delimeter_within_class_count++;
 //           #ifdef ENABLE_LOG_LEVEL_INFO
-//           // AddLog(LOG_LEVEL_TEST,PSTR("\n\r%s\n\r found wclass_count\n\r %s\n\r %d %d\n\r\n\r"),haystack,read,delimeter_within_class_count,number_buffer.unique_group_ids[delimeter_count]);
+//           // AddLog(LOG_LEVEL_DEV_TEST,PSTR("\n\r%s\n\r found wclass_count\n\r %s\n\r %d %d\n\r\n\r"),haystack,read,delimeter_within_class_count,number_buffer.unique_group_ids[delimeter_count]);
 //           ALOG_DBM( 
 //             PSTR(
 //               "Searching \"%s\"\n\r"
@@ -826,8 +826,8 @@ int16_t DeviceNameList::GetDeviceIDbyName(const char* name_tofind, int16_t uniqu
 //   }
 
 //   #ifdef ENABLE_LOG_LEVEL_INFO
-//           // AddLog(LOG_LEVEL_TEST,PSTR("\n\r%s\n\r found wclass_count\n\r %s\n\r %d %d\n\r\n\r"),haystack,read,delimeter_within_class_count,number_buffer.unique_group_ids[delimeter_count]);
-//           // AddLog(LOG_LEVEL_TEST,
+//           // AddLog(LOG_LEVEL_DEV_TEST,PSTR("\n\r%s\n\r found wclass_count\n\r %s\n\r %d %d\n\r\n\r"),haystack,read,delimeter_within_class_count,number_buffer.unique_group_ids[delimeter_count]);
+//           // AddLog(LOG_LEVEL_DEV_TEST,
 //           //   PSTR(
 //           //     "\n\rSearching \"%s\"\n\r"
 //           //     "Found \"%s\" @ index %d\n\r"

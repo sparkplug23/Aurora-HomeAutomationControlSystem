@@ -44,7 +44,7 @@ enum LoggingLevels {
   /**
    *  New level with elevated previledge - during code development use only
    **/
-  LOG_LEVEL_TEST,
+  LOG_LEVEL_DEV_TEST,
 
   /**
    *  Used to pad a message in logging to emphasis in a busy log, used only when required
@@ -409,7 +409,7 @@ enum LoggingLevels {
 #endif
 
 #ifdef ENABLE_LOG_LEVEL_TEST
-#define ALOG_TST(...) AddLog(LOG_LEVEL_TEST, __VA_ARGS__)
+#define ALOG_TST(...) AddLog(LOG_LEVEL_DEV_TEST, __VA_ARGS__)
 #else
 #define ALOG_TST(...)
 #endif

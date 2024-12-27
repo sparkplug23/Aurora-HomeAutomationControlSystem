@@ -126,6 +126,8 @@ static const char PM_EFFECT_CONFIG__SOLID_COLOUR[] PROGMEM = "Solid Colour@;!,!,
  * @name           : Static Palette
  * @description:   : Palettes should be showed all as banded/descrete, regardless of type
  * 
+ * Version should be made that has no blend, and hence, no dynamic buffer (ie, just set the colour)
+ * 
  * @param Intensity: None
  * @param Speed    : None
  * @param rate     : None
@@ -290,7 +292,7 @@ void mAnimatorLight::EffectAnim__Slow_Glow()
         RgbcctColor colour = SEGMENT.GetPaletteColour(desired_pixel, PALETTE_SPAN_OFF, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE);
 
         #ifdef ENABLE__DEBUG_POINT__ANIMATION_EFFECTS
-        ALOG_DBM(LOG_LEVEL_TEST, 
+        ALOG_DBM(LOG_LEVEL_DEV_TEST, 
             PSTR("New palettePixel=%d, pixel_index=v%d SL%d | SVL%d | DL%d, colour=%d,%d,%dT%d"), 
             desired_pixel, pixel_index, 
             SEGMENT.length(), SEGMENT.virtualLength(), SEGMENT.DataLength(),
@@ -319,7 +321,7 @@ void mAnimatorLight::EffectAnim__Slow_Glow()
 
 static const char PM_EFFECT_CONFIG__SLOW_GLOW[] PROGMEM = "Slow Glow@Blend Speed,Pixels Changing,,,,Repeat Rate (ms);!,!,!,!,!;etp=5000,ix=50"; // 6 sliders (speed/intensity/custom1/custom2/custom3/cycle time) + 4 options before first ;
 #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-
+// Rename to "Firefly"
 
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
@@ -860,7 +862,7 @@ void mAnimatorLight::EffectAnim__Popping_Decay_Base(bool draw_palette_inorder, b
     colour = SEGMENT.GetPaletteColour(desired_pixel, PALETTE_SPAN_OFF, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE);
 
     #ifdef ENABLE__DEBUG_POINT__ANIMATION_EFFECTS
-    ALOG_DBM(LOG_LEVEL_TEST, 
+    ALOG_DBM(LOG_LEVEL_DEV_TEST, 
       PSTR("New palettePixel=%d, pixel_index=v%d SL%d | SVL%d | DL%d, colour=%d,%d,%dT%d"), 
         desired_pixel, pixel_index, 
         SEGMENT.length(), SEGMENT.virtualLength(), SEGMENT.DataLength(),
@@ -1641,7 +1643,7 @@ void mAnimatorLight::EffectAnim__Stepping_Palette()
   uint8_t pixel_position = 0;
   uint8_t pixels_in_map = GetNumberOfColoursInPalette(SEGMENT.palette_id);
 
-  // AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_NEO "pixels_in_map= %d"),pixels_in_map);
+  // AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_NEO "pixels_in_map= %d"),pixels_in_map);
   
   desired_pixel = *indexes_active_p;
   uint8_t pixels_map_upper_limit = *indexes_active_p+1;
@@ -1664,7 +1666,7 @@ void mAnimatorLight::EffectAnim__Stepping_Palette()
 
   *indexes_counter_p ^= 1;
 
-  // AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_NEO "counter = %d/%d/%d"), counter,index_1,index_2);
+  // AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_NEO "counter = %d/%d/%d"), counter,index_1,index_2);
 
   RgbcctColor colour;
 
@@ -1806,7 +1808,7 @@ void mAnimatorLight::EffectAnim__Stepping_Palette_With_Background()
   uint8_t pixel_position = 0;
   uint8_t pixels_in_map = GetNumberOfColoursInPalette(SEGMENT.palette_id);
 
-  // AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_NEO "pixels_in_map= %d"),pixels_in_map);
+  // AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_NEO "pixels_in_map= %d"),pixels_in_map);
   
   desired_pixel = *indexes_active_p;
   uint8_t pixels_map_upper_limit = *indexes_active_p+1;
@@ -1829,7 +1831,7 @@ void mAnimatorLight::EffectAnim__Stepping_Palette_With_Background()
 
   *indexes_counter_p ^= 1;
 
-  AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_NEO "counter = %d/%d/%d"), counter,index_1,index_2);
+  AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_NEO "counter = %d/%d/%d"), counter,index_1,index_2);
 
   RgbcctColor colour;
 
@@ -2079,6 +2081,11 @@ static const char PM_EFFECT_CONFIG__BLEND_TWO_PALETTES[] PROGMEM = "Blend Two Pa
  * 
      * Desc: Draws palette_primary in order, then randomly takes from a second palette (saved by aux0)
      *       This will allow white palettes to work, or else applying coloured twinkles over a white palette too
+     * 
+     * 
+     * This needs split, this version should be "Glow palette over another" in NPB animations, then "Twinkle" should be instant version without animator
+     * Then have a special case that is white twinkles without setting the palette 2
+     * Lets create brand new ones, then phase these out when happy to remove confusion with old and new?
      * 
  *******************************************************************************************************************************************************************************************************************
  ********************************************************************************************************************************************************************************************************************/
@@ -3697,7 +3704,7 @@ static const char PM_EFFECT_CONFIG__7SEGMENTDISPLAY__MANUALSTRING_01[] PROGMEM =
 //       }
 
 
-// AddLog(LOG_LEVEL_TEST,PSTR("pCONT_iLight->animation.palette_id=%d"),pCONT_iLight->animation.palette_id);
+// AddLog(LOG_LEVEL_DEV_TEST,PSTR("pCONT_iLight->animation.palette_id=%d"),pCONT_iLight->animation.palette_id);
 
 
 //       UpdateDesiredColourFromPaletteSelected();
@@ -3812,7 +3819,7 @@ static const char PM_EFFECT_CONFIG__7SEGMENTDISPLAY__MANUALSTRING_01[] PROGMEM =
 //   EFFECT_CONFIG* effect_config2 = reinterpret_cast<EFFECT_CONFIG*>(pCONT_iLight->effects_data_buffer);
 //   //should be memcpy be used to insure size if not exceeded? or sizeof check? pointer is faster
 
-//   AddLog(LOG_LEVEL_TEST,PSTR("pCONT_iLight->animation.palette_id=%d"),pCONT_iLight->animation.palette_id);
+//   AddLog(LOG_LEVEL_DEV_TEST,PSTR("pCONT_iLight->animation.palette_id=%d"),pCONT_iLight->animation.palette_id);
 
 //   pCONT_iLight->animation.flags.brightness_applied_during_colour_generation = true;
 
@@ -4456,7 +4463,7 @@ static const char PM_EFFECT_CONFIG__7SEGMENTDISPLAY__MANUALSTRING_01[] PROGMEM =
 //   EFFECT_CONFIG* effect_config2 = reinterpret_cast<EFFECT_CONFIG*>(pCONT_iLight->effects_data_buffer);
 //   //should be memcpy be used to insure size if not exceeded? or sizeof check? pointer is faster
 
-//   AddLog(LOG_LEVEL_TEST,PSTR("pCONT_iLight->animation.palette_id=%d"),pCONT_iLight->animation.palette_id);
+//   AddLog(LOG_LEVEL_DEV_TEST,PSTR("pCONT_iLight->animation.palette_id=%d"),pCONT_iLight->animation.palette_id);
 
 
 //   // pCONT_iLight->settings.light_size_count = 1;
@@ -4844,7 +4851,7 @@ static const char PM_EFFECT_CONFIG__7SEGMENTDISPLAY__MANUALSTRING_01[] PROGMEM =
  
 //   // AddLog(LOG_LEVEL_DEBUG,PSTR(D_LOG_NEO "SubTask_Flasher_Animate_Function_SunPositions_Solid_Colour_Based_On_Sun_Elevation_02"));
 
-//   // AddLog(LOG_LEVEL_TEST,PSTR("pCONT_iLight->animation.palette_id=%d"),pCONT_iLight->animation.palette_id);
+//   // AddLog(LOG_LEVEL_DEV_TEST,PSTR("pCONT_iLight->animation.palette_id=%d"),pCONT_iLight->animation.palette_id);
 
 // /**
 //  * 
@@ -4907,7 +4914,7 @@ static const char PM_EFFECT_CONFIG__7SEGMENTDISPLAY__MANUALSTRING_01[] PROGMEM =
 
 //     // pCONT_iLight->rgbcct_controller.setRGB(0,0,blue);
 
-//     // AddLog(LOG_LEVEL_TEST,PSTR("sun_elevation=%d, blue=%d"), (int)sun_elevation, blue);
+//     // AddLog(LOG_LEVEL_DEV_TEST,PSTR("sun_elevation=%d, blue=%d"), (int)sun_elevation, blue);
 
 //     // ALOG_INF(PSTR("elevation=%d, cct_temp=%d %d"),(int)sun_elevation, elev_perc, cct_val);
 
@@ -4945,7 +4952,7 @@ static const char PM_EFFECT_CONFIG__7SEGMENTDISPLAY__MANUALSTRING_01[] PROGMEM =
 
 //     // pCONT_iLight->rgbcct_controller.setRGB(0,0,blue);
 
-//     // AddLog(LOG_LEVEL_TEST,PSTR("sun_elevation=%d, blue=%d"), (int)sun_elevation, blue);
+//     // AddLog(LOG_LEVEL_DEV_TEST,PSTR("sun_elevation=%d, blue=%d"), (int)sun_elevation, blue);
 
 //     // ALOG_INF(PSTR("elevation=%d, cct_temp=%d %d"),(int)sun_elevation, elev_perc, cct_val);
 
@@ -4980,7 +4987,7 @@ static const char PM_EFFECT_CONFIG__7SEGMENTDISPLAY__MANUALSTRING_01[] PROGMEM =
 
 //     // pCONT_iLight->rgbcct_controller.setRGB(0,0,blue);
 
-//     // AddLog(LOG_LEVEL_TEST,PSTR("sun_elevation=%d, blue=%d"), (int)sun_elevation, blue);
+//     // AddLog(LOG_LEVEL_DEV_TEST,PSTR("sun_elevation=%d, blue=%d"), (int)sun_elevation, blue);
 
 //     // ALOG_INF(PSTR("elevation=%d, cct_temp=%d %d"),(int)sun_elevation, elev_perc, cct_val);
 
@@ -5054,7 +5061,7 @@ static const char PM_EFFECT_CONFIG__7SEGMENTDISPLAY__MANUALSTRING_01[] PROGMEM =
 //     pCONT_iLight->rgbcct_controller.setCCT(cct_val);
 
     
-//     AddLog(LOG_LEVEL_TEST,PSTR("sun_elevation=%d, elev_perc=%d, cct_val=%d, cct=%d"), (int)sun_elevation, elev_perc, cct_val, pCONT_iLight->rgbcct_controller.getCCT());
+//     AddLog(LOG_LEVEL_DEV_TEST,PSTR("sun_elevation=%d, elev_perc=%d, cct_val=%d, cct=%d"), (int)sun_elevation, elev_perc, cct_val, pCONT_iLight->rgbcct_controller.getCCT());
 
 //     uint8_t brightness_255 = map(sun_elevation,10,20,100,255);
 //     pCONT_iLight->rgbcct_controller.setBrightnessCCT255(brightness_255);
@@ -5074,7 +5081,7 @@ static const char PM_EFFECT_CONFIG__7SEGMENTDISPLAY__MANUALSTRING_01[] PROGMEM =
 //     pCONT_iLight->rgbcct_controller.setCCT(cct_val);
 
     
-//     AddLog(LOG_LEVEL_TEST,PSTR("sun_elevation=%d, elev_perc=%d, cct_val=%d, cct=%d"), (int)sun_elevation, elev_perc, cct_val, pCONT_iLight->rgbcct_controller.getCCT());
+//     AddLog(LOG_LEVEL_DEV_TEST,PSTR("sun_elevation=%d, elev_perc=%d, cct_val=%d, cct=%d"), (int)sun_elevation, elev_perc, cct_val, pCONT_iLight->rgbcct_controller.getCCT());
 
 //     uint8_t brightness_255 = map(sun_elevation,-5,10,0,100);
 //     pCONT_iLight->rgbcct_controller.setBrightnessCCT255(brightness_255);
@@ -13921,7 +13928,7 @@ void mAnimatorLight::EffectAnim__Christmas_Musical__01()
   uint8_t pixel_position = 0;
   uint8_t pixels_in_map = GetNumberOfColoursInPalette(SEGMENT.palette_id);
 
-  // AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_NEO "pixels_in_map= %d"),pixels_in_map);
+  // AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_NEO "pixels_in_map= %d"),pixels_in_map);
   
   desired_pixel = *indexes_active_p;
   uint8_t pixels_map_upper_limit = *indexes_active_p+1;
@@ -13944,7 +13951,7 @@ void mAnimatorLight::EffectAnim__Christmas_Musical__01()
 
   *indexes_counter_p ^= 1;
 
-  // AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_NEO "counter = %d/%d/%d"), counter,index_1,index_2);
+  // AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_NEO "counter = %d/%d/%d"), counter,index_1,index_2);
 
   RgbcctColor colour;
 

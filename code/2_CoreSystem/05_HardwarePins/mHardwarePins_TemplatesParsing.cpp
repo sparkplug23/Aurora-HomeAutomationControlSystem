@@ -270,8 +270,8 @@ void mHardwarePins::TemplateGPIOs(myio *gp)
   // For extensive debugging, print the source and destination before copying
   #ifdef ENABLE_DEBUG_MODULE_HARDWAREPINS_SUBSECTION_TEMPLATES
     #ifdef ENABLE_LOG_LEVEL_COMMANDS
-  AddLog_Array(LOG_LEVEL_TEST, PSTR("TemplateGPIO:src"), src,  ARRAY_SIZE(pCONT_set->Settings.user_template.hardware.gp.io));
-  AddLog_Array(LOG_LEVEL_TEST, PSTR("TemplateGPIO:dst"), dest, ARRAY_SIZE(pCONT_set->Settings.user_template.hardware.gp.io));
+  AddLog_Array(LOG_LEVEL_DEV_TEST, PSTR("TemplateGPIO:src"), src,  ARRAY_SIZE(pCONT_set->Settings.user_template.hardware.gp.io));
+  AddLog_Array(LOG_LEVEL_DEV_TEST, PSTR("TemplateGPIO:dst"), dest, ARRAY_SIZE(pCONT_set->Settings.user_template.hardware.gp.io));
     #endif // ENABLE_LOG_LEVEL_COMMANDS
   #endif // ENABLE_DEBUG_MODULE_HARDWAREPINS_SUBSECTION_TEMPLATES
 
@@ -291,7 +291,7 @@ void mHardwarePins::TemplateGPIOs(myio *gp)
   }
 
   #ifdef ENABLE_DEBUG_MODULE_HARDWAREPINS_SUBSECTION_TEMPLATES
-  AddLog_Array(LOG_LEVEL_TEST, PSTR("TemplateGPIO:dst2"), dest, ARRAY_SIZE(pCONT_set->Settings.user_template.hardware.gp.io));
+  AddLog_Array(LOG_LEVEL_DEV_TEST, PSTR("TemplateGPIO:dst2"), dest, ARRAY_SIZE(pCONT_set->Settings.user_template.hardware.gp.io));
   #endif // ENABLE_DEBUG_MODULE_HARDWAREPINS_SUBSECTION_TEMPLATES
 
 }
@@ -381,7 +381,7 @@ void mHardwarePins::GpioInit(void)
     // Set any user pins 
     else if (pCONT_set->Settings.module_pins.io[i] > GPIO_NONE_ID) {
       pCONT_set->runtime.my_module.io[i] = pCONT_set->Settings.module_pins.io[i];
-      ALOG_DBM(PSTR(D_LOG_CONFIG "my_module.io[i] = %d"),i,pCONT_set->my_module.io[i]);
+      ALOG_DBM(PSTR(D_LOG_CONFIG "my_module.io[i] = %d"),i,pCONT_set->Settings.module_pins.io[i]);
     }
 
     // Set any pins set in template
@@ -423,11 +423,11 @@ void mHardwarePins::GpioInit(void)
 
     uint16_t gpio = pCONT_set->runtime.my_module.io[index];
 
-    ALOG_DBM(PSTR("DBG: %d %d %d"), i, pCONT_set->my_module.io[i], mgpio);
+    ALOG_DBM(PSTR("DBG: %d %d %d"), index,pCONT_set->Settings.module_pins.io[index], mgpio);
 
     mgpio = ValidPin_AdjustGPIO(index, gpio);
 
-    ALOG_DBM( PSTR("DBG: real_pin=%d moduleIO=%d  mgpio=%d"), real_pin, pCONT_set->my_module.io[index], mgpio);
+    ALOG_DBM( PSTR("DBG: real_pin=%d moduleIO=%d  mgpio=%d"), real_pin, pCONT_set->Settings.module_pins.io[index], mgpio);
 
     // Phasing section out : moving into their modules
     // if (mgpio) {    

@@ -139,7 +139,7 @@ uint8_t mSR04::ModeDetect(void)
 
   if (sonar_serial->begin(SONAR_SERIAL_BAUD,1))
   {
-    AddLog(LOG_LEVEL_TEST,PSTR("SR04: Detect mode pins TX%d, RX%d"), sr04_trig_pin, sr04_echo_pin);
+    AddLog(LOG_LEVEL_DEV_TEST,PSTR("SR04: Detect mode pins TX%d, RX%d"), sr04_trig_pin, sr04_echo_pin);
     if (sr04_trig_pin != -1) 
     {      
       if (PinUsed(GPIO_SR04_TRIG_ID, i)) {
@@ -210,7 +210,7 @@ uint16_t mSR04::Mode2Distance(void)
   const char startByte = 0xff;
 
   if (!sonar_serial->find(startByte)) {
-    AddLog(LOG_LEVEL_TEST,PSTR("SR04: No start byte"));
+    AddLog(LOG_LEVEL_DEV_TEST,PSTR("SR04: No start byte"));
     return NO_ECHO;
   }
 
@@ -230,7 +230,7 @@ uint16_t mSR04::Mode2Distance(void)
     AddLog(LOG_LEVEL_ERROR,PSTR("SR04: Reading CRC error."));
     return NO_ECHO;
   }
-  AddLog(LOG_LEVEL_TEST,PSTR("SR04: Distance: %d"), distance);
+  AddLog(LOG_LEVEL_DEV_TEST,PSTR("SR04: Distance: %d"), distance);
   
   return distance;
 }

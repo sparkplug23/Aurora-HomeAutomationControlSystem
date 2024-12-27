@@ -916,7 +916,7 @@ void mNextionPanel::HueToRgb(uint16_t hue, float* r, float* g, float* b)
 
 void mNextionPanel::nextionReset()
 {
-  AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_NEXTION "%s"),"HMI: Rebooting LCD");
+  AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_NEXTION "%s"),"HMI: Rebooting LCD");
   
   
   display->print("rest");
@@ -944,7 +944,7 @@ void mNextionPanel::nextionReset()
   }
   if (lcdConnected)
   {
-    AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_NEXTION "%s"),"HMI: Rebooting LCD completed");
+    AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_NEXTION "%s"),"HMI: Rebooting LCD completed");
     if (settings.page)
     {
       char command_ctr[15];
@@ -954,7 +954,7 @@ void mNextionPanel::nextionReset()
   }
   else
   {
-    AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_NEXTION "%s"),"ERROR: Rebooting LCD completed, but LCD is not responding.");
+    AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_NEXTION "%s"),"ERROR: Rebooting LCD completed, but LCD is not responding.");
   }
   //mqttClient.publish(mqttStatusTopic, WILLMESSAGE_ONDISCONNECT_CTR);
 }
@@ -1368,13 +1368,13 @@ void mNextionPanel::nextionProcessInput()
     getInt = getInt * 256 + nextionReturnBuffer[2];
     getInt = getInt * 256 + nextionReturnBuffer[1];
     String getString = String(getInt);
-    //AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_NEXTION "%s"),"HMI IN: [Int Return] '")) + getString + "'");
+    //AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_NEXTION "%s"),"HMI IN: [Int Return] '")) + getString + "'");
 
     if (lcdVersionQueryFlag)
     {
       lcdVersion = getInt;
       lcdVersionQueryFlag = false;
-      ////AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_NEXTION "%s"),"HMI IN: lcdVersion '")) + String(lcdVersion) + "'");
+      ////AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_NEXTION "%s"),"HMI IN: lcdVersion '")) + String(lcdVersion) + "'");
     }
     else if (mqttGetSubtopic == "")
     {
@@ -1416,7 +1416,7 @@ void mNextionPanel::nextionProcessInput()
         if (comokFieldCount == 2)
         {
           nextionModel = comokField;
-          // AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_NEXTION "%s"),"HMI IN: nextionModel: ")) + nextionModel);
+          // AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_NEXTION "%s"),"HMI IN: nextionModel: ")) + nextionModel);
         }
         comokFieldCount++;
         comokField = "";
@@ -2015,13 +2015,13 @@ void mNextionPanel::EverySecond_FlashScreen(){
 
   if(flash_message.cShowSeconds==0){
     // Return screen to previous
-    AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_NEXTION D_COMMAND_NVALUE),"settings.page_saved",settings.page_saved);
+    AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_NEXTION D_COMMAND_NVALUE),"settings.page_saved",settings.page_saved);
     Command_SetPage(settings.page_saved);
     flash_message.cShowSeconds = -1;
   }else
   if(flash_message.cShowSeconds>0){
     flash_message.cShowSeconds--;
-    AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_NEXTION D_COMMAND_NVALUE),"flash_message.cShowSeconds",flash_message.cShowSeconds);
+    AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_NEXTION D_COMMAND_NVALUE),"flash_message.cShowSeconds",flash_message.cShowSeconds);
   }
 
 } //end F
@@ -3069,7 +3069,7 @@ bool mNextionPanel::nextionOtaResponse()
   }
 
   if(!otaSuccessVal){
-    AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_NEXTION "QUIT OTA and NOOOOOOOOOT Restart display"));
+    AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_NEXTION "QUIT OTA and NOOOOOOOOOT Restart display"));
     // nextionReset();
   }
 

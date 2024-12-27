@@ -11,7 +11,7 @@
 void mRuleEngine::DefaultRule_Sonoff_4CHPRO()
 {
 
-    ALOG_DBM(LOG_LEVEL_DEBUG, PSTR("DefaultRule_Sonoff_4CHPRO") );
+    ALOG_DBM(PSTR("DefaultRule_Sonoff_4CHPRO") );
     
     mEvent::EVENT_PART* p_event = nullptr;
 

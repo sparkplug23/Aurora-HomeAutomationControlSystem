@@ -170,10 +170,10 @@ int8_t mTaskerManager::Tasker_Interface(uint16_t task)
     #endif 
     
     #ifdef ENABLE_ADVANCED_DEBUGGING
-    AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_CLASSLIST "TIE_%d FUNC time %dms"), millis(), millis()-start_millis);
+    AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_CLASSLIST "TIE_%d FUNC time %dms"), millis(), millis()-start_millis);
     #if defined(ENABLE_DEBUG_FEATURE__TASKER_INTERFACE_SPLASH_LONG_LOOPS_WITH_MS)
       if(this_millis > ENABLE_DEBUG_FEATURE__TASKER_INTERFACE_SPLASH_LONG_LOOPS_WITH_MS){
-        AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_CLASSLIST "TASKER %d ms %S %S"), millis()-start_millis, GetTaskName(task), mod->GetModuleName());
+        AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_CLASSLIST "TASKER %d ms %S %S"), millis()-start_millis, GetTaskName(task), mod->GetModuleName());
       }
     #endif // ENABLE_DEBUG_FEATURE__TASKER_INTERFACE_SPLASH_LONG_LOOPS_WITH_MS
     #endif // ENABLE_ADVANCED_DEBUGGING
@@ -224,7 +224,7 @@ int8_t mTaskerManager::Tasker_Interface(uint16_t task)
   if(task == TASK_ON_BOOT_COMPLETE){ pCONT_set->runtime.flag_boot_complete = true; }
   
   #ifdef ENABLE_ADVANCED_DEBUGGING
-    AddLog(LOG_LEVEL_TEST,PSTR(D_LOG_CLASSLIST D_FUNCTION_TASKER_INTERFACE " FINISHED"));
+    AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_CLASSLIST D_FUNCTION_TASKER_INTERFACE " FINISHED"));
   #endif
 
   return result;

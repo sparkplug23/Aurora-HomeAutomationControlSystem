@@ -32,11 +32,11 @@
 //     case FUNC_EVERY_SECOND:
 
 // // pinMode(16, INPUT_PULLDOWN_16);
-// //     AddLog(LOG_LEVEL_TEST, PSTR("mButtons::Tasker %d"),digitalRead(16));
+// //     AddLog(LOG_LEVEL_DEV_TEST, PSTR("mButtons::Tasker %d"),digitalRead(16));
 
 //     break;
 //     // case FUNC_EVENT_INPUT_STATE_CHANGED_ID:
-//     //  // AddLog(LOG_LEVEL_TEST, PSTR("mButtons::FUNC_EVENT_INPUT_STATE_CHANGED_ID"));
+//     //  // AddLog(LOG_LEVEL_DEV_TEST, PSTR("mButtons::FUNC_EVENT_INPUT_STATE_CHANGED_ID"));
 
 //     // break;
 //     /************
@@ -272,7 +272,7 @@
 
 // //  uint8_t maxdev = (pCONT_set->devices_present > MAX_KEYS) ? MAX_KEYS : pCONT_set->devices_present;
 
-// //   // AddLog(LOG_LEVEL_TEST, PSTR("maxdev=%d"),maxdev);
+// //   // AddLog(LOG_LEVEL_DEV_TEST, PSTR("maxdev=%d"),maxdev);
 
 // // //delay(1000);
 
@@ -292,9 +292,9 @@
 // //       state = (digitalRead(pCONT_pins->GetPin(GPIO_KEY1_INV_ID,button_index)) != bitRead(key_inverted, button_index));
 // //     }
 
-// //     // AddLog(LOG_LEVEL_TEST, PSTR("state=%s[%d]%d:%d"),state==BUTTON_PRESSED_ID?"pressed":"NOTpressed",button_index,state,buttons[button_index].last_state);
+// //     // AddLog(LOG_LEVEL_DEV_TEST, PSTR("state=%s[%d]%d:%d"),state==BUTTON_PRESSED_ID?"pressed":"NOTpressed",button_index,state,buttons[button_index].last_state);
 
-// //           // AddLog(LOG_LEVEL_TEST, PSTR("state=%d:%d"),
+// //           // AddLog(LOG_LEVEL_DEV_TEST, PSTR("state=%d:%d"),
 // //           // // state==BUTTON_PRESSED_ID?"pressed":"NOTpressed",
 // //           // // button_index,
           
@@ -318,7 +318,7 @@
 // //       if ((BUTTON_PRESSED_ID == state) && (BUTTON_NOT_PRESSED_ID == buttons[button_index].last_state)) {
 // //         // if (pCONT_set->Settings.flag_system.button_single) {                   // Allow only single button press for immediate action
         
-// //           // AddLog(LOG_LEVEL_TEST, PSTR("state=%d:%d"),
+// //           // AddLog(LOG_LEVEL_DEV_TEST, PSTR("state=%d:%d"),
 // //           // // state==BUTTON_PRESSED_ID?"pressed":"NOTpressed",
 // //           // // button_index,
           

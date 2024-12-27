@@ -632,7 +632,7 @@ const char* mLogging::GetLogLevelNamebyID(uint8_t id) {
     case LOG_LEVEL_DEBUG_TRACE:    return PM_LOG_LEVEL_DEBUG_TRACE_CTR;
     case LOG_LEVEL_ERROR:          return PM_LOG_LEVEL_ERROR_CTR;
     case LOG_LEVEL_WARNING:        return PM_LOG_LEVEL_WARN_CTR;
-    case LOG_LEVEL_TEST:           return PM_LOG_LEVEL_TEST_CTR;
+    case LOG_LEVEL_DEV_TEST:           return PM_LOG_LEVEL_TEST_CTR;
     case LOG_LEVEL_HIGHLIGHT:      return PM_LOG_LEVEL_HIGHLIGHT_CTR;
     case LOG_LEVEL_IMPORTANT:      return PM_LOG_LEVEL_IMPORTANT_CTR;
     case LOG_LEVEL_INFO:           return PM_LOG_LEVEL_INFO_CTR;
@@ -651,7 +651,7 @@ uint8_t mLogging::GetLogLevelIDbyName(const char* name) {
   if (strcmp_P(name, PM_LOG_LEVEL_DEBUG_TRACE_CTR) == 0)     return LOG_LEVEL_DEBUG_TRACE;
   if (strcmp_P(name, PM_LOG_LEVEL_ERROR_CTR) == 0)           return LOG_LEVEL_ERROR;
   if (strcmp_P(name, PM_LOG_LEVEL_WARN_CTR) == 0)            return LOG_LEVEL_WARNING;
-  if (strcmp_P(name, PM_LOG_LEVEL_TEST_CTR) == 0)            return LOG_LEVEL_TEST;
+  if (strcmp_P(name, PM_LOG_LEVEL_TEST_CTR) == 0)            return LOG_LEVEL_DEV_TEST;
   if (strcmp_P(name, PM_LOG_LEVEL_HIGHLIGHT_CTR) == 0)       return LOG_LEVEL_HIGHLIGHT;
   if (strcmp_P(name, PM_LOG_LEVEL_IMPORTANT_CTR) == 0)       return LOG_LEVEL_IMPORTANT;
   if (strcmp_P(name, PM_LOG_LEVEL_INFO_CTR) == 0)            return LOG_LEVEL_INFO;

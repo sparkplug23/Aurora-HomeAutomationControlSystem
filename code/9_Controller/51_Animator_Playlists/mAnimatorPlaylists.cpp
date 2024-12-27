@@ -249,7 +249,7 @@
 
 //   #ifdef ENABLE_DEVFEATURE_IFAN__RF433_REMOTE_OVER_SERIAL
 
-//   AddLog(LOG_LEVEL_TEST,PSTR("mSonoffIFan::SerialInput"));
+//   AddLog(LOG_LEVEL_DEV_TEST,PSTR("mSonoffIFan::SerialInput"));
 
 //   if (0xAA == serial_in_byte) {               // 0xAA - Start of text
 //     serial_in_byte_counter = 0;

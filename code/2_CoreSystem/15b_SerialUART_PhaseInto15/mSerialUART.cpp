@@ -1712,7 +1712,7 @@
 // // //   analogWrite(pin, value);
 // //   createDir(SD_MMC, "/mydir");
 
-// // // AddLog(LOG_LEVEL_TEST,PSTR("pwm %d value = %d"),pin,value);
+// // // AddLog(LOG_LEVEL_DEV_TEST,PSTR("pwm %d value = %d"),pin,value);
 
 
 // //   #ifdef ENABLE_LOG_LEVEL_COMMANDS

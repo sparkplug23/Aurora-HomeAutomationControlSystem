@@ -339,7 +339,7 @@ void mImmersionTankColour::SubTask_StripSet_Showing()
   // index--;
 
   // AddLog(LOG_LEVEL_ERROR, PSTR("index=%d"),index);
-  // AddLog_Array(LOG_LEVEL_TEST, "test_temp", test_temp, 6);
+  // AddLog_Array(LOG_LEVEL_DEV_TEST, "test_temp", test_temp, 6);
   // delay(5000);
 
 
@@ -356,11 +356,11 @@ void mImmersionTankColour::SubTask_StripSet_Showing()
 
   // AddLog(LOG_LEVEL_WARN, PSTR("ENABLE_RELAY_CONTROLS is disabled"));
   
-  // AddLog_Array_Int(LOG_LEVEL_TEST, "encoded_gradient_temp_array", encoded_gradient_temp_array, index);
+  // AddLog_Array_Int(LOG_LEVEL_DEV_TEST, "encoded_gradient_temp_array", encoded_gradient_temp_array, index);
 
-  // AddLog_Array_Int(LOG_LEVEL_TEST, "encoded", encoded_gradient_temp_array, index );
+  // AddLog_Array_Int(LOG_LEVEL_DEV_TEST, "encoded", encoded_gradient_temp_array, index );
 
-  // AddLog_Array(LOG_LEVEL_TEST, "encoded_gradient_temp_array", encoded_gradient_temp_array, index);
+  // AddLog_Array(LOG_LEVEL_DEV_TEST, "encoded_gradient_temp_array", encoded_gradient_temp_array, index);
   
   // if(pCONT_time->uptime_seconds_nonreset > 60){
 
