@@ -239,6 +239,15 @@ void setup(void)
   #ifdef ENABLE_DEVFEATURE_SETDEBUGOUTPUT
   Serial.setDebugOutput(true);
   #endif 
+
+/********************************************************************************************
+ ** Debug: When debugging is crashing, priority is to start wifi and get OTA going and waiting a few seconds to catch an OTA **************************************************************************
+ ********************************************************************************************/
+  #ifdef ENABLE_DEVFEATURE_FAST_REBOOT_OTA_SAFEMODE
+  if (RtcFastboot.fast_reboot_count > 0) {
+    SafeMode_StartAndAwaitOTA(10);
+  }
+  #endif
   
 /********************************************************************************************
  ** Init Pointers ***************************************************************************

@@ -368,7 +368,7 @@ extern "C" void custom_crash_callback(struct rst_info * rst_info, uint32_t stack
 
 extern uint32_t ResetReason_g(void);
 
-extern void SafeMode_StartAndAwaitOTA();
+extern void SafeMode_StartAndAwaitOTA(uint8_t seconds_to_wait = 0 /*default of zero, is indefinitely */);
 
 #ifdef ENABLE_DEVFEATURE_FASTBOOT_CELLULAR_SMS_BEACON_FALLBACK_DEFAULT_SSID
 #define TINY_GSM_MODEM_SIM7000

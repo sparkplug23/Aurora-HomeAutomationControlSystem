@@ -210,8 +210,9 @@ const char* serverIndex =
 
 /**
  * @brief Single function that a fastboot'ing device will call to await for new code to be uploaded
+ * "0" means to wait indefinitely, ie fastboot is recovering
  **/
-void SafeMode_StartAndAwaitOTA()
+void SafeMode_StartAndAwaitOTA(uint8_t seconds_to_wait)
 {
   Serial.begin(115200);
 
@@ -332,23 +333,26 @@ void SafeMode_StartAndAwaitOTA()
   #endif // ENABLE_DEVFEATURE_FASTBOOT_OTA_FALLBACK_DEFAULT_SSID
 
 
-  Serial.println("SafeMode: Just waiting for HTTP upload");
+  Serial.printf("SafeMode: Awaiting OTA/HTTP recovery for %d seconds\n", seconds_to_wait);
 
-
-  while(1){ 
-    // Serial.println("SafeMode: Just waiting for OTA"); delay(1000);
-    
-    #ifdef ENABLE_DEVFEATURE_FASTBOOT_OTA_FALLBACK_DEFAULT_SSID
-    // while (ota_triggered){  
-      ArduinoOTA.handle(); 
-      // }
-    #endif 
+  bool bExit = false;
+  uint32_t tStart = millis();
+  while(!bExit)
+  {
     #ifdef ENABLE_DEVFEATURE_FASTBOOT_HTTP_FALLBACK_DEFAULT_SSID
-    // while (http_triggered){
-       http_safemode_server->handleClient(); 
-      //  }
+    http_safemode_server->handleClient();
     #endif
-    delay(1);
+    #ifdef ENABLE_DEVFEATURE_FASTBOOT_OTA_FALLBACK_DEFAULT_SSID
+    ArduinoOTA.handle();
+    #endif
+
+    if(seconds_to_wait>0)
+    {
+      if(millis()-tStart>seconds_to_wait*1000)
+      {
+        bExit = true;
+      }
+    }
 
     if(llabs(millis()-tSaved_heartbeat)>1000)
     {
@@ -364,8 +368,34 @@ void SafeMode_StartAndAwaitOTA()
       #endif
 
     }
-
   }
+  // while(1){ 
+  //   // Serial.println("SafeMode: Just waiting for OTA"); delay(1000);
+    
+  //   #ifdef ENABLE_DEVFEATURE_FASTBOOT_OTA_FALLBACK_DEFAULT_SSID
+  //   ArduinoOTA.handle(); 
+  //   #endif 
+  //   #ifdef ENABLE_DEVFEATURE_FASTBOOT_HTTP_FALLBACK_DEFAULT_SSID
+  //   http_safemode_server->handleClient(); 
+  //   #endif
+  //   delay(1);
+
+  //   if(llabs(millis()-tSaved_heartbeat)>1000)
+  //   {
+  //     tSaved_heartbeat = millis();
+  //     Serial.println("Waiting for Recovery");
+  //     Serial.print("Connected to ");
+  //     Serial.println(ssid);
+  //     Serial.print("IP address: ");
+  //     Serial.println(WiFi.localIP());
+
+  //     #ifdef ENABLE_FEATURE_WATCHDOG_TIMER
+  //     WDT_Reset();
+  //     #endif
+
+  //   }
+
+  // }
 
 }
 #endif // if defined(ENABLE_DEVFEATURE_FASTBOOT_OTA_FALLBACK_DEFAULT_SSID) || (ENABLE_DEVFEATURE_FASTBOOT_HTTP_FALLBACK_DEFAULT_SSID)

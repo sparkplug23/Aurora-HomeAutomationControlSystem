@@ -352,7 +352,7 @@
       "Speed":255,
       "Grouping":1,
       "Decimate":7,
-      "RateMs":23
+      "RateMs":20
     },
     "BrightnessRGB": 100
   },
@@ -499,7 +499,7 @@
       "Intensity":255,
       "Speed":213,
       "Grouping":1,
-      "Decimate":0,
+      "Decimate":5,
       "RateMs":23
     },
     "BrightnessRGB": 100
@@ -715,6 +715,10 @@
   [1,    2,  3,  4, 5,  6, 55,  7,  9, 10, 21, 22],"dur":
   [100,100,200,100,50,200,100,200,200,200,100,100],"repeat":0,"end":0,"r":1},"on":true,"n":"N2 Night"},
 
+  "96":{"playlist":{"ps":
+  [1,    2,  3,  4, 5,  6, 55,  7,  9, 10, 21, 22],"dur":
+  [100,100,400,400,50,200,100,200,200,200,100,100],"repeat":0,"end":0,"r":1},"on":true,"n":"N3 Night"},
+
   "92":{"playlist":{"ps":
   [50,    53, 42,  43,  44, 52, 53,   42,  43,  44],"dur":
   [20,20, 200,100,50,   20,20, 200,100,50],"repeat":0,"end":0,"r":1},"on":true,"n":"D1 Init Test"},
@@ -730,9 +734,31 @@
     "on":true
   },
   "95":{
-    "n":"Candles Sidedoor",
+    "n":"Candles 1 Sidedoor",
     "playlist":{
       "ps" :[ 47,  48, 9, 51],
+      "dur":[300, 300, 300, 300],
+      "repeat":0,
+      "end":0,
+      "r":1
+    },
+    "on":true
+  },
+  "97":{
+    "n":"Candles N1",
+    "playlist":{
+      "ps" :[48, 9, 51],
+      "dur":[300, 300, 300],
+      "repeat":0,
+      "end":0,
+      "r":1
+    },
+    "on":true
+  },
+  "98":{
+    "n":"Candles N2",
+    "playlist":{
+      "ps" :[48, 9, 51, 58],
       "dur":[300, 300, 300, 300],
       "repeat":0,
       "end":0,

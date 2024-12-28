@@ -143,6 +143,9 @@ void AddLog(uint8_t loglevel, PGM_P formatP, ...)
     // Normally, serial is passed to hardware internal the the chip, and serial is printed in the background. However, if a problem/bug with forced reseting exists,
     // you want to print all serial BEFORE tripping the reset, so only enable when fault tracing
     // #ifdef ENABLE_SERIAL_DEBUG_FLUSH
+    #ifdef ENABLE_DEBUGFEATURE_LOGS__FORCE_FLUSH_ON_TRANSMIT
+    SERIAL_DEBUG.flush(); // To ensure all serial is sent before a reset
+    #endif
 
     if((pCONT_set->Settings.logging.serial_level == LOG_LEVEL_DEBUG)||(pCONT_set->Settings.logging.serial_level == LOG_LEVEL_ALL)){ SERIAL_DEBUG.flush(); } 
   } 

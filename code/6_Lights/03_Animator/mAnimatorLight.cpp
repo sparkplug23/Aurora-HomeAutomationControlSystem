@@ -317,7 +317,7 @@ void mAnimatorLight::EveryLoop()
      */
     ALOG_HGL(PSTR("Loading 1D LED map."));
     bool flag_deserializeMap = deserializeMap(0);
-    ALOG_HGL(PSTR("Loading 1D LED map. %d"), flag_deserializeMap);
+    ALOG_HGL(PSTR("Loading 1D LED map. %s"), flag_deserializeMap ? "YES" : "NO");
     
     doSerializeConfig = true;
     // serializeConfig(); // in WLED This saved everything to json memory
@@ -479,6 +479,7 @@ void mAnimatorLight::EveryLoop()
     // cannot call strip.setUpMatrix() here due to already locked JSON buffer
   // }
 
+  // THIS HAS BEEN MOVED IN 2025 INTO THE READ MAP FILE, AND THE SECTION BELOW SHOULD MOVE TOO
   if (loadLedmap >= 0) {
     ALOG_HGL(PSTR("Loading LED map."));
     bool flag_deserializeMap = deserializeMap(loadLedmap);
@@ -518,20 +519,25 @@ void mAnimatorLight::EveryLoop()
       SubTask_Demo();
       #endif
 
+      DEBUG_LINE_HERE
+
       #ifdef ENABLE_FEATURE_LIGHTING__EFFECTS
       DEBUG_LIGHTING__START_TIME_RECORDING(1)
       SubTask_Effects();
       DEBUG_LIGHTING__SAVE_TIME_RECORDING(1, lighting_time_critical_logging.segment_effects); 
       #endif  
 
+      DEBUG_LINE_HERE
       #ifdef ENABLE_DEVFEATURE_LIGHTING__PLAYLISTS
       SubTask_Playlist();
       #endif
 
+      DEBUG_LINE_HERE
       #ifdef ENABLE_DEVFEATURE_LIGHTING__PRESETS
       SubTask_Presets();
       #endif
 
+      DEBUG_LINE_HERE
     }break;
     #ifdef ENABLE_FEATURE_LIGHTING__REALTIME_MQTT_SETPIXEL
     case ANIMATION_MODE__REALTIME_MQTT_SETPIXEL:
@@ -1446,11 +1452,13 @@ void mAnimatorLight::SubTask_Effects()
   if (nowUp - _lastShow < MIN_SHOW_DELAY) return;
   bool doShow = false;
 
+      DEBUG_LINE_HERE
   _isServicing = true;
   segment_current_index = 0;  
   for (segment &seg : segments) 
   {
 
+      DEBUG_LINE_HERE
     // reset the segment runtime data if needed, called before isActive to ensure deleted segment's buffers are cleared
     seg.resetIfRequired();
 
@@ -1488,20 +1496,31 @@ void mAnimatorLight::SubTask_Effects()
         
       DEBUG_LIGHTING__START_TIME_RECORDING(2)
 
+Serial.printf("seg.effect_id %d/%d\n", seg.effect_id, effects.function.size());
+      if(seg.effect_id >= effects.function.size())
+      {
+        ALOG_ERR(PSTR("seg.effect_id %d/%d"), seg.effect_id, effects.function.size());
+        seg.effect_id = 0;
+      }
+      
+      DEBUG_LINE_HERE
       (this->*effects.function[seg.effect_id])(); // Call Effect Function (passes and returns nothing)
       
+      DEBUG_LINE_HERE
       DEBUG_LIGHTING__SAVE_TIME_RECORDING(2, lighting_time_critical_logging.effect_call); // Only last segment will be recorded
 
       #ifdef ENABLE_EFFECTS_TIMING_DEBUG_GPIO
       DEBUG_PIN1_SET(HIGH);
       #endif
 
+      DEBUG_LINE_HERE
       seg.next_time = nowUp + seg.get_transition_rate_ms();
   
       #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PERFORMANCE_METRICS_SAFE_IN_RELEASE_MODE
       seg.performance.effect_build_us = micros() - seg.performance.effect_build_us;
       #endif
 
+      DEBUG_LINE_HERE
       /**
        * @brief Only calls Animator if effects are not directly handled
        **/
@@ -1514,11 +1533,13 @@ void mAnimatorLight::SubTask_Effects()
         StartSegmentAnimation_AsAnimUpdateMemberFunction(segment_current_index); // First run must be reset after StartAnimation is first called 
       }
               
+      DEBUG_LINE_HERE
       seg.call++; // Used as progress counter for animations eg rainbow across all hues
       // ALOG_INF(PSTR("seg=%d,call=%d"),seg_i, seg.call);
                 
     } // END if effect needs to be called
 
+      DEBUG_LINE_HERE
     /**
      * @brief If animator is used, then the animation will be called from the animator
      **/    
@@ -1531,6 +1552,7 @@ void mAnimatorLight::SubTask_Effects()
 
       SEGMENT.flags.animator_first_run = RESET_FLAG;     // CHANGE to function: reset here for all my methods
 
+      DEBUG_LINE_HERE
       if(!seg.animator->IsAnimationActive(0))
       {
         seg.transitional = false; // Since this is already inside "IsAnimating" then it should only be set if it was animating but is now stopping
@@ -1539,6 +1561,7 @@ void mAnimatorLight::SubTask_Effects()
     } // IsAnimating
 
 
+      DEBUG_LINE_HERE
     #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PERFORMANCE_METRICS_SAFE_IN_RELEASE_MODE
     if(doShow)
     {
@@ -1556,12 +1579,14 @@ void mAnimatorLight::SubTask_Effects()
     
   } // END for
   
+      DEBUG_LINE_HERE
   if(doShow)
   {
     yield();
     show();
   }   
 
+      DEBUG_LINE_HERE
   _force_update = false;
   _isServicing = false;
   
@@ -1639,7 +1664,7 @@ void mAnimatorLight::AnimationProcess_LinearBlend_Dynamic_Buffer(const Animation
         // updatedColor = RgbcctColor(0,255,0);
 
         // Set the pixel color
-        SEGMENT.SetPixelColor(pixel, updatedColor, BRIGHTNESS_ALREADY_SET);
+        SEGMENT.setPixelColor(pixel, updatedColor, BRIGHTNESS_ALREADY_SET);
     }
     
   #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PERFORMANCE_METRICS_SAFE_IN_RELEASE_MODE
@@ -1715,7 +1740,7 @@ void mAnimatorLight::AnimationProcess_LinearBlend_Dynamic_Buffer_BrtNotSet(const
         // updatedColor = RgbcctColor(0,255,0);
 
         // Set the pixel color
-        SEGMENT.SetPixelColor(pixel, updatedColor, BRIGHTNESS_NOT_YET_SET);
+        SEGMENT.setPixelColor(pixel, updatedColor, BRIGHTNESS_NOT_YET_SET);
     }
     
     DEBUG_PIN6_SET(1);
@@ -1765,10 +1790,10 @@ void mAnimatorLight::AnimationProcess_SingleColour_LinearBlend_Dynamic_Buffer(co
     updatedColor = RgbcctColor::LinearBlend(startingColour, desiredColour, param.progress);    
 
     // Log the color type and the first desired color for debugging
-    ALOG_DBM(PSTR("SEGMENT.colour_type__used_in_effect_generate=%d, seg%d, desired_colour1=%d,%d,%d,%d,%d"), SEGMENT.colour_type__used_in_effect_generate, getCurrSegmentId(), updatedColor.R, updatedColor.G, updatedColor.B, updatedColor.WC, updatedColor.WW);
+    // ALOG_DBM(PSTR("SEGMENT.colour_type__used_in_effect_generate=%d, seg%d, desired_colour1=%d,%d,%d,%d,%d"), SEGMENT.colour_type__used_in_effect_generate, getCurrSegmentId(), updatedColor.R, updatedColor.G, updatedColor.B, updatedColor.WC, updatedColor.WW);
         
     for (uint16_t pixel = 0; pixel < SEGLEN; pixel++) {  
-      SEGMENT.SetPixelColor(pixel, updatedColor, SET_BRIGHTNESS);
+      SEGMENT.setPixelColor(pixel, updatedColor, SET_BRIGHTNESS);
     }
 
     DEBUG_PIN6_SET(1);
@@ -1800,7 +1825,7 @@ void mAnimatorLight::AnimationProcess_SingleColour_LinearBlend_Between_RgbcctSeg
                 pixel++
   ){  
     // ALOG_INF(PSTR("SEGMENT.pixel =%d"), pixel);
-    SEGMENT.SetPixelColor(pixel, updatedColor, SET_BRIGHTNESS);
+    SEGMENT.setPixelColor(pixel, updatedColor, SET_BRIGHTNESS);
   }
   
 }
@@ -2050,7 +2075,9 @@ void mAnimatorLight::fill(uint32_t c, bool apply_brightness)
 {
   for(uint16_t i = 0; i < _virtualSegmentLength; i++) 
   {
-    SEGMENT.SetPixelColor(i, c, apply_brightness);
+    DEBUG_LINE_HERE
+    SEGMENT.setPixelColor(i, c, apply_brightness);
+    DEBUG_LINE_HERE
   }
 }
 
@@ -2058,7 +2085,7 @@ void mAnimatorLight::fill(RgbcctColor c, bool apply_brightness)
 {
   for(uint16_t i = 0; i < _virtualSegmentLength; i++) 
   {
-    SEGMENT.SetPixelColor(i, c, apply_brightness);
+    SEGMENT.setPixelColor(i, c, apply_brightness);
   }
 }
 
@@ -2067,7 +2094,7 @@ void mAnimatorLight::fill_ranged(uint32_t c, bool apply_brightness)
 {
 
   for(uint16_t i = SEGMENT.start; i <= SEGMENT.stop; i++) {
-    SEGMENT.SetPixelColor(i, c, apply_brightness);
+    SEGMENT.setPixelColor(i, c, apply_brightness);
   }
 
 }
@@ -2231,7 +2258,7 @@ void mAnimatorLight::DynamicBuffer_Segments_UpdateStartingColourWithGetPixel()
   // Retrieve the pixel color and update the transition buffer
   RgbcctColor pixelColor;  // Declared outside the loop to avoid repeated construction/destruction
   for (int pixel = 0; pixel < segmentLength; pixel++) {
-    pixelColor = SEGMENT.GetPixelColor(pixel);  // Just assign a new value each iteration
+    pixelColor = SEGMENT.getPixelColor(pixel);  // Just assign a new value each iteration
     SetTransitionColourBuffer_StartingColour(segmentData, segmentDataLength, pixel, colourTypeUsed, pixelColor);
   }
   
@@ -2242,7 +2269,7 @@ void mAnimatorLight::DynamicBuffer_Segments_UpdateStartingColourWithGetPixel()
   #endif
 
   // Example of one pixel only
-  // pixelColor = SEGMENT.GetPixelColor(0);  // Just assign a new value each iteration
+  // pixelColor = SEGMENT.getPixelColor(0);  // Just assign a new value each iteration
   // SetTransitionColourBuffer_StartingColour(segmentData, segmentDataLength, 0, colourTypeUsed, pixelColor);
 
 
@@ -2257,7 +2284,7 @@ void mAnimatorLight::DynamicBuffer_Segments_UpdateStartingColourWithGetPixel_Wit
           pixel<SEGMENT.virtualLength();
           pixel++
   ){
-    colour = SEGMENT.GetPixelColor(pixel);
+    colour = SEGMENT.getPixelColor(pixel);
     colour.Fade(fade);
     SetTransitionColourBuffer_StartingColour( SEGMENT.Data(), 
                                               SEGMENT.DataLength(),
@@ -2533,7 +2560,7 @@ bool mAnimatorLight::Segment::allocateData(size_t len)
   if (mAnimatorLight::Segment::getUsedSegmentData() + len > MAX_SEGMENT_DATA)
   { 
     ALOG_ERR( PM_MEMORY_INSUFFICIENT ); // This is the base case, none will be fallback
-    effect_id = EFFECTS_FUNCTION__STATIC_PALETTE__ID;
+    effect_id = 0;//EFFECTS_FUNCTION__STATIC_PALETTE__ID;
     return false; //not enough memory
   }
   // if possible use SPI RAM on ESP32
@@ -2547,7 +2574,7 @@ bool mAnimatorLight::Segment::allocateData(size_t len)
 
   if (!data){
     ALOG_ERR( PM_MEMORY_INSUFFICIENT ); // This is the base case, none will be fallback
-    effect_id = EFFECTS_FUNCTION__STATIC_PALETTE__ID;
+    effect_id = 0;//EFFECTS_FUNCTION__STATIC_PALETTE__ID;
     return false; //allocation failed
   }
 
@@ -2863,149 +2890,183 @@ uint16_t mAnimatorLight::Segment::nrOfVStrips() const {
   return vLen;
 }
 
+// // 1D strip
+// uint16_t mAnimatorLight::Segment::virtualLength() const {
+// #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
+//   if (is2D()) {
+//     uint16_t vW = virtualWidth();
+//     uint16_t vH = virtualHeight();
+//     uint16_t vLen = vW * vH; // use all pixels from segment
+//     switch (map1D2D) {
+//       case M12_pBar:
+//         vLen = vH;
+//         break;
+//       case M12_pCorner:
+//       case M12_pArc:
+//         vLen = max(vW,vH); // get the longest dimension
+//         break;
+//     }
+//     return vLen;
+//   }
+// #endif
+//   uint16_t groupLen = groupLength();
+//   uint16_t vLength = (length() + groupLen - 1) / groupLen;
+//   if (mirror) vLength = (vLength + 1) /2;  // divide by 2 if mirror, leave at least a single LED
+//   return vLength;
+// }
+
+
 // 1D strip
 uint16_t mAnimatorLight::Segment::virtualLength() const {
 #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
   if (is2D()) {
-    uint16_t vW = virtualWidth();
-    uint16_t vH = virtualHeight();
-    uint16_t vLen = vW * vH; // use all pixels from segment
+    unsigned vW = virtualWidth();
+    unsigned vH = virtualHeight();
+    unsigned vLen;
     switch (map1D2D) {
       case M12_pBar:
         vLen = vH;
         break;
       case M12_pCorner:
-      case M12_pArc:
         vLen = max(vW,vH); // get the longest dimension
+        break;
+      case M12_pArc:
+        vLen = sqrt16(vH*vH + vW*vW); // use diagonal
+        break;
+      case M12_sPinwheel:
+        vLen = getPinwheelLength(vW, vH);
+        break;
+      default:
+        vLen = vW * vH; // use all pixels from segment
         break;
     }
     return vLen;
   }
 #endif
-  uint16_t groupLen = groupLength();
-  uint16_t vLength = (length() + groupLen - 1) / groupLen;
+  unsigned groupLen = groupLength(); // is always >= 1
+  unsigned vLength = (length() + groupLen - 1) / groupLen;
   if (mirror) vLength = (vLength + 1) /2;  // divide by 2 if mirror, leave at least a single LED
   return vLength;
 }
 
-void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(int i, uint32_t col)
-{
+// void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(int i, uint32_t col)
+// {
 
-  if (!isActive()) return; // not active
-#ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
-  int vStrip = i>>16; // hack to allow running on virtual strips (2D segment columns/rows)
-#endif
-  i &= 0xFFFF;
+//   if (!isActive()) return; // not active
+// #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
+//   int vStrip = i>>16; // hack to allow running on virtual strips (2D segment columns/rows)
+// #endif
+//   i &= 0xFFFF;
 
-  if (i >= virtualLength() || i<0) return;  // if pixel would fall out of segment just exit
+//   if (i >= virtualLength() || i<0) return;  // if pixel would fall out of segment just exit
 
-#ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
-  if (is2D()) {
-    uint16_t vH = virtualHeight();  // segment height in logical pixels
-    uint16_t vW = virtualWidth();
-    switch (map1D2D) {
-      case M12_Pixels:
-        // use all available pixels as a long strip
+// #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
+//   if (is2D()) {
+//     uint16_t vH = virtualHeight();  // segment height in logical pixels
+//     uint16_t vW = virtualWidth();
+//     switch (map1D2D) {
+//       case M12_Pixels:
+//         // use all available pixels as a long strip
         
-        setPixelColorXY(i % vW, i / vW, col);
+//         setPixelColorXY(i % vW, i / vW, col);
         
-        break;
-      case M12_pBar:
-        // expand 1D effect vertically or have it play on virtual strips
-        if (vStrip>0) setPixelColorXY(vStrip - 1, vH - i - 1, col);
-        else          for (int x = 0; x < vW; x++) setPixelColorXY(x, vH - i - 1, col);
-        break;
-      case M12_pArc:
-        // expand in circular fashion from center
-        if (i==0)
-          setPixelColorXY(0, 0, col);
-        else {
-          float step = HALF_PI / (2.85f*i);
-          for (float rad = 0.0f; rad <= HALF_PI+step/2; rad += step) {
-            // may want to try float version as well (with or without antialiasing)
-            int x = roundf(sin_t(rad) * i);
-            int y = roundf(cos_t(rad) * i);
-            setPixelColorXY(x, y, col);
-          }
-          // Bresenham’s Algorithm (may not fill every pixel)
-          //int d = 3 - (2*i);
-          //int y = i, x = 0;
-          //while (y >= x) {
-          //  setPixelColorXY(x, y, col);
-          //  setPixelColorXY(y, x, col);
-          //  x++;
-          //  if (d > 0) {
-          //    y--;
-          //    d += 4 * (x - y) + 10;
-          //  } else {
-          //    d += 4 * x + 6;
-          //  }
-          //}
-        }
-        break;
-      case M12_pCorner:
-        for (int x = 0; x <= i; x++) setPixelColorXY(x, i, col);
-        for (int y = 0; y <  i; y++) setPixelColorXY(i, y, col);
-        break;
-    }
-    return;
-  } else if (Segment::maxHeight!=1 && (width()==1 || height()==1)) {
-    if (start < Segment::maxWidth*Segment::maxHeight) {
-      // we have a vertical or horizontal 1D segment (WARNING: virtual...() may be transposed)
-      int x = 0, y = 0;
-      if (virtualHeight()>1) y = i;
-      if (virtualWidth() >1) x = i;
-      setPixelColorXY(x, y, col);
-      return;
-    }
-  }
-#endif
+//         break;
+//       case M12_pBar:
+//         // expand 1D effect vertically or have it play on virtual strips
+//         if (vStrip>0) setPixelColorXY(vStrip - 1, vH - i - 1, col);
+//         else          for (int x = 0; x < vW; x++) setPixelColorXY(x, vH - i - 1, col);
+//         break;
+//       case M12_pArc:
+//         // expand in circular fashion from center
+//         if (i==0)
+//           setPixelColorXY(0, 0, col);
+//         else {
+//           float step = HALF_PI / (2.85f*i);
+//           for (float rad = 0.0f; rad <= HALF_PI+step/2; rad += step) {
+//             // may want to try float version as well (with or without antialiasing)
+//             int x = roundf(sin_t(rad) * i);
+//             int y = roundf(cos_t(rad) * i);
+//             setPixelColorXY(x, y, col);
+//           }
+//           // Bresenham’s Algorithm (may not fill every pixel)
+//           //int d = 3 - (2*i);
+//           //int y = i, x = 0;
+//           //while (y >= x) {
+//           //  setPixelColorXY(x, y, col);
+//           //  setPixelColorXY(y, x, col);
+//           //  x++;
+//           //  if (d > 0) {
+//           //    y--;
+//           //    d += 4 * (x - y) + 10;
+//           //  } else {
+//           //    d += 4 * x + 6;
+//           //  }
+//           //}
+//         }
+//         break;
+//       case M12_pCorner:
+//         for (int x = 0; x <= i; x++) setPixelColorXY(x, i, col);
+//         for (int y = 0; y <  i; y++) setPixelColorXY(i, y, col);
+//         break;
+//     }
+//     return;
+//   } else if (Segment::maxHeight!=1 && (width()==1 || height()==1)) {
+//     if (start < Segment::maxWidth*Segment::maxHeight) {
+//       // we have a vertical or horizontal 1D segment (WARNING: virtual...() may be transposed)
+//       int x = 0, y = 0;
+//       if (virtualHeight()>1) y = i;
+//       if (virtualWidth() >1) x = i;
+//       setPixelColorXY(x, y, col);
+//       return;
+//     }
+//   }
+// #endif
 
-  uint16_t len = length();
-  uint8_t _bri_t = currentBri();
-  if (_bri_t < 255) {
-    byte r = scale8(R(col), _bri_t);
-    byte g = scale8(G(col), _bri_t);
-    byte b = scale8(B(col), _bri_t);
-    byte w = scale8(W(col), _bri_t);
-    col = RGBW32(r, g, b, w);
-  }
+//   uint16_t len = length();
+//   uint8_t _bri_t = currentBri();
+//   if (_bri_t < 255) {
+//     byte r = scale8(R(col), _bri_t);
+//     byte g = scale8(G(col), _bri_t);
+//     byte b = scale8(B(col), _bri_t);
+//     byte w = scale8(W(col), _bri_t);
+//     col = RGBW32(r, g, b, w);
+//   }
   
-  // expand pixel (taking into account start, grouping, spacing [and offset])
-  i = i * groupLength();
-  if (reverse) { // is segment reversed?
-    if (mirror) { // is segment mirrored?
-      i = (len - 1) / 2 - i;  //only need to index half the pixels
-    } else {
-      i = (len - 1) - i;
-    }
-  }
-  i += start; // starting pixel in a group
+//   // expand pixel (taking into account start, grouping, spacing [and offset])
+//   i = i * groupLength();
+//   if (reverse) { // is segment reversed?
+//     if (mirror) { // is segment mirrored?
+//       i = (len - 1) / 2 - i;  //only need to index half the pixels
+//     } else {
+//       i = (len - 1) - i;
+//     }
+//   }
+//   i += start; // starting pixel in a group
 
-  uint32_t tmpCol = col;
-  // set all the pixels in the group
-  for (int j = 0; j < grouping_get(); j++) {
-    uint16_t indexSet = i + ((reverse) ? -j : j);
-    if (indexSet >= start && indexSet < stop) {
-      if (mirror) { //set the corresponding mirrored pixel
-        uint16_t indexMir = stop - indexSet + start - 1;
-        indexMir += offset; // offset/phase
-        if (indexMir >= stop) indexMir -= len; // wrap
-// #ifndef WLED_DISABLE_MODE_BLEND
-//         if (_modeBlend) tmpCol = color_blend( getPixelColor(indexMir), col, 0xFFFFU - progress(), true);
-// #endif
-        pCONT_lAni->setPixelColor(indexMir, tmpCol);
-      }
-      indexSet += offset; // offset/phase
-      if (indexSet >= stop) indexSet -= len; // wrap
-// #ifndef WLED_DISABLE_MODE_BLEND
-//       if (_modeBlend) tmpCol = color_blend(strip.getPixelColor(indexSet), col, 0xFFFFU - progress(), true);
-// #endif
-      pCONT_lAni->setPixelColor(indexSet, tmpCol);
-    }
-  }
+//   uint32_t tmpCol = col;
+//   // set all the pixels in the group
+//   for (int j = 0; j < grouping_get(); j++) {
+//     uint16_t indexSet = i + ((reverse) ? -j : j);
+//     if (indexSet >= start && indexSet < stop) {
+//       if (mirror) { //set the corresponding mirrored pixel
+//         uint16_t indexMir = stop - indexSet + start - 1;
+//         indexMir += offset; // offset/phase
+//         if (indexMir >= stop) indexMir -= len; // wrap
+// // #ifndef WLED_DISABLE_MODE_BLEND
+// //         if (_modeBlend) tmpCol = color_blend( getPixelColor(indexMir), col, 0xFFFFU - progress(), true);
+// // #endif
+//         pCONT_lAni->setPixelColor(indexMir, tmpCol);
+//       }
+//       indexSet += offset; // offset/phase
+//       if (indexSet >= stop) indexSet -= len; // wrap
+// // #ifndef WLED_DISABLE_MODE_BLEND
+// //       if (_modeBlend) tmpCol = color_blend(strip.getPixelColor(indexSet), col, 0xFFFFU - progress(), true);
+// // #endif
+//       pCONT_lAni->setPixelColor(indexSet, tmpCol);
+//     }
+//   }
 
-}
+// }
 
 // anti-aliased normalized version of setPixelColor()
 void mAnimatorLight::Segment::setPixelColor(float i, uint32_t col, bool aa)
@@ -3028,60 +3089,232 @@ void mAnimatorLight::Segment::setPixelColor(float i, uint32_t col, bool aa)
     if (iR!=iL) {
       // blend L pixel
       cIL = color_blend(col, cIL, uint8_t(dL*255.0f));
-      SetPixelColor(iL | (vStrip<<16), cIL);
+      setPixelColor(iL | (vStrip<<16), cIL);
       // blend R pixel
       cIR = color_blend(col, cIR, uint8_t(dR*255.0f));
-      SetPixelColor(iR | (vStrip<<16), cIR);
+      setPixelColor(iR | (vStrip<<16), cIR);
     } else {
       // exact match (x & y land on a pixel)
-      SetPixelColor(iL | (vStrip<<16), col);
+      setPixelColor(iL | (vStrip<<16), col);
     }
   } else {
-    SetPixelColor(uint16_t(roundf(fC)) | (vStrip<<16), col);
+    setPixelColor(uint16_t(roundf(fC)) | (vStrip<<16), col);
   }
 
 }
 
-uint32_t mAnimatorLight::Segment::getPixelColor(int i)
-{
+// uint32_t mAnimatorLight::Segment::getPixelColor(int i)
+// {
 
-  if (!isActive()) return 0; // not active
+//   if (!isActive()) return 0; // not active
+// #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
+//   int vStrip = i>>16;
+// #endif
+//   i &= 0xFFFF;
+
+// #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
+//   if (is2D()) {
+//     uint16_t vH = virtualHeight();  // segment height in logical pixels
+//     uint16_t vW = virtualWidth();
+//     switch (map1D2D) {
+//       case M12_Pixels:
+//         return getPixelColorXY(i % vW, i / vW);
+//         break;
+//       case M12_pBar:
+//         if (vStrip>0) return getPixelColorXY(vStrip - 1, vH - i -1);
+//         else          return getPixelColorXY(0, vH - i -1);
+//         break;
+//       case M12_pArc:
+//       case M12_pCorner:
+//         // use longest dimension
+//         return vW>vH ? getPixelColorXY(i, 0) : getPixelColorXY(0, i);
+//         break;
+//     }
+//     return 0;
+//   }
+// #endif
+
+//   if (reverse) i = virtualLength() - i - 1;
+//   i *= groupLength();
+//   i += start;
+//   /* offset/phase */
+//   i += offset;
+//   if ((i >= stop) && (stop>0)) i -= length(); // avoids negative pixel index (stop = 0 is a possible value)
+//   // return pCONT_lAni->BUS_getPixelColor(i);
+//   return pCONT_lAni->getPixelColor(i);
+// }
+
+
+
+// Constants for mapping mode "Pinwheel"
 #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
-  int vStrip = i>>16;
+constexpr int Pinwheel_Steps_Small = 72;       // no holes up to 16x16
+constexpr int Pinwheel_Size_Small  = 16;       // larger than this -> use "Medium"
+constexpr int Pinwheel_Steps_Medium = 192;     // no holes up to 32x32
+constexpr int Pinwheel_Size_Medium  = 32;      // larger than this -> use "Big"
+constexpr int Pinwheel_Steps_Big = 304;        // no holes up to 50x50
+constexpr int Pinwheel_Size_Big  = 50;         // larger than this -> use "XL"
+constexpr int Pinwheel_Steps_XL  = 368;
+constexpr float Int_to_Rad_Small = (DEG_TO_RAD * 360) / Pinwheel_Steps_Small;  // conversion: from 0...72 to Radians
+constexpr float Int_to_Rad_Med =   (DEG_TO_RAD * 360) / Pinwheel_Steps_Medium; // conversion: from 0...192 to Radians
+constexpr float Int_to_Rad_Big =   (DEG_TO_RAD * 360) / Pinwheel_Steps_Big;    // conversion: from 0...304 to Radians
+constexpr float Int_to_Rad_XL =    (DEG_TO_RAD * 360) / Pinwheel_Steps_XL;     // conversion: from 0...368 to Radians
+
+constexpr int Fixed_Scale = 512;               // fixpoint scaling factor (9bit for fraction)
+
+// Pinwheel helper function: pixel index to radians
+static float getPinwheelAngle(int i, int vW, int vH) {
+  int maxXY = max(vW, vH);
+  if (maxXY <= Pinwheel_Size_Small)  return float(i) * Int_to_Rad_Small;
+  if (maxXY <= Pinwheel_Size_Medium) return float(i) * Int_to_Rad_Med;
+  if (maxXY <= Pinwheel_Size_Big)    return float(i) * Int_to_Rad_Big;
+  // else
+  return float(i) * Int_to_Rad_XL;
+}
+// Pinwheel helper function: matrix dimensions to number of rays
+static int getPinwheelLength(int vW, int vH) {
+  int maxXY = max(vW, vH);
+  if (maxXY <= Pinwheel_Size_Small)  return Pinwheel_Steps_Small;
+  if (maxXY <= Pinwheel_Size_Medium) return Pinwheel_Steps_Medium;
+  if (maxXY <= Pinwheel_Size_Big)    return Pinwheel_Steps_Big;
+  // else
+  return Pinwheel_Steps_XL;
+}
 #endif
-  i &= 0xFFFF;
 
-#ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
+uint32_t IRAM_ATTR mAnimatorLight::Segment::getPixelColor(int i) const
+{
+  // if (!isActive()) return 0; // not active
+
+  #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
   if (is2D()) {
-    uint16_t vH = virtualHeight();  // segment height in logical pixels
-    uint16_t vW = virtualWidth();
+    const int vW = vWidth();   // segment width in logical pixels (can be 0 if segment is inactive)
+    const int vH = vHeight();  // segment height in logical pixels (is always >= 1)
     switch (map1D2D) {
       case M12_Pixels:
         return getPixelColorXY(i % vW, i / vW);
         break;
-      case M12_pBar:
-        if (vStrip>0) return getPixelColorXY(vStrip - 1, vH - i -1);
-        else          return getPixelColorXY(0, vH - i -1);
-        break;
+      case M12_pBar: {
+        int vStrip = i>>16; // virtual strips are only relevant in Bar expansion mode
+        if (vStrip > 0) return getPixelColorXY(vStrip - 1, vH - (i & 0xFFFF) -1);
+        else            return getPixelColorXY(0, vH - i -1);
+        break; }
       case M12_pArc:
+        if (i >= vW && i >= vH) {
+          unsigned vI = sqrt16(i*i/2);
+          return getPixelColorXY(vI,vI); // use diagonal
+        }
       case M12_pCorner:
         // use longest dimension
         return vW>vH ? getPixelColorXY(i, 0) : getPixelColorXY(0, i);
         break;
-    }
+      case M12_sPinwheel:
+        // not 100% accurate, returns pixel at outer edge
+        // i = angle --> 0 - 296  (Big), 0 - 192  (Medium), 0 - 72 (Small)
+        float centerX = roundf((vW-1) / 2.0f);
+        float centerY = roundf((vH-1) / 2.0f);
+        float angleRad = getPinwheelAngle(i, vW, vH); // angle in radians
+        float cosVal = cos_t(angleRad);
+        float sinVal = sin_t(angleRad);
+
+        int posx = (centerX + 0.5f * cosVal) * Fixed_Scale; // X starting position in fixed point 18 bit
+        int posy = (centerY + 0.5f * sinVal) * Fixed_Scale; // Y starting position in fixed point 18 bit
+        int inc_x = cosVal * Fixed_Scale; // X increment per step (fixed point) 10 bit
+        int inc_y = sinVal * Fixed_Scale; // Y increment per step (fixed point) 10 bit
+        int32_t maxX = vW * Fixed_Scale; // X edge in fixedpoint
+        int32_t maxY = vH * Fixed_Scale; // Y edge in fixedpoint
+
+        // trace ray from center until we hit any edge - to avoid rounding problems, we use the same method as in setPixelColor
+        int x = INT_MIN;
+        int y = INT_MIN;
+        while ((posx >= 0) && (posy >= 0) && (posx < maxX)  && (posy < maxY))  {
+          // scale down to integer (compiler will replace division with appropriate bitshift)
+          x = posx / Fixed_Scale;
+          y = posy / Fixed_Scale;
+          // advance to next position
+          posx += inc_x;
+          posy += inc_y;
+        }
+        return getPixelColorXY(x, y);
+        break;
+      }
     return 0;
   }
-#endif
+  #endif
 
-  if (reverse) i = virtualLength() - i - 1;
+  if (reverse) i = vLength() - i - 1;
   i *= groupLength();
   i += start;
-  /* offset/phase */
+  // offset/phase
   i += offset;
-  if ((i >= stop) && (stop>0)) i -= length(); // avoids negative pixel index (stop = 0 is a possible value)
-  // return pCONT_lAni->BUS_getPixelColor(i);
-  return pCONT_lAni->getPixelColor(i);
+  if (i >= stop) i -= length();
+  return pCONT_lAni->getPixelColor(i);;
 }
+
+
+/**
+ * @brief 
+ * 
+ * @param indexPixel 
+ * @return RgbcctColor 
+ */
+// RgbcctColor IRAM_ATTR mAnimatorLight::Segment::getPixelColor(uint16_t indexPixel)
+// {
+  
+//   #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PERFORMANCE_METRICS_SAFE_IN_RELEASE_MODE
+//   performance.bus_read_single_us = micros();
+//   #endif
+
+//   #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
+//   int vStrip = indexPixel>>16;
+//   indexPixel &= 0xFFFF;
+//   if (is2D()) {DEBUG_LINE_HERE3
+//     uint16_t vH = virtualHeight();  // segment height in logical pixels
+//     uint16_t vW = virtualWidth();
+//     // ALOG_ERR(PSTR("\n\rmap1D2D %d set"), map1D2D);
+//     switch (map1D2D) {
+//       case M12_Pixels:
+//         return RgbcctColor( getPixelColorXY(indexPixel % vW, indexPixel / vW) );
+//         break;
+//       case M12_pBar:DEBUG_LINE_HERE3
+//         if (vStrip>0) return RgbcctColor(getPixelColorXY(vStrip - 1, vH - indexPixel -1));
+//         else          return RgbcctColor(getPixelColorXY(0, vH - indexPixel -1));
+//         break;
+//       case M12_pArc:DEBUG_LINE_HERE3
+//       case M12_pCorner:DEBUG_LINE_HERE3
+//         // use longest dimension
+//         return vW>vH ? RgbcctColor(getPixelColorXY(indexPixel, 0)) : RgbcctColor(getPixelColorXY(0, indexPixel));
+//         break;
+//     }DEBUG_LINE_HERE3
+//     ALOG_ERR(PSTR("No map1D2D set"));
+//     return RgbcctColor((uint32_t)0);
+//   }
+//   #endif
+
+//   if(reverse) indexPixel = virtualLength() - indexPixel - 1;
+//   indexPixel *= groupLength();
+//   indexPixel += start + offset;
+//   if (indexPixel >= stop){ indexPixel -= length(); } // Adjust if beyond stop
+
+//   #ifdef ENABLE__DEBUG_POINT__ANIMATION_EFFECTS
+//     RgbcctColor colour_hardware = pCONT_lAni->getPixelColor_Rgbcct(indexPixel);
+//     ALOG_DBG(PSTR("colour_hardware[%d] = %d,%d,%d,%d,%d"), 
+//       indexPixel, 
+//       colour_hardware.R, colour_hardware.G, colour_hardware.B, 
+//       colour_hardware.W1, colour_hardware.W2);
+//     return colour_hardware;
+//   #else    
+//     #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PERFORMANCE_METRICS_SAFE_IN_RELEASE_MODE
+//       // If enabled, intermediate value needs stored before return. Can be removed for performance without
+//       RgbcctColor c = pCONT_lAni->getPixelColor_Rgbcct(indexPixel);
+//       performance.bus_read_single_us = micros() - performance.bus_read_single_us;
+//       return c;
+//     #else
+//       return pCONT_lAni->getPixelColor_Rgbcct(indexPixel);
+//     #endif
+//   #endif
+
+// }
 
 uint8_t mAnimatorLight::Segment::differs(mAnimatorLight::Segment& b) const {
   // uint8_t d = 0;
@@ -3689,6 +3922,23 @@ void mAnimatorLight::Segment::UpdateBrightness()
 
 
 
+#ifdef ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
+
+void IRAM_ATTR mAnimatorLight::setPixelColor(uint32_t i, uint32_t col) {
+  i = getMappedPixelIndex(i);
+  if (i >= _length) return;
+  pCONT_iLight->bus_manager->setPixelColor(i, col);
+}
+
+uint32_t IRAM_ATTR mAnimatorLight::getPixelColor(uint32_t i) const {
+  i = getMappedPixelIndex(i);
+  if (i >= _length) return 0;
+  return pCONT_iLight->bus_manager->getPixelColor(i);
+}
+
+
+
+#else // In this case, Rgbcct must be mapped back into U32 as a temporary measure
 
 
 
@@ -3781,6 +4031,11 @@ RgbcctColor mAnimatorLight::getPixelColor_Rgbcct(uint16_t i)
   // Directly return the color retrieved from the bus manager
   return pCONT_iLight->bus_manager->getPixelColor(i);
 }
+
+
+#endif
+
+
 
 
 //DISCLAIMER
@@ -4326,62 +4581,118 @@ void mAnimatorLight::loadCustomPalettes()
 
 
 //load custom mapping table from JSON file (called from finalizeInit() or deserializeState())
+// bool mAnimatorLight::deserializeMap(uint8_t n) {
+//   // 2D support creates its own ledmap (on the fly) if a ledmap.json exists it will overwrite built one.
+  
+//   ALOG_INF(PSTR("deserializeMap"));
+
+//   char fileName[32];
+//   strcpy_P(fileName, PSTR("/ledmap"));
+//   if (n) sprintf(fileName +7, "%d", n);
+//   strcat_P(fileName, PSTR(".json"));
+
+//   ALOG_INF(PSTR("deserializeMap: %s"), fileName);
+
+//   bool isFile = FILE_SYSTEM.exists(fileName);
+
+//   if (!isFile) {
+
+//     ALOG_INF(PSTR("deserializeMap: !isFile"));
+
+//     // erase custom mapping if selecting nonexistent ledmap.json (n==0)
+//     if (!isMatrix && !n && customMappingTable != nullptr) {
+//       customMappingSize = 0;
+//       delete[] customMappingTable;
+//       customMappingTable = nullptr;
+//     }
+//     return false;
+//   }
+
+//   if (!requestJSONBufferLock(7)) return false;
+
+//   if (!pCONT_mfile->readObjectFromFile(fileName, nullptr, &doc)) {
+//     releaseJSONBufferLock();
+//     return false; //if file does not exist just exit
+//   }
+
+//   DEBUG_PRINT(F("Reading LED map from "));
+//   DEBUG_PRINTLN(fileName);
+
+//   // erase old custom ledmap
+//   if (customMappingTable != nullptr) {
+//     customMappingSize = 0;
+//     delete[] customMappingTable;
+//     customMappingTable = nullptr;
+//   }
+
+//   JsonArray map = doc[F("map")];
+//   if (!map.isNull() && map.size()) {  // not an empty map
+//     customMappingSize  = map.size();
+//     customMappingTable = new uint16_t[customMappingSize];
+//     for (unsigned i=0; i<customMappingSize; i++) {
+//       customMappingTable[i] = (uint16_t) (map[i]<0 ? 0xFFFFU : map[i]);
+//     }
+//   }
+
+//   releaseJSONBufferLock();
+//   return true;
+// }
+
+
 bool mAnimatorLight::deserializeMap(uint8_t n) {
   // 2D support creates its own ledmap (on the fly) if a ledmap.json exists it will overwrite built one.
-  
-  ALOG_INF(PSTR("deserializeMap"));
 
   char fileName[32];
   strcpy_P(fileName, PSTR("/ledmap"));
   if (n) sprintf(fileName +7, "%d", n);
   strcat_P(fileName, PSTR(".json"));
-
-  ALOG_INF(PSTR("deserializeMap: %s"), fileName);
-
   bool isFile = FILE_SYSTEM.exists(fileName);
 
-  if (!isFile) {
+  customMappingSize = 0; // prevent use of mapping if anything goes wrong
+  currentLedmap = 0;
+  if (n == 0 || isFile) interfaceUpdateCallMode = CALL_MODE_WS_SEND; // schedule WS update (to inform UI)
 
-    ALOG_INF(PSTR("deserializeMap: !isFile"));
-
-    // erase custom mapping if selecting nonexistent ledmap.json (n==0)
-    if (!isMatrix && !n && customMappingTable != nullptr) {
-      customMappingSize = 0;
-      delete[] customMappingTable;
-      customMappingTable = nullptr;
-    }
+  #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
+  if (!isFile && n==0 && isMatrix) {
+    setUpMatrix();
     return false;
   }
+  #endif
 
-  if (!requestJSONBufferLock(7)) return false;
+  if (!isFile || !requestJSONBufferLock(7)) return false;
 
-  if (!pCONT_mfile->readObjectFromFile(fileName, nullptr, &doc)) {
+  if (!pCONT_mfile->readObjectFromFile(fileName, nullptr, pDoc)) {
+    DEBUG_PRINT(F("ERROR Invalid ledmap in ")); DEBUG_PRINTLN(fileName);
     releaseJSONBufferLock();
-    return false; //if file does not exist just exit
+    return false; // if file does not load properly then exit
   }
 
-  DEBUG_PRINT(F("Reading LED map from "));
-  DEBUG_PRINTLN(fileName);
-
-  // erase old custom ledmap
-  if (customMappingTable != nullptr) {
-    customMappingSize = 0;
-    delete[] customMappingTable;
-    customMappingTable = nullptr;
+  JsonObject root = pDoc->as<JsonObject>();
+  // if we are loading default ledmap (at boot) set matrix width and height from the ledmap (compatible with WLED MM ledmaps)
+  if (isMatrix && n == 0 && (!root[F("width")].isNull() || !root[F("height")].isNull())) {
+    Segment::maxWidth  = min(max(root[F("width")].as<int>(), 1), 128);
+    Segment::maxHeight = min(max(root[F("height")].as<int>(), 1), 128);
   }
 
-  JsonArray map = doc[F("map")];
-  if (!map.isNull() && map.size()) {  // not an empty map
-    customMappingSize  = map.size();
-    customMappingTable = new uint16_t[customMappingSize];
-    for (unsigned i=0; i<customMappingSize; i++) {
-      customMappingTable[i] = (uint16_t) (map[i]<0 ? 0xFFFFU : map[i]);
+  if (customMappingTable) delete[] customMappingTable;
+  customMappingTable = new uint16_t[getLengthTotal()];
+
+  if (customMappingTable) {
+    DEBUG_PRINT(F("Reading LED map from ")); DEBUG_PRINTLN(fileName);
+    JsonArray map = root[F("map")];
+    if (!map.isNull() && map.size()) {  // not an empty map
+      customMappingSize = min((unsigned)map.size(), (unsigned)getLengthTotal());
+      for (unsigned i=0; i<customMappingSize; i++) customMappingTable[i] = (uint16_t) (map[i]<0 ? 0xFFFFU : map[i]);
+      currentLedmap = n;
     }
+  } else {
+    DEBUG_PRINTLN(F("ERROR LED map allocation error."));
   }
 
   releaseJSONBufferLock();
-  return true;
+  return (customMappingSize > 0);
 }
+
 
 
 
@@ -4609,244 +4920,357 @@ mAnimatorLight::GetColourFromUnloadedPalette3(
 
 
 
-
-
-
-void IRAM_ATTR mAnimatorLight::Segment::SetPixelColor(uint16_t indexPixel, uint8_t red, uint8_t green, uint8_t blue, bool segment_brightness_needs_applied)
+// Temporary fix
+void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(uint16_t indexPixel, RgbcctColor color, bool segment_brightness_needs_applied)
 {
-  SetPixelColor(indexPixel, RgbColor(red,green,blue), segment_brightness_needs_applied);
+  uint32_t col = RGBW32(color.R, color.G, color.B, color.W1);
+  setPixelColor(indexPixel, col, segment_brightness_needs_applied);
+}
+
+
+void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(uint16_t indexPixel, uint8_t red, uint8_t green, uint8_t blue, bool segment_brightness_needs_applied)
+{
+  setPixelColor(indexPixel, red,green,blue, segment_brightness_needs_applied);
 }
  
   
-void IRAM_ATTR mAnimatorLight::Segment::SetPixelColor(uint16_t indexPixel, uint32_t color, bool segment_brightness_needs_applied)
+// void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(uint16_t indexPixel, uint32_t color, bool segment_brightness_needs_applied)
+// {
+//   // RgbcctColor col;
+//   // col.red =   (color >> 16 & 0xFF);
+//   // col.green = (color >> 8  & 0xFF);
+//   // col.blue =  (color       & 0xFF);
+//   // col.W1 =    (color >> 24 & 0xFF);
+//   // col.W2 =    (color >> 24 & 0xFF);
+//   setPixelColor(indexPixel, color, segment_brightness_needs_applied);
+// }
+
+// /**
+//  * @brief 
+//  * 
+//  * @param indexPixel 
+//  * @param color_internal 
+//  * @param segment_brightness_needs_applied 
+//  */
+// void IRAM_ATTR mAnimatorLight::Segment::SetPixelColor(uint16_t indexPixel, RgbcctColor color_internal, bool flag_brightness_already_applied)
+// {
+
+//   DEBUG_TIME__START
+
+//   #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PERFORMANCE_METRICS_SAFE_IN_RELEASE_MODE
+//   performance.bus_write_single_us = micros();
+//   #endif
+
+//   #ifdef ENABLE_DEBUGFEATURE_TRACE__LIGHT__DETAILED_PIXEL_INDEXING
+//   ALOG_INF(PSTR("SetPixelColor %d"), indexPixel);
+//   #endif
+
+//   int vStrip = indexPixel>>16; // hack to allow running on virtual strips (2D segment columns/rows)
+//   indexPixel &= 0xFFFF;
+
+//   // Debug feature to map a large number of virtual pixels to a smaller physical display
+//   #ifdef ENABLE_DEBUGFEATURE__LIGHTING__MATCH_FEWER_PHYSICAL_PIXELS
+//   indexPixel = indexPixel % ENABLE_DEBUGFEATURE__LIGHTING__MATCH_FEWER_PHYSICAL_PIXELS; // Map to fewer pixels
+//   #endif
+
+//   if (indexPixel >= virtualLength() || indexPixel < 0) return;  // if pixel would fall out of segment just exit
+
+//   // Apply brightness if needed
+//   if (!flag_brightness_already_applied) {
+//     uint8_t brightness = pCONT_iLight->getBriRGB_Global();
+
+//     if (_brightness_rgb != 255) {
+//       brightness = scale8(brightness, _brightness_rgb);
+//     }
+
+//     // Apply brightness to all channels
+//     color_internal.R = scale8(color_internal.R, brightness);
+//     color_internal.G = scale8(color_internal.G, brightness);
+//     color_internal.B = scale8(color_internal.B, brightness);
+//     color_internal.W1 = scale8(color_internal.W1, brightness);
+//     color_internal.W2 = scale8(color_internal.W2, brightness);
+//   }
+
+//   #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
+//   uint32_t col = color_internal.getU32();
+//     if (is2D()) {
+//       uint16_t vH = virtualHeight();  // segment height in logical pixels
+//       uint16_t vW = virtualWidth();
+//       switch (map1D2D) {
+//         case M12_Pixels:
+//           // use all available pixels as a long strip
+
+//           setPixelColorXY(indexPixel % vW, indexPixel / vW, col);
+
+//           break;
+//         case M12_pBar:
+//           // expand 1D effect vertically or have it play on virtual strips
+//           if (vStrip>0) setPixelColorXY(vStrip - 1, vH - indexPixel - 1, col);
+//           else          for (int x = 0; x < vW; x++) setPixelColorXY(x, vH - indexPixel - 1, col);
+//           break;
+//         case M12_pArc:
+//           // expand in circular fashion from center
+//           if (indexPixel==0)
+//             setPixelColorXY(0, 0, col);
+//           else {
+//             float step = HALF_PI / (2.85f*indexPixel);
+//             for (float rad = 0.0f; rad <= HALF_PI+step/2; rad += step) {
+//               // may want to try float version as well (with or without antialiasing)
+//               int x = roundf(sin_t(rad) * indexPixel);
+//               int y = roundf(cos_t(rad) * indexPixel);
+//               setPixelColorXY(x, y, col);
+//             }
+//           }
+//           break;
+//         case M12_pCorner:
+//           for (int x = 0; x <= indexPixel; x++) setPixelColorXY(x, indexPixel, col);
+//           for (int y = 0; y <  indexPixel; y++) setPixelColorXY(indexPixel, y, col);
+//           break;
+//       }
+//       return;
+//     } else if (Segment::maxHeight!=1 && (width()==1 || height()==1)) {
+//       // we have a vertical or horizontal 1D segment (WARNING: virtual...() may be transposed)
+//       int x = 0, y = 0;
+//       if (virtualHeight()>1) y = indexPixel;
+//       if (virtualWidth() >1) x = indexPixel;
+//       setPixelColorXY(x, y, col);
+//       return;
+//     }
+//   #endif
+
+//   // Modify pixel index if required: start, grouping, spacing, offset
+//   indexPixel *= groupLength();
+//   if (reverse) {  // If segment is reversed
+//     if (mirror) {  // Mirrored reversal
+//       indexPixel = (length() - 1) / 2 - indexPixel;  // Only need to index half the pixels
+//     } else {  // Normal reversal
+//       indexPixel = (length() - 1) - indexPixel;
+//     }
+//   }
+//   indexPixel += start;
+
+//   #ifdef ENABLE_DEBUG_TRACE__ANIMATOR_UPDATE_DESIRED_COLOUR
+//   ALOG_INF(PSTR("pIndex=%d"), indexPixel);
+//   #endif
+
+//   // Set all pixels in the group
+//   for (uint32_t group_i = 0; group_i < grouping_get(); group_i++) 
+//   {
+//     uint16_t indexSet = indexPixel + ((reverse) ? -group_i : group_i);
+
+//     if (indexSet >= start && indexSet < stop) 
+//     {
+//       if (mirror) 
+//       {
+//         uint16_t indexMir = stop - indexSet + start - 1;          
+//         indexMir += offset;
+//         if (indexMir >= stop) indexMir -= length();  // Wrap
+//         pCONT_lAni->setPixelColor_Rgbcct(indexMir, color_internal);
+//       }
+
+//       indexSet += offset;
+//       if (indexSet >= stop) indexSet -= length();  // Wrap
+
+//       pCONT_lAni->setPixelColor_Rgbcct(indexSet, color_internal);
+
+//       #ifdef ENABLE_DEVFEATURE_LIGHTS__DECIMATE
+//       for (uint8_t d = 0; d < decimate; d++) 
+//       {
+//         if (group_i > 1) break;  // Skip decimate when grouping is on
+
+//         uint16_t new_indexSet = indexSet + (d * virtualLength());
+//         if (new_indexSet >= start && new_indexSet < stop) 
+//         {
+//           pCONT_lAni->setPixelColor_Rgbcct(new_indexSet, color_internal);
+//         }
+//       }
+//       #endif
+//     }
+//   }
+   
+//   ALOG_DBM(PSTR("colour_hardware[%d] = %d,%d,%d,%d,%d"),physical_indexPixel, colour_hardware.R, colour_hardware.G, colour_hardware.B, colour_hardware.W1, colour_hardware.W2);
+   
+//   #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PERFORMANCE_METRICS_SAFE_IN_RELEASE_MODE
+//   performance.bus_write_single_us = micros() - performance.bus_write_single_us;
+//   #endif
+  
+//   // if(indexPixel==0)
+//   // DEBUG_TIME__SHOW_MESSAGE("pix")
+
+// }
+
+
+void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(int i, uint32_t col, bool flag_brightness_already_applied)
 {
-  RgbcctColor col;
-  col.red =   (color >> 16 & 0xFF);
-  col.green = (color >> 8  & 0xFF);
-  col.blue =  (color       & 0xFF);
-  col.W1 =    (color >> 24 & 0xFF);
-  col.W2 =    (color >> 24 & 0xFF);
-  SetPixelColor(indexPixel, col, segment_brightness_needs_applied);
-}
-
-
-/**
- * @brief 
- * 
- * @param indexPixel 
- * @param color_internal 
- * @param segment_brightness_needs_applied 
- */
-void IRAM_ATTR mAnimatorLight::Segment::SetPixelColor(uint16_t indexPixel, RgbcctColor color_internal, bool flag_brightness_already_applied)
-{
-
-  DEBUG_TIME__START
-
-  #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PERFORMANCE_METRICS_SAFE_IN_RELEASE_MODE
-  performance.bus_write_single_us = micros();
-  #endif
-
-  #ifdef ENABLE_DEBUGFEATURE_TRACE__LIGHT__DETAILED_PIXEL_INDEXING
-  ALOG_INF(PSTR("SetPixelColor %d"), indexPixel);
-  #endif
-
-  int vStrip = indexPixel>>16; // hack to allow running on virtual strips (2D segment columns/rows)
-  indexPixel &= 0xFFFF;
-
-  // Debug feature to map a large number of virtual pixels to a smaller physical display
-  #ifdef ENABLE_DEBUGFEATURE__LIGHTING__MATCH_FEWER_PHYSICAL_PIXELS
-  indexPixel = indexPixel % ENABLE_DEBUGFEATURE__LIGHTING__MATCH_FEWER_PHYSICAL_PIXELS; // Map to fewer pixels
-  #endif
-
-  if (indexPixel >= virtualLength() || indexPixel < 0) return;  // if pixel would fall out of segment just exit
-
-  // Apply brightness if needed
-  if (!flag_brightness_already_applied) {
-    uint8_t brightness = pCONT_iLight->getBriRGB_Global();
-
-    if (_brightness_rgb != 255) {
-      brightness = scale8(brightness, _brightness_rgb);
-    }
-
-    // Apply brightness to all channels
-    color_internal.R = scale8(color_internal.R, brightness);
-    color_internal.G = scale8(color_internal.G, brightness);
-    color_internal.B = scale8(color_internal.B, brightness);
-    color_internal.W1 = scale8(color_internal.W1, brightness);
-    color_internal.W2 = scale8(color_internal.W2, brightness);
+  if (!isActive() || i < 0) return; // not active or invalid index
+#ifndef WLED_DISABLE_2D
+  int vStrip = 0;
+#endif
+  int vL = vLength();
+  // if the 1D effect is using virtual strips "i" will have virtual strip id stored in upper 16 bits
+  // in such case "i" will be > virtualLength()
+  if (i >= vL) {
+    // check if this is a virtual strip
+    #ifndef WLED_DISABLE_2D
+    vStrip = i>>16; // hack to allow running on virtual strips (2D segment columns/rows)
+    i &= 0xFFFF;    //truncate vstrip index
+    if (i >= vL) return;  // if pixel would still fall out of segment just exit
+    #else
+    return;
+    #endif
   }
 
-  #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
-  uint32_t col = color_internal.getU32();
-    if (is2D()) {
-      uint16_t vH = virtualHeight();  // segment height in logical pixels
-      uint16_t vW = virtualWidth();
-      switch (map1D2D) {
-        case M12_Pixels:
-          // use all available pixels as a long strip
-
-          setPixelColorXY(indexPixel % vW, indexPixel / vW, col);
-
-          break;
-        case M12_pBar:
-          // expand 1D effect vertically or have it play on virtual strips
-          if (vStrip>0) setPixelColorXY(vStrip - 1, vH - indexPixel - 1, col);
-          else          for (int x = 0; x < vW; x++) setPixelColorXY(x, vH - indexPixel - 1, col);
-          break;
-        case M12_pArc:
-          // expand in circular fashion from center
-          if (indexPixel==0)
-            setPixelColorXY(0, 0, col);
-          else {
-            float step = HALF_PI / (2.85f*indexPixel);
-            for (float rad = 0.0f; rad <= HALF_PI+step/2; rad += step) {
-              // may want to try float version as well (with or without antialiasing)
-              int x = roundf(sin_t(rad) * indexPixel);
-              int y = roundf(cos_t(rad) * indexPixel);
-              setPixelColorXY(x, y, col);
-            }
+#ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
+  if (is2D()) {
+    const int vW = vWidth();   // segment width in logical pixels (can be 0 if segment is inactive)
+    const int vH = vHeight();  // segment height in logical pixels (is always >= 1)
+    // pre-scale color for all pixels
+    col = color_fade(col, _segBri);
+    _colorScaled = true;
+    switch (map1D2D) {
+      case M12_Pixels:
+        // use all available pixels as a long strip
+        setPixelColorXY(i % vW, i / vW, col);
+        break;
+      case M12_pBar:
+        // expand 1D effect vertically or have it play on virtual strips
+        if (vStrip > 0) setPixelColorXY(vStrip - 1, vH - i - 1, col);
+        else for (int x = 0; x < vW; x++) setPixelColorXY(x, vH - i - 1, col);
+        break;
+      case M12_pArc:
+        // expand in circular fashion from center
+        if (i == 0)
+          setPixelColorXY(0, 0, col);
+        else {
+          float r = i;
+          float step = HALF_PI / (2.8284f * r + 4); // we only need (PI/4)/(r/sqrt(2)+1) steps
+          for (float rad = 0.0f; rad <= (HALF_PI/2)+step/2; rad += step) {
+            int x = roundf(sin_t(rad) * r);
+            int y = roundf(cos_t(rad) * r);
+            // exploit symmetry
+            setPixelColorXY(x, y, col);
+            setPixelColorXY(y, x, col);
           }
-          break;
-        case M12_pCorner:
-          for (int x = 0; x <= indexPixel; x++) setPixelColorXY(x, indexPixel, col);
-          for (int y = 0; y <  indexPixel; y++) setPixelColorXY(indexPixel, y, col);
-          break;
+          // Bresenham’s Algorithm (may not fill every pixel)
+          //int d = 3 - (2*i);
+          //int y = i, x = 0;
+          //while (y >= x) {
+          //  setPixelColorXY(x, y, col);
+          //  setPixelColorXY(y, x, col);
+          //  x++;
+          //  if (d > 0) {
+          //    y--;
+          //    d += 4 * (x - y) + 10;
+          //  } else {
+          //    d += 4 * x + 6;
+          //  }
+          //}
+        }
+        break;
+      case M12_pCorner:
+        for (int x = 0; x <= i; x++) setPixelColorXY(x, i, col);
+        for (int y = 0; y <  i; y++) setPixelColorXY(i, y, col);
+        break;
+      case M12_sPinwheel: {
+        // i = angle --> 0 - 296  (Big), 0 - 192  (Medium), 0 - 72 (Small)
+        float centerX = roundf((vW-1) / 2.0f);
+        float centerY = roundf((vH-1) / 2.0f);
+        float angleRad = getPinwheelAngle(i, vW, vH); // angle in radians
+        float cosVal = cos_t(angleRad);
+        float sinVal = sin_t(angleRad);
+
+        // avoid re-painting the same pixel
+        int lastX = INT_MIN; // impossible position
+        int lastY = INT_MIN; // impossible position
+        // draw line at angle, starting at center and ending at the segment edge
+        // we use fixed point math for better speed. Starting distance is 0.5 for better rounding
+        // int_fast16_t and int_fast32_t types changed to int, minimum bits commented
+        int posx = (centerX + 0.5f * cosVal) * Fixed_Scale; // X starting position in fixed point 18 bit
+        int posy = (centerY + 0.5f * sinVal) * Fixed_Scale; // Y starting position in fixed point 18 bit
+        int inc_x = cosVal * Fixed_Scale; // X increment per step (fixed point) 10 bit
+        int inc_y = sinVal * Fixed_Scale; // Y increment per step (fixed point) 10 bit
+
+        int32_t maxX = vW * Fixed_Scale; // X edge in fixedpoint
+        int32_t maxY = vH * Fixed_Scale; // Y edge in fixedpoint
+
+        // Odd rays start further from center if prevRay started at center.
+        static int prevRay = INT_MIN; // previous ray number
+        if ((i % 2 == 1) && (i - 1 == prevRay || i + 1 == prevRay)) {
+          int jump = min(vW/3, vH/3); // can add 2 if using medium pinwheel
+          posx += inc_x * jump;
+          posy += inc_y * jump;
+        }
+        prevRay = i;
+
+        // draw ray until we hit any edge
+        while ((posx >= 0) && (posy >= 0) && (posx < maxX)  && (posy < maxY))  {
+          // scale down to integer (compiler will replace division with appropriate bitshift)
+          int x = posx / Fixed_Scale;
+          int y = posy / Fixed_Scale;
+          // set pixel
+          if (x != lastX || y != lastY) setPixelColorXY(x, y, col);  // only paint if pixel position is different
+          lastX = x;
+          lastY = y;
+          // advance to next position
+          posx += inc_x;
+          posy += inc_y;
+        }
+        break;
       }
-      return;
-    } else if (Segment::maxHeight!=1 && (width()==1 || height()==1)) {
+    }
+    _colorScaled = false;
+    return;
+  } else if (Segment::maxHeight != 1 && (width() == 1 || height() == 1)) {
+    if (start < Segment::maxWidth*Segment::maxHeight) {
       // we have a vertical or horizontal 1D segment (WARNING: virtual...() may be transposed)
       int x = 0, y = 0;
-      if (virtualHeight()>1) y = indexPixel;
-      if (virtualWidth() >1) x = indexPixel;
+      if (vHeight() > 1) y = i;
+      if (vWidth()  > 1) x = i;
       setPixelColorXY(x, y, col);
       return;
     }
-  #endif
+  }
+#endif
 
-  // Modify pixel index if required: start, grouping, spacing, offset
-  indexPixel *= groupLength();
-  if (reverse) {  // If segment is reversed
-    if (mirror) {  // Mirrored reversal
-      indexPixel = (length() - 1) / 2 - indexPixel;  // Only need to index half the pixels
-    } else {  // Normal reversal
-      indexPixel = (length() - 1) - indexPixel;
+  unsigned len = length();
+  // if color is unscaled
+  if (!_colorScaled) col = color_fade(col, _brightness_rgb);
+
+  // expand pixel (taking into account start, grouping, spacing [and offset])
+  i = i * groupLength();
+  if (reverse) { // is segment reversed?
+    if (mirror) { // is segment mirrored?
+      i = (len - 1) / 2 - i;  //only need to index half the pixels
+    } else {
+      i = (len - 1) - i;
     }
   }
-  indexPixel += start;
+  i += start; // starting pixel in a group
 
-  #ifdef ENABLE_DEBUG_TRACE__ANIMATOR_UPDATE_DESIRED_COLOUR
-  ALOG_INF(PSTR("pIndex=%d"), indexPixel);
-  #endif
-
-  // Set all pixels in the group
-  for (uint32_t group_i = 0; group_i < grouping_get(); group_i++) 
-  {
-    uint16_t indexSet = indexPixel + ((reverse) ? -group_i : group_i);
-
-    if (indexSet >= start && indexSet < stop) 
-    {
-      if (mirror) 
-      {
-        uint16_t indexMir = stop - indexSet + start - 1;          
-        indexMir += offset;
-        if (indexMir >= stop) indexMir -= length();  // Wrap
-        pCONT_lAni->setPixelColor_Rgbcct(indexMir, color_internal);
+  uint32_t tmpCol = col;
+  // set all the pixels in the group
+  for (int j = 0; j < grouping; j++) {
+    unsigned indexSet = i + ((reverse) ? -j : j);
+    if (indexSet >= start && indexSet < stop) {
+      if (mirror) { //set the corresponding mirrored pixel
+        unsigned indexMir = stop - indexSet + start - 1;
+        indexMir += offset; // offset/phase
+        if (indexMir >= stop) indexMir -= len; // wrap
+#ifndef WLED_DISABLE_MODE_BLEND
+        // if (_modeBlend) tmpCol = color_blend16(pCONT_lAni->getPixelColor(indexMir), col, uint16_t(0xFFFFU - progress()));
+#endif
+        pCONT_lAni->setPixelColor(indexMir, tmpCol);
       }
-
-      indexSet += offset;
-      if (indexSet >= stop) indexSet -= length();  // Wrap
-
-      pCONT_lAni->setPixelColor_Rgbcct(indexSet, color_internal);
-
-      #ifdef ENABLE_DEVFEATURE_LIGHTS__DECIMATE
-      for (uint8_t d = 0; d < decimate; d++) 
-      {
-        if (group_i > 1) break;  // Skip decimate when grouping is on
-
-        uint16_t new_indexSet = indexSet + (d * virtualLength());
-        if (new_indexSet >= start && new_indexSet < stop) 
-        {
-          pCONT_lAni->setPixelColor_Rgbcct(new_indexSet, color_internal);
-        }
-      }
-      #endif
+      indexSet += offset; // offset/phase
+      if (indexSet >= stop) indexSet -= len; // wrap
+#ifndef WLED_DISABLE_MODE_BLEND
+      // if (_modeBlend) tmpCol = color_blend16(pCONT_lAni->getPixelColor(indexSet), col, uint16_t(0xFFFFU - progress()));
+#endif
+      pCONT_lAni->setPixelColor(indexSet, tmpCol);
     }
   }
-   
-  ALOG_DBM(PSTR("colour_hardware[%d] = %d,%d,%d,%d,%d"),physical_indexPixel, colour_hardware.R, colour_hardware.G, colour_hardware.B, colour_hardware.W1, colour_hardware.W2);
-   
-  #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PERFORMANCE_METRICS_SAFE_IN_RELEASE_MODE
-  performance.bus_write_single_us = micros() - performance.bus_write_single_us;
-  #endif
-  
-  // if(indexPixel==0)
-  // DEBUG_TIME__SHOW_MESSAGE("pix")
-
 }
 
-/**
- * @brief 
- * 
- * @param indexPixel 
- * @return RgbcctColor 
- */
-RgbcctColor IRAM_ATTR mAnimatorLight::Segment::GetPixelColor(uint16_t indexPixel)
-{
-  
-  #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PERFORMANCE_METRICS_SAFE_IN_RELEASE_MODE
-  performance.bus_read_single_us = micros();
-  #endif
-
-  #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
-  int vStrip = indexPixel>>16;
-  indexPixel &= 0xFFFF;
-  if (is2D()) {DEBUG_LINE_HERE3
-    uint16_t vH = virtualHeight();  // segment height in logical pixels
-    uint16_t vW = virtualWidth();
-    // ALOG_ERR(PSTR("\n\rmap1D2D %d set"), map1D2D);
-    switch (map1D2D) {
-      case M12_Pixels:
-        return RgbcctColor( getPixelColorXY(indexPixel % vW, indexPixel / vW) );
-        break;
-      case M12_pBar:DEBUG_LINE_HERE3
-        if (vStrip>0) return RgbcctColor(getPixelColorXY(vStrip - 1, vH - indexPixel -1));
-        else          return RgbcctColor(getPixelColorXY(0, vH - indexPixel -1));
-        break;
-      case M12_pArc:DEBUG_LINE_HERE3
-      case M12_pCorner:DEBUG_LINE_HERE3
-        // use longest dimension
-        return vW>vH ? RgbcctColor(getPixelColorXY(indexPixel, 0)) : RgbcctColor(getPixelColorXY(0, indexPixel));
-        break;
-    }DEBUG_LINE_HERE3
-    ALOG_ERR(PSTR("No map1D2D set"));
-    return RgbcctColor((uint32_t)0);
-  }
-  #endif
-
-  if(reverse) indexPixel = virtualLength() - indexPixel - 1;
-  indexPixel *= groupLength();
-  indexPixel += start + offset;
-  if (indexPixel >= stop){ indexPixel -= length(); } // Adjust if beyond stop
-
-  #ifdef ENABLE__DEBUG_POINT__ANIMATION_EFFECTS
-    RgbcctColor colour_hardware = pCONT_lAni->getPixelColor_Rgbcct(indexPixel);
-    ALOG_DBG(PSTR("colour_hardware[%d] = %d,%d,%d,%d,%d"), 
-      indexPixel, 
-      colour_hardware.R, colour_hardware.G, colour_hardware.B, 
-      colour_hardware.W1, colour_hardware.W2);
-    return colour_hardware;
-  #else    
-    #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PERFORMANCE_METRICS_SAFE_IN_RELEASE_MODE
-      // If enabled, intermediate value needs stored before return. Can be removed for performance without
-      RgbcctColor c = pCONT_lAni->getPixelColor_Rgbcct(indexPixel);
-      performance.bus_read_single_us = micros() - performance.bus_read_single_us;
-      return c;
-    #else
-      return pCONT_lAni->getPixelColor_Rgbcct(indexPixel);
-    #endif
-  #endif
-
-}
 
 
 /*
@@ -5678,7 +6102,7 @@ JBI->Start();
 //     JBI->Add("ColourPalette", mPaletteI->GetPaletteNameByID( SEGMENT_I(0).palette_id, buffer, sizeof(buffer)));
 //     // JBI->Array_Start("rgb");
 //     // for(int i=0;i<numpixels;i++){
-//     //   RgbTypeColor c = GetPixelColor(i);
+//     //   RgbTypeColor c = getPixelColor(i);
 //     //   JBI->Add_FV(PSTR("%02X%02X%02X"),c.R,c.G,c.B);
 //     // }
 //     // JBI->Array_End();

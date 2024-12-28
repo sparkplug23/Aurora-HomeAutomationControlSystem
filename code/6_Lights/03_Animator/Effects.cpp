@@ -95,6 +95,7 @@ static const char PM_EFFECT_CONFIG__##[] PROGMEM =
  *******************************************************************************************************************************************************************************************************************
  ********************************************************************************************************************************************************************************************************************/
 #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
+no build
 void mAnimatorLight::EffectAnim__Solid_Colour()
 {
   if (!SEGMENT.allocateData( GetSizeOfPixel(SEGMENT.colour_type__used_in_effect_generate) * 2) ){ DEBUG_LINE_HERE; return; } // Pixel_Width * Two_Channels
@@ -6611,6 +6612,20 @@ uint32_t mAnimatorLight::color_wheel(uint8_t pos) {
 
 #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
 
+uint32_t mAnimatorLight::color_wheel(uint8_t pos) const {
+  // if (palette) return color_from_palette(pos, false, true, 0); // perhaps "strip.paletteBlend < 2" should be better instead of "true"
+  uint8_t w = 0;//W(getCurrentColor(0));
+  pos = 255 - pos;
+  if (pos < 85) {
+    return RGBW32((255 - pos * 3), 0, (pos * 3), w);
+  } else if (pos < 170) {
+    pos -= 85;
+    return RGBW32(0, (pos * 3), (255 - pos * 3), w);
+  } else {
+    pos -= 170;
+    return RGBW32((pos * 3), (255 - pos * 3), 0, w);
+  }
+}
 /****************************************************************************************************************************
  **************************************************************************************************************************** 
  * Chase
@@ -7879,9 +7894,12 @@ static const char PM_EFFECT_CONFIG__TWINKLE_UP[] PROGMEM = "Twinkle Up@!,Intensi
  * Lights all LEDs in one random color up. Then switches them to the next random color.
  *******************************************************************************************************************************************************************************************************************
  ********************************************************************************************************************************************************************************************************************/
-#ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+#ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
 void mAnimatorLight::EffectAnim__Random_Colour()
 {
+
+  DEBUG_LINE_HERE
+
   uint32_t cycleTime = 200 + (255 - SEGMENT.speed)*50;
   uint32_t it = millis() / cycleTime;
   uint32_t rem = millis() % cycleTime;
@@ -7893,6 +7911,7 @@ void mAnimatorLight::EffectAnim__Random_Colour()
     if (fade > 255) fade = 255;
   }
 
+  DEBUG_LINE_HERE
   if (SEGMENT.call == 0) {
     SEGMENT.params_internal.aux0 = random8();
     SEGMENT.step = 2;
@@ -7903,15 +7922,18 @@ void mAnimatorLight::EffectAnim__Random_Colour()
     SEGMENT.params_internal.aux0 = get_random_wheel_index(SEGMENT.params_internal.aux0); //aux0 will store our random color wheel index
     SEGMENT.step = it;
   }
+  DEBUG_LINE_HERE
 
   fill(ColourBlend(color_wheel(SEGMENT.params_internal.aux1), color_wheel(SEGMENT.params_internal.aux0), fade), true);
   
+  DEBUG_LINE_HERE
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
   SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
   
+  DEBUG_LINE_HERE
 }
 static const char PM_EFFECT_CONFIG__RANDOM_COLOR[] PROGMEM = "Random Colors@!,Fade time;;!";
-#endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+#endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
 
 
 /********************************************************************************************************************************************************************************************************************
@@ -19087,7 +19109,7 @@ void mAnimatorLight::LoadEffects()
   /**
    * One Colour
    **/
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
   addEffect(EFFECTS_FUNCTION__RANDOM_COLOR__ID,         &mAnimatorLight::EffectAnim__Random_Colour,                         PM_EFFECT_CONFIG__RANDOM_COLOR);
   #endif
   /**
