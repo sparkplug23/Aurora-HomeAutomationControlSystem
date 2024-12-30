@@ -238,7 +238,7 @@ class mInterfaceLight :
     uint16_t fadeGammaReverse(uint32_t channel, uint16_t vg);
     #endif //ENABLE_PIXEL_LIGHTING_GAMMA_CORRECTION
 
-    uint8_t  _briRGB_Global = 255;  // 0..255 // Used for ws28xx
+    uint8_t  _briRGB_Global = 255;  // in place of WLED "bri" 0..255 // Used for ws28xx
     uint8_t  _briCT_Global = 255;
 
     inline uint8_t getBri_Global(void) { // return the max of _briCT and _briRGB

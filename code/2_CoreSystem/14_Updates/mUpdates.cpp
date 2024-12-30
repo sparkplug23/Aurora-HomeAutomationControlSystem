@@ -152,7 +152,7 @@ void mUpdates::WebPage_Root_AddHandlers()
     //   serveMessage(request, 500, "Access Denied", FPSTR(s_unlock_ota), 254);
     // } else
 #ifdef USE_MODULE_LIGHTS_ANIMATOR
-      pCONT_lAni->serveSettings(request); // checks for "upd" in URL and handles PIN
+      tkr_anim->serveSettings(request); // checks for "upd" in URL and handles PIN
 #endif // USE_MODULE_LIGHTS_ANIMATOR
   });
 

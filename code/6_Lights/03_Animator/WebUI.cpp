@@ -220,7 +220,7 @@ void mAnimatorLight::serializeState(JsonObject root, bool forPreset, bool includ
 void mAnimatorLight::serializeInfo(JsonObject root)
 {
   
-  pCONT_lAni->force_update(); // New data in, so we should update
+  tkr_anim->force_update(); // New data in, so we should update
 
   root[F("ver")] = "versionString";
   root[F("vid")] = PROJECT_VERSION;
@@ -2207,7 +2207,7 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
   bool flag_request_is_for_full_visual_output = true;
 
   int palettesCount = mPaletteI->GetPaletteListLength(); //includes the dynamic!
-  int customPalettes = pCONT_lAni->customPalettes.size();
+  int customPalettes = tkr_anim->customPalettes.size();
 
   // ALOG_HGL(PSTR("palettesCount=%d"), palettesCount); 
 
@@ -2725,7 +2725,7 @@ void mAnimatorLight::serveJson(AsyncWebServerRequest* request)
       JsonObject info = lDoc.createNestedObject("info");
       serializeInfo(info);
 
-      pCONT_lAni->force_update(); // New data in, so we should update
+      tkr_anim->force_update(); // New data in, so we should update
 
       if (subJson != JSON_PATH_STATE_INFO)
       {

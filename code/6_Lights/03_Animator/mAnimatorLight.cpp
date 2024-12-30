@@ -2,6 +2,11 @@
 
 #ifdef USE_MODULE_LIGHTS_ANIMATOR
 
+#ifdef ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
+// Define the global instance
+mAnimatorLight* tkr_extern_lAni = nullptr;
+#endif
+
 int8_t mAnimatorLight::Tasker(uint8_t function, JsonParserObject obj)
 {
 
@@ -92,7 +97,7 @@ int8_t mAnimatorLight::Tasker(uint8_t function, JsonParserObject obj)
       pCONT_mqtt->MQTTHandler_RefreshAll(mqtthandler_list);
     break;
     case TASK_MQTT_HANDLERS_SET_DEFAULT_TRANSMIT_PERIOD:
-      pCONT_mqtt->MQTTHandler_Rate(mqtthandler_list);
+      // pCONT_mqtt->MQTTHandler_Rate(mqtthandler_list);
     break;
     case TASK_MQTT_SENDER:
       pCONT_mqtt->MQTTHandler_Sender(mqtthandler_list, *this);
@@ -307,6 +312,10 @@ void mAnimatorLight::EveryLoop()
     }
     
     finalizeInit(); // also loads default ledmap if present
+
+    uint8_t bri = 128; // temporary brightness value
+    
+    BusManager::setBrightness(bri); // fix re-initialised bus' brightness #4005
     
     if (aligned) makeAutoSegments();
     else fixInvalidSegments();
@@ -319,6 +328,8 @@ void mAnimatorLight::EveryLoop()
     bool flag_deserializeMap = deserializeMap(0);
     ALOG_HGL(PSTR("Loading 1D LED map. %s"), flag_deserializeMap ? "YES" : "NO");
     
+    BusManager::setBrightness(bri); // fix re-initialised bus' brightness
+
     doSerializeConfig = true;
     // serializeConfig(); // in WLED This saved everything to json memory
   }
@@ -352,7 +363,7 @@ void mAnimatorLight::EveryLoop()
   // 2D Matrix Settings
   // JsonObject matrix = hw_led[F("matrix")];
   // if (!matrix.isNull()) {
-  //   strip.isMatrix = true;
+  //   tkr_anim->isMatrix = true;
     
     panels = 1;
     panel.clear();
@@ -465,18 +476,18 @@ void mAnimatorLight::EveryLoop()
 
 
 
-      //   if (++s >= WLED_MAX_PANELS || s >= strip.panels) break; // max panels reached
+      //   if (++s >= WLED_MAX_PANELS || s >= tkr_anim->panels) break; // max panels reached
       // }
     // } else {
     //   // fallback
     //   WS2812FX::Panel p;
-    //   strip.panels = 1;
+    //   tkr_anim->panels = 1;
     //   p.height = p.width = 8;
     //   p.xOffset = p.yOffset = 0;
     //   p.options = 0;
-    //   strip.panel.push_back(p);
+    //   tkr_anim->panel.push_back(p);
     // }
-    // cannot call strip.setUpMatrix() here due to already locked JSON buffer
+    // cannot call tkr_anim->setUpMatrix() here due to already locked JSON buffer
   // }
 
   // THIS HAS BEEN MOVED IN 2025 INTO THE READ MAP FILE, AND THE SECTION BELOW SHOULD MOVE TOO
@@ -495,6 +506,9 @@ void mAnimatorLight::EveryLoop()
   
   
   // if (doSerializeConfig) serializeConfig();
+
+  // Tmp fix to set brightness
+  pCONT_iLight->bus_manager->setBrightness( pCONT_iLight->getBriRGB_Global() ); // fix re-initialised bus' brightness
 
   if (doReboot && !doInitBusses) // if busses have to be inited & saved, wait until next iteration
     reset();
@@ -519,25 +533,20 @@ void mAnimatorLight::EveryLoop()
       SubTask_Demo();
       #endif
 
-      DEBUG_LINE_HERE
-
       #ifdef ENABLE_FEATURE_LIGHTING__EFFECTS
       DEBUG_LIGHTING__START_TIME_RECORDING(1)
       SubTask_Effects();
       DEBUG_LIGHTING__SAVE_TIME_RECORDING(1, lighting_time_critical_logging.segment_effects); 
       #endif  
 
-      DEBUG_LINE_HERE
       #ifdef ENABLE_DEVFEATURE_LIGHTING__PLAYLISTS
       SubTask_Playlist();
       #endif
 
-      DEBUG_LINE_HERE
       #ifdef ENABLE_DEVFEATURE_LIGHTING__PRESETS
       SubTask_Presets();
       #endif
 
-      DEBUG_LINE_HERE
     }break;
     #ifdef ENABLE_FEATURE_LIGHTING__REALTIME_MQTT_SETPIXEL
     case ANIMATION_MODE__REALTIME_MQTT_SETPIXEL:
@@ -581,8 +590,6 @@ void mAnimatorLight::EveryLoop()
     #endif
   } // END switch
 
-  DEBUG_LINE_HERE
-
   yield();
 
 }
@@ -601,7 +608,12 @@ void mAnimatorLight::BootMessage()
 
 void mAnimatorLight::Pre_Init(void)
 {
-  
+
+  #ifdef ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
+  // On preinit, make sure to init the local class pointer to the global instance
+  tkr_extern_lAni = this;
+  #endif
+
 }
 
 
@@ -728,7 +740,7 @@ void mAnimatorLight::EverySecond_AutoOff()
 
       ALOG_INF(PSTR("Setting override for off %d"), seg.single_animation_override.time_ms);
 
-      pCONT_lAni->force_update();
+      tkr_anim->force_update();
 
       seg.setBrightnessRGB(0);
       seg.setBrightnessCCT(0);    
@@ -806,7 +818,7 @@ mAnimatorLight::Segment::LoadPalette(uint8_t palette_id, mPaletteLoaded* _palett
   uint8_t segment_index = 0;
 
   // Pass pointer to memory location to load, so I can have additional palettes. If none passed, assume primary storage of segment
-  // ALOG_WRN(PSTR("Should only happen once ============LoadPalette %d %d %d"), palette_id, segment_index, pCONT_lAni->segment_current_index);
+  // ALOG_WRN(PSTR("Should only happen once ============LoadPalette %d %d %d"), palette_id, segment_index, tkr_anim->segment_current_index);
 
   /**
    * @brief If none was passed, then assume its the default for that segment and load its container
@@ -1452,13 +1464,13 @@ void mAnimatorLight::SubTask_Effects()
   if (nowUp - _lastShow < MIN_SHOW_DELAY) return;
   bool doShow = false;
 
-      DEBUG_LINE_HERE
+      
   _isServicing = true;
   segment_current_index = 0;  
   for (segment &seg : segments) 
   {
 
-      DEBUG_LINE_HERE
+      
     // reset the segment runtime data if needed, called before isActive to ensure deleted segment's buffers are cleared
     seg.resetIfRequired();
 
@@ -1496,31 +1508,31 @@ void mAnimatorLight::SubTask_Effects()
         
       DEBUG_LIGHTING__START_TIME_RECORDING(2)
 
-Serial.printf("seg.effect_id %d/%d\n", seg.effect_id, effects.function.size());
+// Serial.printf("seg.effect_id %d/%d\n", seg.effect_id, effects.function.size());
       if(seg.effect_id >= effects.function.size())
       {
         ALOG_ERR(PSTR("seg.effect_id %d/%d"), seg.effect_id, effects.function.size());
         seg.effect_id = 0;
       }
       
-      DEBUG_LINE_HERE
+      
       (this->*effects.function[seg.effect_id])(); // Call Effect Function (passes and returns nothing)
       
-      DEBUG_LINE_HERE
+      
       DEBUG_LIGHTING__SAVE_TIME_RECORDING(2, lighting_time_critical_logging.effect_call); // Only last segment will be recorded
 
       #ifdef ENABLE_EFFECTS_TIMING_DEBUG_GPIO
       DEBUG_PIN1_SET(HIGH);
       #endif
 
-      DEBUG_LINE_HERE
+      
       seg.next_time = nowUp + seg.get_transition_rate_ms();
   
       #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PERFORMANCE_METRICS_SAFE_IN_RELEASE_MODE
       seg.performance.effect_build_us = micros() - seg.performance.effect_build_us;
       #endif
 
-      DEBUG_LINE_HERE
+      
       /**
        * @brief Only calls Animator if effects are not directly handled
        **/
@@ -1533,13 +1545,13 @@ Serial.printf("seg.effect_id %d/%d\n", seg.effect_id, effects.function.size());
         StartSegmentAnimation_AsAnimUpdateMemberFunction(segment_current_index); // First run must be reset after StartAnimation is first called 
       }
               
-      DEBUG_LINE_HERE
+      
       seg.call++; // Used as progress counter for animations eg rainbow across all hues
       // ALOG_INF(PSTR("seg=%d,call=%d"),seg_i, seg.call);
                 
     } // END if effect needs to be called
 
-      DEBUG_LINE_HERE
+      
     /**
      * @brief If animator is used, then the animation will be called from the animator
      **/    
@@ -1552,7 +1564,7 @@ Serial.printf("seg.effect_id %d/%d\n", seg.effect_id, effects.function.size());
 
       SEGMENT.flags.animator_first_run = RESET_FLAG;     // CHANGE to function: reset here for all my methods
 
-      DEBUG_LINE_HERE
+      
       if(!seg.animator->IsAnimationActive(0))
       {
         seg.transitional = false; // Since this is already inside "IsAnimating" then it should only be set if it was animating but is now stopping
@@ -1561,7 +1573,7 @@ Serial.printf("seg.effect_id %d/%d\n", seg.effect_id, effects.function.size());
     } // IsAnimating
 
 
-      DEBUG_LINE_HERE
+      
     #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PERFORMANCE_METRICS_SAFE_IN_RELEASE_MODE
     if(doShow)
     {
@@ -1579,14 +1591,14 @@ Serial.printf("seg.effect_id %d/%d\n", seg.effect_id, effects.function.size());
     
   } // END for
   
-      DEBUG_LINE_HERE
+      
   if(doShow)
   {
     yield();
     show();
   }   
 
-      DEBUG_LINE_HERE
+      
   _force_update = false;
   _isServicing = false;
   
@@ -1609,8 +1621,8 @@ void mAnimatorLight::AnimationProcess_LinearBlend_Dynamic_Buffer(const Animation
     // Pre-calculate values that are constant outside the loop
     byte* buffer = SEGMENT.Data();  // Fetch buffer pointer once
     uint16_t buflen = SEGMENT.DataLength();
-    uint16_t pixel_size = GetSizeOfPixel(SEGMENT.colour_type__used_in_effect_generate);  // Fetch pixel size once
-    ColourType pixel_type = SEGMENT.colour_type__used_in_effect_generate;
+    uint16_t pixel_size = GetSizeOfPixel(SEGMENT.colour_width__used_in_effect_generate);  // Fetch pixel size once
+    ColourType pixel_type = SEGMENT.colour_width__used_in_effect_generate;
 
     // ALOG_ERR(PSTR("pixel_size %d"), pixel_size);
     // ALOG_ERR(PSTR("buflen %d"), buflen);
@@ -1685,8 +1697,8 @@ void mAnimatorLight::AnimationProcess_LinearBlend_Dynamic_Buffer_BrtNotSet(const
     // Pre-calculate values that are constant outside the loop
     byte* buffer = SEGMENT.Data();  // Fetch buffer pointer once
     uint16_t buflen = SEGMENT.DataLength();
-    uint16_t pixel_size = GetSizeOfPixel(SEGMENT.colour_type__used_in_effect_generate);  // Fetch pixel size once
-    ColourType pixel_type = SEGMENT.colour_type__used_in_effect_generate;
+    uint16_t pixel_size = GetSizeOfPixel(SEGMENT.colour_width__used_in_effect_generate);  // Fetch pixel size once
+    ColourType pixel_type = SEGMENT.colour_width__used_in_effect_generate;
 
     // ALOG_ERR(PSTR("pixel_size %d"), pixel_size);
     // ALOG_ERR(PSTR("buflen %d"), buflen);
@@ -1758,8 +1770,8 @@ void mAnimatorLight::AnimationProcess_SingleColour_LinearBlend_Dynamic_Buffer(co
     // Pre-calculate values that are constant outside the loop
     byte* buffer = SEGMENT.Data();  // Fetch buffer pointer once
     uint16_t buflen = SEGMENT.DataLength();
-    uint16_t pixel_size = GetSizeOfPixel(SEGMENT.colour_type__used_in_effect_generate);  // Fetch pixel size once
-    ColourType pixel_type = SEGMENT.colour_type__used_in_effect_generate;
+    uint16_t pixel_size = GetSizeOfPixel(SEGMENT.colour_width__used_in_effect_generate);  // Fetch pixel size once
+    ColourType pixel_type = SEGMENT.colour_width__used_in_effect_generate;
     
     // Assume there's only one color for the entire buffer
     RgbcctColor startingColour, desiredColour;
@@ -1790,7 +1802,7 @@ void mAnimatorLight::AnimationProcess_SingleColour_LinearBlend_Dynamic_Buffer(co
     updatedColor = RgbcctColor::LinearBlend(startingColour, desiredColour, param.progress);    
 
     // Log the color type and the first desired color for debugging
-    // ALOG_DBM(PSTR("SEGMENT.colour_type__used_in_effect_generate=%d, seg%d, desired_colour1=%d,%d,%d,%d,%d"), SEGMENT.colour_type__used_in_effect_generate, getCurrSegmentId(), updatedColor.R, updatedColor.G, updatedColor.B, updatedColor.WC, updatedColor.WW);
+    // ALOG_DBM(PSTR("SEGMENT.colour_width__used_in_effect_generate=%d, seg%d, desired_colour1=%d,%d,%d,%d,%d"), SEGMENT.colour_width__used_in_effect_generate, getCurrSegmentId(), updatedColor.R, updatedColor.G, updatedColor.B, updatedColor.WC, updatedColor.WW);
         
     for (uint16_t pixel = 0; pixel < SEGLEN; pixel++) {  
       SEGMENT.setPixelColor(pixel, updatedColor, SET_BRIGHTNESS);
@@ -1815,7 +1827,7 @@ void mAnimatorLight::AnimationProcess_SingleColour_LinearBlend_Between_RgbcctSeg
   
   RgbcctColor updatedColor = RgbcctColor::LinearBlend(SEGMENT.rgbcctcolors[4].WithBrightness(), SEGMENT.rgbcctcolors[5].WithBrightness(), param.progress);    
   
-  // ALOG_INF( PSTR("SEGMENT.colour_type__used_in_effect_generate=%d, desired_colour1=%d,%d,%d,%d,%d"),SEGMENT.colour_type__used_in_effect_generate,updatedColor.R,updatedColor.G,updatedColor.B,updatedColor.WC,updatedColor.WW);
+  // ALOG_INF( PSTR("SEGMENT.colour_width__used_in_effect_generate=%d, desired_colour1=%d,%d,%d,%d,%d"),SEGMENT.colour_width__used_in_effect_generate,updatedColor.R,updatedColor.G,updatedColor.B,updatedColor.WC,updatedColor.WW);
 
   // ALOG_TST(PSTR("Acolour_pairs.StartingColour=%d,%d,%d,%d,%d"),colour_pairs.StartingColour.R,colour_pairs.StartingColour.G,colour_pairs.StartingColour.B,colour_pairs.StartingColour.WC,colour_pairs.StartingColour.WW);
   // ALOG_TST(PSTR("Acolour_pairs.DesiredColour=%d,%d,%d,%d,%d"),colour_pairs.DesiredColour.R,colour_pairs.DesiredColour.G,colour_pairs.DesiredColour.B,colour_pairs.DesiredColour.WC,colour_pairs.DesiredColour.WW);
@@ -1843,14 +1855,14 @@ void mAnimatorLight::Set_Segment_ColourType(uint8_t segment_index, uint8_t light
   // switch(light_type)
   // {
   //   case LT_PWM5:
-  //     SEGMENT_I(segment_index).colour_type__used_in_effect_generate = RgbcctColor::ColourType::COLOUR_TYPE__RGBCCT__ID; 
+  //     SEGMENT_I(segment_index).colour_width__used_in_effect_generate = RgbcctColor::ColourType::COLOUR_TYPE__RGBCCT__ID; 
   //   break;
   //   case LT_ADDRESSABLE_SK6812:
-  //     SEGMENT_I(segment_index).colour_type__used_in_effect_generate = RgbcctColor::ColourType::COLOUR_TYPE__RGBW__ID; 
+  //     SEGMENT_I(segment_index).colour_width__used_in_effect_generate = RgbcctColor::ColourType::COLOUR_TYPE__RGBW__ID; 
   //   break;
   //   default:
   //   case LT_ADDRESSABLE_WS281X:
-  //     SEGMENT_I(segment_index).colour_type__used_in_effect_generate = RgbcctColor::ColourType::COLOUR_TYPE__RGB__ID;
+  //     SEGMENT_I(segment_index).colour_width__used_in_effect_generate = RgbcctColor::ColourType::COLOUR_TYPE__RGB__ID;
   //   break;
   // }
 
@@ -1868,7 +1880,7 @@ uint8_t mAnimatorLight::GetNumberOfColoursInPalette(uint16_t palette_id)
 
   // Pass pointer to memory location to load, so I can have additional palettes. If none passed, assume primary storage of segment
 
-  // ALOG_INF(PSTR("============LoadPalette %d %d %d"), palette_id, segment_index, pCONT_lAni->segment_current_index);
+  // ALOG_INF(PSTR("============LoadPalette %d %d %d"), palette_id, segment_index, tkr_anim->segment_current_index);
 
   /**
    * @brief PaletteList Vectors should have the length stored in it. Actual pixel count depends on encoding type
@@ -2075,9 +2087,7 @@ void mAnimatorLight::fill(uint32_t c, bool apply_brightness)
 {
   for(uint16_t i = 0; i < _virtualSegmentLength; i++) 
   {
-    DEBUG_LINE_HERE
     SEGMENT.setPixelColor(i, c, apply_brightness);
-    DEBUG_LINE_HERE
   }
 }
 
@@ -2098,6 +2108,8 @@ void mAnimatorLight::fill_ranged(uint32_t c, bool apply_brightness)
   }
 
 }
+
+
 
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
@@ -2251,7 +2263,7 @@ void mAnimatorLight::DynamicBuffer_Segments_UpdateStartingColourWithGetPixel()
   // Cache the values that don’t change inside the loop
   byte* segmentData = SEGMENT.Data();
   uint16_t segmentDataLength = SEGMENT.DataLength();
-  auto colourTypeUsed = SEGMENT.colour_type__used_in_effect_generate;
+  auto colourTypeUsed = SEGMENT.colour_width__used_in_effect_generate;
   int segmentLength = SEGMENT.virtualLength();  // Cache virtual length as well
 
 
@@ -2289,7 +2301,7 @@ void mAnimatorLight::DynamicBuffer_Segments_UpdateStartingColourWithGetPixel_Wit
     SetTransitionColourBuffer_StartingColour( SEGMENT.Data(), 
                                               SEGMENT.DataLength(),
                                               pixel, 
-                                              SEGMENT.colour_type__used_in_effect_generate, 
+                                              SEGMENT.colour_width__used_in_effect_generate, 
                                               colour
                                             );
   }
@@ -2668,8 +2680,8 @@ void mAnimatorLight::Segment::setUp(uint16_t i1, uint16_t i2, uint8_t grp, uint8
     markForReset();
     return;
   }
-  if (i1 < Segment::maxWidth || (i1 >= Segment::maxWidth*Segment::maxHeight && i1 < pCONT_lAni->getLengthTotal())) start = i1; // Segment::maxWidth equals strip.getLengthTotal() for 1D
-  stop = i2 > Segment::maxWidth*Segment::maxHeight ? MIN(i2,pCONT_lAni->getLengthTotal()) : (i2 > Segment::maxWidth ? Segment::maxWidth : MAX(1,i2));
+  if (i1 < Segment::maxWidth || (i1 >= Segment::maxWidth*Segment::maxHeight && i1 < tkr_anim->getLengthTotal())) start = i1; // Segment::maxWidth equals tkr_anim->getLengthTotal() for 1D
+  stop = i2 > Segment::maxWidth*Segment::maxHeight ? MIN(i2,tkr_anim->getLengthTotal()) : (i2 > Segment::maxWidth ? Segment::maxWidth : MAX(1,i2));
   startY = 0;
   stopY  = 1;
   #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
@@ -2697,7 +2709,7 @@ bool mAnimatorLight::Segment::setColor(uint8_t slot, uint32_t c) { //returns tru
   rgbcctcolors[slot] = RgbcctColor(c); 
 
   // if (slot >= NUM_COLORS || c == colors[slot]) return false;
-  // if (fadeTransition) startTransition(strip.getTransition()); // start transition prior to change
+  // if (fadeTransition) startTransition(tkr_anim->getTransition()); // start transition prior to change
   // colors[slot] = c;
   // stateChanged = true; // send UDP/WS broadcast
   return true;
@@ -2709,7 +2721,7 @@ bool mAnimatorLight::Segment::setColor(uint8_t slot, RgbcctColor c) { //returns 
   rgbcctcolors[slot] = c;
 
   // if (slot >= NUM_COLORS || c == colors[slot]) return false;
-  // if (fadeTransition) startTransition(strip.getTransition()); // start transition prior to change
+  // if (fadeTransition) startTransition(tkr_anim->getTransition()); // start transition prior to change
   // colors[slot] = c;
   // stateChanged = true; // send UDP/WS broadcast
   return true;
@@ -2733,7 +2745,7 @@ void mAnimatorLight::Segment::setCCT(uint16_t k) {
 
 void mAnimatorLight::Segment::setOption(uint8_t n, bool val) {
   bool prevOn = on;
-  // if (fadeTransition && n == SEG_OPTION_ON && val != prevOn) startTransition(strip.getTransition()); // start transition prior to change
+  // if (fadeTransition && n == SEG_OPTION_ON && val != prevOn) startTransition(tkr_anim->getTransition()); // start transition prior to change
   if (val) options |=   0x01 << n;
   else     options &= ~(0x01 << n);
   // if (!(n == SEG_OPTION_SELECTED || n == SEG_OPTION_RESET || n == SEG_OPTION_TRANSITIONAL)) stateChanged = true; // send UDP/WS broadcast
@@ -2742,9 +2754,9 @@ void mAnimatorLight::Segment::setOption(uint8_t n, bool val) {
 void mAnimatorLight::Segment::setMode(uint8_t fx, bool loadDefaults) 
 {
   // if we have a valid mode & is not reserved
-  // if (fx < pCONT_lAni->getModeCount() && strncmp_P("RSVD", pCONT_lAni->getModeData(fx), 4)) {
+  // if (fx < tkr_anim->getModeCount() && strncmp_P("RSVD", tkr_anim->getModeData(fx), 4)) {
   //   if (fx != mode) {
-  //     startTransition(strip.getTransition()); // set effect transitions
+  //     startTransition(tkr_anim->getTransition()); // set effect transitions
       //markForReset(); // transition will handle this
       effect_id = fx;
 
@@ -2756,31 +2768,31 @@ void mAnimatorLight::Segment::setMode(uint8_t fx, bool loadDefaults)
 
         int16_t sOpt = -1;
 
-        if ((sOpt = pCONT_lAni->extractModeDefaults(fx, "sx")) >= 0) 
+        if ((sOpt = tkr_anim->extractModeDefaults(fx, "sx")) >= 0) 
         {
           ALOG_INF(PSTR("Loading default sx=%d"), sOpt);
           speed = sOpt;
         }
 
-        if ((sOpt = pCONT_lAni->extractModeDefaults(fx, "ix")) >= 0) 
+        if ((sOpt = tkr_anim->extractModeDefaults(fx, "ix")) >= 0) 
         {
           ALOG_INF(PSTR("Loading default ix=%d"), sOpt);
           intensity = sOpt;
         }
 
-        if ((sOpt = pCONT_lAni->extractModeDefaults(fx, "pal")) >= 0) 
+        if ((sOpt = tkr_anim->extractModeDefaults(fx, "pal")) >= 0) 
         {
           ALOG_INF(PSTR("Loading default pal=%d"), sOpt);
           setPalette(sOpt);
         }
 
-        if ((sOpt = pCONT_lAni->extractModeDefaults(fx, "ra")) >= 0) 
+        if ((sOpt = tkr_anim->extractModeDefaults(fx, "ra")) >= 0) 
         {
           ALOG_INF(PSTR("Loading default ra=%d"), sOpt);
           cycle_time__rate_ms = sOpt;
         }
 
-        if ((sOpt = pCONT_lAni->extractModeDefaults(fx, "ti")) >= 0) 
+        if ((sOpt = tkr_anim->extractModeDefaults(fx, "ti")) >= 0) 
         {
           ALOG_INF(PSTR("Loading default ti=%d"), sOpt);
           // time_ms = sOpt;
@@ -2791,9 +2803,9 @@ void mAnimatorLight::Segment::setMode(uint8_t fx, bool loadDefaults)
 
 
 
-        // sOpt = pCONT_lAni->extractModeDefaults(fx, "c1");   if (sOpt >= 0) custom1   = sOpt;
-        // sOpt = pCONT_lAni->extractModeDefaults(fx, "c2");   if (sOpt >= 0) custom2   = sOpt;
-        // sOpt = pCONT_lAni->extractModeDefaults(fx, "c3");   if (sOpt >= 0) custom3   = sOpt;
+        // sOpt = tkr_anim->extractModeDefaults(fx, "c1");   if (sOpt >= 0) custom1   = sOpt;
+        // sOpt = tkr_anim->extractModeDefaults(fx, "c2");   if (sOpt >= 0) custom2   = sOpt;
+        // sOpt = tkr_anim->extractModeDefaults(fx, "c3");   if (sOpt >= 0) custom3   = sOpt;
         // sOpt = extractModeDefaults(fx, "m12");  if (sOpt >= 0) map1D2D   = constrain(sOpt, 0, 7);
         // sOpt = extractModeDefaults(fx, "si");   if (sOpt >= 0) soundSim  = constrain(sOpt, 0, 7);
         // sOpt = extractModeDefaults(fx, "rev");  if (sOpt >= 0) reverse   = (bool)sOpt;
@@ -2850,7 +2862,7 @@ void mAnimatorLight::Segment::setPalette(uint8_t pal)
   
   #ifdef ENABLE_DEVFEATURE_LIGHT__MATRIX_LOAD_PALETTE_PATCH_IN_WEBUI_PALETTE_CHANGE
   // Need to add this, since CRGBPalettes will not reload internally, so must load now
-  pCONT_lAni->LoadPalette(palette_id, pCONT_lAni->getCurrSegmentId());  
+  tkr_anim->LoadPalette(palette_id, tkr_anim->getCurrSegmentId());  
   #endif 
 }
 
@@ -3055,14 +3067,14 @@ uint16_t mAnimatorLight::Segment::virtualLength() const {
 // // #ifndef WLED_DISABLE_MODE_BLEND
 // //         if (_modeBlend) tmpCol = color_blend( getPixelColor(indexMir), col, 0xFFFFU - progress(), true);
 // // #endif
-//         pCONT_lAni->setPixelColor(indexMir, tmpCol);
+//         tkr_anim->setPixelColor(indexMir, tmpCol);
 //       }
 //       indexSet += offset; // offset/phase
 //       if (indexSet >= stop) indexSet -= len; // wrap
 // // #ifndef WLED_DISABLE_MODE_BLEND
-// //       if (_modeBlend) tmpCol = color_blend(strip.getPixelColor(indexSet), col, 0xFFFFU - progress(), true);
+// //       if (_modeBlend) tmpCol = color_blend(tkr_anim->getPixelColor(indexSet), col, 0xFFFFU - progress(), true);
 // // #endif
-//       pCONT_lAni->setPixelColor(indexSet, tmpCol);
+//       tkr_anim->setPixelColor(indexSet, tmpCol);
 //     }
 //   }
 
@@ -3140,8 +3152,8 @@ void mAnimatorLight::Segment::setPixelColor(float i, uint32_t col, bool aa)
 //   /* offset/phase */
 //   i += offset;
 //   if ((i >= stop) && (stop>0)) i -= length(); // avoids negative pixel index (stop = 0 is a possible value)
-//   // return pCONT_lAni->BUS_getPixelColor(i);
-//   return pCONT_lAni->getPixelColor(i);
+//   // return tkr_anim->BUS_getPixelColor(i);
+//   return tkr_anim->getPixelColor(i);
 // }
 
 
@@ -3248,7 +3260,7 @@ uint32_t IRAM_ATTR mAnimatorLight::Segment::getPixelColor(int i) const
   // offset/phase
   i += offset;
   if (i >= stop) i -= length();
-  return pCONT_lAni->getPixelColor(i);;
+  return tkr_anim->getPixelColor(i);;
 }
 
 
@@ -3297,7 +3309,7 @@ uint32_t IRAM_ATTR mAnimatorLight::Segment::getPixelColor(int i) const
 //   if (indexPixel >= stop){ indexPixel -= length(); } // Adjust if beyond stop
 
 //   #ifdef ENABLE__DEBUG_POINT__ANIMATION_EFFECTS
-//     RgbcctColor colour_hardware = pCONT_lAni->getPixelColor_Rgbcct(indexPixel);
+//     RgbcctColor colour_hardware = tkr_anim->getPixelColor_Rgbcct(indexPixel);
 //     ALOG_DBG(PSTR("colour_hardware[%d] = %d,%d,%d,%d,%d"), 
 //       indexPixel, 
 //       colour_hardware.R, colour_hardware.G, colour_hardware.B, 
@@ -3306,89 +3318,89 @@ uint32_t IRAM_ATTR mAnimatorLight::Segment::getPixelColor(int i) const
 //   #else    
 //     #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PERFORMANCE_METRICS_SAFE_IN_RELEASE_MODE
 //       // If enabled, intermediate value needs stored before return. Can be removed for performance without
-//       RgbcctColor c = pCONT_lAni->getPixelColor_Rgbcct(indexPixel);
+//       RgbcctColor c = tkr_anim->getPixelColor_Rgbcct(indexPixel);
 //       performance.bus_read_single_us = micros() - performance.bus_read_single_us;
 //       return c;
 //     #else
-//       return pCONT_lAni->getPixelColor_Rgbcct(indexPixel);
+//       return tkr_anim->getPixelColor_Rgbcct(indexPixel);
 //     #endif
 //   #endif
 
 // }
 
-uint8_t mAnimatorLight::Segment::differs(mAnimatorLight::Segment& b) const {
-  // uint8_t d = 0;
-  // if (start != b.start)         d |= SEG_DIFFERS_BOUNDS;
-  // if (stop != b.stop)           d |= SEG_DIFFERS_BOUNDS;
-  // if (offset != b.offset)       d |= SEG_DIFFERS_GSO;
-  // if (grouping != b.grouping)   d |= SEG_DIFFERS_GSO;
-  // if (spacing != b.spacing)     d |= SEG_DIFFERS_GSO;
-  // if (opacity != b.opacity)     d |= SEG_DIFFERS_BRI;
-  // if (mode != b.mode)           d |= SEG_DIFFERS_FX;
-  // if (speed != b.speed)         d |= SEG_DIFFERS_FX;
-  // if (intensity != b.intensity) d |= SEG_DIFFERS_FX;
-  // if (palette != b.palette)     d |= SEG_DIFFERS_FX;
-  // if (custom1 != b.custom1)     d |= SEG_DIFFERS_FX;
-  // if (custom2 != b.custom2)     d |= SEG_DIFFERS_FX;
-  // if (custom3 != b.custom3)     d |= SEG_DIFFERS_FX;
-  // if (startY != b.startY)       d |= SEG_DIFFERS_BOUNDS;
-  // if (stopY != b.stopY)         d |= SEG_DIFFERS_BOUNDS;
+// uint8_t mAnimatorLight::Segment::differs(mAnimatorLight::Segment& b) const {
+//   // uint8_t d = 0;
+//   // if (start != b.start)         d |= SEG_DIFFERS_BOUNDS;
+//   // if (stop != b.stop)           d |= SEG_DIFFERS_BOUNDS;
+//   // if (offset != b.offset)       d |= SEG_DIFFERS_GSO;
+//   // if (grouping != b.grouping)   d |= SEG_DIFFERS_GSO;
+//   // if (spacing != b.spacing)     d |= SEG_DIFFERS_GSO;
+//   // if (opacity != b.opacity)     d |= SEG_DIFFERS_BRI;
+//   // if (mode != b.mode)           d |= SEG_DIFFERS_FX;
+//   // if (speed != b.speed)         d |= SEG_DIFFERS_FX;
+//   // if (intensity != b.intensity) d |= SEG_DIFFERS_FX;
+//   // if (palette != b.palette)     d |= SEG_DIFFERS_FX;
+//   // if (custom1 != b.custom1)     d |= SEG_DIFFERS_FX;
+//   // if (custom2 != b.custom2)     d |= SEG_DIFFERS_FX;
+//   // if (custom3 != b.custom3)     d |= SEG_DIFFERS_FX;
+//   // if (startY != b.startY)       d |= SEG_DIFFERS_BOUNDS;
+//   // if (stopY != b.stopY)         d |= SEG_DIFFERS_BOUNDS;
 
-  // //bit pattern: (msb first) sound:3, mapping:3, transposed, mirrorY, reverseY, [transitional, reset,] paused, mirrored, on, reverse, [selected]
-  // if ((options & 0b1111111110011110U) != (b.options & 0b1111111110011110U)) d |= SEG_DIFFERS_OPT;
-  // if ((options & 0x0001U) != (b.options & 0x0001U))                         d |= SEG_DIFFERS_SEL;
-  // for (uint8_t i = 0; i < NUM_COLORS; i++) if (colors[i] != b.colors[i])    d |= SEG_DIFFERS_COL;
+//   // //bit pattern: (msb first) sound:3, mapping:3, transposed, mirrorY, reverseY, [transitional, reset,] paused, mirrored, on, reverse, [selected]
+//   // if ((options & 0b1111111110011110U) != (b.options & 0b1111111110011110U)) d |= SEG_DIFFERS_OPT;
+//   // if ((options & 0x0001U) != (b.options & 0x0001U))                         d |= SEG_DIFFERS_SEL;
+//   // for (uint8_t i = 0; i < NUM_COLORS; i++) if (colors[i] != b.colors[i])    d |= SEG_DIFFERS_COL;
 
-  // return d;
-}
+//   // return d;
+// }
 
-void mAnimatorLight::Segment::refreshLightCapabilities() {
-  // uint8_t capabilities = 0x01;
+// void mAnimatorLight::Segment::refreshLightCapabilities() {
+//   // uint8_t capabilities = 0x01;
 
-  // for (uint8_t b = 0; b < busses.getNumBusses(); b++) {
-  //   Bus *bus = busses.getBus(b);
-  //   if (bus == nullptr || bus->getLength()==0) break;
-  //   if (!bus->isOk()) continue;
-  //   if (bus->getStart() >= stop) continue;
-  //   if (bus->getStart() + bus->getLength() <= start) continue;
+//   // for (uint8_t b = 0; b < busses.getNumBusses(); b++) {
+//   //   Bus *bus = busses.getBus(b);
+//   //   if (bus == nullptr || bus->getLength()==0) break;
+//   //   if (!bus->isOk()) continue;
+//   //   if (bus->getStart() >= stop) continue;
+//   //   if (bus->getStart() + bus->getLength() <= start) continue;
 
-  //   uint8_t type = bus->getType();
-  //   if (type == TYPE_ANALOG_1CH || (!cctFromRgb && type == TYPE_ANALOG_2CH)) capabilities &= 0xFE; // does not support RGB
-  //   if (bus->isRgbw()) capabilities |= 0x02; // segment supports white channel
-  //   if (!cctFromRgb) {
-  //     switch (type) {
-  //       case TYPE_ANALOG_5CH:
-  //       case TYPE_ANALOG_2CH:
-  //         capabilities |= 0x04; //segment supports white CCT 
-  //     }
-  //   }
-  //   if (correctWB && type != TYPE_ANALOG_1CH) capabilities |= 0x04; //white balance correction (uses CCT slider)
-  //   uint8_t aWM = Bus::getAutoWhiteMode()<255 ? Bus::getAutoWhiteMode() : bus->getAWMode();
-  //   bool whiteSlider = (aWM == RGBW_MODE_DUAL || aWM == RGBW_MODE_MANUAL_ONLY); // white slider allowed
-  //   if (bus->isRgbw() && (whiteSlider || !(capabilities & 0x01))) capabilities |= 0x08; // allow white channel adjustments (AWM allows or is not RGB)
-  // }
-  // _capabilities = capabilities;
-}
+//   //   uint8_t type = bus->getType();
+//   //   if (type == TYPE_ANALOG_1CH || (!cctFromRgb && type == TYPE_ANALOG_2CH)) capabilities &= 0xFE; // does not support RGB
+//   //   if (bus->isRgbw()) capabilities |= 0x02; // segment supports white channel
+//   //   if (!cctFromRgb) {
+//   //     switch (type) {
+//   //       case TYPE_ANALOG_5CH:
+//   //       case TYPE_ANALOG_2CH:
+//   //         capabilities |= 0x04; //segment supports white CCT 
+//   //     }
+//   //   }
+//   //   if (correctWB && type != TYPE_ANALOG_1CH) capabilities |= 0x04; //white balance correction (uses CCT slider)
+//   //   uint8_t aWM = Bus::getAutoWhiteMode()<255 ? Bus::getAutoWhiteMode() : bus->getAWMode();
+//   //   bool whiteSlider = (aWM == RGBW_MODE_DUAL || aWM == RGBW_MODE_MANUAL_ONLY); // white slider allowed
+//   //   if (bus->isRgbw() && (whiteSlider || !(capabilities & 0x01))) capabilities |= 0x08; // allow white channel adjustments (AWM allows or is not RGB)
+//   // }
+//   // _capabilities = capabilities;
+// }
 
 /*
  * Fills segment with color
  */
-void mAnimatorLight::Segment::fill(uint32_t c) 
-{
-  const uint16_t cols = is2D() ? virtualWidth() : virtualLength();
-  const uint16_t rows = virtualHeight(); // will be 1 for 1D
-  for(uint16_t y = 0; y < rows; y++) for (uint16_t x = 0; x < cols; x++) 
-  {
-    if (is2D())
-    {
-      setPixelColorXY(x, y, c);
-    }
-    else
-    {
-      setPixelColor(x, c);
-    }        
-  }  
-}
+// void mAnimatorLight::Segment::fill(uint32_t c) 
+// {
+//   const uint16_t cols = is2D() ? virtualWidth() : virtualLength();
+//   const uint16_t rows = virtualHeight(); // will be 1 for 1D
+//   for(uint16_t y = 0; y < rows; y++) for (uint16_t x = 0; x < cols; x++) 
+//   {
+//     if (is2D())
+//     {
+//       setPixelColorXY(x, y, c);
+//     }
+//     else
+//     {
+//       setPixelColor(x, c);
+//     }        
+//   }  
+// }
 
 // Blends the specified color with the existing pixel color.
 void mAnimatorLight::Segment::blendPixelColor(int n, uint32_t color, uint8_t blend) {
@@ -3409,101 +3421,338 @@ void mAnimatorLight::Segment::fadePixelColor(uint16_t n, uint8_t fade) {
 /*
  * fade out function, higher rate = quicker fade
  */
+
+// void mAnimatorLight::Segment::fade_out(uint8_t rate) {
+//   if (!isActive()) return; // not active
+//   const int cols = is2D() ? vWidth() : vLength();
+//   const int rows = vHeight(); // will be 1 for 1D
+
+//   rate = (255-rate) >> 1;
+//   float mappedRate = 1.0f / (float(rate) + 1.1f);
+
+//   uint32_t color = rgbcctcolors[1].WithBrightness().getU32();//colors[1]; // SEGCOLOR(1); // target color
+//   uint32_t color_check = color;
+//   int w2 = W(color);
+//   int r2 = R(color);
+//   int g2 = G(color);
+//   int b2 = B(color);
+
+//   for (int y = 0; y < rows; y++) for (int x = 0; x < cols; x++) {
+//     color = is2D() ? getPixelColorXY(x, y) : getPixelColor(x);
+//     if (color == color_check) continue; // already at target color
+//     int w1 = W(color);
+//     int r1 = R(color);
+//     int g1 = G(color);
+//     int b1 = B(color);
+
+//     int wdelta = (w2 - w1) * mappedRate;
+//     int rdelta = (r2 - r1) * mappedRate;
+//     int gdelta = (g2 - g1) * mappedRate;
+//     int bdelta = (b2 - b1) * mappedRate;
+
+//     // if fade isn't complete, make sure delta is at least 1 (fixes rounding issues)
+//     wdelta += (w2 == w1) ? 0 : (w2 > w1) ? 1 : -1;
+//     rdelta += (r2 == r1) ? 0 : (r2 > r1) ? 1 : -1;
+//     gdelta += (g2 == g1) ? 0 : (g2 > g1) ? 1 : -1;
+//     bdelta += (b2 == b1) ? 0 : (b2 > b1) ? 1 : -1;
+
+//     if (is2D()) setPixelColorXY(x, y, r1 + rdelta, g1 + gdelta, b1 + bdelta, w1 + wdelta);
+//     else        setPixelColor(x, r1 + rdelta, g1 + gdelta, b1 + bdelta, w1 + wdelta);
+//   }
+// }
+// void mAnimatorLight::Segment::fade_out(uint8_t rate) {
+//   DEBUG_LINE_HERE
+//   const uint16_t cols = is2D() ? virtualWidth() : virtualLength();
+//   const uint16_t rows = virtualHeight(); // will be 1 for 1D
+// DEBUG_LINE_HERE
+//   // ALOG_INF(PSTR("Segment::maxHeight3 %d\n\r"), Segment::maxHeight);
+
+//   // ALOG_INF(PSTR("fade_out(%d)"), rate);
+//   // ALOG_INF(PSTR("cols=%d rows=%d"), cols, rows);
+
+//   // 
+//   rate = (255-rate) >> 1;
+//   float mappedRate = float(rate) +1.1;
+
+//   // 
+//   DEBUG_LINE_HERE
+//   uint32_t color = rgbcctcolors[1].WithBrightness().getU32();
+//   DEBUG_LINE_HERE
+  
+//   // RgbcctColor::GetU32ColourBrightnessApplied(rgbcctcolors[1]);   //tkr_anim->SEGCOLOR_RGBCCT(1).G; //  tkr_anim->segments[0].rgbcctcolors[1].getU32(); // getPixelColor(0);
+  
+//   // 
+//   int w2 = W(color);
+//   int r2 = R(color);
+//   int g2 = G(color);
+//   int b2 = B(color);
+
+//   // 
+//   for (int y = 0; y < rows; y++){
+//   // 
+//     for (int x = 0; x < cols; x++) {
+//   // 
+
+//     //  ALOG_INF(PSTR("is2D() %d"), is2D() );
+
+//   // 
+//   DEBUG_LINE_HERE
+//       color = is2D() ? getPixelColorXY(x, y) : getPixelColor(x);
+//       DEBUG_LINE_HERE
+//   // 
+//       int w1 = W(color);
+//       int r1 = R(color);
+//       int g1 = G(color);
+//       int b1 = B(color);
+
+//       int wdelta = (w2 - w1) / mappedRate;
+//       int rdelta = (r2 - r1) / mappedRate;
+//       int gdelta = (g2 - g1) / mappedRate;
+//       int bdelta = (b2 - b1) / mappedRate;
+// DEBUG_LINE_HERE
+//       // if fade isn't complete, make sure delta is at least 1 (fixes rounding issues)
+//       wdelta += (w2 == w1) ? 0 : (w2 > w1) ? 1 : -1;
+//       rdelta += (r2 == r1) ? 0 : (r2 > r1) ? 1 : -1;
+//       gdelta += (g2 == g1) ? 0 : (g2 > g1) ? 1 : -1;
+//       bdelta += (b2 == b1) ? 0 : (b2 > b1) ? 1 : -1;
+
+//   // 
+//   DEBUG_LINE_HERE
+//       if (is2D())
+//       {
+//   // 
+//   DEBUG_LINE_HERE
+//         setPixelColorXY(x, y, r1 + rdelta, g1 + gdelta, b1 + bdelta, w1 + wdelta);
+//         DEBUG_LINE_HERE
+//   // 
+//       }
+//       else{
+//   // 
+//   DEBUG_LINE_HERE
+//         setPixelColor(x, r1 + rdelta, g1 + gdelta, b1 + bdelta, w1 + wdelta);
+//         DEBUG_LINE_HERE
+//   // 
+//       }   
+//       DEBUG_LINE_HERE     
+//   // 
+//     }
+//   // 
+//   }
+//   // 
+// }
+
+// // fades all pixels to black using nscale8()
+// void mAnimatorLight::Segment::fadeToBlackBy(uint8_t fadeBy) {
+
+  
+//   if (!isActive() || fadeBy == 0) return;   // optimization - no scaling to apply
+//   const uint16_t cols = is2D() ? virtualWidth() : virtualLength();
+//   const uint16_t rows = virtualHeight(); // will be 1 for 1D
+
+//   for (int y = 0; y < rows; y++) for (int x = 0; x < cols; x++) {
+//     if (is2D()) setPixelColorXY(x, y, color_fade(getPixelColorXY(x,y), 255-fadeBy));
+//     else        setPixelColor(x, color_fade(getPixelColor(x), 255-fadeBy));
+//   }
+
+
+
+//   // const uint16_t cols = is2D() ? virtualWidth() : virtualLength();
+//   // const uint16_t rows = virtualHeight(); // will be 1 for 1D
+
+//   // for (uint16_t y = 0; y < rows; y++) for (uint16_t x = 0; x < cols; x++) {
+//   //   if (is2D()) setPixelColorXY(x, y, CRGB(getPixelColorXY(x,y)).nscale8(255-fadeBy));
+//   //   else        setPixelColor(x, CRGB(getPixelColor(x)).nscale8(255-fadeBy));
+//   // }
+// }
+
+
+
+
+uint8_t mAnimatorLight::Segment::differs(const Segment& b) const {
+  uint8_t d = 0;
+  if (start != b.start)         d |= SEG_DIFFERS_BOUNDS;
+  if (stop != b.stop)           d |= SEG_DIFFERS_BOUNDS;
+  if (offset != b.offset)       d |= SEG_DIFFERS_GSO;
+  if (grouping != b.grouping)   d |= SEG_DIFFERS_GSO;
+  if (spacing != b.spacing)     d |= SEG_DIFFERS_GSO;
+  // if (opacity != b.opacity)     d |= SEG_DIFFERS_BRI;
+  // if (mode != b.mode)           d |= SEG_DIFFERS_FX;
+  if (speed != b.speed)         d |= SEG_DIFFERS_FX;
+  if (intensity != b.intensity) d |= SEG_DIFFERS_FX;
+  // if (palette != b.palette)     d |= SEG_DIFFERS_FX;
+  if (custom1 != b.custom1)     d |= SEG_DIFFERS_FX;
+  if (custom2 != b.custom2)     d |= SEG_DIFFERS_FX;
+  if (custom3 != b.custom3)     d |= SEG_DIFFERS_FX;
+  if (startY != b.startY)       d |= SEG_DIFFERS_BOUNDS;
+  if (stopY != b.stopY)         d |= SEG_DIFFERS_BOUNDS;
+
+  //bit pattern: (msb first)
+  // set:2, sound:2, mapping:3, transposed, mirrorY, reverseY, [reset,] paused, mirrored, on, reverse, [selected]
+  if ((options & 0b1111111111011110U) != (b.options & 0b1111111111011110U)) d |= SEG_DIFFERS_OPT;
+  if ((options & 0x0001U) != (b.options & 0x0001U))                         d |= SEG_DIFFERS_SEL;
+  // for (unsigned i = 0; i < NUM_COLORS; i++) if (colors[i] != b.colors[i])   d |= SEG_DIFFERS_COL;
+
+  return d;
+}
+
+void mAnimatorLight::Segment::refreshLightCapabilities() {
+  unsigned capabilities = 0;
+  unsigned segStartIdx = 0xFFFFU;
+  unsigned segStopIdx  = 0;
+
+  if (!isActive()) {
+    _capabilities = 0;
+    return;
+  }
+
+  if (start < Segment::maxWidth * Segment::maxHeight) {
+    // we are withing 2D matrix (includes 1D segments)
+    for (int y = startY; y < stopY; y++) for (int x = start; x < stop; x++) {
+      unsigned index = tkr_anim->getMappedPixelIndex(x + Segment::maxWidth * y); // convert logical address to physical
+      if (index < 0xFFFFU) {
+        if (segStartIdx > index) segStartIdx = index;
+        if (segStopIdx  < index) segStopIdx  = index;
+      }
+      if (segStartIdx == segStopIdx) segStopIdx++; // we only have 1 pixel segment
+    }
+  } else {
+    // we are on the strip located after the matrix
+    segStartIdx = start;
+    segStopIdx  = stop;
+  }
+
+  for (unsigned b = 0; b < BusManager::getNumBusses(); b++) {
+    Bus *bus = pCONT_iLight->bus_manager->getBus(b);
+    if (bus == nullptr || bus->getLength()==0) break;
+    if (!bus->isOk()) continue;
+    if (bus->getStart() >= segStopIdx) continue;
+    if (bus->getStart() + bus->getLength() <= segStartIdx) continue;
+
+    if (bus->hasRGB() || (tkr_anim->cctFromRgb && bus->hasCCT())) capabilities |= SEG_CAPABILITY_RGB;
+    if (!tkr_anim->cctFromRgb && bus->hasCCT())                   capabilities |= SEG_CAPABILITY_CCT;
+    if (tkr_anim->correctWB && (bus->hasRGB() || bus->hasCCT()))  capabilities |= SEG_CAPABILITY_CCT; //white balance correction (CCT slider)
+    if (bus->hasWhite()) {
+      unsigned aWM = Bus::getGlobalAWMode() == AW_GLOBAL_DISABLED ? bus->getAutoWhiteMode() : Bus::getGlobalAWMode();
+      bool whiteSlider = (aWM == RGBW_MODE_DUAL || aWM == RGBW_MODE_MANUAL_ONLY); // white slider allowed
+      // if auto white calculation from RGB is active (Accurate/Brighter), force RGB controls even if there are no RGB busses
+      if (!whiteSlider) capabilities |= SEG_CAPABILITY_RGB;
+      // if auto white calculation from RGB is disabled/optional (None/Dual), allow white channel adjustments
+      if ( whiteSlider) capabilities |= SEG_CAPABILITY_W;
+    }
+  }
+  _capabilities = capabilities;
+}
+
+/*
+ * Fills segment with color
+ */
+void mAnimatorLight::Segment::fill(uint32_t c) {
+  if (!isActive()) return; // not active
+  const int cols = is2D() ? vWidth() : vLength();
+  const int rows = vHeight(); // will be 1 for 1D
+  // pre-scale color for all pixels
+  c = color_fade(c, _brightness_rgb);//_segBri);
+  _colorScaled = true;
+  for (int y = 0; y < rows; y++) for (int x = 0; x < cols; x++) {
+    if (is2D()) setPixelColorXY(x, y, c);
+    else        setPixelColor(x, c);
+  }
+  _colorScaled = false;
+}
+
+/*
+ * fade out function, higher rate = quicker fade
+ */
 void mAnimatorLight::Segment::fade_out(uint8_t rate) {
-  const uint16_t cols = is2D() ? virtualWidth() : virtualLength();
-  const uint16_t rows = virtualHeight(); // will be 1 for 1D
+  if (!isActive()) return; // not active
+  const int cols = is2D() ? vWidth() : vLength();
+  const int rows = vHeight(); // will be 1 for 1D
 
-  // ALOG_INF(PSTR("Segment::maxHeight3 %d\n\r"), Segment::maxHeight);
-
-  // ALOG_INF(PSTR("fade_out(%d)"), rate);
-  // ALOG_INF(PSTR("cols=%d rows=%d"), cols, rows);
-
-  // 
   rate = (255-rate) >> 1;
-  float mappedRate = float(rate) +1.1;
+  float mappedRate = 1.0f / (float(rate) + 1.1f);
 
-  // 
-  uint32_t color = rgbcctcolors[1].WithBrightness().getU32();
-  
-  
-  // RgbcctColor::GetU32ColourBrightnessApplied(rgbcctcolors[1]);   //pCONT_lAni->SEGCOLOR_RGBCCT(1).G; //  pCONT_lAni->segments[0].rgbcctcolors[1].getU32(); // getPixelColor(0);
-  
-  // 
+  uint32_t color = rgbcctcolors[1].WithBrightness().getU32(); // SEGCOLOR(1); // target color
+  uint32_t color_check = color;
   int w2 = W(color);
   int r2 = R(color);
   int g2 = G(color);
   int b2 = B(color);
 
-  // 
-  for (uint16_t y = 0; y < rows; y++){
-  // 
-    for (uint16_t x = 0; x < cols; x++) {
-  // 
+  for (int y = 0; y < rows; y++) for (int x = 0; x < cols; x++) {
+    color = is2D() ? getPixelColorXY(x, y) : getPixelColor(x);
+    if (color == color_check) continue; // already at target color
+    int w1 = W(color);
+    int r1 = R(color);
+    int g1 = G(color);
+    int b1 = B(color);
 
-    //  ALOG_INF(PSTR("is2D() %d"), is2D() );
+    int wdelta = (w2 - w1) * mappedRate;
+    int rdelta = (r2 - r1) * mappedRate;
+    int gdelta = (g2 - g1) * mappedRate;
+    int bdelta = (b2 - b1) * mappedRate;
 
-  // 
-      color = is2D() ? getPixelColorXY(x, y) : getPixelColor(x);
-  // 
-      int w1 = W(color);
-      int r1 = R(color);
-      int g1 = G(color);
-      int b1 = B(color);
+    // if fade isn't complete, make sure delta is at least 1 (fixes rounding issues)
+    wdelta += (w2 == w1) ? 0 : (w2 > w1) ? 1 : -1;
+    rdelta += (r2 == r1) ? 0 : (r2 > r1) ? 1 : -1;
+    gdelta += (g2 == g1) ? 0 : (g2 > g1) ? 1 : -1;
+    bdelta += (b2 == b1) ? 0 : (b2 > b1) ? 1 : -1;
 
-      int wdelta = (w2 - w1) / mappedRate;
-      int rdelta = (r2 - r1) / mappedRate;
-      int gdelta = (g2 - g1) / mappedRate;
-      int bdelta = (b2 - b1) / mappedRate;
-
-      // if fade isn't complete, make sure delta is at least 1 (fixes rounding issues)
-      wdelta += (w2 == w1) ? 0 : (w2 > w1) ? 1 : -1;
-      rdelta += (r2 == r1) ? 0 : (r2 > r1) ? 1 : -1;
-      gdelta += (g2 == g1) ? 0 : (g2 > g1) ? 1 : -1;
-      bdelta += (b2 == b1) ? 0 : (b2 > b1) ? 1 : -1;
-
-  // 
-      if (is2D())
-      {
-  // 
-        setPixelColorXY(x, y, r1 + rdelta, g1 + gdelta, b1 + bdelta, w1 + wdelta);
-  // 
-      }
-      else{
-  // 
-        setPixelColor(x, r1 + rdelta, g1 + gdelta, b1 + bdelta, w1 + wdelta);
-  // 
-      }        
-  // 
-    }
-  // 
+    if (is2D()) setPixelColorXY(x, y, r1 + rdelta, g1 + gdelta, b1 + bdelta, w1 + wdelta);
+    else        setPixelColor(x, r1 + rdelta, g1 + gdelta, b1 + bdelta, w1 + wdelta);
   }
-  // 
 }
 
 // fades all pixels to black using nscale8()
 void mAnimatorLight::Segment::fadeToBlackBy(uint8_t fadeBy) {
-
-  
   if (!isActive() || fadeBy == 0) return;   // optimization - no scaling to apply
-  const uint16_t cols = is2D() ? virtualWidth() : virtualLength();
-  const uint16_t rows = virtualHeight(); // will be 1 for 1D
+  const int cols = is2D() ? vWidth() : vLength();
+  const int rows = vHeight(); // will be 1 for 1D
 
   for (int y = 0; y < rows; y++) for (int x = 0; x < cols; x++) {
     if (is2D()) setPixelColorXY(x, y, color_fade(getPixelColorXY(x,y), 255-fadeBy));
     else        setPixelColor(x, color_fade(getPixelColor(x), 255-fadeBy));
   }
-
-
-
-  // const uint16_t cols = is2D() ? virtualWidth() : virtualLength();
-  // const uint16_t rows = virtualHeight(); // will be 1 for 1D
-
-  // for (uint16_t y = 0; y < rows; y++) for (uint16_t x = 0; x < cols; x++) {
-  //   if (is2D()) setPixelColorXY(x, y, CRGB(getPixelColorXY(x,y)).nscale8(255-fadeBy));
-  //   else        setPixelColor(x, CRGB(getPixelColor(x)).nscale8(255-fadeBy));
-  // }
 }
 
+/*
+ * blurs segment content, source: FastLED colorutils.cpp
+ * Note: for blur_amount > 215 this function does not work properly (creates alternating pattern)
+ */
+void mAnimatorLight::Segment::blur(uint8_t blur_amount, bool smear) {
+  if (!isActive() || blur_amount == 0) return; // optimization: 0 means "don't blur"
+#ifndef WLED_DISABLE_2D
+  if (is2D()) {
+    #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
+    // compatibility with 2D
+    blur2D(blur_amount, blur_amount, smear); // symmetrical 2D blur
+    //box_blur(map(blur_amount,1,255,1,3), smear);
+    #endif
+    return;
+  }
+#endif
+  uint8_t keep = smear ? 255 : 255 - blur_amount;
+  uint8_t seep = blur_amount >> 1;
+  unsigned vlength = vLength();
+  uint32_t carryover = BLACK;
+  uint32_t lastnew;
+  uint32_t last;
+  uint32_t curnew = BLACK;
+  for (unsigned i = 0; i < vlength; i++) {
+    uint32_t cur = getPixelColor(i);
+    uint32_t part = color_fade(cur, seep);
+    curnew = color_fade(cur, keep);
+    if (i > 0) {
+      if (carryover) curnew = color_add(curnew, carryover);
+      uint32_t prev = color_add(lastnew, part);
+      // optimization: only set pixel if color has changed
+      if (last != prev) setPixelColor(i - 1, prev);
+    } else setPixelColor(i, curnew); // first pixel
+    lastnew = curnew;
+    last = cur; // save original value for comparison on next iteration
+    carryover = part;
+  }
+  setPixelColor(vlength - 1, curnew);
+}
 
 // /*
 //  * Color conversion & utility methods
@@ -3556,7 +3805,7 @@ void mAnimatorLight::Segment::fadeToBlackBy(uint8_t fadeBy) {
 
 void mAnimatorLight::Segment::setRandomColor(byte* rgb)
 {
-  // lastRandomIndex = strip.getMainSegment().get_random_wheel_index(lastRandomIndex);
+  // lastRandomIndex = tkr_anim->getMainSegment().get_random_wheel_index(lastRandomIndex);
   // colorHStoRGB(lastRandomIndex*256,255,rgb);
 }
 
@@ -3742,42 +3991,42 @@ bool mAnimatorLight::Segment::colorFromHexString(byte* rgb, const char* in) {
 
 
 
-/*
- * blurs segment content, source: FastLED colorutils.cpp
- */
-void mAnimatorLight::Segment::blur(uint8_t blur_amount)
-{
-#ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
-  if (is2D()) {
-    // compatibility with 2D
-    const uint16_t cols = virtualWidth();
-    const uint16_t rows = virtualHeight();
-    for (uint16_t i = 0; i < rows; i++) blurRow(i, blur_amount); // blur all rows
-    for (uint16_t k = 0; k < cols; k++) blurCol(k, blur_amount); // blur all columns
-    return;
-  }
-#endif
-  uint8_t keep = 255 - blur_amount;
-  uint8_t seep = blur_amount >> 1;
-  CRGB carryover = HTMLColorCode::Black;
-  for(uint16_t i = 0; i < virtualLength(); i++)
-  {
-    CRGB cur = CRGB(getPixelColor(i));
-    CRGB part = cur;
-    part.nscale8(seep);
-    cur.nscale8(keep);
-    cur += carryover;
-    if(i > 0) {
-      uint32_t c = getPixelColor(i-1);
-      uint8_t r = R(c);
-      uint8_t g = G(c);
-      uint8_t b = B(c);
-      setPixelColor(i-1, qadd8(r, part.red), qadd8(g, part.green), qadd8(b, part.blue));
-    }
-    setPixelColor(i,cur.red, cur.green, cur.blue);
-    carryover = part;
-  }
-}
+// /*
+//  * blurs segment content, source: FastLED colorutils.cpp
+//  */
+// void mAnimatorLight::Segment::blur(uint8_t blur_amount)
+// {
+// #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
+//   if (is2D()) {
+//     // compatibility with 2D
+//     const uint16_t cols = virtualWidth();
+//     const uint16_t rows = virtualHeight();
+//     for (uint16_t i = 0; i < rows; i++) blurRow(i, blur_amount); // blur all rows
+//     for (uint16_t k = 0; k < cols; k++) blurCol(k, blur_amount); // blur all columns
+//     return;
+//   }
+// #endif
+//   uint8_t keep = 255 - blur_amount;
+//   uint8_t seep = blur_amount >> 1;
+//   CRGB carryover = HTMLColorCode::Black;
+//   for(uint16_t i = 0; i < virtualLength(); i++)
+//   {
+//     CRGB cur = CRGB(getPixelColor(i));
+//     CRGB part = cur;
+//     part.nscale8(seep);
+//     cur.nscale8(keep);
+//     cur += carryover;
+//     if(i > 0) {
+//       uint32_t c = getPixelColor(i-1);
+//       uint8_t r = R(c);
+//       uint8_t g = G(c);
+//       uint8_t b = B(c);
+//       setPixelColor(i-1, qadd8(r, part.red), qadd8(g, part.green), qadd8(b, part.blue));
+//     }
+//     setPixelColor(i,cur.red, cur.green, cur.blue);
+//     carryover = part;
+//   }
+// }
 
 /*
  * Put a value 0 to 255 in to get a color value.
@@ -4173,7 +4422,7 @@ bool mAnimatorLight::isUpdating() {
 }
 
 /**
- * Returns the refresh rate of the LED strip. Useful for finding out whether a given setup is fast enough.
+ * Returns the refresh rate of the LED tkr_anim-> Useful for finding out whether a given setup is fast enough.
  * Only updates on show() or is set to 0 fps if last show is more than 2 secs ago, so accurary varies
  */
 uint16_t mAnimatorLight::getFps() {
@@ -4218,6 +4467,7 @@ void mAnimatorLight::setCCT(uint16_t k) {
 }
 
 void mAnimatorLight::setBrightness(uint8_t b, bool direct) {
+  ALOG_INF(PSTR("setBrightness(%d, %d)"),b,direct);
   // if (gammaCorrectBri) b = gamma8(b);  
   if (_brightness == b) return;
   _brightness = b;
@@ -4226,6 +4476,7 @@ void mAnimatorLight::setBrightness(uint8_t b, bool direct) {
       seg.freeze = false;
     }
   }
+  BusManager::setBrightness(b);
   if (direct) {
     // would be dangerous if applied immediately (could exceed ABL), but will not output until the next show()
     // busses.setBrightness(b);
@@ -4787,6 +5038,97 @@ mAnimatorLight::Segment::GetPaletteColour(
 
 }
 
+
+uint32_t mAnimatorLight::Segment::GetPaletteColourU32(
+  /**
+   * @brief _pixel_position
+   * ** [0-SEGLEN]
+   * ** [0-255]   
+   */
+  uint16_t pixel_position,
+  /**
+   * @brief flag_spanned_segment
+   * ** [1] : If spanned segment, then indexing (0-255) is expanded into the SEGLEN 
+   * ** [0]: Unchanged, index coming in will be 0-SEGLEN but never scaled into 255. Or should it be?
+   * ** [2]: preffered
+   */
+  uint8_t     flag_spanned_segment, 
+  /**
+   * @brief flag_wrap_hard_edge
+   * ** [true] : 16 palette gradients will not blend from 15 back to 0. ie 0-255 does not become 0-240 (where 0,15,31,47,63,79,95,111,127,143,159,175,191,207,223,239)
+   * ** [false]: Palette16 with 16 elements, as 0-255 pixel_position, will blend around smoothly using built-in CRGBPalette16
+   */
+  uint8_t     flag_wrap_hard_edge,
+  /**
+   * @brief flag_crgb_exact_colour
+   * ** [true] : 16 palette gradients will not blend from 15 back to 0. ie 0-255 does not become 0-240 (where 0,15,31,47,63,79,95,111,127,143,159,175,191,207,223,239)
+   * ** [false]: Palette16 with 16 elements, as 0-255 pixel_position, will blend around smoothly using built-in CRGBPalette16
+   */
+  uint8_t     flag_crgb_exact_colour,
+  /**
+   * @brief encoded_value
+   * ** [uint32_t*] : encoded value from palette
+   */
+  uint8_t* encoded_value,  // Must be passed in as something other than 0, or else nullptr will not be checked inside properly
+  /**
+   * @brief apply_brightness
+   * ** [false] : Apply brightness to the colour
+   * ** [true]  : Get the "full" 255 range colour object
+   */
+  bool apply_brightness
+){
+  
+  if(palette_id != palette_container->loaded_palette_id)
+  {
+    LoadPalette(palette_id);  //loadPalette perhaps needs to be a segment instance instead. Though this will block unloaded methods
+  }
+  
+  /**
+   * @brief These functions always need called as they are dynamic
+   * I should make this a check here, if palette is dynamic, then load everytime
+   * 
+   * perhaps also add a timer here, so it has a backoff and is only called the minimum amount needed
+   * ie have a new tSaved_DynamicUpdate 
+   */
+  else // else so it only tries this if the above "if" did not occur to stop double loads
+  if(
+    (palette_id >= mPalette::PALETTELIST_SEGMENT__RGBCCT_CRGBPALETTE16_PALETTES__RANDOMISE_COLOURS_01_RANDOM_HUE__ID) && 
+    (palette_id <= mPalette::PALETTELIST_SEGMENT__RGBCCT_CRGBPALETTE16_PALETTES__RANDOMISE_COLOURS_05_RANDOM_HUE_00TO100_SATURATIONS__ID)
+  ){
+    LoadPalette(palette_id);  //loadPalette perhaps needs to be a segment instance instead. Though this will block unloaded methods    
+  }
+
+  uint32_t colour = mPaletteI->GetColourFromPreloadedPaletteBuffer_2025(
+    palette_id,
+    (uint8_t*)palette_container->pData.data(),
+    pixel_position,
+    encoded_value,  // Must be passed in as something other than 0, or else nullptr will not be checked inside properly
+    flag_spanned_segment, // true(default):"desired_index_from_palette is exact pixel index", false:"desired_index_from_palette is scaled between 0 to 255, where (127/155 would be the center pixel)"
+    flag_wrap_hard_edge,        // true(default):"hard edge for wrapping wround, so last to first pixel (wrap) is blended", false: "hard edge, palette resets without blend on last/first pixels"
+    flag_crgb_exact_colour
+  );
+
+  // Apply brightness if needed
+  if (apply_brightness) {
+    uint8_t brightness = scale8(_brightness_rgb, pCONT_iLight->getBriRGB_Global());
+    uint16_t scale = brightness + 1;  // Avoid division by zero and maintain full range
+
+    // Extract, scale, and repack in one step
+    colour = RGBW32(
+      (R(colour) * scale) >> 8,  // Red
+      (G(colour) * scale) >> 8,  // Green
+      (B(colour) * scale) >> 8,  // Blue
+      (W(colour) * scale) >> 8   // White
+    );
+  }
+
+
+
+
+  return colour;
+
+}
+
 CRGB mAnimatorLight::ColorFromPalette_WithLoad(const CRGBPalette16 &pal, uint8_t index, uint8_t brightness, TBlendType blendType)
 {
   if(SEGMENT.palette_id != SEGMENT.palette_container->loaded_palette_id)
@@ -4800,7 +5142,7 @@ uint8_t mAnimatorLight::Segment::GetPaletteDiscreteWidth()
 {
 //   if(palette_id != palette_container->loaded_palette_id)
 //   {
-//     pCONT_lAni->LoadPalette(palette_id, pCONT_lAni->getCurrSegmentId());  //loadPalette perhaps needs to be a segment instance instead. Though this will block unloaded methods
+//     tkr_anim->LoadPalette(palette_id, tkr_anim->getCurrSegmentId());  //loadPalette perhaps needs to be a segment instance instead. Though this will block unloaded methods
 //   }
 
 //   return mPaletteI->GetPaletteDiscreteWidth(
@@ -5065,13 +5407,13 @@ void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(uint16_t indexPixel, uint8
 //         uint16_t indexMir = stop - indexSet + start - 1;          
 //         indexMir += offset;
 //         if (indexMir >= stop) indexMir -= length();  // Wrap
-//         pCONT_lAni->setPixelColor_Rgbcct(indexMir, color_internal);
+//         tkr_anim->setPixelColor_Rgbcct(indexMir, color_internal);
 //       }
 
 //       indexSet += offset;
 //       if (indexSet >= stop) indexSet -= length();  // Wrap
 
-//       pCONT_lAni->setPixelColor_Rgbcct(indexSet, color_internal);
+//       tkr_anim->setPixelColor_Rgbcct(indexSet, color_internal);
 
 //       #ifdef ENABLE_DEVFEATURE_LIGHTS__DECIMATE
 //       for (uint8_t d = 0; d < decimate; d++) 
@@ -5081,7 +5423,7 @@ void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(uint16_t indexPixel, uint8
 //         uint16_t new_indexSet = indexSet + (d * virtualLength());
 //         if (new_indexSet >= start && new_indexSet < stop) 
 //         {
-//           pCONT_lAni->setPixelColor_Rgbcct(new_indexSet, color_internal);
+//           tkr_anim->setPixelColor_Rgbcct(new_indexSet, color_internal);
 //         }
 //       }
 //       #endif
@@ -5119,6 +5461,20 @@ void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(int i, uint32_t col, bool 
     return;
     #endif
   }
+
+  // // Apply brightness if needed
+  // if (!flag_brightness_already_applied) {
+  //   uint8_t brightness = scale8(_brightness_rgb, pCONT_iLight->getBriRGB_Global());
+  //   uint16_t scale = brightness + 1;  // Avoid division by zero and maintain full range
+  //   // Extract, scale, and repack in one step
+  //   col = RGBW32(
+  //     (R(col) * scale) >> 8,  // Red
+  //     (G(col) * scale) >> 8,  // Green
+  //     (B(col) * scale) >> 8,  // Blue
+  //     (W(col) * scale) >> 8   // White
+  //   );
+  // }
+
 
 #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
   if (is2D()) {
@@ -5257,16 +5613,16 @@ void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(int i, uint32_t col, bool 
         indexMir += offset; // offset/phase
         if (indexMir >= stop) indexMir -= len; // wrap
 #ifndef WLED_DISABLE_MODE_BLEND
-        // if (_modeBlend) tmpCol = color_blend16(pCONT_lAni->getPixelColor(indexMir), col, uint16_t(0xFFFFU - progress()));
+        // if (_modeBlend) tmpCol = color_blend16(tkr_anim->getPixelColor(indexMir), col, uint16_t(0xFFFFU - progress()));
 #endif
-        pCONT_lAni->setPixelColor(indexMir, tmpCol);
+        tkr_anim->setPixelColor(indexMir, tmpCol);
       }
       indexSet += offset; // offset/phase
       if (indexSet >= stop) indexSet -= len; // wrap
 #ifndef WLED_DISABLE_MODE_BLEND
-      // if (_modeBlend) tmpCol = color_blend16(pCONT_lAni->getPixelColor(indexSet), col, uint16_t(0xFFFFU - progress()));
+      // if (_modeBlend) tmpCol = color_blend16(tkr_anim->getPixelColor(indexSet), col, uint16_t(0xFFFFU - progress()));
 #endif
-      pCONT_lAni->setPixelColor(indexSet, tmpCol);
+      tkr_anim->setPixelColor(indexSet, tmpCol);
     }
   }
 }
@@ -5681,14 +6037,14 @@ void NeoGammaWLEDMethod::calcGammaTable(float gamma)
 
 uint8_t NeoGammaWLEDMethod::Correct(uint8_t value)
 {
-  if (!pCONT_lAni->gammaCorrectCol) return value;
+  if (!tkr_anim->gammaCorrectCol) return value;
   return gammaT[value];
 }
 
 // used for color gamma correction
 uint32_t NeoGammaWLEDMethod::Correct32(uint32_t color)
 {
-  if (!pCONT_lAni->gammaCorrectCol) return color;
+  if (!tkr_anim->gammaCorrectCol) return color;
   uint8_t w = W(color);
   uint8_t r = R(color);
   uint8_t g = G(color);
@@ -5813,7 +6169,7 @@ uint8_t mAnimatorLight::ConstructJSON_Segments(uint8_t json_level, bool json_app
           JBI->Add("Map1D2D",      SEGMENT_I(seg_i).map1D2D);
           JBI->Add("SoundSim",     SEGMENT_I(seg_i).soundSim);
         JBI->Object_End();
-        JBI->Add("ColourType",     (uint8_t)SEGMENT_I(seg_i).colour_type__used_in_effect_generate);
+        JBI->Add("ColourType",     (uint8_t)SEGMENT_I(seg_i).colour_width__used_in_effect_generate);
         JBI->Object_Start("Transition");
           JBI->Add("Rate",         SEGMENT_I(seg_i).cycle_time__rate_ms);
           JBI->Add("Time",         SEGMENT_I(seg_i).animator_blend_time_ms() );
@@ -6098,7 +6454,7 @@ JBI->Start();
 //   JBI->Start();  
 //     JBI->Add_P(PM_SIZE, pCONT_iLight->settings.light_size_count);
 //     JBI->Add("PaletteMaxID", (uint8_t)mPalette::PALETTELIST_STATIC_LENGTH__ID);
-//     JBI->Add("ColourPaletteID", pCONT_lAni->SEGMENT_I(0).palette_id );
+//     JBI->Add("ColourPaletteID", tkr_anim->SEGMENT_I(0).palette_id );
 //     JBI->Add("ColourPalette", mPaletteI->GetPaletteNameByID( SEGMENT_I(0).palette_id, buffer, sizeof(buffer)));
 //     // JBI->Array_Start("rgb");
 //     // for(int i=0;i<numpixels;i++){
@@ -6200,7 +6556,7 @@ uint8_t mAnimatorLight::ConstructJSON_Debug_Segments(uint8_t json_level, bool js
         JBI->Add("Map1D2D",      SEGMENT_I(seg_i).map1D2D);
         JBI->Add("SoundSim",     SEGMENT_I(seg_i).soundSim);
       JBI->Object_End();
-      JBI->Add("ColourType",     (uint8_t)SEGMENT_I(seg_i).colour_type__used_in_effect_generate);
+      JBI->Add("ColourType",     (uint8_t)SEGMENT_I(seg_i).colour_width__used_in_effect_generate);
       JBI->Object_Start("Transition");
         JBI->Add("Rate",         SEGMENT_I(seg_i).cycle_time__rate_ms);
         JBI->Add("Time",         SEGMENT_I(seg_i).animator_blend_time_ms() );
@@ -6258,7 +6614,7 @@ uint8_t mAnimatorLight::ConstructJSON_Debug_Palette_Vector(uint8_t json_level, b
       // mPalette::PALETTE pal = mPaletteI->palettelist[i];
       JBI->Object_Start();
           
-          // pCONT_lAni->GetPaletteNameByID(i, lineBuffer, sizeof(lineBuffer));
+          // tkr_anim->GetPaletteNameByID(i, lineBuffer, sizeof(lineBuffer));
           // // snprintf_P(lineBuffer,sizeof(lineBuffer),"%S",pal.friendly_name_ctr); 
           // if(flag_get_first_name_only)
           // {    
@@ -6275,7 +6631,7 @@ uint8_t mAnimatorLight::ConstructJSON_Debug_Palette_Vector(uint8_t json_level, b
         // JBI->Add("n", pal.friendly_name_ctr);
         // JBI->Add("i", pal.id);
         
-        uint8_t colours_in_palette = pCONT_lAni->GetNumberOfColoursInPalette(i);
+        uint8_t colours_in_palette = tkr_anim->GetNumberOfColoursInPalette(i);
         JBI->Add("s",colours_in_palette);
 
 
@@ -6647,7 +7003,7 @@ void setRealtimePixel(uint16_t i, byte r, byte g, byte b, byte w = 0);
 //scales the brightness with the briMultiplier factor
 byte scaledBri2(byte in)
 {
-  uint16_t val = ((uint16_t)in*pCONT_lAni->briMultiplier)/100;
+  uint16_t val = ((uint16_t)in*tkr_anim->briMultiplier)/100;
   if (val > 255) val = 255;
   return (byte)val;
 }
@@ -6655,22 +7011,22 @@ byte scaledBri2(byte in)
 
 void mAnimatorLight::notify(byte callMode, bool followUp)
 {
-  if (!pCONT_lAni->udpConnected) return;
-  if (!pCONT_lAni->syncGroups) return;
+  if (!tkr_anim->udpConnected) return;
+  if (!tkr_anim->syncGroups) return;
   switch (callMode)
   {
     case CALL_MODE_INIT:          return;
-    case CALL_MODE_DIRECT_CHANGE: if (!pCONT_lAni->notifyDirect) return; break;
-    case CALL_MODE_BUTTON:        if (!pCONT_lAni->notifyButton) return; break;
-    case CALL_MODE_BUTTON_PRESET: if (!pCONT_lAni->notifyButton) return; break;
-    case CALL_MODE_NIGHTLIGHT:    if (!pCONT_lAni->notifyDirect) return; break;
-    case CALL_MODE_HUE:           if (!pCONT_lAni->notifyHue)    return; break;
-    case CALL_MODE_PRESET_CYCLE:  if (!pCONT_lAni->notifyDirect) return; break;
-    case CALL_MODE_ALEXA:         if (!pCONT_lAni->notifyAlexa)  return; break;
+    case CALL_MODE_DIRECT_CHANGE: if (!tkr_anim->notifyDirect) return; break;
+    case CALL_MODE_BUTTON:        if (!tkr_anim->notifyButton) return; break;
+    case CALL_MODE_BUTTON_PRESET: if (!tkr_anim->notifyButton) return; break;
+    case CALL_MODE_NIGHTLIGHT:    if (!tkr_anim->notifyDirect) return; break;
+    case CALL_MODE_HUE:           if (!tkr_anim->notifyHue)    return; break;
+    case CALL_MODE_PRESET_CYCLE:  if (!tkr_anim->notifyDirect) return; break;
+    case CALL_MODE_ALEXA:         if (!tkr_anim->notifyAlexa)  return; break;
     default: return;
   }
   byte udpOut[WLEDPACKETSIZE];
-  mAnimatorLight::Segment& mainseg = pCONT_lAni->getMainSegment();
+  mAnimatorLight::Segment& mainseg = tkr_anim->getMainSegment();
   udpOut[0] = 0; //0: wled notifier protocol 1: WARLS protocol
   udpOut[1] = callMode;
   udpOut[2] = pCONT_iLight->getBri_Global();
@@ -6678,8 +7034,8 @@ void mAnimatorLight::notify(byte callMode, bool followUp)
   udpOut[3] = R(col);
   udpOut[4] = G(col);
   udpOut[5] = B(col);
-  udpOut[6] = pCONT_lAni->nightlightActive;
-  udpOut[7] = pCONT_lAni->nightlightDelayMins;
+  udpOut[6] = tkr_anim->nightlightActive;
+  udpOut[7] = tkr_anim->nightlightDelayMins;
   udpOut[8] = mainseg.effect_id;
   udpOut[9] = mainseg.speed;
   udpOut[10] = W(col);
@@ -6696,8 +7052,8 @@ void mAnimatorLight::notify(byte callMode, bool followUp)
   udpOut[14] = B(col);
   udpOut[15] = W(col);
   udpOut[16] = mainseg.intensity;
-  udpOut[17] = (pCONT_lAni->transitionDelay >> 0) & 0xFF;
-  udpOut[18] = (pCONT_lAni->transitionDelay >> 8) & 0xFF;
+  udpOut[17] = (tkr_anim->transitionDelay >> 0) & 0xFF;
+  udpOut[18] = (tkr_anim->transitionDelay >> 8) & 0xFF;
   udpOut[19] = mainseg.palette_id;
   col = mainseg.rgbcctcolors[2].getU32();
   udpOut[20] = R(col);
@@ -6706,15 +7062,15 @@ void mAnimatorLight::notify(byte callMode, bool followUp)
   udpOut[23] = W(col);
 
   udpOut[24] = followUp;
-  uint32_t t = millis() + pCONT_lAni->timebase;
+  uint32_t t = millis() + tkr_anim->timebase;
   udpOut[25] = (t >> 24) & 0xFF;
   udpOut[26] = (t >> 16) & 0xFF;
   udpOut[27] = (t >>  8) & 0xFF;
   udpOut[28] = (t >>  0) & 0xFF;
 
   //sync system time
-  udpOut[29] = pCONT_lAni->toki.getTimeSource();
-  Toki::Time tm = pCONT_lAni->toki.getTime();
+  udpOut[29] = tkr_anim->toki.getTimeSource();
+  Toki::Time tm = tkr_anim->toki.getTime();
   uint32_t unix = tm.sec;
   udpOut[30] = (unix >> 24) & 0xFF;
   udpOut[31] = (unix >> 16) & 0xFF;
@@ -6725,18 +7081,18 @@ void mAnimatorLight::notify(byte callMode, bool followUp)
   udpOut[35] = (ms >> 0) & 0xFF;
 
   //sync groups
-  udpOut[36] = pCONT_lAni->syncGroups;
+  udpOut[36] = tkr_anim->syncGroups;
 
   //Might be changed to Kelvin in the future, receiver code should handle that case
   //0: byte 38 contains 0-255 value, 255: no valid CCT, 1-254: Kelvin value MSB
-  udpOut[37] = pCONT_lAni->hasCCTBus() ? 0 : 255; //check this is 0 for the next value to be significant
+  udpOut[37] = tkr_anim->hasCCTBus() ? 0 : 255; //check this is 0 for the next value to be significant
   udpOut[38] = mainseg.cct_slider;
 
-  udpOut[39] = pCONT_lAni->getActiveSegmentsNum();
+  udpOut[39] = tkr_anim->getActiveSegmentsNum();
   udpOut[40] = UDP_SEG_SIZE; //size of each loop iteration (one segment)
-  size_t s = 0, nsegs = pCONT_lAni->getSegmentsNum();
+  size_t s = 0, nsegs = tkr_anim->getSegmentsNum();
   for (size_t i = 0; i < nsegs; i++) {
-    mAnimatorLight::Segment &selseg = pCONT_lAni->getSegment(i);
+    mAnimatorLight::Segment &selseg = tkr_anim->getSegment(i);
     if (!selseg.isActive()) continue;
     uint16_t ofs = 41 + s*UDP_SEG_SIZE; //start of segment offset byte
     udpOut[0 +ofs] = s;
@@ -6798,50 +7154,50 @@ void mAnimatorLight::notify(byte callMode, bool followUp)
 
 void realtimeLock2(uint32_t timeoutMs, byte md)
 {
-  if (!pCONT_lAni->realtimeMode && !pCONT_lAni->realtimeOverride) {
+  if (!tkr_anim->realtimeMode && !tkr_anim->realtimeOverride) {
     uint16_t stop, start;
-    if (pCONT_lAni->useMainSegmentOnly) {
-      mAnimatorLight::Segment& mainseg = pCONT_lAni->getMainSegment();
+    if (tkr_anim->useMainSegmentOnly) {
+      mAnimatorLight::Segment& mainseg = tkr_anim->getMainSegment();
       start = mainseg.start;
       stop  = mainseg.stop;
       mainseg.freeze = true;
     } else {
       start = 0;
-      stop  = pCONT_lAni->getLengthTotal();
+      stop  = tkr_anim->getLengthTotal();
     }
     // clear strip/segment
-    for (size_t i = start; i < stop; i++) pCONT_lAni->setPixelColor(i,BLACK);
+    for (size_t i = start; i < stop; i++) tkr_anim->setPixelColor(i,BLACK);
     // if WLED was off and using main segment only, freeze non-main segments so they stay off
-    if (pCONT_lAni->useMainSegmentOnly && pCONT_iLight->getBri_Global() == 0) {
-      for (size_t s=0; s < pCONT_lAni->getSegmentsNum(); s++) {
-        pCONT_lAni->getSegment(s).freeze = true;
+    if (tkr_anim->useMainSegmentOnly && pCONT_iLight->getBri_Global() == 0) {
+      for (size_t s=0; s < tkr_anim->getSegmentsNum(); s++) {
+        tkr_anim->getSegment(s).freeze = true;
       }
     }
   }
   // if strip is off (bri==0) and not already in RTM
-  if (pCONT_lAni->briT == 0 && !pCONT_lAni->realtimeMode && !pCONT_lAni->realtimeOverride) {
-    pCONT_lAni->setBrightness(scaledBri2(pCONT_lAni->briLast), true);
+  if (tkr_anim->briT == 0 && !tkr_anim->realtimeMode && !tkr_anim->realtimeOverride) {
+    tkr_anim->setBrightness(scaledBri2(tkr_anim->briLast), true);
   }
 
-  if (pCONT_lAni->realtimeTimeout != UINT32_MAX) {
-    pCONT_lAni->realtimeTimeout = (timeoutMs == 255001 || timeoutMs == 65000) ? UINT32_MAX : millis() + timeoutMs;
+  if (tkr_anim->realtimeTimeout != UINT32_MAX) {
+    tkr_anim->realtimeTimeout = (timeoutMs == 255001 || timeoutMs == 65000) ? UINT32_MAX : millis() + timeoutMs;
   }
-  pCONT_lAni->realtimeMode = md;
+  tkr_anim->realtimeMode = md;
 
-  if (pCONT_lAni->realtimeOverride) return;
-  if (pCONT_lAni->arlsForceMaxBri) pCONT_lAni->setBrightness(scaledBri2(255), true);
-  if (pCONT_lAni->briT > 0 && md == REALTIME_MODE_GENERIC) pCONT_lAni->show();
+  if (tkr_anim->realtimeOverride) return;
+  if (tkr_anim->arlsForceMaxBri) tkr_anim->setBrightness(scaledBri2(255), true);
+  if (tkr_anim->briT > 0 && md == REALTIME_MODE_GENERIC) tkr_anim->show();
 }
 
 void exitRealtime2() {
-  if (!pCONT_lAni->realtimeMode) return;
-  if (pCONT_lAni->realtimeOverride == REALTIME_OVERRIDE_ONCE) pCONT_lAni->realtimeOverride = REALTIME_OVERRIDE_NONE;
-  pCONT_lAni->setBrightness(scaledBri2(pCONT_iLight->getBri_Global()), true);
-  pCONT_lAni->realtimeTimeout = 0; // cancel realtime mode immediately
-  pCONT_lAni->realtimeMode = REALTIME_MODE_INACTIVE; // inform UI immediately
-  pCONT_lAni->realtimeIP[0] = 0;
-  if (pCONT_lAni->useMainSegmentOnly) { // unfreeze live segment again
-    pCONT_lAni->getMainSegment().freeze = false;
+  if (!tkr_anim->realtimeMode) return;
+  if (tkr_anim->realtimeOverride == REALTIME_OVERRIDE_ONCE) tkr_anim->realtimeOverride = REALTIME_OVERRIDE_NONE;
+  tkr_anim->setBrightness(scaledBri2(pCONT_iLight->getBri_Global()), true);
+  tkr_anim->realtimeTimeout = 0; // cancel realtime mode immediately
+  tkr_anim->realtimeMode = REALTIME_MODE_INACTIVE; // inform UI immediately
+  tkr_anim->realtimeIP[0] = 0;
+  if (tkr_anim->useMainSegmentOnly) { // unfreeze live segment again
+    tkr_anim->getMainSegment().freeze = false;
   }
   // updateInterfaces(CALL_MODE_WS_SEND);
 }
@@ -6850,10 +7206,10 @@ void exitRealtime2() {
 #define TMP2NET_OUT_PORT 65442
 
 void sendTPM2Ack() {
-  pCONT_lAni->notifierUdp.beginPacket(pCONT_lAni->notifierUdp.remoteIP(), TMP2NET_OUT_PORT);
+  tkr_anim->notifierUdp.beginPacket(tkr_anim->notifierUdp.remoteIP(), TMP2NET_OUT_PORT);
   uint8_t response_ack = 0xac;
-  pCONT_lAni->notifierUdp.write(&response_ack, 1);
-  pCONT_lAni->notifierUdp.endPacket();
+  tkr_anim->notifierUdp.write(&response_ack, 1);
+  tkr_anim->notifierUdp.endPacket();
 }
 
 
@@ -6862,68 +7218,68 @@ void handleNotifications()
   IPAddress localIP;
 
   //send second notification if enabled
-  if(pCONT_lAni->udpConnected && (pCONT_lAni->notificationCount < pCONT_lAni->udpNumRetries) && ((millis()-pCONT_lAni->notificationSentTime) > 250)){
-    // notify(pCONT_lAni->notificationSentCallMode,true);
+  if(tkr_anim->udpConnected && (tkr_anim->notificationCount < tkr_anim->udpNumRetries) && ((millis()-tkr_anim->notificationSentTime) > 250)){
+    // notify(tkr_anim->notificationSentCallMode,true);
   }
 
-  if (pCONT_lAni->e131NewData && millis() - pCONT_lAni->getLastShow() > 15)
+  if (tkr_anim->e131NewData && millis() - tkr_anim->getLastShow() > 15)
   {
-    pCONT_lAni->e131NewData = false;
-    pCONT_lAni->show();
+    tkr_anim->e131NewData = false;
+    tkr_anim->show();
   }
 
   //unlock strip when realtime UDP times out
-  if (pCONT_lAni->realtimeMode && millis() > pCONT_lAni->realtimeTimeout) exitRealtime2();
+  if (tkr_anim->realtimeMode && millis() > tkr_anim->realtimeTimeout) exitRealtime2();
 
   //receive UDP notifications
-  if (!pCONT_lAni->udpConnected) return;
+  if (!tkr_anim->udpConnected) return;
 
   bool isSupp = false;
-  size_t packetSize = pCONT_lAni->notifierUdp.parsePacket();
-  if (!packetSize && pCONT_lAni->udp2Connected) {
-    packetSize = pCONT_lAni->notifier2Udp.parsePacket();
+  size_t packetSize = tkr_anim->notifierUdp.parsePacket();
+  if (!packetSize && tkr_anim->udp2Connected) {
+    packetSize = tkr_anim->notifier2Udp.parsePacket();
     isSupp = true;
   }
 
   //hyperion / raw RGB
-  if (!packetSize && pCONT_lAni->udpRgbConnected) {
-    packetSize = pCONT_lAni->rgbUdp.parsePacket();
+  if (!packetSize && tkr_anim->udpRgbConnected) {
+    packetSize = tkr_anim->rgbUdp.parsePacket();
     if (packetSize) {
-      if (!pCONT_lAni->receiveDirect) return;
+      if (!tkr_anim->receiveDirect) return;
       if (packetSize > UDP_IN_MAXSIZE || packetSize < 3) return;
-      pCONT_lAni->realtimeIP = pCONT_lAni->rgbUdp.remoteIP();
-      DEBUG_PRINTLN( pCONT_lAni->rgbUdp.remoteIP());
+      tkr_anim->realtimeIP = tkr_anim->rgbUdp.remoteIP();
+      DEBUG_PRINTLN( tkr_anim->rgbUdp.remoteIP());
       uint8_t lbuf[packetSize];
-      pCONT_lAni->rgbUdp.read(lbuf, packetSize);
-      realtimeLock2(pCONT_lAni->realtimeTimeoutMs, REALTIME_MODE_HYPERION);
-      if (pCONT_lAni->realtimeOverride && !(pCONT_lAni->realtimeMode && pCONT_lAni->useMainSegmentOnly)) return;
+      tkr_anim->rgbUdp.read(lbuf, packetSize);
+      realtimeLock2(tkr_anim->realtimeTimeoutMs, REALTIME_MODE_HYPERION);
+      if (tkr_anim->realtimeOverride && !(tkr_anim->realtimeMode && tkr_anim->useMainSegmentOnly)) return;
       uint16_t id = 0;
-      uint16_t totalLen = pCONT_lAni->getLengthTotal();
+      uint16_t totalLen = tkr_anim->getLengthTotal();
       for (size_t i = 0; i < packetSize -2; i += 3)
       {
         setRealtimePixel(id, lbuf[i], lbuf[i+1], lbuf[i+2], 0);
         id++; if (id >= totalLen) break;
       }
-      if (!(pCONT_lAni->realtimeMode && pCONT_lAni->useMainSegmentOnly)) pCONT_lAni->show();
+      if (!(tkr_anim->realtimeMode && tkr_anim->useMainSegmentOnly)) tkr_anim->show();
       return;
     }
   }
 
-  if (!(pCONT_lAni->receiveNotifications || pCONT_lAni->receiveDirect)) return;
+  if (!(tkr_anim->receiveNotifications || tkr_anim->receiveDirect)) return;
 
   localIP = Network.localIP();
   //notifier and UDP realtime
   if (!packetSize || packetSize > UDP_IN_MAXSIZE) return;
-  if (!isSupp && pCONT_lAni->notifierUdp.remoteIP() == localIP) return; //don't process broadcasts we send ourselves
+  if (!isSupp && tkr_anim->notifierUdp.remoteIP() == localIP) return; //don't process broadcasts we send ourselves
 
   uint8_t udpIn[packetSize +1];
   uint16_t len;
-  if (isSupp) len = pCONT_lAni->notifier2Udp.read(udpIn, packetSize);
-  else        len =  pCONT_lAni->notifierUdp.read(udpIn, packetSize);
+  if (isSupp) len = tkr_anim->notifier2Udp.read(udpIn, packetSize);
+  else        len =  tkr_anim->notifierUdp.read(udpIn, packetSize);
 
   // // WLED nodes info notifications
   // if (isSupp && udpIn[0] == 255 && udpIn[1] == 1 && len >= 40) {
-  //   if (!pCONT_lAni->nodeListEnabled || pCONT_lAni->notifier2Udp.remoteIP() == localIP) return;
+  //   if (!tkr_anim->nodeListEnabled || tkr_anim->notifier2Udp.remoteIP() == localIP) return;
 
   //   uint8_t unit = udpIn[39];
   //   NodesMap::iterator it = Nodes.find(unit);
@@ -6953,10 +7309,10 @@ void handleNotifications()
   // }
 
   //wled notifier, ignore if realtime packets active
-  if (udpIn[0] == 0 && !pCONT_lAni->realtimeMode && pCONT_lAni->receiveNotifications)
+  if (udpIn[0] == 0 && !tkr_anim->realtimeMode && tkr_anim->receiveNotifications)
   {
     //ignore notification if received within a second after sending a notification ourselves
-    if (millis() - pCONT_lAni->notificationSentTime < 1000) return;
+    if (millis() - tkr_anim->notificationSentTime < 1000) return;
     if (udpIn[1] > 199) return; //do not receive custom versions
 
     //compatibilityVersionByte:
@@ -6965,50 +7321,50 @@ void handleNotifications()
     // if we are not part of any sync group ignore message
     if (version < 9 || version > 199) {
       // legacy senders are treated as if sending in sync group 1 only
-      if (!(pCONT_lAni->receiveGroups & 0x01)) return;
-    } else if (!(pCONT_lAni->receiveGroups & udpIn[36])) return;
+      if (!(tkr_anim->receiveGroups & 0x01)) return;
+    } else if (!(tkr_anim->receiveGroups & udpIn[36])) return;
 
-    bool someSel = (pCONT_lAni->receiveNotificationBrightness || pCONT_lAni->receiveNotificationColor || pCONT_lAni->receiveNotificationEffects);
+    bool someSel = (tkr_anim->receiveNotificationBrightness || tkr_anim->receiveNotificationColor || tkr_anim->receiveNotificationEffects);
 
     //apply colors from notification to main segment, only if not syncing full segments
-    if ((pCONT_lAni->receiveNotificationColor || !someSel) && (version < 11 || !pCONT_lAni->receiveSegmentOptions)) {
+    if ((tkr_anim->receiveNotificationColor || !someSel) && (version < 11 || !tkr_anim->receiveSegmentOptions)) {
       // primary color, only apply white if intented (version > 0)
-      pCONT_lAni->setColor(0, RGBW32(udpIn[3], udpIn[4], udpIn[5], (version > 0) ? udpIn[10] : 0));
+      tkr_anim->setColor(0, RGBW32(udpIn[3], udpIn[4], udpIn[5], (version > 0) ? udpIn[10] : 0));
       if (version > 1) {
-        pCONT_lAni->setColor(1, RGBW32(udpIn[12], udpIn[13], udpIn[14], udpIn[15])); // secondary color
+        tkr_anim->setColor(1, RGBW32(udpIn[12], udpIn[13], udpIn[14], udpIn[15])); // secondary color
       }
       if (version > 6) {
-        pCONT_lAni->setColor(2, RGBW32(udpIn[20], udpIn[21], udpIn[22], udpIn[23])); // tertiary color
+        tkr_anim->setColor(2, RGBW32(udpIn[20], udpIn[21], udpIn[22], udpIn[23])); // tertiary color
         if (version > 9 && version < 200 && udpIn[37] < 255) { // valid CCT/Kelvin value
           uint16_t cct = udpIn[38];
           if (udpIn[37] > 0) { //Kelvin
             cct |= (udpIn[37] << 8);
           }
-          pCONT_lAni->setCCT(cct);
+          tkr_anim->setCCT(cct);
         }
       }
     }
 
     bool timebaseUpdated = false;
     //apply effects from notification
-    bool applyEffects = (pCONT_lAni->receiveNotificationEffects || !someSel);
+    bool applyEffects = (tkr_anim->receiveNotificationEffects || !someSel);
     if (version < 200)
     {
       // if (applyEffects && currentPlaylist >= 0) unloadPlaylist();
-      if (version > 10 && (pCONT_lAni->receiveSegmentOptions || pCONT_lAni->receiveSegmentBounds)) {
+      if (version > 10 && (tkr_anim->receiveSegmentOptions || tkr_anim->receiveSegmentBounds)) {
         uint8_t numSrcSegs = udpIn[39];
         for (size_t i = 0; i < numSrcSegs; i++) {
           uint16_t ofs = 41 + i*udpIn[40]; //start of segment offset byte
           uint8_t id = udpIn[0 +ofs];
-          if (id > pCONT_lAni->getSegmentsNum()) break;
+          if (id > tkr_anim->getSegmentsNum()) break;
 
-          mAnimatorLight::Segment& selseg = pCONT_lAni->getSegment(id);
+          mAnimatorLight::Segment& selseg = tkr_anim->getSegment(id);
           if (!selseg.isActive() || !selseg.isSelected()) continue; //do not apply to non selected segments
 
           uint16_t startY = 0, start  = (udpIn[1+ofs] << 8 | udpIn[2+ofs]);
           uint16_t stopY  = 1, stop   = (udpIn[3+ofs] << 8 | udpIn[4+ofs]);
           uint16_t offset = (udpIn[7+ofs] << 8 | udpIn[8+ofs]);
-          if (!pCONT_lAni->receiveSegmentOptions) {
+          if (!tkr_anim->receiveSegmentOptions) {
             selseg.setUp(start, stop, selseg.grouping_get(), selseg.spacing, offset, startY, stopY);
             continue;
           }
@@ -7016,12 +7372,12 @@ void handleNotifications()
           selseg.options = (selseg.options & 0x0071U) | (udpIn[9 +ofs] & 0x0E); // ignore selected, freeze, reset & transitional
           // selseg.setOpacity(udpIn[10+ofs]);
           if (applyEffects) {
-            pCONT_lAni->setMode(id,  udpIn[11+ofs]);
+            tkr_anim->setMode(id,  udpIn[11+ofs]);
             selseg.speed     = udpIn[12+ofs];
             selseg.intensity = udpIn[13+ofs];
             selseg.palette_id   = udpIn[14+ofs];
           }
-          if (pCONT_lAni->receiveNotificationColor || !someSel) {
+          if (tkr_anim->receiveNotificationColor || !someSel) {
             selseg.setColor(0, RGBW32(udpIn[15+ofs],udpIn[16+ofs],udpIn[17+ofs],udpIn[18+ofs]));
             selseg.setColor(1, RGBW32(udpIn[19+ofs],udpIn[20+ofs],udpIn[21+ofs],udpIn[22+ofs]));
             selseg.setColor(2, RGBW32(udpIn[23+ofs],udpIn[24+ofs],udpIn[25+ofs],udpIn[26+ofs]));
@@ -7042,33 +7398,33 @@ void handleNotifications()
             startY = (udpIn[32+ofs] << 8 | udpIn[33+ofs]);
             stopY  = (udpIn[34+ofs] << 8 | udpIn[35+ofs]);
           }
-          if (pCONT_lAni->receiveSegmentBounds) {
+          if (tkr_anim->receiveSegmentBounds) {
             selseg.setUp(start, stop, udpIn[5+ofs], udpIn[6+ofs], offset, startY, stopY);
           } else {
             selseg.setUp(selseg.start, selseg.stop, udpIn[5+ofs], udpIn[6+ofs], selseg.offset, selseg.startY, selseg.stopY);
           }
         }
-        pCONT_lAni->stateChanged = true;
+        tkr_anim->stateChanged = true;
       }
 
       // simple effect sync, applies to all selected segments
-      if (applyEffects && (version < 11 || !pCONT_lAni->receiveSegmentOptions)) {
-        for (size_t i = 0; i < pCONT_lAni->getSegmentsNum(); i++) {
-          mAnimatorLight::Segment& seg = pCONT_lAni->getSegment(i);
+      if (applyEffects && (version < 11 || !tkr_anim->receiveSegmentOptions)) {
+        for (size_t i = 0; i < tkr_anim->getSegmentsNum(); i++) {
+          mAnimatorLight::Segment& seg = tkr_anim->getSegment(i);
           if (!seg.isActive() || !seg.isSelected()) continue;
           seg.setMode(udpIn[8]);
           seg.speed =  udpIn[9];
           if (version > 2) seg.intensity = udpIn[16];
           if (version > 4) seg.setPalette(udpIn[19]);
         }
-        pCONT_lAni->stateChanged = true;
+        tkr_anim->stateChanged = true;
       }
 
       if (applyEffects && version > 5) {
         uint32_t t = (udpIn[25] << 24) | (udpIn[26] << 16) | (udpIn[27] << 8) | (udpIn[28]);
         t += PRESUMED_NETWORK_DELAY; //adjust trivially for network delay
         t -= millis();
-        pCONT_lAni->timebase = t;
+        tkr_anim->timebase = t;
         timebaseUpdated = true;
       }
     }
@@ -7079,38 +7435,38 @@ void handleNotifications()
       Toki::Time tm;
       tm.sec = (udpIn[30] << 24) | (udpIn[31] << 16) | (udpIn[32] << 8) | (udpIn[33]);
       tm.ms = (udpIn[34] << 8) | (udpIn[35]);
-      if (udpIn[29] > pCONT_lAni->toki.getTimeSource()) { //if sender's time source is more accurate
-        pCONT_lAni->toki.adjust(tm, PRESUMED_NETWORK_DELAY); //adjust trivially for network delay
+      if (udpIn[29] > tkr_anim->toki.getTimeSource()) { //if sender's time source is more accurate
+        tkr_anim->toki.adjust(tm, PRESUMED_NETWORK_DELAY); //adjust trivially for network delay
         uint8_t ts = TOKI_TS_UDP;
         if (udpIn[29] > 99) ts = TOKI_TS_UDP_NTP;
         else if (udpIn[29] >= TOKI_TS_SEC) ts = TOKI_TS_UDP_SEC;
-        pCONT_lAni->toki.setTime(tm, ts);
-      } else if (timebaseUpdated && pCONT_lAni->toki.getTimeSource() > 99) { //if we both have good times, get a more accurate timebase
-        Toki::Time myTime = pCONT_lAni->toki.getTime();
-        uint32_t diff = pCONT_lAni->toki.msDifference(tm, myTime);
-        pCONT_lAni->timebase -= PRESUMED_NETWORK_DELAY; //no need to presume, use difference between NTP times at send and receive points
-        if (pCONT_lAni->toki.isLater(tm, myTime)) {
-          pCONT_lAni->timebase += diff;
+        tkr_anim->toki.setTime(tm, ts);
+      } else if (timebaseUpdated && tkr_anim->toki.getTimeSource() > 99) { //if we both have good times, get a more accurate timebase
+        Toki::Time myTime = tkr_anim->toki.getTime();
+        uint32_t diff = tkr_anim->toki.msDifference(tm, myTime);
+        tkr_anim->timebase -= PRESUMED_NETWORK_DELAY; //no need to presume, use difference between NTP times at send and receive points
+        if (tkr_anim->toki.isLater(tm, myTime)) {
+          tkr_anim->timebase += diff;
         } else {
-          pCONT_lAni->timebase -= diff;
+          tkr_anim->timebase -= diff;
         }
       }
     }
 
     if (version > 3)
     {
-      // pCONT_lAni->transitionDelayTemp = ((udpIn[17] << 0) & 0xFF) + ((udpIn[18] << 8) & 0xFF00);
+      // tkr_anim->transitionDelayTemp = ((udpIn[17] << 0) & 0xFF) + ((udpIn[18] << 8) & 0xFF00);
     }
 
-    pCONT_lAni->nightlightActive = udpIn[6];
-    if (pCONT_lAni->nightlightActive) pCONT_lAni->nightlightDelayMins = udpIn[7];
+    tkr_anim->nightlightActive = udpIn[6];
+    if (tkr_anim->nightlightActive) tkr_anim->nightlightDelayMins = udpIn[7];
 
-    if (pCONT_lAni->receiveNotificationBrightness || !someSel) pCONT_iLight->setBriRGB_Global( udpIn[2] );
+    if (tkr_anim->receiveNotificationBrightness || !someSel) pCONT_iLight->setBriRGB_Global( udpIn[2] );
     // stateUpdated(CALL_MODE_NOTIFICATION);
     return;
   }
 
-  if (!pCONT_lAni->receiveDirect) return;
+  if (!tkr_anim->receiveDirect) return;
 
   //TPM2.NET
   if (udpIn[0] == 0x9c)
@@ -7123,18 +7479,18 @@ void handleNotifications()
     }
     if (tpmType != 0xda) return; //return if notTPM2.NET data
 
-    pCONT_lAni->realtimeIP = (isSupp) ? pCONT_lAni->notifier2Udp.remoteIP() : pCONT_lAni->notifierUdp.remoteIP();
-    realtimeLock2(pCONT_lAni->realtimeTimeoutMs, REALTIME_MODE_TPM2NET);
-    if (pCONT_lAni->realtimeOverride && !(pCONT_lAni->realtimeMode && pCONT_lAni->useMainSegmentOnly)) return;
+    tkr_anim->realtimeIP = (isSupp) ? tkr_anim->notifier2Udp.remoteIP() : tkr_anim->notifierUdp.remoteIP();
+    realtimeLock2(tkr_anim->realtimeTimeoutMs, REALTIME_MODE_TPM2NET);
+    if (tkr_anim->realtimeOverride && !(tkr_anim->realtimeMode && tkr_anim->useMainSegmentOnly)) return;
 
-    pCONT_lAni->tpmPacketCount++; //increment the packet count
-    if (pCONT_lAni->tpmPacketCount == 1) pCONT_lAni->tpmPayloadFrameSize = (udpIn[2] << 8) + udpIn[3]; //save frame size for the whole payload if this is the first packet
+    tkr_anim->tpmPacketCount++; //increment the packet count
+    if (tkr_anim->tpmPacketCount == 1) tkr_anim->tpmPayloadFrameSize = (udpIn[2] << 8) + udpIn[3]; //save frame size for the whole payload if this is the first packet
     byte packetNum = udpIn[4]; //starts with 1!
     byte numPackets = udpIn[5];
 
-    uint16_t id = (pCONT_lAni->tpmPayloadFrameSize/3)*(packetNum-1); //start LED
-    uint16_t totalLen = pCONT_lAni->getLengthTotal();
-    for (size_t i = 6; i < pCONT_lAni->tpmPayloadFrameSize + 4U; i += 3)
+    uint16_t id = (tkr_anim->tpmPayloadFrameSize/3)*(packetNum-1); //start LED
+    uint16_t totalLen = tkr_anim->getLengthTotal();
+    for (size_t i = 6; i < tkr_anim->tpmPayloadFrameSize + 4U; i += 3)
     {
       if (id < totalLen)
       {
@@ -7143,10 +7499,10 @@ void handleNotifications()
       }
       else break;
     }
-    if (pCONT_lAni->tpmPacketCount == numPackets) //reset packet count and show if all packets were received
+    if (tkr_anim->tpmPacketCount == numPackets) //reset packet count and show if all packets were received
     {
-      pCONT_lAni->tpmPacketCount = 0;
-      pCONT_lAni->show();
+      tkr_anim->tpmPacketCount = 0;
+      tkr_anim->show();
     }
     return;
   }
@@ -7154,20 +7510,20 @@ void handleNotifications()
   //UDP realtime: 1 warls 2 drgb 3 drgbw
   if (udpIn[0] > 0 && udpIn[0] < 5)
   {
-    pCONT_lAni->realtimeIP = (isSupp) ? pCONT_lAni->notifier2Udp.remoteIP() : pCONT_lAni->notifierUdp.remoteIP();
-    DEBUG_PRINTLN(pCONT_lAni->realtimeIP);
+    tkr_anim->realtimeIP = (isSupp) ? tkr_anim->notifier2Udp.remoteIP() : tkr_anim->notifierUdp.remoteIP();
+    DEBUG_PRINTLN(tkr_anim->realtimeIP);
     if (packetSize < 2) return;
 
     if (udpIn[1] == 0)
     {
-      pCONT_lAni->realtimeTimeout = 0;
+      tkr_anim->realtimeTimeout = 0;
       return;
     } else {
       realtimeLock2(udpIn[1]*1000 +1, REALTIME_MODE_UDP);
     }
-    if (pCONT_lAni->realtimeOverride && !(pCONT_lAni->realtimeMode && pCONT_lAni->useMainSegmentOnly)) return;
+    if (tkr_anim->realtimeOverride && !(tkr_anim->realtimeMode && tkr_anim->useMainSegmentOnly)) return;
 
-    uint16_t totalLen = pCONT_lAni->getLengthTotal();
+    uint16_t totalLen = tkr_anim->getLengthTotal();
     if (udpIn[0] == 1) //warls
     {
       for (size_t i = 2; i < packetSize -3; i += 4)
@@ -7211,7 +7567,7 @@ void handleNotifications()
         id++;
       }
     }
-    pCONT_lAni->show();
+    tkr_anim->show();
     return;
   }
 
@@ -7235,19 +7591,19 @@ void handleNotifications()
 
 void setRealtimePixel(uint16_t i, byte r, byte g, byte b, byte w)
 {
-  uint16_t pix = i + pCONT_lAni->arlsOffset;
-  if (pix < pCONT_lAni->getLengthTotal()) {
-    if (!pCONT_lAni->arlsDisableGammaCorrection && pCONT_lAni->gammaCorrectCol) {
-      // r = pCONT_lAni->gamma8(r);
-      // g = pCONT_lAni->gamma8(g);
-      // b = pCONT_lAni->gamma8(b);
-      // w = pCONT_lAni->gamma8(w);
+  uint16_t pix = i + tkr_anim->arlsOffset;
+  if (pix < tkr_anim->getLengthTotal()) {
+    if (!tkr_anim->arlsDisableGammaCorrection && tkr_anim->gammaCorrectCol) {
+      // r = tkr_anim->gamma8(r);
+      // g = tkr_anim->gamma8(g);
+      // b = tkr_anim->gamma8(b);
+      // w = tkr_anim->gamma8(w);
     }
-    if (pCONT_lAni->useMainSegmentOnly) {
-      mAnimatorLight::Segment &seg = pCONT_lAni->getMainSegment();
+    if (tkr_anim->useMainSegmentOnly) {
+      mAnimatorLight::Segment &seg = tkr_anim->getMainSegment();
       if (pix<seg.length()) seg.setPixelColor(pix, r, g, b, w);
     } else {
-      // pCONT_lAni->setPixelColor(pix, r, g, b, w);
+      // tkr_anim->setPixelColor(pix, r, g, b, w);
     }
   }
 }
@@ -7279,7 +7635,7 @@ void refreshNodeList()
 \*********************************************************************************************/
 void sendSysInfoUDP()
 {
-  if (!pCONT_lAni->udp2Connected) return;
+  if (!tkr_anim->udp2Connected) return;
 
   IPAddress ip = Network.localIP();
   if (!ip || ip == IPAddress(255,255,255,255)) ip = IPAddress(4,3,2,1);
@@ -7302,7 +7658,7 @@ void sendSysInfoUDP()
   for (size_t x = 0; x < 4; x++) {
     data[x + 2] = ip[x];
   }
-  memcpy((byte *)data + 6, pCONT_lAni->serverDescription, 32);
+  memcpy((byte *)data + 6, tkr_anim->serverDescription, 32);
   #ifdef ESP8266
   data[38] = NODE_TYPE_ID_ESP8266;
   #elif defined(CONFIG_IDF_TARGET_ESP32C3)
@@ -7323,9 +7679,9 @@ void sendSysInfoUDP()
     data[40+i] = (build>>(8*i)) & 0xFF;
 
   IPAddress broadcastIP(255, 255, 255, 255);
-  pCONT_lAni->notifier2Udp.beginPacket(broadcastIP, pCONT_lAni->udpPort2);
-  pCONT_lAni->notifier2Udp.write(data, sizeof(data));
-  pCONT_lAni->notifier2Udp.endPacket();
+  tkr_anim->notifier2Udp.beginPacket(broadcastIP, tkr_anim->udpPort2);
+  tkr_anim->notifier2Udp.write(data, sizeof(data));
+  tkr_anim->notifier2Udp.endPacket();
 }
 
 

@@ -537,7 +537,12 @@ enum MODULE_SUBTYPE_IDS{ //ignores the "interface"
 #endif
 #ifdef USE_MODULE_LIGHTS_ANIMATOR
   #include "6_Lights/03_Animator/mAnimatorLight.h"
-  #define pCONT_lAni                            static_cast<mAnimatorLight*>(mTaskerManager::GetInstance()->GetModule(D_UNIQUE_MODULE_LIGHTS_ANIMATOR_ID))
+  #define tkr_lAni                            static_cast<mAnimatorLight*>(mTaskerManager::GetInstance()->GetModule(D_UNIQUE_MODULE_LIGHTS_ANIMATOR_ID))
+  #ifdef ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
+  #define tkr_anim tkr_extern_lAni // using a more direct access method, with a local pointer in the class header
+  #else
+  #define tkr_anim tkr_lAni // pointer to the instance of the mAnimatorLight class
+  #endif
 #endif
 /**
  * @brief Energy

@@ -195,9 +195,9 @@ extern bool realtimeRespectLedMaps; // used in getMappedPixelIndex()
 #define SEGCOLOR_RGBCCT(x)   segments[getCurrSegmentId()].rgbcctcolors[x].WithBrightness()
 
 #define SEGMENT          segments[getCurrSegmentId()]
-#define pSEGMENT         pCONT_lAni->segments[pCONT_lAni->getCurrSegmentId()]
+#define pSEGMENT         tkr_anim->segments[tkr_anim->getCurrSegmentId()]
 #define SEGMENT_I(X)     segments[X] // can this be changed later to "getSegment(X)" and hence protect against out of bounds
-#define pSEGMENT_I(X)    pCONT_lAni->segments[X]
+#define pSEGMENT_I(X)    tkr_anim->segments[X]
 #define SEGLEN           _virtualSegmentLength // This is still using the function, it just relies on calling the function prior to the effect to set this
 #define SEGPALETTE       SEGMENT.palette_container->CRGB16Palette16_Palette.data
 
@@ -536,7 +536,7 @@ class mAnimatorLight :
     void fill_ranged(uint32_t c, bool apply_brightness = false); 
 
     [[gnu::hot]] uint32_t color_wheel(uint8_t pos) const;
-    uint32_t ColourBlend(uint32_t color1, uint32_t color2, uint8_t blend);
+    static uint32_t ColourBlend(uint32_t color1, uint32_t color2, uint8_t blend);
 
     void Init_Segments();
 
@@ -654,6 +654,9 @@ class mAnimatorLight :
     void EffectAnim__Slow_Glow();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
+    void EffectAnim__Firefly();
+    #endif
+    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
     void EffectAnim__Flicker_Base(bool use_multi = false, uint16_t flicker_palette = 0);
     void EffectAnim__Candle_Single();
     void EffectAnim__Candle_Multiple();
@@ -701,16 +704,16 @@ class mAnimatorLight :
     // #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
     // void EffectAnim__Palette_Colour_Fade_Saturation();
     // #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
     void EffectAnim__Blend_Two_Palettes();
     #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
     void EffectAnim__Twinkle_Palette_Onto_Palette();
     #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
     void EffectAnim__Twinkle_Out_Palette();
     #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
     void EffectAnim__Twinkle_Decaying_Palette();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
@@ -739,7 +742,11 @@ class mAnimatorLight :
     void EffectAnim__Colour_Sweep_Random();
     void EffectAnim__Colour_Sweep_Palette();
     void EffectAnim__TriColour();
+    #endif
+    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
     void EffectAnim__Android();
+    #endif
+    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
     void EffectAnim__Base_Running(bool saw);
     void EffectAnim__Base_Running(uint32_t color1, uint32_t color2);
     #endif
@@ -1235,6 +1242,9 @@ class mAnimatorLight :
     EFFECTS_FUNCTION__SLOW_GLOW__ID,
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
+    EFFECTS_FUNCTION__FIREFLY__ID,
+    #endif
+    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
     EFFECTS_FUNCTION__CANDLE_SINGLE__ID,
     EFFECTS_FUNCTION__CANDLE_MULTIPLE__ID,
     #endif
@@ -1260,13 +1270,13 @@ class mAnimatorLight :
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
     EFFECTS_FUNCTION__STEPPING_PALETTE__ID,
     #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
     EFFECTS_FUNCTION__BLEND_PALETTE_BETWEEN_ANOTHER_PALETTE__ID,
     #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
     EFFECTS_FUNCTION__TWINKLE_PALETTE_SEC_ON_ORDERED_PALETTE_PRI__ID,
     #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
     EFFECTS_FUNCTION__TWINKLE_OFF_PALETTE__ID,
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
@@ -1275,10 +1285,10 @@ class mAnimatorLight :
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
     EFFECTS_FUNCTION__TIMEBASED__HOUR_PROGRESS__ID,
     #endif    
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
     EFFECTS_FUNCTION__TWINKLE_DECAYING_PALETTE__ID,
     #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
+    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
     EFFECTS_FUNCTION__POPPING_DECAY_PALETTE_TO_BLACK__ID,
     EFFECTS_FUNCTION__POPPING_DECAY_RANDOM_TO_BLACK__ID,
     EFFECTS_FUNCTION__POPPING_DECAY_PALETTE_TO_WHITE__ID,
@@ -1397,7 +1407,11 @@ class mAnimatorLight :
     #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
     EFFECTS_FUNCTION__TRICOLOR_WIPE__ID,
+    #endif
+    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
     EFFECTS_FUNCTION__ANDROID__ID,
+    #endif
+    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
     EFFECTS_FUNCTION__RUNNING_COLOR__ID,
     EFFECTS_FUNCTION__RUNNING_RANDOM__ID,
     EFFECTS_FUNCTION__GRADIENT__ID,
@@ -1935,6 +1949,9 @@ class mAnimatorLight :
   void AnimationProcess_Generic_AnimationColour_LinearBlend_Segments(const AnimationParam& param);
 
 
+
+
+
   #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
   IRAM_ATTR 
   #endif 
@@ -2321,7 +2338,8 @@ class mAnimatorLight :
 
 
 
-typedef struct Segment {
+typedef struct Segment 
+{
   public:
     uint16_t start = 0; // start means first led index within segment : start index / start X coordinate 2D (left)
     uint16_t stop  = 0; // stop means total leds within the segment (not the index of last pixel) : stop index / stop X coordinate 2D (right); segment is invalid if stop == 0
@@ -2381,11 +2399,13 @@ typedef struct Segment {
      * Option 1: Only RGB is created, white is ignored
      * Option 2: Effect creates colour and white components
      * Option 3: Effects creates colours, but white is generated after based on different options
+     * 
+     * While it describes RGB, WRGB, RGBWW, WWA etc, in reality, it is treated as the byte width for buffers directly. 
      **/
     #ifdef ENABLE_DEVFEATURE_LIGHT__FORCE_EFFECT_COLOUR_TYPE_AS_RGBCCT
-    ColourType colour_type__used_in_effect_generate = ColourType::COLOUR_TYPE__RGBCCT__ID; 
+    ColourType colour_width__used_in_effect_generate = ColourType::COLOUR_TYPE__RGBCCT__ID; 
     #else
-    ColourType colour_type__used_in_effect_generate = ColourType::COLOUR_TYPE__RGB__ID; 
+    ColourType colour_width__used_in_effect_generate = ColourType::COLOUR_TYPE__RGB__ID; 
     #endif
 
     /**
@@ -2658,7 +2678,7 @@ typedef struct Segment {
 
       palette_container = new mPaletteLoaded(); // duplicate of above, but needed for each segment
 
-      // colour_type__used_in_effect_generate = RgbcctColor::ColourType::COLOUR_TYPE__RGB__ID;
+      // colour_width__used_in_effect_generate = RgbcctColor::ColourType::COLOUR_TYPE__RGB__ID;
       // if(bus)
       // need to make this white here
 
@@ -2756,7 +2776,7 @@ typedef struct Segment {
     void    setOption(uint8_t n, bool val);
     void    setMode(uint8_t fx, bool loadDefaults = false);
     void    setPalette(uint8_t pal);
-    uint8_t differs(Segment& b) const;
+    uint8_t differs(const Segment& b) const;
     void    refreshLightCapabilities(void);
 
     static uint32_t color_blend(uint32_t,uint32_t,uint16_t,bool b16=false);
@@ -2792,7 +2812,8 @@ typedef struct Segment {
 
     // 1D strip
     [[gnu::hot]] uint16_t virtualLength(void) const;
-    [[gnu::hot]] void setPixelColor(int n, uint32_t c, bool flag_brightness_already_applied = false); // set relative pixel within segment with color
+    [[gnu::hot]] void setPixelColor(int n, uint32_t c, bool flag_brightness_already_applied = false); // set relative pixel within segment with color    
+    inline void setPixelColor(unsigned n, uint32_t c, bool flag_brightness_already_applied = false)                    { setPixelColor(int(n), c, flag_brightness_already_applied); }
     void setPixelColor(int n, byte r, byte g, byte b, byte w = 0) { setPixelColor(n, RGBW32(r,g,b,w)); } // automatically inline
     void setPixelColor(int n, CRGB c)                             { setPixelColor(n, RGBW32(c.r,c.g,c.b,0)); } // automatically inline
     void setPixelColor(float i, uint32_t c, bool aa = true);
@@ -2809,7 +2830,7 @@ typedef struct Segment {
     
 
     // 1D support functions (some implement 2D as well)
-    void blur(uint8_t bluramount);
+    void blur(uint8_t blur_amount, bool smear);
     void fill(uint32_t c);
     void fade_out(uint8_t r);
     void fadeToBlackBy(uint8_t fadeBy);
@@ -2866,6 +2887,54 @@ typedef struct Segment {
       bool apply_brightness = false
     );
 
+    /**
+     * @brief Depending on the build settings later, I will want to keep a Rgbcct and U32 palette method
+     * Hence a new U32 palette structure will exist that always foregoes the Rgbcct and handles in U32 format
+     * This may be hardcorded with a define, or use if to switch
+     * #ifdef XX
+     * #define GetPaletteColour GetPaletteColourU32
+     * #else
+     * #define GetPaletteColour GetPaletteColourRGBCCT
+     * #endif
+     **/
+    [[gnu::hot]] uint32_t GetPaletteColourU32(
+      /**
+       * @brief _pixel_position
+       * ** [0-SEGLEN]
+       * ** [0-255]   
+       */
+      uint16_t pixel_position = 0,
+      /**
+       * @brief flag_position_scaled255
+       * ** [true] : pixel_position should be between 0-255
+       * ** [false]: pixel is exact, and will automatically wrap around (ie 5 pixels inside palette will be 0,1,2,3,4,0,1,2,3,4)
+       */
+      uint8_t     flag_position_scaled255 = false,
+      /**
+       * @brief flag_wrap_hard_edge
+       * ** [true] : 16 palette gradients will not blend from 15 back to 0. ie 0-255 does not become 0-240 (where 0,15,31,47,63,79,95,111,127,143,159,175,191,207,223,239)
+       * ** [false]: Palette16 with 16 elements, as 0-255 pixel_position, will blend around smoothly using built-in CRGBPalette16
+       */
+      uint8_t     flag_wrap_hard_edge = false,
+      /**
+       * @brief flag_crgb_exact_colour
+       * ** [true] : 16 palette gradients will not blend from 15 back to 0. ie 0-255 does not become 0-240 (where 0,15,31,47,63,79,95,111,127,143,159,175,191,207,223,239)
+       * ** [false]: Palette16 with 16 elements, as 0-255 pixel_position, will blend around smoothly using built-in CRGBPalette16
+       */
+      uint8_t     flag_crgb_exact_colour = false,
+      /**
+       * @brief encoded_value
+       * ** [uint32_t*] : encoded value from palette
+       */
+      uint8_t* encoded_value = nullptr, // Must be passed in as something other than 0, or else nullptr will not be checked inside properly
+      /**
+       * @brief apply_brightness
+       * ** [false] : Apply brightness to the colour
+       * ** [true]  : Get the "full" 255 range colour object
+       */
+      bool apply_brightness = false
+    );
+
     uint8_t GetPaletteDiscreteWidth(); // Rename to colours in palette
 
     /** SECTION start ****************************************************************************************************************
@@ -2876,7 +2945,9 @@ typedef struct Segment {
     **/
 
     uint16_t virtualWidth(void)  const;
+    #define vWidth() virtualWidth() //tmp fix
     uint16_t virtualHeight(void) const;
+    #define vHeight() virtualHeight() //tmp fix
     uint16_t nrOfVStrips(void) const;
 
 
@@ -2984,6 +3055,343 @@ typedef struct Segment {
   * *****************************************************************************************************************
   * *****************************************************************************************************************
   **/
+//   inline void SetDesiredColour(uint16_t pixelIndex, uint32_t color, uint8_t bytesPerPixel) {
+//       size_t offset = pixelIndex * bytesPerPixel * 2; // Desired is the first part of the pair
+
+//       // Write desired color to the buffer
+//       data[offset + 0] = R(color); // Red
+//       data[offset + 1] = G(color); // Green
+//       data[offset + 2] = B(color); // Blue
+
+//       if (bytesPerPixel == 4) {
+//           data[offset + 3] = W(color); // White for WRGB
+//       }
+//   }
+
+//   inline void SetDesiredColourRgbww(uint16_t pixelIndex, const RgbwwColor& color) {
+//       size_t offset = pixelIndex * 10; // Desired is the first part of the pair (5 bytes * 2)
+
+//       // Write desired color to the buffer
+//       data[offset + 0] = color.R;  // Red
+//       data[offset + 1] = color.G;  // Green
+//       data[offset + 2] = color.B;  // Blue
+//       data[offset + 3] = color.WW; // Warm White
+//       data[offset + 4] = color.CW; // Cool White
+//   }
+
+// inline uint32_t GetDesiredColour(uint16_t pixelIndex, uint8_t bytesPerPixel) const {
+//     size_t offset = pixelIndex * bytesPerPixel * 2; // Desired is the first part of the pair
+
+//     // Extract RGB or WRGB based on bytesPerPixel
+//     if (bytesPerPixel == 4) { // WRGB
+//         return RGBW32(data[offset + 1], data[offset + 2], data[offset + 3], data[offset]);
+//     } else if (bytesPerPixel == 3) { // RGB
+//         return RGBW32(data[offset], data[offset + 1], data[offset + 2], 0);
+//     }
+
+//     return 0; // Return black if bytesPerPixel is invalid
+// }
+
+// inline uint32_t GetStartingColour(uint16_t pixelIndex, uint8_t bytesPerPixel) const {
+//     size_t offset = (pixelIndex * bytesPerPixel * 2) + bytesPerPixel; // Starting is after desired for the same pixel
+
+//     // Extract RGB or WRGB based on bytesPerPixel
+//     if (bytesPerPixel == 4) { // WRGB
+//         return RGBW32(data[offset + 1], data[offset + 2], data[offset + 3], data[offset]);
+//     } else if (bytesPerPixel == 3) { // RGB
+//         return RGBW32(data[offset], data[offset + 1], data[offset + 2], 0);
+//     }
+
+//     return 0; // Return black if bytesPerPixel is invalid
+// }
+
+// inline RgbwwColor GetDesiredColourRgbww(uint16_t pixelIndex) const {
+//     size_t offset = pixelIndex * 10; // Desired is the first part of the pair (5 bytes * 2)
+
+//     // Extract RGBWW color from the buffer
+//     return RgbwwColor(
+//         data[offset + 0], // Red
+//         data[offset + 1], // Green
+//         data[offset + 2], // Blue
+//         data[offset + 3], // Warm White
+//         data[offset + 4]  // Cool White
+//     );
+// }
+
+// inline RgbwwColor GetStartingColourRgbww(uint16_t pixelIndex) const {
+//     size_t offset = (pixelIndex * 10) + 5; // Starting is after desired for the same pixel
+
+//     // Extract RGBWW color from the buffer
+//     return RgbwwColor(
+//         data[offset + 0], // Red
+//         data[offset + 1], // Green
+//         data[offset + 2], // Blue
+//         data[offset + 3], // Warm White
+//         data[offset + 4]  // Cool White
+//     );
+// }
+
+
+// inline void DynamicBuffer_StartingColour_GetAllSegment() {
+//     #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PERFORMANCE_METRICS_SAFE_IN_RELEASE_MODE
+//     performance.bus_read_total_us = micros();
+//     #endif
+
+//     for (int pixel = 0; pixel < virtualLength(); pixel++) {
+//         #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+//         if (colour_width__used_in_effect_generate == 5) {
+//             RgbwwColor rgbwwColor = getPixelColorRgbww(pixel);
+//             DynamicBuffer_StartingColour_RgbwwColor(data, _dataLen, pixel, rgbwwColor);
+//         } else {
+//         #endif
+//             uint32_t color = getPixelColor(pixel);
+//             DynamicBuffer_StartingColour(data, _dataLen, pixel, color, colour_width__used_in_effect_generate);
+//         #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+//         }
+//         #endif
+//     }
+
+//     #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PERFORMANCE_METRICS_SAFE_IN_RELEASE_MODE
+//     performance.bus_read_total_us = micros() - performance.bus_read_total_us;
+//     #endif
+// }
+
+// inline void AnimationProcess_LinearBlend_Dynamic_BufferU32(const AnimationParam& param) {
+//     float progress = param.progress;
+//     uint8_t blendFactor = static_cast<uint8_t>(progress * 255);
+
+//     for (uint16_t i = 0; i < virtualLength(); i++) {
+//         if (colour_width__used_in_effect_generate == 5) {
+//             #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+//             RgbwwColor startRgbww = DynamicBuffer_Get_StartingColour_RgbwwColor(data, i);
+//             RgbwwColor desiredRgbww = DynamicBuffer_Get_DesiredColour_RgbwwColor(data, i);
+            
+//             RgbwwColor blendedRgbww = BlendRgbwwColor(startRgbww, desiredRgbww, blendFactor);
+//             setPixelColor(i, blendedRgbww);
+//             #endif
+//         } else {
+//             uint32_t startColor = DynamicBuffer_Get_StartingColour(data, i, colour_width__used_in_effect_generate);
+//             uint32_t desiredColor = DynamicBuffer_Get_DesiredColour(data, i, colour_width__used_in_effect_generate);
+
+//             uint32_t blendedColor = ColourBlend(startColor, desiredColor, blendFactor);
+//             setPixelColor(i, blendedColor);
+//         }
+//     }
+// }
+
+/************************************************************************************
+ ****** SETTERS ********************************************************************* 
+ ************************************************************************************/
+
+inline void Set_DynamicBuffer_DesiredColour(uint16_t pixelIndex, uint32_t color) {
+    size_t offset = pixelIndex * colour_width__used_in_effect_generate * 2; // Desired is the first part of the pair
+
+    // Write desired color to the buffer
+    data[offset + 0] = R(color); // Red
+    data[offset + 1] = G(color); // Green
+    data[offset + 2] = B(color); // Blue
+
+    if (colour_width__used_in_effect_generate == 4) {
+        data[offset + 3] = W(color); // White for WRGB
+    }
+}
+inline void Set_DynamicBuffer_DesiredColour_RgbwwColor(uint16_t pixelIndex, const RgbwwColor& color) {
+    size_t offset = pixelIndex * 10; // Desired is the first part of the pair (5 bytes * 2)
+
+    // Write desired color to the buffer
+    data[offset + 0] = color.R;  // Red
+    data[offset + 1] = color.G;  // Green
+    data[offset + 2] = color.B;  // Blue
+    data[offset + 3] = color.WW; // Warm White
+    data[offset + 4] = color.CW; // Cool White
+}
+
+
+inline void Set_DynamicBuffer_StartingColour(uint16_t pixelIndex, uint32_t color) {
+    size_t offset = pixelIndex * colour_width__used_in_effect_generate * 2 + colour_width__used_in_effect_generate; // Starting is after desired
+
+    // Write starting color to the buffer
+    data[offset + 0] = R(color); // Red
+    data[offset + 1] = G(color); // Green
+    data[offset + 2] = B(color); // Blue
+
+    if (colour_width__used_in_effect_generate == 4) {
+        data[offset + 3] = W(color); // White for WRGB
+    }
+}
+inline void Set_DynamicBuffer_StartingColour_RgbwwColor(uint16_t pixelIndex, const RgbwwColor& color) {
+    size_t offset = (pixelIndex * 10) + 5; // Starting is after desired
+
+    // Write starting color to the buffer
+    data[offset + 0] = color.R;  // Red
+    data[offset + 1] = color.G;  // Green
+    data[offset + 2] = color.B;  // Blue
+    data[offset + 3] = color.WW; // Warm White
+    data[offset + 4] = color.CW; // Cool White
+}
+
+/************************************************************************************
+ ****** SETTERS ********************************************************************* 
+ ************************************************************************************/
+inline uint32_t Get_DynamicBuffer_DesiredColour(uint16_t pixelIndex) {
+    size_t offset = pixelIndex * colour_width__used_in_effect_generate * 2; // Desired is the first part of the pair
+
+    // Extract RGB or WRGB based on colour width
+    if (colour_width__used_in_effect_generate == 4) { // WRGB
+        return RGBW32(data[offset + 1], data[offset + 2], data[offset + 3], data[offset]);
+    } else if (colour_width__used_in_effect_generate == 3) { // RGB
+        return RGBW32(data[offset], data[offset + 1], data[offset + 2], 0);
+    }
+
+    return 0; // Return black if colour width is invalid
+}
+inline uint32_t Get_DynamicBuffer_StartingColour(uint16_t pixelIndex) {
+    size_t offset = (pixelIndex * colour_width__used_in_effect_generate * 2) + colour_width__used_in_effect_generate; // Starting is after desired
+
+    // Extract RGB or WRGB based on colour width
+    if (colour_width__used_in_effect_generate == 4) { // WRGB
+        return RGBW32(data[offset + 1], data[offset + 2], data[offset + 3], data[offset]);
+    } else if (colour_width__used_in_effect_generate == 3) { // RGB
+        return RGBW32(data[offset], data[offset + 1], data[offset + 2], 0);
+    }
+
+    return 0; // Return black if colour width is invalid
+}
+inline RgbwwColor Get_DynamicBuffer_DesiredColour_RgbwwColor(uint16_t pixelIndex) {
+    size_t offset = pixelIndex * 10; // Desired is the first part of the pair (5 bytes * 2)
+
+    // Extract RGBWW color from the buffer
+    return RgbwwColor(
+        data[offset + 0], // Red
+        data[offset + 1], // Green
+        data[offset + 2], // Blue
+        data[offset + 3], // Warm White
+        data[offset + 4]  // Cool White
+    );
+}
+inline RgbwwColor Get_DynamicBuffer_StartingColour_RgbwwColor(uint16_t pixelIndex) {
+    size_t offset = (pixelIndex * 10) + 5; // Starting is after desired
+
+    // Extract RGBWW color from the buffer
+    return RgbwwColor(
+        data[offset + 0], // Red
+        data[offset + 1], // Green
+        data[offset + 2], // Blue
+        data[offset + 3], // Warm White
+        data[offset + 4]  // Cool White
+    );
+}
+
+/************************************************************************************
+ ****** Higher Level Ops ********************************************************************* 
+ ************************************************************************************/
+inline void DynamicBuffer_StartingColour_GetAllSegment() {
+    #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PERFORMANCE_METRICS_SAFE_IN_RELEASE_MODE
+    performance.bus_read_total_us = micros();
+    #endif
+
+    for (int pixel = 0; pixel < virtualLength(); pixel++) {
+        #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+        if (colour_width__used_in_effect_generate == 5) {
+            // Retrieve desired color and set starting color for RGBWW
+            RgbwwColor rgbwwColor = getPixelColorRgbww(pixel);
+            Set_DynamicBuffer_StartingColour_RgbwwColor(pixel, rgbwwColor);
+        } else {
+        #endif
+            // Retrieve desired color and set starting color for RGB/WRGB
+            uint32_t color = getPixelColor(pixel);
+            Set_DynamicBuffer_StartingColour(pixel, color);
+        #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+        }
+        #endif
+    }
+
+    #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PERFORMANCE_METRICS_SAFE_IN_RELEASE_MODE
+    performance.bus_read_total_us = micros() - performance.bus_read_total_us;
+    #endif
+}
+
+inline void AnimationProcess_LinearBlend_Dynamic_BufferU32(const AnimationParam& param) {
+    float progress = param.progress;
+    uint8_t blendFactor = static_cast<uint8_t>(progress * 255);
+
+    for (uint16_t i = 0; i < virtualLength(); i++) {
+        if (colour_width__used_in_effect_generate == 5) {
+            #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+            // Retrieve starting and desired colors for RGBWW
+            RgbwwColor startRgbww = Get_DynamicBuffer_StartingColour_RgbwwColor(i);
+            RgbwwColor desiredRgbww = Get_DynamicBuffer_DesiredColour_RgbwwColor(i);
+
+            // Blend RGBWW colors and write the result
+            RgbwwColor blendedRgbww = BlendRgbwwColor(startRgbww, desiredRgbww, blendFactor);
+            setPixelColor(i, blendedRgbww);
+            #endif
+        } else {
+            // Retrieve starting and desired colors for RGB/WRGB
+            uint32_t startColor = Get_DynamicBuffer_StartingColour(i);
+            uint32_t desiredColor = Get_DynamicBuffer_DesiredColour(i);
+
+            // Blend RGB/WRGB colors and write the result
+            uint32_t blendedColor = ColourBlend(startColor, desiredColor, blendFactor);
+            setPixelColor(i, blendedColor);
+        }
+    }
+}
+
+
+
+
+// inline uint32_t DynamicBuffer_Get_DesiredColour(const uint8_t* buffer, uint16_t pixelIndex, uint8_t bytesPerPixel) {
+//     size_t offset = pixelIndex * bytesPerPixel * 2; // Desired is the first part of the interleaved pair
+
+//     // Extract RGB or WRGB based on bytesPerPixel
+//     if (bytesPerPixel == 4) { // WRGB
+//         return RGBW32(buffer[offset + 1], buffer[offset + 2], buffer[offset + 3], buffer[offset]);
+//     } else if (bytesPerPixel == 3) { // RGB
+//         return RGBW32(buffer[offset], buffer[offset + 1], buffer[offset + 2], 0);
+//     }
+
+//     return 0; // Return black if bytesPerPixel is invalid
+// }
+// inline uint32_t DynamicBuffer_Get_StartingColour(const uint8_t* buffer, uint16_t pixelIndex, uint8_t bytesPerPixel) {
+//     size_t offset = (pixelIndex * bytesPerPixel * 2) + bytesPerPixel; // Starting is after desired for the same pixel
+
+//     // Extract RGB or WRGB based on bytesPerPixel
+//     if (bytesPerPixel == 4) { // WRGB
+//         return RGBW32(buffer[offset + 1], buffer[offset + 2], buffer[offset + 3], buffer[offset]);
+//     } else if (bytesPerPixel == 3) { // RGB
+//         return RGBW32(buffer[offset], buffer[offset + 1], buffer[offset + 2], 0);
+//     }
+
+//     return 0; // Return black if bytesPerPixel is invalid
+// }
+// inline RgbwwColor DynamicBuffer_Get_DesiredColour_RgbwwColor(const uint8_t* buffer, uint16_t pixelIndex) {
+//     size_t offset = pixelIndex * 10; // Desired is the first part of the interleaved pair (5 bytes * 2)
+
+//     // Extract RGBWW color from the buffer
+//     return RgbwwColor(
+//         buffer[offset + 0], // Red
+//         buffer[offset + 1], // Green
+//         buffer[offset + 2], // Blue
+//         buffer[offset + 3], // Warm White
+//         buffer[offset + 4]  // Cool White
+//     );
+// }
+// inline RgbwwColor DynamicBuffer_Get_StartingColour_RgbwwColor(const uint8_t* buffer, uint16_t pixelIndex) {
+//     size_t offset = (pixelIndex * 10) + 5; // Starting is after desired for the same pixel (5 bytes * 2, +5 offset)
+
+//     // Extract RGBWW color from the buffer
+//     return RgbwwColor(
+//         buffer[offset + 0], // Red
+//         buffer[offset + 1], // Green
+//         buffer[offset + 2], // Blue
+//         buffer[offset + 3], // Warm White
+//         buffer[offset + 4]  // Cool White
+//     );
+// }
+
+
+
 
 
 } segment;
@@ -3815,6 +4223,12 @@ bool useAMPM _INIT(false);       // 12h/24h clock format
 #define MIN_SHOW_DELAY   1 //(_frametime < 16 ? 8 : 15)
 #define DEFAULT_LED_COUNT 30
 
+
+// Segment capability byte
+#define SEG_CAPABILITY_RGB     0x01
+#define SEG_CAPABILITY_W       0x02
+#define SEG_CAPABILITY_CCT     0x04
+
 // byte overlayCurrent _INIT(0);    // 0: no overlay 1: analog clock 2: was single-digit clock 3: was cronixie
 // byte overlayMin _INIT(0), overlayMax _INIT(DEFAULT_LED_COUNT - 1);   // boundaries of overlay mode
 
@@ -4087,6 +4501,12 @@ bool useMainSegmentOnly _INIT(false);
     #endif // ENABLE_DEVFEATURE_LIGHTING__DEVELOPING_CODE
 
 };
+
+#ifdef ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
+// Extern declaration of the global instance
+extern mAnimatorLight* tkr_extern_lAni;  // global instance of the mAnimatorLight class for performance reasons
+#endif
+
 
 #endif
 

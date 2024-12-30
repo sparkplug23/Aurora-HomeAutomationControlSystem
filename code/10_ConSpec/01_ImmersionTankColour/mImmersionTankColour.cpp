@@ -159,7 +159,7 @@ void mImmersionTankColour::EverySecond()
     default:
     case MODE_SHOW_COLOURS_OFF_ID:
       
-      pCONT_lAni->CommandSet_Global_BrtRGB_255(0);
+      tkr_anim->CommandSet_Global_BrtRGB_255(0);
 
     break;
     case MODE_SHOW_COLOURS_GRADIENT_COLOUR_TEMP_ON_ID:
@@ -167,17 +167,17 @@ void mImmersionTankColour::EverySecond()
       if(flag_show_enabled)
       {
 
-        // pCONT_lAni->CommandSet_PaletteID(mPalette::PALETTELIST_VARIABLE_GENERIC_01__ID);
-        // pCONT_iLight->CommandSet_AnimationModeID(pCONT_lAni->EFFECTS_FUNCTION__STATIC_PALETTE__ID);
-        pCONT_lAni->CommandSet_Animation_Transition_Time_Ms(0);
-        pCONT_lAni->CommandSet_Global_BrtRGB_255(255);
+        // tkr_anim->CommandSet_PaletteID(mPalette::PALETTELIST_VARIABLE_GENERIC_01__ID);
+        // pCONT_iLight->CommandSet_AnimationModeID(tkr_anim->EFFECTS_FUNCTION__STATIC_PALETTE__ID);
+        tkr_anim->CommandSet_Animation_Transition_Time_Ms(0);
+        tkr_anim->CommandSet_Global_BrtRGB_255(255);
         SubTask_StripSet_Showing();            
         
       }
       else
       {
 
-        pCONT_lAni->CommandSet_Global_BrtRGB_255(0);
+        tkr_anim->CommandSet_Global_BrtRGB_255(0);
 
       }
 
@@ -348,9 +348,9 @@ void mImmersionTankColour::SubTask_StripSet_Showing()
   // pCONT_iLight->CommandSet_PaletteColour_RGBCCT_Raw_By_ID(mPaletteI->PALETTELIST_VARIABLE_GENERIC_01__ID, vals, ARRAY_SIZE(vals));
 
 
-  pCONT_lAni->CommandSet_PaletteID(mPaletteI->PALETTELIST_VARIABLE_GENERIC_01__ID);
+  tkr_anim->CommandSet_PaletteID(mPaletteI->PALETTELIST_VARIABLE_GENERIC_01__ID);
 
-  // pCONT_lAni->CommandSet_TransitionOrderID( pCONT_lAni->TRANSITION_ORDER_INORDER_ID);
+  // tkr_anim->CommandSet_TransitionOrderID( tkr_anim->TRANSITION_ORDER_INORDER_ID);
 
   // ALOG_TST(PSTR("index=%d"),index);
 

@@ -42,6 +42,17 @@
 #define IC_INDEX_WS2812_2CH_3X(i)     ((i)*2/3)
 #define WS2812_2CH_3X_SPANS_2_ICS(i)  ((i)&0x01)    // every other LED zone is on two different ICs
 
+#ifndef LED_MILLIAMPS_DEFAULT
+  #define LED_MILLIAMPS_DEFAULT 55    // common WS2812B
+#else
+  #if LED_MILLIAMPS_DEFAULT < 1 || LED_MILLIAMPS_DEFAULT > 100
+   #warning "Unusual LED mA current, overriding with default value."
+   #undef LED_MILLIAMPS_DEFAULT
+   #define LED_MILLIAMPS_DEFAULT 55
+  #endif
+#endif
+
+
 DEFINE_PGM_CTR(PM_BUSTYPE__WS2812_1CH__CTR) "WS2812_1CH";
 DEFINE_PGM_CTR(PM_BUSTYPE__WS2812_1CH_X3__CTR) "WS2812_1CH_X3";
 DEFINE_PGM_CTR(PM_BUSTYPE__WS2812_2CH_X3__CTR) "WS2812_2CH_X3";
@@ -76,72 +87,6 @@ typedef struct {
   const char *name;
 } LEDType;
 
-// Temporary struct for passing bus configuration to bus
-struct BusConfig 
-{
-  uint8_t type;
-  uint16_t count;
-  uint16_t start;
-  uint8_t colorOrder;
-  bool reversed;
-  uint8_t skipAmount;
-  bool refreshReq;
-  uint8_t autoWhite;
-  uint8_t pins[5] = {LEDPIN, 255, 255, 255, 255};
-  uint16_t frequency;
-  bool doubleBuffer;
-  uint8_t milliAmpsPerLed;
-  uint16_t milliAmpsMax;
-
-  BusConfig(
-    uint8_t busType, 
-    uint8_t* ppins, 
-    uint16_t pstart, 
-    uint16_t length = 1,
-    uint8_t _ColourOrder = 0,//{COLOUR_ORDER_INIT_DISABLED},
-    bool rev = false, 
-    uint8_t skip = 0, 
-    byte aw = RGBW_MODE_MANUAL_ONLY
-  ){
-        
-    refreshReq = (bool) GET_BIT(busType,7);
-    type = busType & 0x7F;  // bit 7 may be/is hacked to include refresh info (1=refresh in off state, 0=no refresh)
-    count = length; 
-    start = pstart; 
-    reversed = rev; 
-    skipAmount = skip; 
-    autoWhite = aw;
-
-    #ifdef ESP32
-    doubleBuffer = true; //tmp fix, force here but should be BusConfig arg
-    #else
-    doubleBuffer = false;
-    #endif
-
-    uint8_t nPins = 1;
-    if (type >= BUSTYPE_NET_DDP_RGB && type < 96) nPins = 4; //virtual network bus. 4 "pins" store IP address
-    else if (type > 47) nPins = 2;
-    else if (type > 40 && type < 46) nPins = NUM_BUSTYPE_PWM_PINS(type);
-    for (uint8_t i = 0; i < nPins; i++) pins[i] = ppins[i];
-
-    colorOrder = _ColourOrder;
-
-  }
-
-  // Validates start and length and extends total if needed
-  bool adjustBounds(uint16_t& total) 
-  {
-    if (!count) count = 1;
-    if (count > MAX_LEDS_PER_BUS) count = MAX_LEDS_PER_BUS;
-    if (start >= MAX_LEDS_NEO) return false;
-    // Limit length of strip if it would exceed total permissible LEDs
-    if (start + count > MAX_LEDS_NEO) count = MAX_LEDS_NEO - start;
-    // Extend total count accordingly
-    if (start + count > total) total = start + count;
-    return true;
-  }
-
-};
 
 /*****************************************************************************************************************************************************************
  ***************************************************************************************************************************************************************** 
@@ -307,7 +252,7 @@ class Bus {
     bool _hasWhite;
     bool _hasCCT;
     uint8_t  _autoWhiteMode;
-    uint8_t  *_data;
+    uint8_t  *_data;   // pixel data, part of the new doublebuffer
     // global Auto White Calculation override
     static uint8_t _gAWM;
     // _cct has the following meanings (see calculateCCT() & BusManager::setSegmentCCT()):
@@ -324,6 +269,95 @@ class Bus {
     uint32_t autoWhiteCalc(uint32_t c) const;
     uint8_t *allocateData(size_t size = 1);
     void     freeData() { if (_data != nullptr) free(_data); _data = nullptr; }
+
+};
+
+
+// Temporary struct for passing bus configuration to bus
+struct BusConfig 
+{
+  uint8_t type;
+  uint16_t count;
+  uint16_t start;
+  uint8_t colorOrder;
+  bool reversed;
+  uint8_t skipAmount;
+  bool refreshReq;
+  uint8_t autoWhite;
+  uint8_t pins[5] = {LEDPIN, 255, 255, 255, 255};
+  uint16_t frequency;
+  bool doubleBuffer;
+  uint8_t milliAmpsPerLed;
+  uint16_t milliAmpsMax;
+
+
+  BusConfig(uint8_t busType, uint8_t* ppins, uint16_t pstart, uint16_t len = 1, uint8_t pcolorOrder = COL_ORDER_GRB, bool rev = false, uint8_t skip = 0, byte aw=RGBW_MODE_MANUAL_ONLY, uint16_t clock_kHz=0U, bool dblBfr=false, uint8_t maPerLed=LED_MILLIAMPS_DEFAULT, uint16_t maMax=ABL_MILLIAMPS_DEFAULT)
+    : count(len)
+    , start(pstart)
+    , colorOrder(pcolorOrder)
+    , reversed(rev)
+    , skipAmount(skip)
+    , autoWhite(aw)
+    , frequency(clock_kHz)
+    , doubleBuffer(dblBfr)
+    , milliAmpsPerLed(maPerLed)
+    , milliAmpsMax(maMax)
+  {
+    refreshReq = (bool) GET_BIT(busType,7);
+    type = busType & 0x7F;  // bit 7 may be/is hacked to include refresh info (1=refresh in off state, 0=no refresh)
+    size_t nPins = Bus::getNumberOfPins(type);
+    for (size_t i = 0; i < nPins; i++) pins[i] = ppins[i];
+  }
+
+
+
+  // BusConfig(
+  //   uint8_t busType, 
+  //   uint8_t* ppins, 
+  //   uint16_t pstart, 
+  //   uint16_t length = 1,
+  //   uint8_t _ColourOrder = 0,//{COLOUR_ORDER_INIT_DISABLED},
+  //   bool rev = false, 
+  //   uint8_t skip = 0, 
+  //   byte aw = RGBW_MODE_MANUAL_ONLY
+  // ){
+        
+  //   refreshReq = (bool) GET_BIT(busType,7);
+  //   type = busType & 0x7F;  // bit 7 may be/is hacked to include refresh info (1=refresh in off state, 0=no refresh)
+  //   count = length; 
+  //   start = pstart; 
+  //   reversed = rev; 
+  //   skipAmount = skip; 
+  //   autoWhite = aw;
+
+  //   #ifdef ESP32
+  //   doubleBuffer = true; //tmp fix, force here but should be BusConfig arg
+  //   #else
+  //   doubleBuffer = false;
+  //   #endif
+
+  //   uint8_t nPins = 1;
+  //   if (type >= BUSTYPE_NET_DDP_RGB && type < 96) nPins = 4; //virtual network bus. 4 "pins" store IP address
+  //   else if (type > 47) nPins = 2;
+  //   else if (type > 40 && type < 46) nPins = NUM_BUSTYPE_PWM_PINS(type);
+  //   for (uint8_t i = 0; i < nPins; i++) pins[i] = ppins[i];
+
+  //   colorOrder = _ColourOrder;
+
+  // }
+
+  // Validates start and length and extends total if needed
+  bool adjustBounds(uint16_t& total) 
+  {
+    if (!count) count = 1;
+    if (count > MAX_LEDS_PER_BUS) count = MAX_LEDS_PER_BUS;
+    if (start >= MAX_LEDS_NEO) return false;
+    // Limit length of strip if it would exceed total permissible LEDs
+    if (start + count > MAX_LEDS_NEO) count = MAX_LEDS_NEO - start;
+    // Extend total count accordingly
+    if (start + count > total) total = start + count;
+    return true;
+  }
 
 };
 
@@ -511,12 +545,15 @@ class BusManager
     void removeAll();
     void show();
     
-    Bus* busses[WLED_MAX_BUSSES+WLED_MIN_VIRTUAL_BUSSES] = {nullptr};
+    static Bus* busses[WLED_MAX_BUSSES+WLED_MIN_VIRTUAL_BUSSES];// = {nullptr};
 
     [[gnu::hot]] void setPixelColor(uint32_t pix, uint32_t c);
     uint32_t getPixelColor(uint32_t pix);
     
     static void setBrightness(uint8_t b);
+    // for setSegmentCCT(), cct can only be in [-1,255] range; allowWBCorrection will convert it to K
+    // WARNING: setSegmentCCT() is a misleading name!!! much better would be setGlobalCCT() or just setCCT()
+    static void setSegmentCCT(int16_t cct, bool allowWBCorrection = false);
         
     bool canAllShow();
 
@@ -534,7 +571,7 @@ class BusManager
 
   private:
     static uint8_t numBusses;
-    ColorOrderMap colorOrderMap;  
+    static ColorOrderMap colorOrderMap;  
     
     static uint16_t _milliAmpsUsed;
     static uint16_t _milliAmpsMax;

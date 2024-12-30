@@ -1782,7 +1782,7 @@ void mWebServer::setStaticContentCacheHeaders(AsyncWebServerResponse *response)
   #else
   response->addHeader(F("Cache-Control"),"no-store,max-age=0"); // prevent caching if debug build
   #endif
-  snprintf_P(tmp, sizeof(tmp), PSTR("%d-%02x"), PROJECT_VERSION, false);// pCONT_lAni->cacheInvalidate);
+  snprintf_P(tmp, sizeof(tmp), PSTR("%d-%02x"), PROJECT_VERSION, false);// tkr_anim->cacheInvalidate);
   response->addHeader(F("ETag"), tmp);
 }
 

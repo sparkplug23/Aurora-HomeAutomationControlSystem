@@ -32,7 +32,7 @@ void mAnimatorLight::parse_JSONCommand(JsonParserObject obj)
 
   if(isserviced_start_count != data_buffer.isserviced) //ie something was parsed inside this function
   {
-    pCONT_lAni->force_update();
+    tkr_anim->force_update();
   }
 
   uint8_t segments_found = 0;
@@ -1442,8 +1442,8 @@ void mAnimatorLight::CommandSet_Effect_Speed(uint8_t value, uint8_t segment_inde
 
 void mAnimatorLight::CommandSet_Effect_ColourTypeID(uint8_t id, uint8_t segment_index)
 {  
-  SEGMENT_I(segment_index).colour_type__used_in_effect_generate = (ColourType)id;
-  ALOG_INF(PSTR("ColourType = %d"),SEGMENT_I(segment_index).colour_type__used_in_effect_generate);
+  SEGMENT_I(segment_index).colour_width__used_in_effect_generate = (ColourType)id;
+  ALOG_INF(PSTR("ColourType = %d"),SEGMENT_I(segment_index).colour_width__used_in_effect_generate);
 }
 
 

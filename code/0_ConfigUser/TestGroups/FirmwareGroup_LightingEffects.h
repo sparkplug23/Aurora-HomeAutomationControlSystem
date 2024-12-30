@@ -1635,11 +1635,21 @@
   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
   #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
 
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+
+  #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+
+  #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
+
   /***********************************
    * SECTION: Lighting BusConfig Set
   ************************************/  
 
-  #define ENABLE_BUSCONFIG_1X_16
+  #define ENABLE_BUSCONFIG_1X_16 //testing
+  // #define ENABLE_BUSCONFIG_7X_2100_INSTALLED_OUTSIDE_TREE_2024
+
   // #define ENABLE_BUSCONFIG_8X_2400
   // #define ENABLE_BUSCONFIG_12X_3200
   // #define ENABLE_BUSCONFIG_16X_3200
@@ -1663,13 +1673,13 @@
         "ColourOrder":"GRB",
         "BusType":"WS2812_RGB",
         "Start":0,
-        "Length":16
+        "Length":1000
       }
     ],
     "Segment0": {
       "PixelRange": [
         0,
-        16
+        1000
       ],
       "ColourPalette":"Snowy 02",
       "Effects": {
@@ -1682,7 +1692,7 @@
       "BrightnessRGB": 100,
       "BrightnessCCT": 0
     },
-    "BrightnessRGB": 0,
+    "BrightnessRGB": 10,
     "BrightnessCCT": 0
   }
   )=====";
@@ -1714,6 +1724,112 @@
 
   #endif // ENABLE_BUSCONFIG_8X_2400
 
+  #ifdef ENABLE_BUSCONFIG_7X_2100_INSTALLED_OUTSIDE_TREE_2024
+
+  #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 4000
+
+  #define USE_LIGHTING_TEMPLATE
+  DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  R"=====(
+  {
+    "BusConfig":[
+      {
+        "Pin":4,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":0,
+        "Length":300
+      },
+      {
+        "Pin":18,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":300,
+        "Length":300
+      },
+      {
+        "Pin":19,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":600,
+        "Length":300
+      },
+      {
+        "Pin":21,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":900,
+        "Length":300
+      },
+      {
+        "Pin":16,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":1200,
+        "Length":300
+      },
+      {
+        "Pin":17,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":1500,
+        "Length":300
+      },
+      {
+        "Pin":22,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":1800,
+        "Length":300
+      }
+    ],
+    "Segment0": {
+      "PixelRange": [
+        0,
+        2100
+      ],
+      "ColourPalette":"Snowy 02",
+      "Effects": {
+        "Function":"Sweep Random",
+        "Speed":127,
+        "Intensity":127,
+        "Grouping":1,
+        "RateMs": 20
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 0
+    },
+    "BrightnessRGB": 0,
+    "BrightnessCCT": 0
+  }
+  )=====";
+
+  #define USE_MODULE_TEMPLATE
+  DEFINE_PGM_CTR(MODULE_TEMPLATE) 
+  "{"
+    "\"" D_NAME         "\":\"" DEVICENAME_CTR "\","
+    "\"" D_FRIENDLYNAME "\":\"" DEVICENAME_FRIENDLY_CTR "\","
+    "\"" D_GPIO_NUMBER "\":{"    
+      "\"13\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"12\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"26\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"32\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"14\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"27\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"25\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"33\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"28\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\"," // Bus8
+      #ifdef USE_MODULE_SENSORS_BUTTONS
+      "\"35\":\"" D_GPIO_FUNCTION_KEY1_INV_CTR  "\","
+      "\"34\":\"" D_GPIO_FUNCTION_KEY2_INV_CTR  "\","
+      "\"0\":\"" D_GPIO_FUNCTION_KEY3_INV_CTR  "\""
+      #endif
+    "},"
+    "\"" D_BASE     "\":\"" D_MODULE_NAME_USERMODULE_CTR "\","
+    "\"" D_ROOMHINT "\":\"" DEVICENAME_ROOMHINT_CTR "\""
+  "}";
+
+  #endif // ENABLE_BUSCONFIG_7X_2100
 
   #ifdef ENABLE_BUSCONFIG_8X_2400
 

@@ -237,6 +237,23 @@ enum LoggingLevels {
 #endif
 
 
+#define ENABLE_DEBUG_PRINT_U32
+#if defined(ENABLE_DEBUG_PRINT_U32)
+    // Macro to print a 32-bit number and its individual bytes
+    #define DEBUG_PRINT_U32(message, number) \
+        SERIAL_DEBUG.printf("%s %lu: \t%d,%d,%d,%d\n\r", \
+                            message, \
+                            static_cast<uint32_t>(number), \
+                            static_cast<uint8_t>((number) >> 24), /* 4th byte (MSB) */ \
+                            static_cast<uint8_t>((number) >> 16), /* 3rd byte */ \
+                            static_cast<uint8_t>((number) >> 8),  /* 2nd byte */ \
+                            static_cast<uint8_t>((number) & 0xFF)); /* 1st byte (LSB) */ \
+        SERIAL_DEBUG.flush();
+#else
+    #define DEBUG_PRINT_U32(message, number)  // No operation if debug is disabled
+#endif
+
+
 
 // Added indexing, as nested debug points need different saved start points. 
 #ifdef ENABLE_DEBUGFEATURE_LIGHTING__TIME_CRITICAL_RECORDING
@@ -244,8 +261,8 @@ enum LoggingLevels {
     #define DEBUG_LIGHTING__START_TIME_RECORDING(X) lighting_time_critical_logging.start_value[X] = micros();
     #define DEBUG_LIGHTING__SAVE_TIME_RECORDING(X, Y)  Y = micros() - lighting_time_critical_logging.start_value[X];
 
-    #define DEBUG_LIGHTING__START_TIME_RECORDING_TASK(X) pCONT_lAni->lighting_time_critical_logging.start_value[X] = micros();
-    #define DEBUG_LIGHTING__SAVE_TIME_RECORDING_TASK(X, Y)  pCONT_lAni->Y = micros() - pCONT_lAni->lighting_time_critical_logging.start_value[X];
+    #define DEBUG_LIGHTING__START_TIME_RECORDING_TASK(X) tkr_anim->lighting_time_critical_logging.start_value[X] = micros();
+    #define DEBUG_LIGHTING__SAVE_TIME_RECORDING_TASK(X, Y)  tkr_anim->Y = micros() - tkr_anim->lighting_time_critical_logging.start_value[X];
 
 
 

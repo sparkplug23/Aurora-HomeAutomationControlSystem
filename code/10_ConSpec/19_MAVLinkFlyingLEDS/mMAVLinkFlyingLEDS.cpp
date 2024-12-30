@@ -105,9 +105,9 @@ void mMavlinkFlyingLEDS::EverySecond()
 
   // HsbColor color = HsbColor(hue/360.0f, 1, 1);
 
-  // pCONT_lAni->SEGMENT_I(0).rgbcctcolors[0] = color;
-  // pCONT_lAni->SEGMENT_I(0).palette_id = 0;
-  // pCONT_lAni->SEGMENT_I(0).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
+  // tkr_anim->SEGMENT_I(0).rgbcctcolors[0] = color;
+  // tkr_anim->SEGMENT_I(0).palette_id = 0;
+  // tkr_anim->SEGMENT_I(0).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
 
 }
 
@@ -123,23 +123,23 @@ void mMavlinkFlyingLEDS::Effect_LandingLights()
   /**
    * @brief Segment0 [Wings]
    **/
-  pCONT_lAni->SEGMENT_I(0).rgbcctcolors[0] = RgbcctColor(255,255,255,255,255); //white
-  pCONT_lAni->SEGMENT_I(0).palette_id = 0;
-  pCONT_lAni->SEGMENT_I(0).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
-  pCONT_lAni->SEGMENT_I(0).cycle_time__rate_ms = FRAMETIME_MS;
-  pCONT_lAni->SEGMENT_I(0).speed = 255;
-  pCONT_lAni->SEGMENT_I(0).setBrightnessRGB(0);
-  pCONT_lAni->SEGMENT_I(0).setBrightnessCCT(255);
+  tkr_anim->SEGMENT_I(0).rgbcctcolors[0] = RgbcctColor(255,255,255,255,255); //white
+  tkr_anim->SEGMENT_I(0).palette_id = 0;
+  tkr_anim->SEGMENT_I(0).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
+  tkr_anim->SEGMENT_I(0).cycle_time__rate_ms = FRAMETIME_MS;
+  tkr_anim->SEGMENT_I(0).speed = 255;
+  tkr_anim->SEGMENT_I(0).setBrightnessRGB(0);
+  tkr_anim->SEGMENT_I(0).setBrightnessCCT(255);
   /**
    * @brief Segment1 [fuselage]
    **/
-  pCONT_lAni->SEGMENT_I(1).rgbcctcolors[0] = RgbcctColor(255,255,255,255,255); //white
-  pCONT_lAni->SEGMENT_I(1).palette_id = 0;
-  pCONT_lAni->SEGMENT_I(1).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
-  pCONT_lAni->SEGMENT_I(1).cycle_time__rate_ms = FRAMETIME_MS;
-  pCONT_lAni->SEGMENT_I(1).speed = 255;
-  pCONT_lAni->SEGMENT_I(1).setBrightnessRGB(255);
-  pCONT_lAni->SEGMENT_I(1).setBrightnessCCT(255);
+  tkr_anim->SEGMENT_I(1).rgbcctcolors[0] = RgbcctColor(255,255,255,255,255); //white
+  tkr_anim->SEGMENT_I(1).palette_id = 0;
+  tkr_anim->SEGMENT_I(1).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
+  tkr_anim->SEGMENT_I(1).cycle_time__rate_ms = FRAMETIME_MS;
+  tkr_anim->SEGMENT_I(1).speed = 255;
+  tkr_anim->SEGMENT_I(1).setBrightnessRGB(255);
+  tkr_anim->SEGMENT_I(1).setBrightnessCCT(255);
   /**
    * @brief Segment1 [Hatches] - when landing, make the hatches be chasing (for power reserve) but match rudder solid for altitude
    **/
@@ -195,38 +195,38 @@ void mMavlinkFlyingLEDS::Effect_LandingLights()
 
     #endif
   // #endif
-  pCONT_lAni->SEGMENT_I(2).rgbcctcolors[0] = color_hatch_chase;
-  pCONT_lAni->SEGMENT_I(2).rgbcctcolors[1] = RgbcctColor(0,0,0,0,0); //black
-  pCONT_lAni->SEGMENT_I(2).palette_id = mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID;
-  pCONT_lAni->SEGMENT_I(2).effect_id = mAnimatorLight::EFFECTS_FUNCTION__CHASE_THEATER__ID;
-  pCONT_lAni->SEGMENT_I(2).cycle_time__rate_ms = FRAMETIME_MS;
-  pCONT_lAni->SEGMENT_I(2).speed = 255;
-  pCONT_lAni->SEGMENT_I(2).cycle_time__rate_ms = 25;
-  pCONT_lAni->SEGMENT_I(2).reverse = true;
-  pCONT_lAni->SEGMENT_I(2).setBrightnessRGB(50);
-  pCONT_lAni->SEGMENT_I(2).setBrightnessCCT(0);
+  tkr_anim->SEGMENT_I(2).rgbcctcolors[0] = color_hatch_chase;
+  tkr_anim->SEGMENT_I(2).rgbcctcolors[1] = RgbcctColor(0,0,0,0,0); //black
+  tkr_anim->SEGMENT_I(2).palette_id = mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID;
+  tkr_anim->SEGMENT_I(2).effect_id = mAnimatorLight::EFFECTS_FUNCTION__CHASE_THEATER__ID;
+  tkr_anim->SEGMENT_I(2).cycle_time__rate_ms = FRAMETIME_MS;
+  tkr_anim->SEGMENT_I(2).speed = 255;
+  tkr_anim->SEGMENT_I(2).cycle_time__rate_ms = 25;
+  tkr_anim->SEGMENT_I(2).reverse = true;
+  tkr_anim->SEGMENT_I(2).setBrightnessRGB(50);
+  tkr_anim->SEGMENT_I(2).setBrightnessCCT(0);
   /**
    * @brief Segment1 [Rudder] - height is colour
    **/
   HsbColor color_rudder = color_hatch_chase;
-  pCONT_lAni->SEGMENT_I(3).rgbcctcolors[0] = color_rudder;
-  pCONT_lAni->SEGMENT_I(3).palette_id = mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID;
-  pCONT_lAni->SEGMENT_I(3).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
-  pCONT_lAni->SEGMENT_I(3).cycle_time__rate_ms = FRAMETIME_MS;
-  pCONT_lAni->SEGMENT_I(3).speed = 255;
-  pCONT_lAni->SEGMENT_I(3).cycle_time__rate_ms = 25;
-  pCONT_lAni->SEGMENT_I(3).setBrightnessRGB(50);
-  pCONT_lAni->SEGMENT_I(3).setBrightnessCCT(0);
+  tkr_anim->SEGMENT_I(3).rgbcctcolors[0] = color_rudder;
+  tkr_anim->SEGMENT_I(3).palette_id = mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID;
+  tkr_anim->SEGMENT_I(3).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
+  tkr_anim->SEGMENT_I(3).cycle_time__rate_ms = FRAMETIME_MS;
+  tkr_anim->SEGMENT_I(3).speed = 255;
+  tkr_anim->SEGMENT_I(3).cycle_time__rate_ms = 25;
+  tkr_anim->SEGMENT_I(3).setBrightnessRGB(50);
+  tkr_anim->SEGMENT_I(3).setBrightnessCCT(0);
   /**
    * @brief Segment4 [Nose]
    **/
-  pCONT_lAni->SEGMENT_I(4).rgbcctcolors[0] = RgbcctColor(255,255,255,255,255); //white
-  pCONT_lAni->SEGMENT_I(4).palette_id = 0;
-  pCONT_lAni->SEGMENT_I(4).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
-  pCONT_lAni->SEGMENT_I(4).cycle_time__rate_ms = FRAMETIME_MS;
-  pCONT_lAni->SEGMENT_I(4).speed = 255;
-  pCONT_lAni->SEGMENT_I(4).setBrightnessRGB(255);
-  pCONT_lAni->SEGMENT_I(4).setBrightnessCCT(255);
+  tkr_anim->SEGMENT_I(4).rgbcctcolors[0] = RgbcctColor(255,255,255,255,255); //white
+  tkr_anim->SEGMENT_I(4).palette_id = 0;
+  tkr_anim->SEGMENT_I(4).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
+  tkr_anim->SEGMENT_I(4).cycle_time__rate_ms = FRAMETIME_MS;
+  tkr_anim->SEGMENT_I(4).speed = 255;
+  tkr_anim->SEGMENT_I(4).setBrightnessRGB(255);
+  tkr_anim->SEGMENT_I(4).setBrightnessCCT(255);
 
 
 
@@ -240,39 +240,39 @@ void mMavlinkFlyingLEDS::Effect_TakeoffLights()
   /**
    * @brief Segment0 [Wings]
    **/
-  pCONT_lAni->SEGMENT_I(0).rgbcctcolors[0] = RgbcctColor(0,255,0,0,0); //white
-  pCONT_lAni->SEGMENT_I(0).palette_id = 0;
-  pCONT_lAni->SEGMENT_I(0).effect_id = mAnimatorLight::EFFECTS_FUNCTION__ANDROID__ID;
-  pCONT_lAni->SEGMENT_I(0).cycle_time__rate_ms = FRAMETIME_MS;
-  pCONT_lAni->SEGMENT_I(0).speed = 255;
-  pCONT_lAni->SEGMENT_I(0).setBrightnessRGB(255);
-  pCONT_lAni->SEGMENT_I(0).setBrightnessCCT(255);
+  tkr_anim->SEGMENT_I(0).rgbcctcolors[0] = RgbcctColor(0,255,0,0,0); //white
+  tkr_anim->SEGMENT_I(0).palette_id = 0;
+  tkr_anim->SEGMENT_I(0).effect_id = mAnimatorLight::EFFECTS_FUNCTION__ANDROID__ID;
+  tkr_anim->SEGMENT_I(0).cycle_time__rate_ms = FRAMETIME_MS;
+  tkr_anim->SEGMENT_I(0).speed = 255;
+  tkr_anim->SEGMENT_I(0).setBrightnessRGB(255);
+  tkr_anim->SEGMENT_I(0).setBrightnessCCT(255);
 
 
   /**
    * @brief Segment1 [Rudder] - height is colour
    **/
   // HsbColor color_rudder = color_hatch_chase;
-  // pCONT_lAni->SEGMENT_I(3).rgbcctcolors[0] = color_rudder;
-  pCONT_lAni->SEGMENT_I(3).palette_id = mPalette::PALETTELIST_STATIC_CRGBPALETTE16_GRADIENT__YELLOWOUT__ID;
-  pCONT_lAni->SEGMENT_I(3).effect_id = mAnimatorLight::EFFECTS_FUNCTION__RAINBOW_CYCLE__ID;
-  pCONT_lAni->SEGMENT_I(3).cycle_time__rate_ms = FRAMETIME_MS;
-  pCONT_lAni->SEGMENT_I(3).speed = 255;
-  pCONT_lAni->SEGMENT_I(3).cycle_time__rate_ms = 25;
-  pCONT_lAni->SEGMENT_I(3).setBrightnessRGB(50);
-  pCONT_lAni->SEGMENT_I(3).setBrightnessCCT(0);
+  // tkr_anim->SEGMENT_I(3).rgbcctcolors[0] = color_rudder;
+  tkr_anim->SEGMENT_I(3).palette_id = mPalette::PALETTELIST_STATIC_CRGBPALETTE16_GRADIENT__YELLOWOUT__ID;
+  tkr_anim->SEGMENT_I(3).effect_id = mAnimatorLight::EFFECTS_FUNCTION__RAINBOW_CYCLE__ID;
+  tkr_anim->SEGMENT_I(3).cycle_time__rate_ms = FRAMETIME_MS;
+  tkr_anim->SEGMENT_I(3).speed = 255;
+  tkr_anim->SEGMENT_I(3).cycle_time__rate_ms = 25;
+  tkr_anim->SEGMENT_I(3).setBrightnessRGB(50);
+  tkr_anim->SEGMENT_I(3).setBrightnessCCT(0);
 
 
   /**
    * @brief Segment4 [Nose]
    **/
-  pCONT_lAni->SEGMENT_I(4).rgbcctcolors[0] = RgbcctColor(0,255,0,0,0); //white
-  pCONT_lAni->SEGMENT_I(4).palette_id = 0;
-  pCONT_lAni->SEGMENT_I(4).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
-  pCONT_lAni->SEGMENT_I(4).cycle_time__rate_ms = FRAMETIME_MS;
-  pCONT_lAni->SEGMENT_I(4).speed = 255;
-  pCONT_lAni->SEGMENT_I(4).setBrightnessRGB(255);
-  pCONT_lAni->SEGMENT_I(4).setBrightnessCCT(255);
+  tkr_anim->SEGMENT_I(4).rgbcctcolors[0] = RgbcctColor(0,255,0,0,0); //white
+  tkr_anim->SEGMENT_I(4).palette_id = 0;
+  tkr_anim->SEGMENT_I(4).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
+  tkr_anim->SEGMENT_I(4).cycle_time__rate_ms = FRAMETIME_MS;
+  tkr_anim->SEGMENT_I(4).speed = 255;
+  tkr_anim->SEGMENT_I(4).setBrightnessRGB(255);
+  tkr_anim->SEGMENT_I(4).setBrightnessCCT(255);
 
 
 
@@ -289,29 +289,29 @@ void mMavlinkFlyingLEDS::Effect_Flight01_RandomSweep()
   /**
    * @brief Segment0 [Wings]
    **/
-  pCONT_lAni->SEGMENT_I(0).rgbcctcolors[0] = RgbcctColor(255,255,255,255,255); //white
-  pCONT_lAni->SEGMENT_I(0).palette_id = 0;
-  // pCONT_lAni->SEGMENT_I(0).effect_id = mAnimatorLight::EFFECTS_FUNCTION__COLOR_WIPE_RANDOM__ID;// 71;//mAnimatorLight::EFFECTS_FUNCTION__CHASE_THEATER__ID;
-  pCONT_lAni->SEGMENT_I(0).effect_id = mAnimatorLight::EFFECTS_FUNCTION__COLOR_SWEEP_RANDOM__ID;// 71;//mAnimatorLight::EFFECTS_FUNCTION__CHASE_THEATER__ID;
-  pCONT_lAni->SEGMENT_I(0).cycle_time__rate_ms = FRAMETIME_MS;
-  pCONT_lAni->SEGMENT_I(0).mirror = true; // so it comes from centre out
-  pCONT_lAni->SEGMENT_I(0).reverse = true;
-  pCONT_lAni->SEGMENT_I(0).speed = 200;
-  pCONT_lAni->SEGMENT_I(0).setBrightnessRGB(255);
-  pCONT_lAni->SEGMENT_I(0).setBrightnessCCT(0);
+  tkr_anim->SEGMENT_I(0).rgbcctcolors[0] = RgbcctColor(255,255,255,255,255); //white
+  tkr_anim->SEGMENT_I(0).palette_id = 0;
+  // tkr_anim->SEGMENT_I(0).effect_id = mAnimatorLight::EFFECTS_FUNCTION__COLOR_WIPE_RANDOM__ID;// 71;//mAnimatorLight::EFFECTS_FUNCTION__CHASE_THEATER__ID;
+  tkr_anim->SEGMENT_I(0).effect_id = mAnimatorLight::EFFECTS_FUNCTION__COLOR_SWEEP_RANDOM__ID;// 71;//mAnimatorLight::EFFECTS_FUNCTION__CHASE_THEATER__ID;
+  tkr_anim->SEGMENT_I(0).cycle_time__rate_ms = FRAMETIME_MS;
+  tkr_anim->SEGMENT_I(0).mirror = true; // so it comes from centre out
+  tkr_anim->SEGMENT_I(0).reverse = true;
+  tkr_anim->SEGMENT_I(0).speed = 200;
+  tkr_anim->SEGMENT_I(0).setBrightnessRGB(255);
+  tkr_anim->SEGMENT_I(0).setBrightnessCCT(0);
   /**
    * @brief Segment1 [Fuselage]
    **/
-  // pCONT_lAni->SEGMENT_I(1).rgbcctcolors[0] = RgbcctColor(0,0,0,255,255); //white
-  // pCONT_lAni->SEGMENT_I(1).rgbcctcolors[1] = RgbcctColor(0,0,255,255,255); //white
-  // pCONT_lAni->SEGMENT_I(1).rgbcctcolors[2] = RgbcctColor(0,0,0,100,100); //white
-  // pCONT_lAni->SEGMENT_I(1).palette_id = mPalette::PALETTELIST_LENGTH_OF_PALETTES_IN_FLASH_THAT_ARE_NOT_USER_DEFINED + 9;
-  // pCONT_lAni->SEGMENT_I(1).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SPANNED_PALETTE__ID;
-  // pCONT_lAni->SEGMENT_I(1).colour_type__used_in_effect_generate = mAnimatorLight::ColourType::COLOUR_TYPE__RGBCCT__ID;
-  // pCONT_lAni->SEGMENT_I(1).cycle_time__rate_ms = FRAMETIME_MS;
-  // pCONT_lAni->SEGMENT_I(1).speed = 255;
-  // pCONT_lAni->SEGMENT_I(1).setBrightnessRGB(255);
-  // pCONT_lAni->SEGMENT_I(1).setBrightnessCCT(255);
+  // tkr_anim->SEGMENT_I(1).rgbcctcolors[0] = RgbcctColor(0,0,0,255,255); //white
+  // tkr_anim->SEGMENT_I(1).rgbcctcolors[1] = RgbcctColor(0,0,255,255,255); //white
+  // tkr_anim->SEGMENT_I(1).rgbcctcolors[2] = RgbcctColor(0,0,0,100,100); //white
+  // tkr_anim->SEGMENT_I(1).palette_id = mPalette::PALETTELIST_LENGTH_OF_PALETTES_IN_FLASH_THAT_ARE_NOT_USER_DEFINED + 9;
+  // tkr_anim->SEGMENT_I(1).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SPANNED_PALETTE__ID;
+  // tkr_anim->SEGMENT_I(1).colour_width__used_in_effect_generate = mAnimatorLight::ColourType::COLOUR_TYPE__RGBCCT__ID;
+  // tkr_anim->SEGMENT_I(1).cycle_time__rate_ms = FRAMETIME_MS;
+  // tkr_anim->SEGMENT_I(1).speed = 255;
+  // tkr_anim->SEGMENT_I(1).setBrightnessRGB(255);
+  // tkr_anim->SEGMENT_I(1).setBrightnessCCT(255);
   // mPalette::PALETTE_ENCODING_DATA encoding = {PALETTE_ENCODING_TYPE_RGBCCT_WITHINDEX_GRADIENT}; 
   // uint8_t palette_data[] = {
   //   // White forward
@@ -332,30 +332,30 @@ void mMavlinkFlyingLEDS::Effect_Flight01_RandomSweep()
   //   // 255,  0,0,255,0,0,
   // };
   // uint8_t palette_custom_index = 9;
-  // pCONT_lAni->CommandSet_CustomPalette(palette_custom_index, encoding.data, palette_data, ARRAY_SIZE(palette_data));
+  // tkr_anim->CommandSet_CustomPalette(palette_custom_index, encoding.data, palette_data, ARRAY_SIZE(palette_data));
   // /**
   //  * @brief Segment1 [Fuselage] - Copy start of wings
   //  **/
-  // uint32_t col32 = pCONT_lAni->getPixelColor(41);
-  // pCONT_lAni->SEGMENT_I(1).rgbcctcolors[0] = RgbcctColor(R(col32), G(col32), B(col32), 0, 0); //white
-  // pCONT_lAni->SEGMENT_I(1).palette_id = 0;
-  // pCONT_lAni->SEGMENT_I(1).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
-  // pCONT_lAni->SEGMENT_I(1).colour_type__used_in_effect_generate = mAnimatorLight::ColourType::COLOUR_TYPE__RGBCCT__ID;
-  // pCONT_lAni->SEGMENT_I(1).cycle_time__rate_ms = FRAMETIME_MS;
-  // pCONT_lAni->SEGMENT_I(1).speed = 255;
-  // pCONT_lAni->SEGMENT_I(1).setBrightnessRGB(255);
-  // pCONT_lAni->SEGMENT_I(1).setBrightnessCCT(255);
+  // uint32_t col32 = tkr_anim->getPixelColor(41);
+  // tkr_anim->SEGMENT_I(1).rgbcctcolors[0] = RgbcctColor(R(col32), G(col32), B(col32), 0, 0); //white
+  // tkr_anim->SEGMENT_I(1).palette_id = 0;
+  // tkr_anim->SEGMENT_I(1).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
+  // tkr_anim->SEGMENT_I(1).colour_width__used_in_effect_generate = mAnimatorLight::ColourType::COLOUR_TYPE__RGBCCT__ID;
+  // tkr_anim->SEGMENT_I(1).cycle_time__rate_ms = FRAMETIME_MS;
+  // tkr_anim->SEGMENT_I(1).speed = 255;
+  // tkr_anim->SEGMENT_I(1).setBrightnessRGB(255);
+  // tkr_anim->SEGMENT_I(1).setBrightnessCCT(255);
   /**
    * @brief Segment1 [Fuselage] - Copy start of wings, with gradient to nose
    **/
-  pCONT_lAni->SEGMENT_I(1).palette_id = mPalette::PALETTELIST_LENGTH_OF_PALETTES_IN_FLASH_THAT_ARE_NOT_USER_DEFINED + 9;
-  pCONT_lAni->SEGMENT_I(1).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SPANNED_PALETTE__ID;
-  pCONT_lAni->SEGMENT_I(1).colour_type__used_in_effect_generate = mAnimatorLight::ColourType::COLOUR_TYPE__RGBCCT__ID;
-  pCONT_lAni->SEGMENT_I(1).cycle_time__rate_ms = FRAMETIME_MS;
-  pCONT_lAni->SEGMENT_I(1).speed = 255;
-  pCONT_lAni->SEGMENT_I(1).setBrightnessRGB(255);
-  pCONT_lAni->SEGMENT_I(1).setBrightnessCCT(255);
-  uint32_t col32 = pCONT_lAni->getPixelColor(41);
+  tkr_anim->SEGMENT_I(1).palette_id = mPalette::PALETTELIST_LENGTH_OF_PALETTES_IN_FLASH_THAT_ARE_NOT_USER_DEFINED + 9;
+  tkr_anim->SEGMENT_I(1).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SPANNED_PALETTE__ID;
+  tkr_anim->SEGMENT_I(1).colour_width__used_in_effect_generate = mAnimatorLight::ColourType::COLOUR_TYPE__RGBCCT__ID;
+  tkr_anim->SEGMENT_I(1).cycle_time__rate_ms = FRAMETIME_MS;
+  tkr_anim->SEGMENT_I(1).speed = 255;
+  tkr_anim->SEGMENT_I(1).setBrightnessRGB(255);
+  tkr_anim->SEGMENT_I(1).setBrightnessCCT(255);
+  uint32_t col32 = tkr_anim->getPixelColor(41);
   mPalette::PALETTE_ENCODING_DATA encoding = {PALETTE_ENCODING_TYPE_RGBCCT_WITHINDEX_GRADIENT}; 
   uint8_t palette_data[] = {
     // White forward near nose, otherwise copy the wing
@@ -368,7 +368,7 @@ void mMavlinkFlyingLEDS::Effect_Flight01_RandomSweep()
     255,  0,0,0,255,255
   };
   uint8_t palette_custom_index = 9;
-  pCONT_lAni->CommandSet_CustomPalette(palette_custom_index, encoding.data, palette_data, ARRAY_SIZE(palette_data));
+  tkr_anim->CommandSet_CustomPalette(palette_custom_index, encoding.data, palette_data, ARRAY_SIZE(palette_data));
 
   /**
    * @brief Segment1 [Hatches] - when landing, make the hatches be chasing (for power reserve) but match rudder solid for altitude
@@ -425,38 +425,38 @@ void mMavlinkFlyingLEDS::Effect_Flight01_RandomSweep()
     
     #endif
   // #endif
-  pCONT_lAni->SEGMENT_I(2).rgbcctcolors[0] = color_hatch_chase;
-  pCONT_lAni->SEGMENT_I(2).rgbcctcolors[1] = RgbcctColor(0,0,0,0,0); //black
-  pCONT_lAni->SEGMENT_I(2).palette_id = mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID;
-  pCONT_lAni->SEGMENT_I(2).effect_id = mAnimatorLight::EFFECTS_FUNCTION__CHASE_THEATER__ID;
-  pCONT_lAni->SEGMENT_I(2).cycle_time__rate_ms = FRAMETIME_MS;
-  pCONT_lAni->SEGMENT_I(2).speed = 255;
-  pCONT_lAni->SEGMENT_I(2).cycle_time__rate_ms = 25;
-  pCONT_lAni->SEGMENT_I(2).reverse = true;
-  pCONT_lAni->SEGMENT_I(2).setBrightnessRGB(50);
-  pCONT_lAni->SEGMENT_I(2).setBrightnessCCT(0);
+  tkr_anim->SEGMENT_I(2).rgbcctcolors[0] = color_hatch_chase;
+  tkr_anim->SEGMENT_I(2).rgbcctcolors[1] = RgbcctColor(0,0,0,0,0); //black
+  tkr_anim->SEGMENT_I(2).palette_id = mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID;
+  tkr_anim->SEGMENT_I(2).effect_id = mAnimatorLight::EFFECTS_FUNCTION__CHASE_THEATER__ID;
+  tkr_anim->SEGMENT_I(2).cycle_time__rate_ms = FRAMETIME_MS;
+  tkr_anim->SEGMENT_I(2).speed = 255;
+  tkr_anim->SEGMENT_I(2).cycle_time__rate_ms = 25;
+  tkr_anim->SEGMENT_I(2).reverse = true;
+  tkr_anim->SEGMENT_I(2).setBrightnessRGB(50);
+  tkr_anim->SEGMENT_I(2).setBrightnessCCT(0);
   /**
    * @brief Segment1 [Rudder] - height is colour
    **/
   HsbColor color_rudder = color_hatch_chase;
-  pCONT_lAni->SEGMENT_I(3).rgbcctcolors[0] = color_rudder;
-  pCONT_lAni->SEGMENT_I(3).palette_id = mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID;
-  pCONT_lAni->SEGMENT_I(3).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
-  pCONT_lAni->SEGMENT_I(3).cycle_time__rate_ms = FRAMETIME_MS;
-  pCONT_lAni->SEGMENT_I(3).speed = 255;
-  pCONT_lAni->SEGMENT_I(3).cycle_time__rate_ms = 25;
-  pCONT_lAni->SEGMENT_I(3).setBrightnessRGB(50);
-  pCONT_lAni->SEGMENT_I(3).setBrightnessCCT(0);
+  tkr_anim->SEGMENT_I(3).rgbcctcolors[0] = color_rudder;
+  tkr_anim->SEGMENT_I(3).palette_id = mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID;
+  tkr_anim->SEGMENT_I(3).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
+  tkr_anim->SEGMENT_I(3).cycle_time__rate_ms = FRAMETIME_MS;
+  tkr_anim->SEGMENT_I(3).speed = 255;
+  tkr_anim->SEGMENT_I(3).cycle_time__rate_ms = 25;
+  tkr_anim->SEGMENT_I(3).setBrightnessRGB(50);
+  tkr_anim->SEGMENT_I(3).setBrightnessCCT(0);
   /**
    * @brief Segment4 [Nose]
    **/
-  pCONT_lAni->SEGMENT_I(4).rgbcctcolors[0] = RgbcctColor(0,0,0,255,255); //white
-  pCONT_lAni->SEGMENT_I(4).palette_id = 0;
-  pCONT_lAni->SEGMENT_I(4).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
-  pCONT_lAni->SEGMENT_I(4).cycle_time__rate_ms = FRAMETIME_MS;
-  pCONT_lAni->SEGMENT_I(4).speed = 255;
-  pCONT_lAni->SEGMENT_I(4).setBrightnessRGB(255);
-  pCONT_lAni->SEGMENT_I(4).setBrightnessCCT(255);
+  tkr_anim->SEGMENT_I(4).rgbcctcolors[0] = RgbcctColor(0,0,0,255,255); //white
+  tkr_anim->SEGMENT_I(4).palette_id = 0;
+  tkr_anim->SEGMENT_I(4).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
+  tkr_anim->SEGMENT_I(4).cycle_time__rate_ms = FRAMETIME_MS;
+  tkr_anim->SEGMENT_I(4).speed = 255;
+  tkr_anim->SEGMENT_I(4).setBrightnessRGB(255);
+  tkr_anim->SEGMENT_I(4).setBrightnessCCT(255);
 
 
 }
@@ -580,49 +580,49 @@ void mMavlinkFlyingLEDS::EveryLoop()
       break;
       case 4:
         
-        pCONT_lAni->SEGMENT_I(4).rgbcctcolors[0] = RgbcctColor(255,0,0,0,0); //white
-        pCONT_lAni->SEGMENT_I(4).palette_id = 0;
-        pCONT_lAni->SEGMENT_I(4).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
-        pCONT_lAni->SEGMENT_I(4).cycle_time__rate_ms = FRAMETIME_MS;
-        pCONT_lAni->SEGMENT_I(4).speed = 200;
-        pCONT_lAni->SEGMENT_I(4).setBrightnessRGB(255);
-        pCONT_lAni->SEGMENT_I(4).setBrightnessCCT(0);
+        tkr_anim->SEGMENT_I(4).rgbcctcolors[0] = RgbcctColor(255,0,0,0,0); //white
+        tkr_anim->SEGMENT_I(4).palette_id = 0;
+        tkr_anim->SEGMENT_I(4).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
+        tkr_anim->SEGMENT_I(4).cycle_time__rate_ms = FRAMETIME_MS;
+        tkr_anim->SEGMENT_I(4).speed = 200;
+        tkr_anim->SEGMENT_I(4).setBrightnessRGB(255);
+        tkr_anim->SEGMENT_I(4).setBrightnessCCT(0);
 
       break;
       case 5:
         
-        pCONT_lAni->SEGMENT_I(4).rgbcctcolors[0] = RgbcctColor(0,255,0,0,0); //white
-        pCONT_lAni->SEGMENT_I(4).palette_id = 0;
-        pCONT_lAni->SEGMENT_I(4).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
-        pCONT_lAni->SEGMENT_I(4).cycle_time__rate_ms = FRAMETIME_MS;
-        pCONT_lAni->SEGMENT_I(4).speed = 200;
-        pCONT_lAni->SEGMENT_I(4).setBrightnessRGB(255);
-        pCONT_lAni->SEGMENT_I(4).setBrightnessCCT(0);
+        tkr_anim->SEGMENT_I(4).rgbcctcolors[0] = RgbcctColor(0,255,0,0,0); //white
+        tkr_anim->SEGMENT_I(4).palette_id = 0;
+        tkr_anim->SEGMENT_I(4).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
+        tkr_anim->SEGMENT_I(4).cycle_time__rate_ms = FRAMETIME_MS;
+        tkr_anim->SEGMENT_I(4).speed = 200;
+        tkr_anim->SEGMENT_I(4).setBrightnessRGB(255);
+        tkr_anim->SEGMENT_I(4).setBrightnessCCT(0);
 
       break;
       case 6:
         
-        pCONT_lAni->SEGMENT_I(4).rgbcctcolors[0] = RgbcctColor(0,0,255,0,0); //white
-        pCONT_lAni->SEGMENT_I(4).palette_id = 0;
-        pCONT_lAni->SEGMENT_I(4).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
-        pCONT_lAni->SEGMENT_I(4).cycle_time__rate_ms = FRAMETIME_MS;
-        pCONT_lAni->SEGMENT_I(4).speed = 200;
-        pCONT_lAni->SEGMENT_I(4).setBrightnessRGB(255);
-        pCONT_lAni->SEGMENT_I(4).setBrightnessCCT(0);
+        tkr_anim->SEGMENT_I(4).rgbcctcolors[0] = RgbcctColor(0,0,255,0,0); //white
+        tkr_anim->SEGMENT_I(4).palette_id = 0;
+        tkr_anim->SEGMENT_I(4).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
+        tkr_anim->SEGMENT_I(4).cycle_time__rate_ms = FRAMETIME_MS;
+        tkr_anim->SEGMENT_I(4).speed = 200;
+        tkr_anim->SEGMENT_I(4).setBrightnessRGB(255);
+        tkr_anim->SEGMENT_I(4).setBrightnessCCT(0);
 
 
         /**
          * @brief Segment1 [wing] - height is colour
          **/
         // HsbColor color_rudder = color_hatch_chase;
-        // pCONT_lAni->SEGMENT_I(3).rgbcctcolors[0] = color_rudder;
-        pCONT_lAni->SEGMENT_I(0).palette_id = mPalette::PALETTELIST_STATIC_CRGBPALETTE16_GRADIENT__YELLOWOUT__ID;
-        pCONT_lAni->SEGMENT_I(0).effect_id = mAnimatorLight::EFFECTS_FUNCTION__RAINBOW_CYCLE__ID;
-        pCONT_lAni->SEGMENT_I(0).cycle_time__rate_ms = FRAMETIME_MS;
-        pCONT_lAni->SEGMENT_I(0).speed = 255;
-        pCONT_lAni->SEGMENT_I(0).cycle_time__rate_ms = 25;
-        pCONT_lAni->SEGMENT_I(0).setBrightnessRGB(255);
-        pCONT_lAni->SEGMENT_I(0).setBrightnessCCT(0);
+        // tkr_anim->SEGMENT_I(3).rgbcctcolors[0] = color_rudder;
+        tkr_anim->SEGMENT_I(0).palette_id = mPalette::PALETTELIST_STATIC_CRGBPALETTE16_GRADIENT__YELLOWOUT__ID;
+        tkr_anim->SEGMENT_I(0).effect_id = mAnimatorLight::EFFECTS_FUNCTION__RAINBOW_CYCLE__ID;
+        tkr_anim->SEGMENT_I(0).cycle_time__rate_ms = FRAMETIME_MS;
+        tkr_anim->SEGMENT_I(0).speed = 255;
+        tkr_anim->SEGMENT_I(0).cycle_time__rate_ms = 25;
+        tkr_anim->SEGMENT_I(0).setBrightnessRGB(255);
+        tkr_anim->SEGMENT_I(0).setBrightnessCCT(0);
 
       break;
 
