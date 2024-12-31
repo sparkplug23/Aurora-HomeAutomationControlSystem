@@ -156,10 +156,10 @@ class Bus {
     virtual void     show() = 0;
     virtual bool     canShow() const                          { return true; }
     virtual void     setStatusPixel(uint32_t c)                {}
-    virtual void     setPixelColor(uint32_t pix, uint32_t c) = 0;
+    virtual void     setPixelColor(uint32_t pix, ColourBaseType c) = 0;
     virtual void     setBrightness(uint8_t b)                  { _bri = b; };
     virtual void     setColorOrder(uint8_t co)                 {}
-    virtual uint32_t getPixelColor(uint32_t pix) const         { return 0; }
+    virtual ColourBaseType getPixelColor(uint32_t pix) const         { return 0; }
     virtual uint8_t  getPins(uint8_t* pinArray = nullptr) const { return 0; }
     virtual uint16_t getLength() const                         { return isOk() ? _len : 0; }
     virtual uint8_t  getColorOrder() const                     { return COL_ORDER_RGB; }
@@ -376,9 +376,9 @@ class BusDigital : public Bus {
     bool canShow() const override;
     void setBrightness(uint8_t b) override;
     void setStatusPixel(uint32_t c) override;
-    [[gnu::hot]] void setPixelColor(uint32_t pix, uint32_t c) override;
+    [[gnu::hot]] void setPixelColor(uint32_t pix, ColourBaseType c) override;
     void setColorOrder(uint8_t colorOrder) override;
-    [[gnu::hot]] uint32_t getPixelColor(uint32_t pix) const override;
+    [[gnu::hot]] ColourBaseType getPixelColor(uint32_t pix) const override;
     uint8_t  getColorOrder() const override  { return _colorOrder; }
     uint8_t  getPins(uint8_t* pinArray = nullptr) const override;
     uint8_t  skippedLeds() const override    { return _skip; }
@@ -404,7 +404,7 @@ class BusDigital : public Bus {
 
     static uint16_t _milliAmpsTotal; // is overwitten/recalculated on each show()
 
-    inline uint32_t restoreColorLossy(uint32_t c, uint8_t restoreBri) const {
+    inline ColourBaseType restoreColorLossy(ColourBaseType c, uint8_t restoreBri) const {
       if (restoreBri < 255) {
         uint8_t* chan = (uint8_t*) &c;
         for (uint_fast8_t i=0; i<4; i++) {
@@ -432,8 +432,8 @@ class BusPwm : public Bus {
     void setColorOrder(uint8_t colorOrder){ _colorOrder = colorOrder; }
     uint8_t getColorOrder(){ return _colorOrder; }
 
-    void setPixelColor(uint32_t pix, uint32_t c) override;
-    uint32_t getPixelColor(uint32_t pix) const override; //does no index check
+    void setPixelColor(uint32_t pix, ColourBaseType c) override;
+    ColourBaseType getPixelColor(uint32_t pix) const override; //does no index check
     uint8_t  getPins(uint8_t* pinArray = nullptr) const override;
     uint16_t getFrequency() const override { return _frequency; }
     void show() override;
@@ -447,7 +447,7 @@ class BusPwm : public Bus {
   private:
     uint8_t _pins[OUTPUT_BUSPWM_MAX_PINS];
     uint8_t _pwmdata[OUTPUT_BUSPWM_MAX_PINS];
-    RgbcctColor output_colour; // change to RgbcwColor
+    RgbwwColor output_colour; // change to RgbcwColor
     #ifdef ARDUINO_ARCH_ESP32
     uint8_t _ledcStart;
     #endif
@@ -470,8 +470,8 @@ class BusOnOff : public Bus {
     BusOnOff(BusConfig &bc);
     ~BusOnOff() { cleanup(); }
 
-    void setPixelColor(uint32_t pix, uint32_t c) override;
-    uint32_t getPixelColor(uint32_t pix) const override;
+    void setPixelColor(uint32_t pix, ColourBaseType c) override;
+    ColourBaseType getPixelColor(uint32_t pix) const override;
     uint8_t  getPins(uint8_t* pinArray) const override;
     void show() override;
     void cleanup() {  }
@@ -495,8 +495,8 @@ class BusNetwork : public Bus {
     ~BusNetwork() { cleanup(); }
 
     bool canShow() const override  { return !_broadcastLock; } // this should be a return value from UDP routine if it is still sending data out
-    void setPixelColor(uint32_t pix, uint32_t c) override;
-    uint32_t getPixelColor(uint32_t pix) const override;
+    void setPixelColor(uint32_t pix, ColourBaseType c) override;
+    ColourBaseType getPixelColor(uint32_t pix) const override;
     uint8_t  getPins(uint8_t* pinArray = nullptr) const override;
     void show() override;
     void cleanup();
@@ -547,8 +547,8 @@ class BusManager
     
     static Bus* busses[WLED_MAX_BUSSES+WLED_MIN_VIRTUAL_BUSSES];// = {nullptr};
 
-    [[gnu::hot]] void setPixelColor(uint32_t pix, uint32_t c);
-    uint32_t getPixelColor(uint32_t pix);
+    [[gnu::hot]] void setPixelColor(uint32_t pix, ColourBaseType c);
+    ColourBaseType getPixelColor(uint32_t pix);
     
     static void setBrightness(uint8_t b);
     // for setSegmentCCT(), cct can only be in [-1,255] range; allowWBCorrection will convert it to K

@@ -1021,7 +1021,14 @@ if (jtok = obj["MQTTPixelArrays"]) {
   }
 
 
-  #if FIRMWARE_VERSION_MAX(0, 120)
+/**
+ * @brief 
+ * This should be extended to
+ * "TimeOnSecs"
+ * "TimeOff":"HHMM" as hh and mm of the day
+ * 
+ */
+  #if FIRMWARE_VERSION_MAX(0, 240)
   if(jtok = obj["TimeOnSecs"]){
     SEGMENT_I(segment_index).auto_timeoff.Start(jtok.getInt());
     ALOG_INF(PSTR("auto_timeoff %d"), SEGMENT_I(segment_index).auto_timeoff.Value());

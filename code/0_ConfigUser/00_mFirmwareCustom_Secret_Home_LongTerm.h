@@ -116,6 +116,7 @@ DSToilet
   - consumerunit = 12 pzem, bme
 */
 // #define DEVICE_CONSUMERUNIT
+// #define DEVICE_CONSUMERUNIT_25
 
 /**
 LivingRoom
@@ -2242,6 +2243,348 @@ Bathroom
  * 
  */
 #ifdef DEVICE_CONSUMERUNIT
+  #define DEVICENAME_CTR          "consumerunit"
+  #define DEVICENAME_FRIENDLY_CTR "Consumer Unit #2"
+  #define DEVICENAME_ROOMHINT_CTR "Downstairs Toilet"
+  #define D_MQTTSERVER_IP_ADDRESS_COMMA_DELIMITED   "192.168.1.70"
+    #define MQTT_PORT     1883
+    
+  /***********************************
+   * SECTION: System Debug Options
+  ************************************/  
+
+ 
+  /***********************************
+   * SECTION: Enable with one line (to make it easier to switch on and off for debugging)
+  ************************************/  
+
+  #define ENABLE_TEMPLATE_SECTION__SENSORS__BME
+
+  #define ENABLE_TEMPLATE_SECTION__ENERGY
+  #define ENABLE_TEMPLATE_SECTION__ENERGY__PZEM
+
+ 
+  /***********************************
+   * SECTION: Storage Configs
+  ************************************/  
+
+
+  /***********************************
+   * SECTION: System Configs
+  ************************************/     
+
+  #define USE_TEMPLATED_DEFAULT_OTA_RECOVERY_METHODS
+
+  #define DEVICENAMEBUFFER_NAME_BUFFER_LENGTH 800
+
+  /***********************************
+   * SECTION: Network Configs
+  ************************************/    
+
+  #define USE_MODULE_NETWORK_WEBSERVER
+  #define ENABLE_WEBSERVER_LIGHTING_WEBUI
+
+  /***********************************
+   * SECTION: Sensor Configs
+  ************************************/  
+
+  #ifdef ENABLE_TEMPLATE_SECTION__SENSORS__BME
+    #define USE_MODULE_SENSORS_INTERFACE
+      #define USE_DEVFEATURE_INTERNALISE_UNIFIED_SENSOR_INTERFACE_COLOUR_HEATMAP
+    #define USE_MODULE_SENSORS_BME
+  #endif
+
+  #define USE_MODULE_SENSORS_SWITCHES
+  #define USE_MODULE_SENSORS_PIR
+    #define USE_TEMPLATED_DEFAULT_MOTION_RULE_TEMPLATE_FIRST_SWITCH_IS_MOTION_SENSOR_EVENT
+
+  /***********************************
+   * SECTION: Display Configs
+  ************************************/  
+
+ 
+  /***********************************
+   * SECTION: Driver Configs
+  ************************************/  
+
+ 
+  /***********************************
+   * SECTION: Lighting Configs
+  ************************************/  
+        
+  /***********************************
+   * SECTION: Energy Configs
+  ************************************/  
+
+  #ifdef ENABLE_TEMPLATE_SECTION__ENERGY
+    #define USE_MODULE_ENERGY_INTERFACE
+  #endif
+  
+  #ifdef ENABLE_TEMPLATE_SECTION__ENERGY__PZEM
+    #define USE_MODULE_ENERGY_PZEM004T_V3
+      #define ENABLE_DEVFEATURE_REDUCE_SUBORDINATE_MQTT_REPORTING_ENERGY // If energy_interface is primary reporting, reduce pzem to slower (debug only)
+    #define MAX_ENERGY_SENSORS 12
+    #define MAX_PZEM004T_DEVICES 12
+    #define ENABLE_DEVFEATURE_PZEM004T__AUTOSEARCH
+  #endif
+
+  /***********************************
+   * SECTION: Controller Configs
+  ************************************/  
+
+  /***********************************
+   * SECTION: MQTT Template Test Loading
+  ************************************/  
+
+  /***********************************
+   * SECTION: GPIO Template
+  ************************************/  
+
+  #define USE_MODULE_TEMPLATE
+  DEFINE_PGM_CTR(MODULE_TEMPLATE) 
+  "{"
+    "\"" D_NAME "\":\"" DEVICENAME_CTR "\","
+    "\"" D_FRIENDLYNAME "\":\"" DEVICENAME_FRIENDLY_CTR "\","
+    "\"" D_GPIOC "\":{"      
+      "\"16\":\""  D_GPIO_FUNCTION_PZEM0XX_RX_MODBUS_CTR "\"," 
+      "\"17\":\""  D_GPIO_FUNCTION_PZEM0XX_TX_CTR "\","
+      #ifdef USE_MODULE_SENSORS_BME
+      "\"22\":\"" D_GPIO_FUNCTION_I2C_SCL_CTR   "\","
+      "\"23\":\"" D_GPIO_FUNCTION_I2C_SDA_CTR   "\","
+      #endif
+      #ifdef USE_MODULE_SENSORS_PIR
+      "\"5\":\""  D_GPIO_FUNCTION_SWT1_CTR "\","
+      #endif
+      "\"4\":\"" D_GPIO_FUNCTION_RGB_DATA_CTR  "\"" 
+      "\"2\":\""  D_GPIO_FUNCTION_LED1_INV_CTR "\""
+    "},"
+    "\"" D_BASE "\":\"" D_MODULE_NAME_USERMODULE_CTR "\","
+    "\"" D_ROOMHINT "\":\"" DEVICENAME_ROOMHINT_CTR "\""
+  "}";
+
+  /***********************************
+   * SECTION: Lighting Configs
+  ************************************/    
+
+  #define FIRMWARE_DEFAULT__LIGHTING__ESP32_OPTIONS_MINIMAL__MAY24
+
+  #define ENABLE_DEVFEATURE_STORAGE__ANIMATION_PLAYLISTS
+
+    
+  #define USE_LIGHTING_TEMPLATE
+  DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  R"=====(
+  {
+    "BusConfig":[
+      {
+        "Pin":4,
+        "ColourOrder":"GRBW",
+        "BusType":"SK6812_RGBW",
+        "Start":0,
+        "Length":53
+      }
+    ],
+    "Segment0": {
+      "PixelRange": [
+        0,
+        48
+      ],
+      "ColourPalette":"Colourful Default",
+      "SegColour0": {
+        "Hue": 0,
+        "Sat":100,
+        "BrightnessRGB":100
+      },
+      "Effects": {
+        "Function": 1,
+        "Speed":1,
+        "Intensity":255,
+        "RateMs": 1000
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 0
+    },
+    "Segment1": {
+      "PixelRange": [
+        48,
+        53
+      ],
+      "ColourPalette":"Colourful Default",
+      "SegColour0": {
+        "Hue": 0,
+        "Sat":100,
+        "BrightnessRGB":100
+      },
+      "Effects": {
+        "Function": 1,
+        "Speed":1,
+        "Intensity":255,
+        "RateMs": 1000
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 0
+    },
+    "BrightnessRGB": 100,
+    "BrightnessCCT": 0
+  }
+  )=====";
+
+  /***********************************
+   * SECTION: TEMPLATE: Names
+  ************************************/    
+
+
+  #define D_DEVICE_SENSOR_MOTION0_FRIENDLY_NAME_LONG "Downstairs Toilet"
+  #define D_DEVICE_SENSOR_CLIMATE "Downstairs Toilet"
+  #define D_DEVICE_SENSOR_PZEM004T_0_ADDRESS "1"
+  #define D_DEVICE_SENSOR_PZEM004T_1_ADDRESS "2"
+  #define D_DEVICE_SENSOR_PZEM004T_2_ADDRESS "3"
+  #define D_DEVICE_SENSOR_PZEM004T_3_ADDRESS "4"
+  #define D_DEVICE_SENSOR_PZEM004T_4_ADDRESS "5"
+  #define D_DEVICE_SENSOR_PZEM004T_5_ADDRESS "6"
+  #define D_DEVICE_SENSOR_PZEM004T_6_ADDRESS "7"
+  #define D_DEVICE_SENSOR_PZEM004T_7_ADDRESS "8"
+  #define D_DEVICE_SENSOR_PZEM004T_8_ADDRESS "9"
+  #define D_DEVICE_SENSOR_PZEM004T_9_ADDRESS "10"
+  #define D_DEVICE_SENSOR_PZEM004T_10_ADDRESS "11"
+  #define D_DEVICE_SENSOR_PZEM004T_11_ADDRESS "12"
+
+
+  #define D_SENSOR_PZEM004T_0_FRIENDLY_NAME_CTR "MainFeed"
+  #define D_SENSOR_PZEM004T_1_FRIENDLY_NAME_CTR "Cooker"
+  #define D_SENSOR_PZEM004T_2_FRIENDLY_NAME_CTR "Immersion"
+  #define D_SENSOR_PZEM004T_3_FRIENDLY_NAME_CTR "WashingMachine"
+  #define D_SENSOR_PZEM004T_4_FRIENDLY_NAME_CTR "Dishwasher"
+  #define D_SENSOR_PZEM004T_5_FRIENDLY_NAME_CTR "PumpShower"
+  #define D_SENSOR_PZEM004T_6_FRIENDLY_NAME_CTR "Heating"
+  #define D_SENSOR_PZEM004T_7_FRIENDLY_NAME_CTR "TumbleDryer"
+  #define D_SENSOR_PZEM004T_8_FRIENDLY_NAME_CTR "Garage"
+  #define D_SENSOR_PZEM004T_9_FRIENDLY_NAME_CTR "BathroomShower"
+  #define D_SENSOR_PZEM004T_10_FRIENDLY_NAME_CTR "MainSockets"
+  #define D_SENSOR_PZEM004T_11_FRIENDLY_NAME_CTR "KitchenSockets"
+  
+  #define D_DRIVER_ENERGY_0_FRIENDLY_NAME_CTR   D_SENSOR_PZEM004T_0_FRIENDLY_NAME_CTR
+  #define D_DRIVER_ENERGY_1_FRIENDLY_NAME_CTR   D_SENSOR_PZEM004T_1_FRIENDLY_NAME_CTR
+  #define D_DRIVER_ENERGY_2_FRIENDLY_NAME_CTR   D_SENSOR_PZEM004T_2_FRIENDLY_NAME_CTR
+  #define D_DRIVER_ENERGY_3_FRIENDLY_NAME_CTR   D_SENSOR_PZEM004T_3_FRIENDLY_NAME_CTR
+  #define D_DRIVER_ENERGY_4_FRIENDLY_NAME_CTR   D_SENSOR_PZEM004T_4_FRIENDLY_NAME_CTR
+  #define D_DRIVER_ENERGY_5_FRIENDLY_NAME_CTR   D_SENSOR_PZEM004T_5_FRIENDLY_NAME_CTR
+  #define D_DRIVER_ENERGY_6_FRIENDLY_NAME_CTR   D_SENSOR_PZEM004T_6_FRIENDLY_NAME_CTR
+  #define D_DRIVER_ENERGY_7_FRIENDLY_NAME_CTR   D_SENSOR_PZEM004T_7_FRIENDLY_NAME_CTR
+  #define D_DRIVER_ENERGY_8_FRIENDLY_NAME_CTR   D_SENSOR_PZEM004T_8_FRIENDLY_NAME_CTR
+  #define D_DRIVER_ENERGY_9_FRIENDLY_NAME_CTR   D_SENSOR_PZEM004T_9_FRIENDLY_NAME_CTR
+  #define D_DRIVER_ENERGY_10_FRIENDLY_NAME_CTR  D_SENSOR_PZEM004T_10_FRIENDLY_NAME_CTR
+  #define D_DRIVER_ENERGY_11_FRIENDLY_NAME_CTR  D_SENSOR_PZEM004T_11_FRIENDLY_NAME_CTR
+
+  #define USE_FUNCTION_TEMPLATE
+  DEFINE_PGM_CTR(FUNCTION_TEMPLATE)
+  "{"
+    "\"" D_DEVICENAME "\":{"
+      "\"" D_MODULE_SENSORS_PIR_CTR "\":["
+        "\"" D_DEVICE_SENSOR_MOTION0_FRIENDLY_NAME_LONG "\""
+      "],"
+      "\"" D_MODULE_SENSORS_SWITCHES_CTR "\":["
+        "\"" D_DEVICE_SENSOR_MOTION0_FRIENDLY_NAME_LONG "\""
+      "],"
+      "\"" D_MODULE_ENERGY_INTERFACE_CTR "\":["
+        "\"" D_DRIVER_ENERGY_0_FRIENDLY_NAME_CTR "\","
+        "\"" D_DRIVER_ENERGY_1_FRIENDLY_NAME_CTR "\","
+        "\"" D_DRIVER_ENERGY_2_FRIENDLY_NAME_CTR "\","
+        "\"" D_DRIVER_ENERGY_3_FRIENDLY_NAME_CTR "\","
+        "\"" D_DRIVER_ENERGY_4_FRIENDLY_NAME_CTR "\","
+        "\"" D_DRIVER_ENERGY_5_FRIENDLY_NAME_CTR "\","
+        "\"" D_DRIVER_ENERGY_6_FRIENDLY_NAME_CTR "\","
+        "\"" D_DRIVER_ENERGY_7_FRIENDLY_NAME_CTR "\","
+        "\"" D_DRIVER_ENERGY_8_FRIENDLY_NAME_CTR "\","
+        "\"" D_DRIVER_ENERGY_9_FRIENDLY_NAME_CTR "\","
+        "\"" D_DRIVER_ENERGY_10_FRIENDLY_NAME_CTR "\","
+        "\"" D_DRIVER_ENERGY_11_FRIENDLY_NAME_CTR "\""
+      "],"
+      "\"" D_MODULE_SENSORS_BME_CTR "\":["
+        "\"" D_DEVICE_SENSOR_CLIMATE "\""
+      "],"
+      "\"" D_MODULE_ENERGY_PZEM004T_CTR "\":["
+        "\"" D_SENSOR_PZEM004T_0_FRIENDLY_NAME_CTR "\","
+        "\"" D_SENSOR_PZEM004T_1_FRIENDLY_NAME_CTR "\","
+        "\"" D_SENSOR_PZEM004T_2_FRIENDLY_NAME_CTR "\","
+        "\"" D_SENSOR_PZEM004T_3_FRIENDLY_NAME_CTR "\","
+        "\"" D_SENSOR_PZEM004T_4_FRIENDLY_NAME_CTR "\","
+        "\"" D_SENSOR_PZEM004T_5_FRIENDLY_NAME_CTR "\","
+        "\"" D_SENSOR_PZEM004T_6_FRIENDLY_NAME_CTR "\","
+        "\"" D_SENSOR_PZEM004T_7_FRIENDLY_NAME_CTR "\","
+        "\"" D_SENSOR_PZEM004T_8_FRIENDLY_NAME_CTR "\","
+        "\"" D_SENSOR_PZEM004T_9_FRIENDLY_NAME_CTR "\","
+        "\"" D_SENSOR_PZEM004T_10_FRIENDLY_NAME_CTR "\","
+        "\"" D_SENSOR_PZEM004T_11_FRIENDLY_NAME_CTR "\""
+      "]"
+    "},"
+    "\"" D_SENSORADDRESS "\":{"
+      "\"" D_MODULE_ENERGY_INTERFACE_CTR "\":[" 
+        D_DEVICE_SENSOR_PZEM004T_0_ADDRESS ","
+        D_DEVICE_SENSOR_PZEM004T_1_ADDRESS ","
+        D_DEVICE_SENSOR_PZEM004T_2_ADDRESS ","
+        D_DEVICE_SENSOR_PZEM004T_3_ADDRESS ","
+        D_DEVICE_SENSOR_PZEM004T_4_ADDRESS ","
+        D_DEVICE_SENSOR_PZEM004T_5_ADDRESS ","
+        D_DEVICE_SENSOR_PZEM004T_6_ADDRESS ","
+        D_DEVICE_SENSOR_PZEM004T_7_ADDRESS ","
+        D_DEVICE_SENSOR_PZEM004T_8_ADDRESS ","
+        D_DEVICE_SENSOR_PZEM004T_9_ADDRESS ","
+        D_DEVICE_SENSOR_PZEM004T_10_ADDRESS ","
+        D_DEVICE_SENSOR_PZEM004T_11_ADDRESS ""
+      "]"  
+    "},"
+    "\"" D_ENERGY "\":{"
+        "\"DeviceCount\":12"    
+    "},"
+    "\"MQTTUpdateSeconds\":{\"IfChanged\":10,\"TelePeriod\":60,\"ConfigPeriod\":60}," 
+    "\"MQTT_Interface_Priority\":{\"" D_MODULE_ENERGY_INTERFACE_CTR "\":1}" // Each interface will have ability to reduce its subclass mqtt "ifchanged" rate
+  "}";
+
+
+#endif
+
+/**
+ * @brief 
+ * 
+ * BME280 and BH1750? : Could have a sensor board where they leave the hole. Just design as I2C Daughter board
+ * PIR
+ * SK6812 144/m over door, 5V. Install with 3pin connector so its replaceable (solder short wires to connector)
+ * SK6812 mini along side of door, 5V. Install with 3pin connector so its replaceable (solder short wires to connector)
+ * 12 PZEM
+ * Button Board: 4 digital lines (2 are PWM controlling LEDs)
+ * 
+ * Will use a new "module" controller, to sequence the lights as notifications. 
+ *  ** Effect of notify
+ *  ** Will subscribe to motion topic wildcard
+ *  ** possibly divide the strip into segments, so it can show motion zones
+ *  ** Use "fade out" effect, so new motion makes section go full brightness, and then have it fade out over 5 seconds
+ * 
+ *                               *I ~PWM 'NC    
+ *                          _____________________
+ *                    3V3  |3V3     |USB|     VIN|
+ *                    GND  |GND               GND| 
+ *     Boot strapping pin  |15                 13| NEO0
+ *                         |2                  12| NEO1
+ *                         |4                  14| NEO2
+ *              NEXTION TX |RX2/17             27|
+ *              NEXTION RX |TX2/16             26|
+ *                         |5                  25|
+ *                         |18                 33|
+ *                         |19                 32|
+ *         Climate I2C_SDA |21               * 35|
+ *                         |RX0              * 34|
+ *                         |TX0              ' VN| 
+ *         Climate I2C_SCL |22               ' VP| 
+ *                         |23               ' EN| 
+ *                          _____________________
+ *                                      
+ * 
+ * 
+ * 
+ * 
+ */
+#ifdef DEVICE_CONSUMERUNIT_25
   #define DEVICENAME_CTR          "consumerunit"
   #define DEVICENAME_FRIENDLY_CTR "Consumer Unit #2"
   #define DEVICENAME_ROOMHINT_CTR "Downstairs Toilet"

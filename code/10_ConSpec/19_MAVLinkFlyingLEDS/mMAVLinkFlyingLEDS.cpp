@@ -307,7 +307,7 @@ void mMavlinkFlyingLEDS::Effect_Flight01_RandomSweep()
   // tkr_anim->SEGMENT_I(1).rgbcctcolors[2] = RgbcctColor(0,0,0,100,100); //white
   // tkr_anim->SEGMENT_I(1).palette_id = mPalette::PALETTELIST_LENGTH_OF_PALETTES_IN_FLASH_THAT_ARE_NOT_USER_DEFINED + 9;
   // tkr_anim->SEGMENT_I(1).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SPANNED_PALETTE__ID;
-  // tkr_anim->SEGMENT_I(1).colour_width__used_in_effect_generate = mAnimatorLight::ColourType::COLOUR_TYPE__RGBCCT__ID;
+  // tkr_anim->SEGMENT_I(1).colour_width__used_in_effect_generate = mAnimatorLight::ColourType::COLOUR_TYPE__RGBWW__ID;
   // tkr_anim->SEGMENT_I(1).cycle_time__rate_ms = FRAMETIME_MS;
   // tkr_anim->SEGMENT_I(1).speed = 255;
   // tkr_anim->SEGMENT_I(1).setBrightnessRGB(255);
@@ -340,7 +340,7 @@ void mMavlinkFlyingLEDS::Effect_Flight01_RandomSweep()
   // tkr_anim->SEGMENT_I(1).rgbcctcolors[0] = RgbcctColor(R(col32), G(col32), B(col32), 0, 0); //white
   // tkr_anim->SEGMENT_I(1).palette_id = 0;
   // tkr_anim->SEGMENT_I(1).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
-  // tkr_anim->SEGMENT_I(1).colour_width__used_in_effect_generate = mAnimatorLight::ColourType::COLOUR_TYPE__RGBCCT__ID;
+  // tkr_anim->SEGMENT_I(1).colour_width__used_in_effect_generate = mAnimatorLight::ColourType::COLOUR_TYPE__RGBWW__ID;
   // tkr_anim->SEGMENT_I(1).cycle_time__rate_ms = FRAMETIME_MS;
   // tkr_anim->SEGMENT_I(1).speed = 255;
   // tkr_anim->SEGMENT_I(1).setBrightnessRGB(255);

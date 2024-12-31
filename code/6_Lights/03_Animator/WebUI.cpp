@@ -1421,6 +1421,8 @@ bool mAnimatorLight::deserializeSegment(JsonObject elem, byte it, byte presetId)
   //   ALOG_INF(PSTR("getVal(elem[\"pal\"], &pal)"));
 
 
+  ALOG_HGL(PSTR("elem[\"pal\"].is<const char*>() %d"), elem["pal"].is<const char*>());
+
   if(elem["pal"].is<const char*>())
   {
 
@@ -1428,7 +1430,7 @@ bool mAnimatorLight::deserializeSegment(JsonObject elem, byte it, byte presetId)
 
     int16_t tmp_id = -1;
     if((tmp_id=GetPaletteIDbyName((char*)palName))>=0){
-      ALOG_DBG(PSTR("tmp_id=%d"),tmp_id);
+      ALOG_INF(PSTR("tmp_id=%d"),tmp_id);
       CommandSet_PaletteID(tmp_id, id);
     }
 
@@ -2598,7 +2600,12 @@ bool mAnimatorLight::serveLiveLeds(AsyncWebServerRequest* request, uint32_t wsCl
 
   for (size_t i=0; i < used; i += n)
   {
+    #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE  
+    RgbwwColor col = getPixelColor(i);
+    uint32_t c = RGBW32(col.R, col.G, col.B, col.WW);
+    #else
     uint32_t c = getPixelColor(i);
+    #endif
 
     // if(i==0)
       // ALOG_INF(PSTR("%d c %d,%d,%d,%d"), i, R(c), G(c), B(c), W(c));

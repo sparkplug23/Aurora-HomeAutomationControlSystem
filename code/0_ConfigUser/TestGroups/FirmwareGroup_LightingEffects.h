@@ -1636,6 +1636,7 @@
   #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
 
   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
 
@@ -1643,12 +1644,22 @@
 
   #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
 
+  // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+
+  
+#ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+#define ColourBaseType RgbwwColor
+#else
+#define ColourBaseType uint32_t
+#endif
+
+
   /***********************************
    * SECTION: Lighting BusConfig Set
   ************************************/  
 
-  #define ENABLE_BUSCONFIG_1X_16 //testing
-  // #define ENABLE_BUSCONFIG_7X_2100_INSTALLED_OUTSIDE_TREE_2024
+  // #define ENABLE_BUSCONFIG_1X_16 //testing
+  #define ENABLE_BUSCONFIG_7X_2100_INSTALLED_OUTSIDE_TREE_2024
 
   // #define ENABLE_BUSCONFIG_8X_2400
   // #define ENABLE_BUSCONFIG_12X_3200
@@ -1734,8 +1745,8 @@
   {
     "BusConfig":[
       {
-        "Pin":4,
-        "ColourOrder":"RGB",
+        "Pin":13,
+        "ColourOrder":"GRB",
         "BusType":"WS2812_RGB",
         "Start":0,
         "Length":300

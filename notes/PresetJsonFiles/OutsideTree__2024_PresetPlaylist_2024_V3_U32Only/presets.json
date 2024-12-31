@@ -1,0 +1,775 @@
+
+{
+  "0": {},
+  "1": {
+    "n":"Static Snowy02",
+    "ColourPalette":"Snowy 02",
+    "Effects": {
+      "Function":"Static Palette",
+      "Intensity":127,
+      "Speed":127,
+      "Grouping":1,
+      "Decimate":0,
+      "Reverse":0,
+      "RateMs": 4000
+    },
+    "BrightnessRGB": 100
+  },
+  "2": {
+    "n":"FastPops Snowy02",
+    "ColourPalette":"Snowy 02",
+    "Effects": {
+      "Function":"Slow Glow",
+      "Intensity":20,
+      "Speed":255,
+      "Grouping":1,
+      "Decimate":7,
+      "RateMs": 50
+    },
+    "BrightnessRGB": 100
+  },
+  "3": {
+    "n":"Steps ColourfulPairs G1",
+    "ColourPalette":"Colourful Pairs 01",
+    "Effects": {
+      "Function":"Stepping Palette",
+      "Intensity":20,
+      "Speed":50,
+      "Grouping":1,
+      "Decimate":0,
+      "RateMs": 2000
+    },
+    "BrightnessRGB": 100
+  },
+  "4": {
+    "n":"Steps ColourfulPairs G210",
+    "ColourPalette":"Colourful Pairs 01",
+    "Effects": {
+      "Function":"Stepping Palette",
+      "Intensity":20,
+      "Speed":20,
+      "Grouping":210,
+      "Decimate":0,
+      "RateMs": 1500
+    },
+    "BrightnessRGB": 100
+  },
+  "5": {
+    "n":"Static Snowy02 G210",
+    "ColourPalette":"Snowy 02",
+    "Effects": {
+      "Function":"Static Palette",
+      "Intensity":20,
+      "Speed":200,
+      "Grouping":210,
+      "Decimate":0,
+      "RateMs": 4000
+    },
+    "BrightnessRGB": 100
+  },  
+  "6": {
+    "n":"RotatingPrevious",    
+    "Effects": {
+      "Function":"Rotating Previous",
+      "Intensity":8,
+      "Speed":255,
+      "Grouping":1,
+      "Decimate":0,
+      "RateMs": 20
+    },
+    "BrightnessRGB": 100
+  },
+
+  "7": {
+    "n":"Spanned Random Gradient",    
+    "ColourPalette":"Random 01",
+    "Effects": {
+      "Function":"Spanned Palette",
+      "Intensity":255,
+      "Speed":1,
+      "Grouping":1,
+      "Decimate":0,
+      "RateMs": 2000
+    },
+    "BrightnessRGB": 100
+  },
+  "8": {
+    "n":"Sweep Random",    
+    "ColourPalette":"Snowy 02",
+    "Effects": {
+      "Function":"Sweep Random",
+      "Intensity":255,
+      "Speed":80,
+      "Grouping":1,
+      "Decimate":0,
+      "RateMs": 25
+    },
+    "BrightnessRGB": 100
+  },
+  "9": {
+    "n":"Twinkle White/Snow",    
+    "ColourPalette":"Snowy 02",
+    "Effects": {
+      "Function":"Twinkle Palette Two on One",
+      "Intensity":3,
+      "Speed":255,
+      "Grouping":1,
+      "Decimate":6,
+      "Param0":99,
+      "Param1":255,
+      "Param2":220,
+      "RateMs": 20
+    },
+    "BrightnessRGB": 100
+  },
+  "10": {
+    "n":"Twinkle Snowy/White",    
+    "ColourPalette":"Cold White",
+    "Effects": {
+      "Function":"Twinkle Palette Two on One",
+      "Intensity":20,
+      "Speed":255,
+      "Grouping":1,
+      "Decimate":6,
+      "Param0":125,
+      "Param1":255,
+      "Param2":60,
+      "RateMs": 20
+    },
+    "BrightnessRGB": 100
+  },
+  "11": {
+    "n":"Candles Snowy 02",    
+    "ColourPalette":"Snowy 02",
+    "Effects": {
+      "Function":"Candles",
+      "Intensity":255,
+      "Speed":255,
+      "Grouping":1,
+      "Decimate":7,
+      "RateMs": 0
+    },
+    "BrightnessRGB": 100
+  },
+  "12": {
+    "n":"Meteor Orange&Teal",    
+    "ColourPalette":"Orange & Teal",
+    "Effects": {
+      "Function":"Meteor Smooth",
+      "Intensity":142,
+      "Speed":70,
+      "Grouping":1,
+      "Decimate":0,
+      "RateMs": 23
+    },
+    "BrightnessRGB": 100
+  },
+  "13": {
+    "n":"Meteor Colours Warm",    
+    "ColourPalette":"Colours Warm",
+    "Effects": {
+      "Function":"Meteor Smooth",
+      "Intensity":142,
+      "Speed":70,
+      "Grouping":1,
+      "Decimate":0,
+      "RateMs": 23
+    },
+    "BrightnessRGB": 100
+  },
+
+
+  "21": {
+    "n":"Twinkle Snowy/Blue",    
+    "ColourPalette":"Blue",
+    "Effects": {
+      "Function":"Twinkle Palette Two on One",
+      "Intensity":20,
+      "Speed":255,
+      "Grouping":1,
+      "Decimate":6,
+      "Param0":125,
+      "Param1":255,
+      "Param2":60,
+      "RateMs": 20
+    },
+    "BrightnessRGB": 100
+  },
+  "22": {
+    "n":"Twinkle Snowy/Green",    
+    "ColourPalette":"Green",
+    "Effects": {
+      "Function":"Twinkle Palette Two on One",
+      "Intensity":20,
+      "Speed":255,
+      "Grouping":1,
+      "Decimate":6,
+      "Param0":125,
+      "Param1":255,
+      "Param2":60,
+      "RateMs": 20
+    },
+    "BrightnessRGB": 100
+  },
+  "23": {
+    "n":"Juggle Snowy 02",    
+    "ColourPalette": "Snowy 02",
+    "Effects": {
+      "Function": "Juggle",
+      "RateMs":0,
+      "Speed":255,
+      "Intensity":49,
+      "Decimate":0,
+      "Grouping":1
+    },
+    "BrightnessRGB": 100
+  },
+  "24": {
+    "n":"Colour Waves Snowy02",    
+    "ColourPalette": "Snowy 02",
+    "Effects": {
+      "Function": "Colour Waves",
+      "RateMs":0,
+      "Speed":255,
+      "Intensity":49,
+      "Decimate":0,
+      "Grouping":1
+    },
+    "BrightnessRGB": 100
+  },
+  "25": {
+    "n":"FastPops C&W",    
+    "ColourPalette": "Colour and White Swipe",
+    "Effects": {
+      "Function": "Slow Glow",
+      "RateMs":0,
+      "Speed":255,
+      "Intensity":49,
+      "Decimate":0,
+      "Grouping":1
+    },
+    "BrightnessRGB": 100
+  },
+
+
+  "32": {
+    "n":"Meteor Smooth Snowy 02",    
+    "ColourPalette": "Snowy 01",
+    "Effects": {
+      "Function": "Meteor Smooth",
+      "RateMs":0,
+      "Speed":70,
+      "Intensity":142,
+      "Decimate":0,
+      "Grouping":1
+    },
+    "BrightnessRGB": 100
+  },
+
+
+  "34": {
+    "n":"Meteor Smooth Snowy 02",    
+    "ColourPalette": "Berry Orange"
+  },
+  "35": {
+    "n":"Twinkle Out Palette",    
+    "ColourPalette": "Snowy 02",
+    "Effects": {
+      "Function": "Twinkle Out Palette",
+      "RateMs":0,
+      "Speed":70,
+      "Intensity":142,
+      "Decimate":10,
+      "Grouping":1
+    },
+    "BrightnessRGB": 100
+  },
+
+  "40": {
+    "n":"Intensity 2,G1",    
+    "Effects": {
+      "Intensity":2,
+      "Grouping":1
+    }
+  },
+  "41": {
+    "n":"Intensity 7,G1",    
+    "Effects": {
+      "Intensity":7,
+      "Grouping":1
+    }
+  },
+  "42": {
+    "n":"Intensity 12,G1",    
+    "Effects": {
+      "Intensity":12,
+      "Grouping":1
+    }
+  },
+  "43": {
+    "n":"Intensity 20,G1",    
+    "Effects": {
+      "Intensity":20,
+      "Grouping":1
+    }
+  },
+  "44": {
+    "n":"Intensity 30,G1",    
+    "Effects": {
+      "Intensity":30,
+      "Grouping":1
+    }
+  },
+  "45": {
+    "n":"Intensity 100,G1",    
+    "Effects": {
+      "Intensity":100,
+      "Grouping":1
+    }
+  },
+  "46": {
+    "n":"Intensity 150,G1",    
+    "Effects": {
+      "Intensity":150,
+      "Grouping":1
+    }
+  },
+  "47": {
+    "n":"Candles Pastel+",    
+    "ColourPalette":"IceCream Floats+",
+    "Effects": {
+      "Function":"Candles",
+      "Intensity":255,
+      "Speed":255,
+      "Grouping":1,
+      "Decimate":7,
+      "RateMs":23
+    },
+    "BrightnessRGB": 100
+  },
+  "48": {
+    "n":"Candles Snowy02",    
+    "ColourPalette":"Snowy 02",
+    "Effects": {
+      "Function":"Candles",
+      "Intensity":255,
+      "Speed":255,
+      "Grouping":1,
+      "Decimate":7,
+      "RateMs":20
+    },
+    "BrightnessRGB": 100
+  },
+  "49": {
+    "n":"Tri Wipe",    
+    "ColourPalette":"Snowy 02",
+    "Effects": {
+      "Function":"Tri Wipe",
+      "Intensity":255,
+      "Speed":151,
+      "Grouping":1,
+      "Decimate":0,
+      "RateMs":23
+    },
+    "SegColour0":{
+      "Manual":[130,137,142,0,0],
+      "BrightnessRGB":70
+    },
+    "SegColour1":{
+      "Manual":[130,86,25,0,0],
+      "BrightnessRGB":70
+    },
+    "BrightnessRGB": 100
+  },
+
+
+  "50": {
+    "n":"Day: B&W,G210",    
+    "ColourPalette":"Blue and White",
+    "Effects": {
+      "Function":"Static Palette",
+      "Intensity":20,
+      "Speed":255,
+      "Grouping":210,
+      "Decimate":0,
+      "RateMs":20
+    },
+    "BrightnessRGB":100
+  },
+
+  "51": {
+    "n":"Static G20 Snowy02",    
+    "ColourPalette":"Snowy 02",
+    "Effects": {
+      "Function":"Static Palette",
+      "Intensity":255,
+      "Speed":0,
+      "Grouping":20,
+      "Decimate":0,
+      "RateMs":2000
+    },
+    "BrightnessRGB": 100
+  },
+
+  "52": {
+    "n":"Day: C&W,G210",    
+    "ColourPalette":"Colour and White Stripe",
+    "Effects": {
+      "Function":"Static Palette",
+      "Intensity":20,
+      "Speed":255,
+      "Grouping":210,
+      "Decimate":0,
+      "RateMs":20
+    },
+    "BrightnessRGB":100
+  },
+  "53": {
+    "n":"#Rotating",
+    "Effects": {
+      "Function":"Rotating Previous",
+      "Intensity":12,
+      "Speed":255,
+      "Grouping":1,
+      "Decimate":0,
+      "RateMs": 20
+    },
+    "BrightnessRGB": 100
+  },
+  "54": {
+    "n":"Day: C&W,G210",    
+    "ColourPalette":"IceCream Floats",
+    "Effects": {
+      "Function":"Tri Wipe",
+      "Intensity":255,
+      "Speed":151,
+      "Grouping":1,
+      "Decimate":0
+    },
+    "Transition": {
+      "TimeMs": 0,
+      "RateMs": 23
+    },
+    "SegColour0":{
+      "Manual":[255,0,0,0,0],
+      "BrightnessRGB":100
+    },
+    "SegColour1":{
+      "Manual":[0,255,0,0,0],
+      "BrightnessRGB":100
+    },
+    "BrightnessRGB": 100
+  },
+  "55": {
+    "n":"12RotatingPrevious,Snowy02,S255,R20,G1,D0",    
+    "ColourPalette":"Snowy 02",
+    "Effects": {
+      "Function":"Rotating Previous",
+      "Intensity":12,
+      "Speed":255,
+      "Grouping":1,
+      "Decimate":0,
+      "RateMs": 20
+    },
+    "BrightnessRGB": 100
+  },
+  "56": {
+    "n":"Tri Wipe",    
+    "ColourPalette":"Snowy 01",
+    "Effects": {
+      "Function":"Tri Wipe",
+      "Intensity":255,
+      "Speed":151,
+      "Grouping":1,
+      "Decimate":0,
+      "RateMs":23
+    },
+    "SegColour0":{
+      "Manual":[255,0,0,0,0],
+      "BrightnessRGB":100
+    },
+    "SegColour1":{
+      "Manual":[0,255,0,0,0],
+      "BrightnessRGB":100
+    },
+    "BrightnessRGB": 100
+  },
+
+  "58": {
+    "n":"Twinkle FastIn/SlowOut",    
+    "ColourPalette":"Party 16",
+    "Effects": {
+      "Function":"Twinkle FastIn/SlowOut",
+      "Intensity":255,
+      "Speed":213,
+      "Grouping":1,
+      "Decimate":5,
+      "RateMs":23
+    },
+    "BrightnessRGB": 100
+  },
+  "59": {
+    "n":"Running 2",    
+    "ColourPalette":"Snowy 02",
+    "Effects": {
+      "Function":"Running 2",
+      "Intensity":255,
+      "Speed":64,
+      "Grouping":1,
+      "Decimate":0,
+      "RateMs":23
+    },
+    "SegColour1":{
+      "Manual":[53,49,53,0,0],
+      "BrightnessRGB":20
+    },
+    "BrightnessRGB": 100
+  },
+
+
+
+
+ 
+
+  "60": {
+    "n":"Day: C&W,G210",    
+    "ColourPalette":"Snowy 02",
+    "Effects": {
+      "Function":"Static Palette",
+      "Intensity":20,
+      "Speed":255,
+      "Grouping":150,
+      "Decimate":0,
+      "RateMs": 4000
+    },
+    "BrightnessRGB": 100
+  },
+  "61": {
+    "n":"Day: C&W,G210",    
+    "ColourPalette":"Snowy 01"
+  },
+  "62": {
+    "n":"Day: C&W,G210",    
+    "ColourPalette":"Berry Orange"
+  },
+  "63": {
+    "n":"Day: C&W,G210",    
+    "ColourPalette":"Colours Warm"
+  },
+  "64": {
+    "n":"Day: C&W,G210",    
+    "ColourPalette":"Pink Red Yellow"
+  },
+  "65": {
+    "n":"Day: C&W,G210",    
+    "ColourPalette":"IceCream Floats+"
+  },
+  "66": {
+    "n":"Day: C&W,G210",    
+    "ColourPalette":"Colourful Greenless"
+  },
+  "67": {
+    "n":"Day: C&W,G210",    
+    "ColourPalette":"Snowy 01",
+    "Effects": {
+      "Function":"Saw",
+      "Intensity":134,
+      "Speed":64,
+      "Grouping":1
+    },
+    "SegColour0":{
+      "Manual":[40,40,40,0,0]
+    },
+    "SegColour1":{
+      "Manual":[40,40,40,0,0]
+    },
+    "Transition": {
+      "TimeMs": 0,
+      "RateMs": 23
+    },
+    "BrightnessRGB": 100
+  },
+  "68": {
+    "n":"Day: C&W,G210",    
+    "ColourPalette":"Rainbow 16",
+    "Effects": {
+      "Function":"Rainbow Runner",
+      "Intensity":133,
+      "Speed":64,
+      "Grouping":1
+    },
+    "Transition": {
+      "TimeMs": 0,
+      "RateMs": 23
+    },
+    "BrightnessRGB": 100
+  },
+  "69": {
+    "n":"Span-PinkBlueCyan",    
+    "ColourPalette":"Hult",
+    "Effects": {
+      "Function":"Spanned Palette",
+      "Intensity":255,
+      "Speed":1,
+      "Grouping":1,
+      "Decimate":0,
+      "RateMs": 2000
+    },
+    "BrightnessRGB": 100
+  },
+  "70": {
+    "n":"Brightness 100%",    
+    "BrightnessRGB": 100
+  },
+  "71": {
+    "n":"Brightness 40%",    
+    "BrightnessRGB": 40
+  },
+  "72": {
+    "n":"Brightness 20%",    
+    "BrightnessRGB": 20
+  },
+  "73": {
+    "n":"Statics-Grad-NoBrightness",    
+    "ColourPalette":"Hult",
+    "Effects": {
+      "Function":"Spanned Palette",
+      "Intensity":255,
+      "Speed":1,
+      "Grouping":1,
+      "Decimate":0,
+      "RateMs": 10000
+    }
+  },
+  "74": {
+    "n":"Statics-Grad-NoBrightness",    
+    "ColourPalette":"Spring 16"
+  },
+  "75": {
+    "n":"Statics-Grad-NoBrightness",    
+    "ColourPalette":"Party 16"
+  },
+  "76": {
+    "n":"Statics-Grad-NoBrightness",    
+    "ColourPalette":"Candy"
+  },
+  "77": {
+    "n":"Statics-Grad-NoBrightness",    
+    "ColourPalette":"Pink White Purple Grad"
+  },
+  "78": {
+    "n":"Statics-Grad-NoBrightness",    
+    "ColourPalette":"Snowy 01"
+  },
+  "79": {
+    "n":"Statics-Grad-NoBrightness",    
+    "ColourPalette":"Colours and White Stripe"
+  },
+  "80": {
+    "n":"Statics-Grad-NoBrightness",    
+    "ColourPalette":"Colourful Greenless"
+  },
+  "81": {
+    "n":"Statics-Grad-NoBrightness",    
+    "ColourPalette":"Sunrise Blue SR02"
+  },
+
+
+  "85": {
+    "n":"Candles Pastel Pinks",    
+    "ColourPalette":"Pastel Pinks",
+    "Effects": {
+      "Function":"Candles",
+      "Intensity":255,
+      "Speed":255,
+      "Grouping":1,
+      "Decimate":10,
+      "RateMs": 0
+    }
+  },
+
+
+  "86": {
+    "n":"30Twinkle SnowyONWhite, Snowy 02, 0/100, G1, D0",    
+    "ColourPalette":"Cold White",
+    "Effects": {
+      "Function":"Twinkle Palette Two on One",
+      "Intensity":20,
+      "Speed":255,
+      "Grouping":1,
+      "Decimate":6,
+      "Param0":125,
+      "Param1":255,
+      "Param2":60,
+      "RateMs": 100
+    },
+    "BrightnessRGB": 100
+  },
+
+
+  "90":{
+    "playlist":{
+    "ps" :[ 73, 71,  74, 75,   76,  77,  78,  79,  80,  81, 82],
+    "dur":[200, 10, 200, 200, 200, 200, 200, 200, 200, 200, 200],"repeat":0,"end":0,"r":1},"on":true,"n":"Static Spans Morning"},
+  
+  "91":{"playlist":{"ps":
+  [1,    2,  3,  4, 5,  6, 55,  7,  9, 10],"dur":
+  [100,100,200,100,50,200,100,200,200,200],"repeat":0,"end":0,"r":1},"on":true,"n":"N1 Init Test"},
+
+  "93":{"playlist":{"ps":
+  [1,    2,  3,  4, 5,  6, 55,  7,  9, 10, 21, 22],"dur":
+  [100,100,200,100,50,200,100,200,200,200,100,100],"repeat":0,"end":0,"r":1},"on":true,"n":"N2 Night"},
+
+  "96":{"playlist":{"ps":
+  [1,    2,  3,  4, 5,  6, 55,  7,  9, 10, 21, 22],"dur":
+  [100,100,400,400,50,200,100,200,200,200,100,100],"repeat":0,"end":0,"r":1},"on":true,"n":"N3 Night"},
+
+  "92":{"playlist":{"ps":
+  [50,    53, 42,  43,  44, 52, 53,   42,  43,  44],"dur":
+  [20,20, 200,100,50,   20,20, 200,100,50],"repeat":0,"end":0,"r":1},"on":true,"n":"D1 Init Test"},
+
+
+  "94":{
+    "n":"Meteor Colours",
+    "playlist":{
+      "ps" :[ 32,  34,  64, 65,   66,  74,  75,  76,  77,  79,  80],
+      "dur":[300, 300, 300, 300, 300, 300, 300, 300, 300, 300, 300],
+      "repeat":0,"end":0,"r":1
+    },
+    "on":true
+  },
+  "95":{
+    "n":"Candles 1 Sidedoor",
+    "playlist":{
+      "ps" :[ 47,  48, 9, 51],
+      "dur":[300, 300, 300, 300],
+      "repeat":0,
+      "end":0,
+      "r":1
+    },
+    "on":true
+  },
+  "97":{
+    "n":"Candles N1",
+    "playlist":{
+      "ps" :[48, 9, 51],
+      "dur":[300, 300, 300],
+      "repeat":0,
+      "end":0,
+      "r":1
+    },
+    "on":true
+  },
+  "98":{
+    "n":"Candles N2",
+    "playlist":{
+      "ps" :[48, 9, 51, 58],
+      "dur":[300, 300, 300, 300],
+      "repeat":0,
+      "end":0,
+      "r":1
+    },
+    "on":true
+  }
+  
+}

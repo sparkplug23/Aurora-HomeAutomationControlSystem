@@ -322,8 +322,12 @@ uint8_t BusDigital::estimateCurrentAndLimitBri() {
 
   uint32_t busPowerSum = 0;
   for (unsigned i = 0; i < getLength(); i++) {  //sum up the usage of each LED
-    uint32_t c = getPixelColor(i); // always returns original or restored color without brightness scaling
+    ColourBaseType c = getPixelColor(i); // always returns original or restored color without brightness scaling
+    #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+    byte r = c.R, g = c.G, b = c.B, w = c.WW;
+    #else
     byte r = R(c), g = G(c), b = B(c), w = W(c);
+    #endif
 
     if (useWackyWS2815PowerModel) { //ignore white component on WS2815 power calculation
       busPowerSum += (max(max(r,g),b)) * 3;
@@ -416,12 +420,29 @@ void BusDigital::show() {
       if (_type == BUSTYPE_WS2812_1CH_X3) hwLen = NUM_ICS_WS2812_1CH_3X(_len); // only needs a third of "RGB" LEDs for NeoPixelBus
       for (unsigned i = 0; i < hwLen; i++) {
         // use 0 as color order, actual order does not matter here as we just update the channel values as-is
-        uint32_t c = restoreColorLossy(PolyBus::getPixelColor(_busPtr, _iType, i, 0), _bri);
+        ColourBaseType c = restoreColorLossy(PolyBus::getPixelColor(_busPtr, _iType, i, 0), _bri);
+        #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+        // if (hasCCT()) Bus::calculateCCT(c, cctWW, cctCW); // this will unfortunately corrupt (segment) CCT data on every bus
+        PolyBus::setPixelColor(_busPtr, _iType, i, c, 0);//, 0, (cctCW<<8) | cctWW); // repaint all pixels with new brightness
+        #else
         if (hasCCT()) Bus::calculateCCT(c, cctWW, cctCW); // this will unfortunately corrupt (segment) CCT data on every bus
         PolyBus::setPixelColor(_busPtr, _iType, i, c, 0, (cctCW<<8) | cctWW); // repaint all pixels with new brightness
+        #endif
       }
     }
   }
+
+
+  /**
+   * @brief To account for effects that require direct control, the brightness of the bus should be overridden
+   * 
+   * OR, most likely, what I should be doing is instead writing the "full brightness" output, and hence, it should
+   * actually be the "under palette" that is set to a lower brightness. 
+   * 
+   */
+
+
+
   PolyBus::show(_busPtr, _iType, !_data); // faster if buffer consistency is not important (use !_buffering this causes 20% FPS drop)
   // restore bus brightness to its original value
   // this is done right after show, so this is only OK if LED updates are completed before show() returns
@@ -461,8 +482,13 @@ void BusDigital::setStatusPixel(uint32_t c) {
  * @param c 
  */
 
-void IRAM_ATTR BusDigital::setPixelColor(uint32_t pix, uint32_t c) {
+void IRAM_ATTR BusDigital::setPixelColor(uint32_t pix, ColourBaseType c) {
   if (!_valid) return;
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  // Directly handle RgbwwColor
+  unsigned co = _colorOrderMap.getPixelColorOrder(pix + _start, _colorOrder);
+  PolyBus::setPixelColor(_busPtr, _iType, pix, c, co);
+  #else
   if (hasWhite()) c = autoWhiteCalc(c);
   if (Bus::_cct >= 1900) c = colorBalanceFromKelvin(Bus::_cct, c); //color correction from CCT
   /**
@@ -509,10 +535,15 @@ void IRAM_ATTR BusDigital::setPixelColor(uint32_t pix, uint32_t c) {
 
     PolyBus::setPixelColor(_busPtr, _iType, pix, c, co, wwcw);
   }
+  #endif
 }
 
 // returns original color if global buffering is enabled, else returns lossly restored color from bus
-uint32_t IRAM_ATTR BusDigital::getPixelColor(uint32_t pix) const {
+ColourBaseType IRAM_ATTR BusDigital::getPixelColor(uint32_t pix) const {
+  
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  return PolyBus::getPixelColor(_busPtr, _iType, pix, _colorOrderMap.getPixelColorOrder(pix + _start, _colorOrder));
+  #else
   if (!_valid) return 0;
   /**
    * @brief Internal Buffer
@@ -549,6 +580,7 @@ uint32_t IRAM_ATTR BusDigital::getPixelColor(uint32_t pix) const {
     }
     return c;
   }
+  #endif
 }
 
 
@@ -788,7 +820,15 @@ BusPwm::BusPwm(BusConfig &bc) : Bus(bc.type, bc.start, bc.autoWhite)
   
 // }
 
-void BusPwm::setPixelColor(uint32_t pix, uint32_t c) {
+void BusPwm::setPixelColor(uint32_t pix, ColourBaseType c) {
+  
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  _data[0] = c.R; 
+  _data[1] = c.G; 
+  _data[2] = c.B;
+  _data[3] = c.WW;
+  _data[4] = c.CW;
+  #else
   if (pix != 0 || !_valid) return; //only react to first pixel
   if (_type != BUSTYPE_ANALOG_3CH) c = autoWhiteCalc(c);
   if (Bus::_cct >= 1900 && (_type == BUSTYPE_ANALOG_3CH || _type == BUSTYPE_ANALOG_4CH)) {
@@ -822,10 +862,15 @@ void BusPwm::setPixelColor(uint32_t pix, uint32_t c) {
       _data[0] = r; _data[1] = g; _data[2] = b;
       break;
   }
+  #endif
 }
 
-//does no index check
-uint32_t BusPwm::getPixelColor(uint32_t pix) const {
+
+ColourBaseType BusPwm::getPixelColor(uint32_t pix) const {
+
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  return RgbwwColor(_data[0], _data[1], _data[2], _data[3], _data[4]);
+  #else
   if (!_valid) return 0;
   // TODO getting the reverse from CCT is involved (a quick approximation when CCT blending is ste to 0 implemented)
   switch (_type) {
@@ -843,9 +888,76 @@ uint32_t BusPwm::getPixelColor(uint32_t pix) const {
       return RGBW32(_data[0], _data[1], _data[2], 0);
   }
   return RGBW32(_data[0], _data[0], _data[0], _data[0]);
+  #endif
 }
 
 void BusPwm::show() {
+  
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+
+
+  // uint16_t r = mapvalue(output_colour.R, 0, 255, 0, 1023);
+  // uint16_t g = mapvalue(output_colour.G, 0, 255, 0, 1023);
+  // uint16_t b = mapvalue(output_colour.B, 0, 255, 0, 1023);
+  // uint16_t w1 = mapvalue(output_colour.WW, 0, 255, 0, 1023);
+  // uint16_t w2 = mapvalue(output_colour.CW, 0, 255, 0, 1023);
+  
+  // #ifdef ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
+  // output_colour.debug_print("output_colour");
+  // #endif // ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
+
+  // uint16_t colour10bit[5] = {0};
+  // switch (_type) {
+  //   default:
+  //   case BUSTYPE_ANALOG_5CH: //RGB + warm white + cold white
+  //     colour10bit[4] = w2;
+  //     // NO BREAK
+  //   case BUSTYPE_ANALOG_4CH: //RGBW
+  //     colour10bit[3] = w1;
+  //     // NO BREAK
+  //   case BUSTYPE_ANALOG_3CH: //standard dumb RGB
+  //     colour10bit[0] = r; 
+  //     colour10bit[1] = g; 
+  //     colour10bit[2] = b;
+  //     break;
+  //   case BUSTYPE_ANALOG_2CH: //warm white + cold white
+  //     colour10bit[0] = w1;
+  //     colour10bit[1] = w2;
+  //     break;
+  //   case BUSTYPE_ANALOG_1CH: //one channel (white), relies on auto white calculation
+  //     colour10bit[0] = w1;
+  //     break;
+  // }
+  
+  // #ifdef ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
+  // ALOG_INF(PSTR("BusPwm::show [%d,%d,%d,%d,%d]"), colour10bit[0], colour10bit[1], colour10bit[2], colour10bit[3], colour10bit[4]);
+  // #endif // ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
+
+  // /**
+  //  * @brief Final conversions
+  //  * ** Upscale to 10 bit
+  //  * ** Shrink into desired PWM range limits
+  //  * Here colour is just a PWM value, the actual colour information is above and should be inserted correctly
+  //  */
+  // uint16_t pwm_value;
+  // uint8_t numPins = NUM_BUSTYPE_PWM_PINS(_type);
+  // for(uint8_t ii=0;ii<numPins;ii++)
+  // {
+  //   colour10bit[ii] = colour10bit[ii] > 0 ? mapvalue(colour10bit[ii], 0, pCONT_set->Settings.pwm_range, pCONT_iLight->pwm_min, pCONT_iLight->pwm_max) : 0; 
+  //   pwm_value = bitRead(pCONT_set->runtime.pwm_inverted, ii) ? pCONT_set->Settings.pwm_range - colour10bit[ii] : colour10bit[ii];
+
+  //   #ifdef ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
+  //   ALOG_INF(PSTR("BusPwm[%d]::pwm_value[%d] %d"), pCONT_lAni->getCurrSegmentId(), ii, pwm_value);
+  //   #endif // ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
+
+  //   #ifdef ESP8266
+  //   analogWrite(_pins[ii], pwm_value);
+  //   #else
+  //   ledcWrite(_ledcStart + ii, pwm_value);
+  //   #endif
+  // }
+
+  #else
   if (!_valid) return;
   // if _needsRefresh is true (UI hack) we are using dithering (credit @dedehai & @zalatnaicsongor)
   // https://github.com/Aircoookie/WLED/pull/4115 and https://github.com/zalatnaicsongor/WLED/pull/1)
@@ -899,6 +1011,7 @@ void BusPwm::show() {
     if (hPoint >= maxBri) hPoint = 0; // offset it out of bounds, reset
     #endif
   }
+  #endif
 }
 
 uint8_t BusPwm::getPins(uint8_t* pinArray) const {
@@ -953,17 +1066,22 @@ BusOnOff::BusOnOff(BusConfig &bc) : Bus(bc.type, bc.start, bc.autoWhite)
   _valid = true;
 }
 
-void BusOnOff::setPixelColor(uint32_t pix, uint32_t c) {
+void BusOnOff::setPixelColor(uint32_t pix, ColourBaseType c) {
   if (pix != 0 || !_valid) return; //only react to first pixel
+  
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+
+  #else
   c = autoWhiteCalc(c);
   uint8_t r = R(c);
   uint8_t g = G(c);
   uint8_t b = B(c);
   uint8_t w = W(c);
   _data[0] = bool(r|g|b|w) && bool(_bri) ? 0xFF : 0;
+  #endif
 }
 
-uint32_t BusOnOff::getPixelColor(uint32_t pix) const {
+ColourBaseType BusOnOff::getPixelColor(uint32_t pix) const {
   if (!_valid) return 0;
   return RGBW32(_data[0], _data[0], _data[0], _data[0]);
 }
@@ -1033,7 +1151,11 @@ BusNetwork::BusNetwork(BusConfig &bc)
 // }
 
 
-void BusNetwork::setPixelColor(uint32_t pix, uint32_t c) {
+void BusNetwork::setPixelColor(uint32_t pix, ColourBaseType c) {
+  
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+
+  #else
   if (!_valid || pix >= _len) return;
   if (_hasWhite) c = autoWhiteCalc(c);
   if (Bus::_cct >= 1900) c = colorBalanceFromKelvin(Bus::_cct, c); //color correction from CCT
@@ -1042,12 +1164,18 @@ void BusNetwork::setPixelColor(uint32_t pix, uint32_t c) {
   _data[offset+1] = G(c);
   _data[offset+2] = B(c);
   if (_hasWhite) _data[offset+3] = W(c);
+  #endif
 }
 
-uint32_t BusNetwork::getPixelColor(uint32_t pix) const {
+ColourBaseType BusNetwork::getPixelColor(uint32_t pix) const {
+  
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  
+  #else
   if (!_valid || pix >= _len) return 0;
   unsigned offset = pix * _UDPchannels;
   return RGBW32(_data[offset], _data[offset+1], _data[offset+2], (hasWhite() ? _data[offset+3] : 0));
+  #endif
 }
 
 
@@ -1214,7 +1342,7 @@ uint16_t BusManager::getTotalLength() {
   return len;
 }
 
-void IRAM_ATTR BusManager::setPixelColor(uint32_t pix, uint32_t c) {
+void IRAM_ATTR BusManager::setPixelColor(uint32_t pix, ColourBaseType c) {
   for (unsigned i = 0; i < numBusses; i++) {
     unsigned bstart = busses[i]->getStart();
     if (pix < bstart || pix >= bstart + busses[i]->getLength()) continue;
@@ -1222,7 +1350,7 @@ void IRAM_ATTR BusManager::setPixelColor(uint32_t pix, uint32_t c) {
   }
 }
 
-uint32_t BusManager::getPixelColor(uint32_t pix) {
+ColourBaseType BusManager::getPixelColor(uint32_t pix) {
   for (unsigned i = 0; i < numBusses; i++) {
     unsigned bstart = busses[i]->getStart();
     if (!busses[i]->containsPixel(pix)) continue;

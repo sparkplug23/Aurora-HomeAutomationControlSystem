@@ -22,8 +22,6 @@
 #define NEOPIXEL_DISABLE_I2S1_PIXELBUS
 #endif
 
-#define ENABLE_FEATURE_NEOPIXELBUS_IS_GAMMA_CORRECTED
-
 //Hardware SPI Pins
 #define P_8266_HS_MOSI 13
 #define P_8266_HS_CLK  14
@@ -36,6 +34,7 @@
 // Define masks for the RGB and white channel bits
 #define COLOUR_ORDER_RGB_MASK 0x0F // Lower 4 bits for RGB swapping
 #define COLOUR_ORDER_WHITE_MASK 0xF0 // Upper 4 bits for white channel swapping
+
 
 enum EM_BUS_TYPE
 {
@@ -94,9 +93,6 @@ enum EM_BUS_TYPE
 #define ENABLE_PIXELBUS_8266_U1_TYPES
 #define ENABLE_PIXELBUS_8266_DM_TYPES
 
-
-#ifdef ENABLE_FEATURE_NEOPIXELBUS_IS_GAMMA_CORRECTED
-
 #include "NeoPixelBusLg.h"
 
 /*** ESP8266 Neopixel methods ***/
@@ -149,63 +145,6 @@ enum EM_BUS_TYPE
   #define PIXELBUS_32_I0_400_3 NeoPixelBusLg<NeoRgbFeature, NeoEsp32I2s0400KbpsMethod, NeoGammaNullMethod>
   #define PIXELBUS_32_I1_400_3 NeoPixelBusLg<NeoRgbFeature, NeoEsp32I2s1400KbpsMethod, NeoGammaNullMethod>
 #endif
-
-#else // ENABLE_FEATURE_NEOPIXELBUS_IS_GAMMA_CORRECTED
-
-#include "NeoPixelBus.h"
-
-/*** ESP8266 Neopixel methods ***/
-#ifdef ESP8266
-//RGB
-#ifdef ENABLE_PIXELBUS_8266_U0_TYPES
-#define PIXELBUS_8266_U0_3 NeoPixelBus<NeoRgbFeature, NeoEsp8266Uart0Ws2813Method> //3 chan, esp8266, gpio1
-#endif
-#ifdef ENABLE_PIXELBUS_8266_U1_TYPES
-#define PIXELBUS_8266_U1_3 NeoPixelBus<NeoRgbFeature, NeoEsp8266Uart1Ws2813Method> //3 chan, esp8266, gpio2
-#endif 
-#ifdef ENABLE_PIXELBUS_8266_DM_TYPES
-#define PIXELBUS_8266_DM_3 NeoPixelBus<NeoRgbFeature, NeoEsp8266Dma800KbpsMethod>  //3 chan, esp8266, gpio3
-#endif
-// #define PIXELBUS_8266_BB_3 NeoPixelBus<NeoRgbFeature, NeoEsp8266BitBang800KbpsMethod> //3 chan, esp8266, bb (any pin but 16)
-//RGBW
-#ifdef ENABLE_PIXELBUS_8266_U0_TYPES
-#define PIXELBUS_8266_U0_4 NeoPixelBus<NeoRgbwFeature, NeoEsp8266Uart0Ws2813Method>   //4 chan, esp8266, gpio1
-#endif 
-#ifdef ENABLE_PIXELBUS_8266_U1_TYPES
-#define PIXELBUS_8266_U1_4 NeoPixelBus<NeoRgbwFeature, NeoEsp8266Uart1Ws2813Method>   //4 chan, esp8266, gpio2
-#endif
-#ifdef ENABLE_PIXELBUS_8266_DM_TYPES
-#define PIXELBUS_8266_DM_4 NeoPixelBus<NeoRgbwFeature, NeoEsp8266Dma800KbpsMethod>    //4 chan, esp8266, gpio3
-#endif
-#endif
-
-/*** ESP32 Neopixel methods ***/
-#ifdef ARDUINO_ARCH_ESP32
-  //RGB
-  #define PIXELBUS_32_RN_3 NeoPixelBus<NeoRgbFeature, NeoEsp32RmtNWs2812xMethod>
-  #define PIXELBUS_32_I0_3 NeoPixelBus<NeoRgbFeature, NeoEsp32I2s0800KbpsMethod>
-  #define PIXELBUS_32_I1_3 NeoPixelBus<NeoRgbFeature, NeoEsp32I2s1800KbpsMethod>
-  #define PIXELBUS_32_I1_3P NeoPixelBus<NeoRgbFeature, NeoEsp32I2s1X8Ws2812xMethod>
-  #define PIXELBUS_32_I0_3P NeoPixelBus<NeoRgbFeature, NeoEsp32I2s0X16Ws2812xMethod>
-  //RGBW
-  #define PIXELBUS_32_RN_4 NeoPixelBus<NeoRgbwFeature, NeoEsp32RmtNWs2812xMethod>
-  #define PIXELBUS_32_I0_4 NeoPixelBus<NeoRgbwFeature, NeoEsp32I2s0800KbpsMethod>
-  #define PIXELBUS_32_I1_4 NeoPixelBus<NeoRgbwFeature, NeoEsp32I2s1800KbpsMethod>
-  #define PIXELBUS_32_I1_4P NeoPixelBus<NeoRgbwFeature, NeoEsp32I2s1X8Sk6812Method>
-  #define PIXELBUS_32_I0_4P NeoPixelBus<NeoRgbwFeature, NeoEsp32I2s0X16Sk6812Method>
-  //RGBWW (WS2805)
-  // #define PIXELBUS_32_RN_5 NeoPixelBus<NeoRgbwwFeature, NeoEsp32I2s0Ws2805Method> // No RMT method
-  #define PIXELBUS_32_I0_5 NeoPixelBus<NeoRgbwwFeature, NeoEsp32I2s0Ws2805Method>
-  #define PIXELBUS_32_I1_5 NeoPixelBus<NeoRgbwwFeature, NeoEsp32I2s1Ws2805Method>
-  #define PIXELBUS_32_I1_5P NeoPixelBus<NeoRgbwwFeature, NeoEsp32I2s1X8Ws2805Method>
-  #define PIXELBUS_32_I0_5P NeoPixelBus<NeoRgbwwFeature, NeoEsp32I2s0X16Ws2805Method>
-  //400Kbps
-  #define PIXELBUS_32_RN_400_3 NeoPixelBus<NeoRgbFeature, NeoEsp32RmtN400KbpsMethod>
-  #define PIXELBUS_32_I0_400_3 NeoPixelBus<NeoRgbFeature, NeoEsp32I2s0400KbpsMethod>
-  #define PIXELBUS_32_I1_400_3 NeoPixelBus<NeoRgbFeature, NeoEsp32I2s1400KbpsMethod>
-#endif
-
-#endif // ENABLE_FEATURE_NEOPIXELBUS_IS_GAMMA_CORRECTED
 
 // 48bit & 64bit to 24bit & 32bit RGB(W) conversion
 #define toRGBW32(c) (RGBW32((c>>40)&0xFF, (c>>24)&0xFF, (c>>8)&0xFF, (c>>56)&0xFF))
@@ -416,7 +355,187 @@ class PolyBus
     return true;
   };
 
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
 
+  // Function to set pixel color based on color ordering
+  static void setPixelColor(void* busPtr, uint8_t busType, uint16_t pix, RgbwwColor c, uint8_t co, uint16_t wwcw = 0)
+  {
+
+    // #ifdef ENABLE_DEVFEATURE_LIGHTING__TEMPORARY_DISABLE_CODE_FOR_SPEED_TESTING
+    // DEBUG_TIME__START
+    // uint32_t __debug_time_start__ = micros();
+    // #endif
+
+    // Debug feature to map a large number of virtual pixels to a smaller physical display
+    #ifdef ENABLE_DEBUGFEATURE__LIGHTING__MATCH_FEWER_PHYSICAL_PIXELS
+    pix = pix % ENABLE_DEBUGFEATURE__LIGHTING__MATCH_FEWER_PHYSICAL_PIXELS; // Map to fewer pixels
+    #endif
+
+    RgbwwColor col = c;
+
+    // Reorder RGB channels based on the provided color order
+    switch (co & COLOUR_ORDER_RGB_MASK) {
+      default: break;                                      // Default: GRB
+      case 1:  col.G = c.R; col.R = c.G; break;            // RGB
+      case 2:  col.G = c.B; col.B = c.G; break;            // BRG
+      case 3:  col.G = c.R; col.R = c.B; c.B = c.G; break; // RBG
+      case 4:  col.G = c.B; col.R = c.G; c.B = c.R; break; // BGR
+      case 5:  col.R = c.B; col.B = c.R; break;            // GBR
+    }
+
+    // Handle white channel reordering or swapping
+    switch (co >> COLOUR_ORDER_WHITE_MASK) {
+      default: break;                 // Default: no swap
+      case 4: std::swap(col.WW, col.CW); break; // Swap WW and CW
+    }
+
+    // Optional logging for debugging
+    #ifdef ENABLE_DEVFEATURE__PIXEL_COLOUR_ORDER_IN_MULTIPIN_SHOW_LOGS
+    if(pix == 0){ // Just log for the first pixel
+        Serial.printf("set colour R=%d, G=%d, B=%d, CW=%d, WW=%d %d/%d/%d/%d/%d\n\r",
+            (colour_order & 0x07),   // Red
+            ((colour_order >> 3) & 0x07), // Green
+            ((colour_order >> 6) & 0x07), // Blue
+            colour_hardware.CW,
+            colour_hardware.WW,
+            colour_internal.R,
+            colour_internal.G,
+            colour_internal.B,
+            colour_internal.CW,
+            colour_internal.WW
+        );
+    }
+    #endif    
+    #ifdef ENABLE_DEVFEATURE__PIXEL_COLOUR_VALUE_IN_MULTIPIN_SHOW_LOGS // Debug pixel color value log
+    if (pix < 1) { // Just log for the first pixel
+        Serial.printf("setPixelColor[%d] R=%d, G=%d, B=%d, WW=%d, CW=%d\n\r", pix, 
+            colour_internal.R, 
+            colour_internal.G, 
+            colour_internal.B, 
+            colour_internal.WW, 
+            colour_internal.CW
+        );
+    }
+    #endif
+    
+    switch (busType) {
+      case BUSTYPE__NONE__ID: break;
+    #ifdef ESP8266
+      case BUSTYPE__8266_U0_3__ID: (static_cast<PIXELBUS_8266_U0_3*>(busPtr))->SetPixelColor(pix, RgbColor(col)); break;
+      case BUSTYPE__8266_U1_3__ID: (static_cast<PIXELBUS_8266_U1_3*>(busPtr))->SetPixelColor(pix, RgbColor(col)); break;
+      case BUSTYPE__8266_DM_3__ID: (static_cast<PIXELBUS_8266_DM_3*>(busPtr))->SetPixelColor(pix, RgbColor(col)); break;
+      case BUSTYPE__8266_U0_4__ID: (static_cast<PIXELBUS_8266_U0_4*>(busPtr))->SetPixelColor(pix, col); break;
+      case BUSTYPE__8266_U1_4__ID: (static_cast<PIXELBUS_8266_U1_4*>(busPtr))->SetPixelColor(pix, col); break;
+      case BUSTYPE__8266_DM_4__ID: (static_cast<PIXELBUS_8266_DM_4*>(busPtr))->SetPixelColor(pix, col); break;
+    #endif
+    #ifdef ARDUINO_ARCH_ESP32
+      case BUSTYPE__32_RN_3__ID:      (static_cast<PIXELBUS_32_RN_3*>(busPtr))->SetPixelColor(pix, RgbColor(col)); break;
+      case BUSTYPE__32_RN_4__ID:      (static_cast<PIXELBUS_32_RN_4*>(busPtr))->SetPixelColor(pix, RgbwColor(col)); break;
+      // case BUSTYPE__32_RN_5__ID:   (static_cast<PIXELBUS_32_RN_5*>(busPtr))->SetPixelColor(pix, colour_hardware); break;
+      case BUSTYPE__32_RN_400_3__ID:  (static_cast<PIXELBUS_32_RN_400_3*>(busPtr))->SetPixelColor(pix, RgbColor(col)); break;
+      #ifndef NEOPIXEL_DISABLE_I2S0_PIXELBUS
+      case BUSTYPE__32_I0_3__ID:      (static_cast<PIXELBUS_32_I0_3*>(busPtr))->SetPixelColor(pix, RgbColor(col)); break;
+      case BUSTYPE__32_I0_4__ID:      (static_cast<PIXELBUS_32_I0_4*>(busPtr))->SetPixelColor(pix, RgbwColor(col)); break;
+      case BUSTYPE__32_I0_5__ID:      (static_cast<PIXELBUS_32_I0_5*>(busPtr))->SetPixelColor(pix, col); break;
+      case BUSTYPE__32_I0_400_3__ID:  (static_cast<PIXELBUS_32_I0_400_3*>(busPtr))->SetPixelColor(pix, RgbColor(col)); break;
+      case BUSTYPE__32_I0_3P__ID:     (static_cast<PIXELBUS_32_I0_3P*>(busPtr))->SetPixelColor(pix, RgbColor(col)); break;
+      case BUSTYPE__32_I0_4P__ID:     (static_cast<PIXELBUS_32_I0_4P*>(busPtr))->SetPixelColor(pix, RgbwColor(col)); break;
+      case BUSTYPE__32_I0_5P__ID:     (static_cast<PIXELBUS_32_I0_5P*>(busPtr))->SetPixelColor(pix, col); break;
+      #endif
+      #ifndef NEOPIXEL_DISABLE_I2S1_PIXELBUS
+      case BUSTYPE__32_I1_3__ID: (static_cast<PIXELBUS_32_I1_3*>(busPtr))->SetPixelColor(pix, RgbColor(col)); break;
+      case BUSTYPE__32_I1_4__ID: (static_cast<PIXELBUS_32_I1_4*>(busPtr))->SetPixelColor(pix, RgbwColor(col)); break;
+      case BUSTYPE__32_I1_5__ID: (static_cast<PIXELBUS_32_I1_5*>(busPtr))->SetPixelColor(pix, col); break;
+      case BUSTYPE__32_I1_400_3__ID: (static_cast<PIXELBUS_32_I1_400_3*>(busPtr))->SetPixelColor(pix, RgbColor(col)); break;
+      case BUSTYPE__32_I1_3P__ID: (static_cast<PIXELBUS_32_I1_3P*>(busPtr))->SetPixelColor(pix, RgbColor(col)); break;
+      case BUSTYPE__32_I1_4P__ID: (static_cast<PIXELBUS_32_I1_4P*>(busPtr))->SetPixelColor(pix, RgbwColor(col)); break;
+      case BUSTYPE__32_I1_5P__ID: (static_cast<PIXELBUS_32_I1_5P*>(busPtr))->SetPixelColor(pix, col); break;
+      #endif
+    #endif
+
+    }
+
+    // #ifdef ENABLE_DEVFEATURE_LIGHTING__TEMPORARY_DISABLE_CODE_FOR_SPEED_TESTING
+    // #define SERIAL_DEBUG Serial
+    // if(pix==0)
+    // SERIAL_DEBUG.printf("(%s:%d) %luus %dms\n\r", \
+    //                         __FILE__, __LINE__, micros() - __debug_time_start__, (micros() - __debug_time_start__)/1000); \
+    //     SERIAL_DEBUG.flush();
+    // #endif
+}
+
+
+static RgbwwColor getPixelColor(void* busPtr, uint8_t busType, uint16_t pix, uint8_t co)
+{
+  RgbwwColor col;
+
+  #ifdef ENABLE_DEBUGFEATURE__LIGHTING__MATCH_FEWER_PHYSICAL_PIXELS
+  // Modulo operation for debugging larger pixel counts on a smaller display
+  pix = pix % ENABLE_DEBUGFEATURE__LIGHTING__MATCH_FEWER_PHYSICAL_PIXELS; // Map to fewer physical pixels
+  #endif
+
+    switch (busType) {
+      case BUSTYPE__NONE__ID: break;
+    #ifdef ESP8266    
+      case BUSTYPE__8266_U0_3__ID: col = (static_cast<PIXELBUS_8266_U0_3*>(busPtr))->GetPixelColor(pix); break;
+      case BUSTYPE__8266_U1_3__ID: col = (static_cast<PIXELBUS_8266_U1_3*>(busPtr))->GetPixelColor(pix); break;
+      case BUSTYPE__8266_DM_3__ID: col = (static_cast<PIXELBUS_8266_DM_3*>(busPtr))->GetPixelColor(pix); break;
+      case BUSTYPE__8266_U0_4__ID: col = (static_cast<PIXELBUS_8266_U0_4*>(busPtr))->GetPixelColor(pix); break;
+      case BUSTYPE__8266_U1_4__ID: col = (static_cast<PIXELBUS_8266_U1_4*>(busPtr))->GetPixelColor(pix); break;
+      case BUSTYPE__8266_DM_4__ID: col = (static_cast<PIXELBUS_8266_DM_4*>(busPtr))->GetPixelColor(pix); break;
+    #endif
+    #ifdef ARDUINO_ARCH_ESP32
+      case BUSTYPE__32_RN_3__ID: col = (static_cast<PIXELBUS_32_RN_3*>(busPtr))->GetPixelColor(pix); break;
+      case BUSTYPE__32_RN_4__ID: col = (static_cast<PIXELBUS_32_RN_4*>(busPtr))->GetPixelColor(pix); break;
+      // case BUSTYPE__32_RN_5__ID:  col = (static_cast<PIXELBUS_32_RN_5*>(busPtr))->GetPixelColor(pix); break;
+      case BUSTYPE__32_RN_400_3__ID: col = (static_cast<PIXELBUS_32_RN_400_3*>(busPtr))->GetPixelColor(pix); break;
+      #ifndef NEOPIXEL_DISABLE_I2S0_PIXELBUS
+      case BUSTYPE__32_I0_3__ID: col = (static_cast<PIXELBUS_32_I0_3*>(busPtr))->GetPixelColor(pix); break;
+      case BUSTYPE__32_I0_4__ID: col = (static_cast<PIXELBUS_32_I0_4*>(busPtr))->GetPixelColor(pix); break;
+      case BUSTYPE__32_I0_5__ID: col = (static_cast<PIXELBUS_32_I0_5*>(busPtr))->GetPixelColor(pix); break;
+      case BUSTYPE__32_I0_400_3__ID: col = (static_cast<PIXELBUS_32_I0_400_3*>(busPtr))->GetPixelColor(pix); break;
+      case BUSTYPE__32_I0_3P__ID: col = (static_cast<PIXELBUS_32_I0_3P*>(busPtr))->GetPixelColor(pix); break;
+      case BUSTYPE__32_I0_4P__ID: col = (static_cast<PIXELBUS_32_I0_4P*>(busPtr))->GetPixelColor(pix); break;
+      case BUSTYPE__32_I0_5P__ID: col = (static_cast<PIXELBUS_32_I0_5P*>(busPtr))->GetPixelColor(pix); break;
+      #endif
+      #ifndef NEOPIXEL_DISABLE_I2S1_PIXELBUS
+      case BUSTYPE__32_I1_3__ID: col = (static_cast<PIXELBUS_32_I1_3*>(busPtr))->GetPixelColor(pix); break;
+      case BUSTYPE__32_I1_4__ID: col = (static_cast<PIXELBUS_32_I1_4*>(busPtr))->GetPixelColor(pix); break;
+      case BUSTYPE__32_I1_5__ID: col = (static_cast<PIXELBUS_32_I1_5*>(busPtr))->GetPixelColor(pix); break;
+      case BUSTYPE__32_I1_400_3__ID: col = (static_cast<PIXELBUS_32_I1_400_3*>(busPtr))->GetPixelColor(pix); break;
+      case BUSTYPE__32_I1_3P__ID: col = (static_cast<PIXELBUS_32_I1_3P*>(busPtr))->GetPixelColor(pix); break;
+      case BUSTYPE__32_I1_4P__ID: col = (static_cast<PIXELBUS_32_I1_4P*>(busPtr))->GetPixelColor(pix); break;
+      case BUSTYPE__32_I1_5P__ID: col = (static_cast<PIXELBUS_32_I1_5P*>(busPtr))->GetPixelColor(pix); break;
+      #endif
+    #endif
+    }
+
+    // upper nibble contains W swap information
+   
+    switch (co >> COLOUR_ORDER_WHITE_MASK) {
+      case 1: std::swap(col.WW, col.CW); break;
+      default: break;
+    }
+
+    #ifdef ENABLE_DEVFEATURE__PIXEL_COLOUR_ORDER_IN_MULTIPIN_SHOW_LOGS
+    if (pix < 5) { // Just first few pixels
+      Serial.printf("get colour_order R=%d, G=%d, B=%d, CW=%d, WW=%d\n\r",
+        rgb_order,
+        white_order,
+        color_internal.R,
+        color_internal.G,
+        color_internal.B,
+        color_internal.CW,
+        color_internal.WW
+      );
+    }
+    #endif // ENABLE_DEVFEATURE__PIXEL_COLOUR_ORDER_IN_MULTIPIN_SHOW_LOGS
+
+    return col;
+}
+
+
+  #else
 
   // Function to set pixel color based on color ordering
   static void setPixelColor(void* busPtr, uint8_t busType, uint16_t pix, uint32_t c, uint8_t co, uint16_t wwcw = 0)
@@ -611,6 +730,8 @@ static uint32_t getPixelColor(void* busPtr, uint8_t busType, uint16_t pix, uint8
 
     return 0;
 }
+
+#endif // ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
 
   static void setBrightness(void* busPtr, uint8_t busType, uint8_t b) 
   {
