@@ -115,7 +115,7 @@ Utility
 DSToilet
   - consumerunit = 12 pzem, bme
 */
-// #define DEVICE_CONSUMERUNIT
+#define DEVICE_CONSUMERUNIT
 
 /**
 LivingRoom
@@ -2247,12 +2247,20 @@ Bathroom
   #define DEVICENAME_ROOMHINT_CTR "Downstairs Toilet"
   #define D_MQTTSERVER_IP_ADDRESS_COMMA_DELIMITED   "192.168.1.70"
     #define MQTT_PORT     1883
+  #ifndef DEVICENAME_DESCRIPTION_CTR
+  #define DEVICENAME_DESCRIPTION_CTR "TestBed ESP32 WEBUI Neopixel"
+  #endif
     
   /***********************************
    * SECTION: System Debug Options
   ************************************/  
 
+  #define DATA_BUFFER_PAYLOAD_MAX_LENGTH      3000 //needed for db sensosrs, but currently causes crash in lighting
+  #define MQTT_MAX_PACKET_SIZE                3000 // THIS IS NOT WORKING, NEEDS TO BE MORE THAN 2000!!
  
+  #define ENABLE_DEBUG_TRACE__MQTT_PAYLOAD_AS_TRASNMITTED
+  #define ENABLE_DEBUG_TRACE__MQTT_TOPIC_AS_TRASNMITTED
+
   /***********************************
    * SECTION: Enable with one line (to make it easier to switch on and off for debugging)
   ************************************/  
@@ -2295,7 +2303,7 @@ Bathroom
 
   #define USE_MODULE_SENSORS_SWITCHES
   #define USE_MODULE_SENSORS_PIR
-    #define USE_TEMPLATED_DEFAULT_MOTION_RULE_TEMPLATE_FIRST_SWITCH_IS_MOTION_SENSOR_EVENT
+    // #define USE_TEMPLATED_DEFAULT_MOTION_RULE_TEMPLATE_FIRST_SWITCH_IS_MOTION_SENSOR_EVENT // TO BE REMOVED JAN2025
 
   /***********************************
    * SECTION: Display Configs
@@ -2310,6 +2318,8 @@ Bathroom
   /***********************************
    * SECTION: Lighting Configs
   ************************************/  
+
+ #define ENABLE_DEVFEATURE_LIGHTING__OCT24_COLOUR_ORDER
         
   /***********************************
    * SECTION: Energy Configs
@@ -2352,7 +2362,7 @@ Bathroom
       "\"23\":\"" D_GPIO_FUNCTION_I2C_SDA_CTR   "\","
       #endif
       #ifdef USE_MODULE_SENSORS_PIR
-      "\"5\":\""  D_GPIO_FUNCTION_SWT1_CTR "\","
+      "\"5\":\""  D_GPIO_FUNCTION_PIR_1_CTR "\","
       #endif
       "\"4\":\"" D_GPIO_FUNCTION_RGB_DATA_CTR  "\"" 
       "\"2\":\""  D_GPIO_FUNCTION_LED1_INV_CTR "\""
@@ -2380,33 +2390,13 @@ Bathroom
         "ColourOrder":"GRBW",
         "BusType":"SK6812_RGBW",
         "Start":0,
-        "Length":53
+        "Length":127
       }
     ],
     "Segment0": {
       "PixelRange": [
         0,
-        48
-      ],
-      "ColourPalette":"Colourful Default",
-      "SegColour0": {
-        "Hue": 0,
-        "Sat":100,
-        "BrightnessRGB":100
-      },
-      "Effects": {
-        "Function": 1,
-        "Speed":1,
-        "Intensity":255,
-        "RateMs": 1000
-      },
-      "BrightnessRGB": 100,
-      "BrightnessCCT": 0
-    },
-    "Segment1": {
-      "PixelRange": [
-        48,
-        53
+        127
       ],
       "ColourPalette":"Colourful Default",
       "SegColour0": {

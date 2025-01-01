@@ -1710,6 +1710,7 @@
 #define D_DEVICE "Device"
 #define D_DEVICEID "DeviceID"
 #define D_DEVICES_CONNECTED "DevicesConnected"
+#define D_DEVICES "Devices"
 
 #define D_SCENE "Scene"
 #define D_COLOUR "Colour"

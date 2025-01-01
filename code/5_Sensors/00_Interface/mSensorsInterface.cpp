@@ -154,6 +154,8 @@ RgbcctColor mSensorsInterface::GetColourValueUsingMaps_ForUnifiedSensor(float te
 void mSensorsInterface::CommandEvent_Motion(uint8_t event_type)
 {
 
+  ALOG_ERR(PSTR("CommandEvent_Motion-----------------------------------------------------------------------------\n\r=================================================================="));
+
   #ifdef USE_MODULE_NETWORK_MQTT
   mqtthandler_motion_event_ifchanged.flags.SendNow = true;
   #endif // USE_MODULE_NETWORK_MQTT
@@ -1314,6 +1316,14 @@ String mSensorsInterface::PressureUnit(void)
 }
 
 
+
+/***
+ * 
+ * The idea is that this function, is the unified place that reports motion
+ * But other subfunctions should still report their own motion etc
+ * In this case, the "PIR module" should be used instead of SWT and rules, PIR_1 is the new way, not SWT and rule
+ * 
+ */
 uint8_t mSensorsInterface::ConstructJSON_Motion_Event(uint8_t json_level, bool json_appending){
 
   char buffer[100];

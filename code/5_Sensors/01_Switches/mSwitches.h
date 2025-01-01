@@ -27,8 +27,6 @@
 
 
 
-// #define SWITCH_PROBE_INTERVAL 10   // Time in milliseconds between switch input probe
-
 
 #include <Ticker.h>
 
@@ -190,9 +188,39 @@ void SwitchProbe(void);
 void SwitchHandler(void);
 void SwitchLoop(void);
 
+
+
+    #ifdef ENABLE_FEATURE_SENSOR_INTERFACE_UNIFIED_SENSOR_REPORTING
+    uint8_t GetSensorCount(void) override
+    {
+      uint8_t count = 0;
+      for (uint32_t i = 0; i < MAX_SWITCHES_SET; i++) {
+        if (bitRead(Switch.used_bitmask, i)) {
+          count++;
+        }
+      }
+      return count;
+    }
+    void GetSensorReading(sensors_reading_t* value, uint8_t index = 0) override
+    {
+      if(index > MAX_SWITCHES_SET-1) {value->sensor_type.push_back(0); return ;}
+      value->timestamp = 0; // Switches are constantly updated, so timestamp is not required. Assume "0" from now on means reading can be skipped as timeout
+      value->sensor_type.push_back(SENSOR_TYPE_STATE_ACTIVE_ID);
+      value->data_f.push_back(SwitchGetState(index));
+      value->sensor_id = index;
+    };
+    #endif // ENABLE_FEATURE_SENSOR_INTERFACE_UNIFIED_SENSOR_REPORTING
+
+
+
     #endif // ENABLE_DEVFEATURE_SWITCHES__V2
     #ifndef ENABLE_DEVFEATURE_SWITCHES__V2
     
+#define SWITCH_PROBE_INTERVAL 10   // Time in milliseconds between switch input probe
+
+
+
+static const uint8_t MAX_SWITCHES_SET = 28;        // Max number of switches
     struct SETTINGS{
       uint8_t switches_found = 0;
     }settings;
@@ -245,29 +273,28 @@ void SwitchLoop(void);
     void SwitchInit(void);
     void SwitchLoop();
     void SwitchProbe(void);
-    #endif // ENABLE_DEVFEATURE_SWITCHES__V2
 
+    
     #ifdef ENABLE_FEATURE_SENSOR_INTERFACE_UNIFIED_SENSOR_REPORTING
     uint8_t GetSensorCount(void) override
     {
-      uint8_t count = 0;
-      for (uint32_t i = 0; i < MAX_SWITCHES_SET; i++) {
-        if (bitRead(Switch.used_bitmask, i)) {
-          count++;
-        }
-      }
-      return count;
+      return settings.switches_found;
     }
     void GetSensorReading(sensors_reading_t* value, uint8_t index = 0) override
     {
       if(index > MAX_SWITCHES_SET-1) {value->sensor_type.push_back(0); return ;}
       value->timestamp = 0; // Switches are constantly updated, so timestamp is not required. Assume "0" from now on means reading can be skipped as timeout
       value->sensor_type.push_back(SENSOR_TYPE_STATE_ACTIVE_ID);
-      value->data_f.push_back(SwitchGetState(index));
+      value->data_f.push_back(IsSwitchActive(index));
       value->sensor_id = index;
     };
     #endif // ENABLE_FEATURE_SENSOR_INTERFACE_UNIFIED_SENSOR_REPORTING
 
+
+
+    #endif // ENABLE_DEVFEATURE_SWITCHES__V2
+
+    
 
     uint8_t ConstructJSON_Settings(uint8_t json_level = 0, bool json_appending = true);
     uint8_t ConstructJSON_Sensor(uint8_t json_level = 0, bool json_appending = true);

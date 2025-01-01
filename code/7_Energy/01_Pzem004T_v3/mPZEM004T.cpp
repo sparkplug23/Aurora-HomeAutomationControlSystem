@@ -50,6 +50,7 @@ int8_t mEnergyPZEM004T::Tasker(uint8_t function, JsonParserObject obj)
       if(rt.enable_search_for_devices_seconds_delayed) rt.enable_search_for_devices_seconds_delayed--;
 
       if(rt.enable_search_for_devices_seconds_delayed==1) DeviceSearch();
+
     break;
     case TASK_LOOP: 
       if(data_v.size()) // Only if there are devices
@@ -380,7 +381,7 @@ uint8_t mEnergyPZEM004T::ConstructJSON_Sensor(uint8_t json_level, bool json_appe
   char buffer[40];
 
   JBI->Start();
-  for( int ii=0; ii < data_v.size(); ii++)
+  for(int ii=0; ii < data_v.size(); ii++)
   {
     JBI->Object_Start(DLI->GetDeviceName_WithModuleUniqueID( GetModuleUniqueID(), ii, buffer, sizeof(buffer)));
       JBI->Add_P(PM_ADDRESS,      data_v[ii].address );
@@ -392,6 +393,7 @@ uint8_t mEnergyPZEM004T::ConstructJSON_Sensor(uint8_t json_level, bool json_appe
       JBI->Add_P(PM_ENERGY,       data_v[ii].import_active);
     JBI->Object_End();
   }
+  // ALOG_INF(PSTR("ConstructJSON_Sensor %s"), JBI->GetBufferPtr());
   return JBI->End();
 
 }

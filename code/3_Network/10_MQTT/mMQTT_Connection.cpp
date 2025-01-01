@@ -313,6 +313,8 @@ bool MQTTConnection::MQTTHandler_Send_Formatted_UniqueID(uint8_t topic_type, uin
   if(sent_status)
   {
     tSaved_LastOutGoingTopic = millis();
+  }else{
+    ALOG_ERR(PSTR(D_LOG_MQTT "MQTTHandler_Send_Formatted_UniqueID failed"));
   }
 
   return sent_status;
@@ -397,8 +399,10 @@ boolean MQTTConnection::publish_device(const char* topic, const char* payload, b
   char convctr[100] = {0};
   snprintf(convctr, sizeof(convctr), PSTR("%s/%S"), prefix_topic, topic);
   
-  ALOG_DBM( PSTR(D_LOG_PUBSUB "-->" D_TOPIC   "%d [%s]"), strlen(convctr), convctr);
-  ALOG_DBM( PSTR(D_LOG_PUBSUB "-->" D_PAYLOAD "%d [%s]"), strlen(payload), payload);
+  #ifdef ENABLE_DEBUG_TRACE__MQTT_TOPIC_AS_TRASNMITTED
+  ALOG_INF( PSTR(D_LOG_PUBSUB "-->" D_TOPIC   "%d [%s]"), strlen(convctr), convctr);
+  ALOG_INF( PSTR(D_LOG_PUBSUB "-->" D_PAYLOAD "%d [%s]"), strlen(payload), payload);
+  #endif
 
   return pubsub->publish(convctr, (const uint8_t*)payload, strlen(payload), retained);
 
