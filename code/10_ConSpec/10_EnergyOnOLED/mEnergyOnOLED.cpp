@@ -116,12 +116,12 @@ ALOG_INF(PSTR("SubTask_UpdateOLED"));
 
     DEBUG_LINE_HERE_MILLIS
 
-  pCONT_set->Settings.display.mode = EM_DISPLAY_MODE_LOG_STATIC_ID;
+  tkr_set->Settings.display.mode = EM_DISPLAY_MODE_LOG_STATIC_ID;
   char buffer[100] = {0};
   char buffer_f[100] = {0};
   char buffer_n[100] = {0};
   
-  snprintf(buffer, sizeof(buffer), "%s", pCONT_time->GetTime().c_str() );
+  snprintf(buffer, sizeof(buffer), "%s", tkr_time->GetTime().c_str() );
 
   float sensor_data = -1;
 

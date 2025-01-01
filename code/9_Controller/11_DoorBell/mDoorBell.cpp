@@ -67,7 +67,7 @@ void mDoorBell::RingDoorBellSet(uint8_t seconds, uint16_t freq){
   ringer.freq = freq;
   ringer.seconds = seconds;
   AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_CHIME "Set"));
-  // memcpy(ringer.trigger_time_ctr,pCONT_time->RtcTime.hhmmss_ctr,sizeof(pCONT_time->RtcTime.hhmmss_ctr)); 
+  // memcpy(ringer.trigger_time_ctr,tkr_time->RtcTime.hhmmss_ctr,sizeof(tkr_time->RtcTime.hhmmss_ctr)); 
 }
 
 // Function called each time
@@ -184,7 +184,7 @@ void mDoorBell::EveryLoop(){
       doorbell_switch.event.isactive = true;
       tDetectTimeforDebounce = millis();   
 
-      // memcpy(doorbell_switch.trigger_time_ctr,pCONT_time->RtcTime.hhmmss_ctr,sizeof(pCONT_time->RtcTime.hhmmss_ctr)); 
+      // memcpy(doorbell_switch.trigger_time_ctr,tkr_time->RtcTime.hhmmss_ctr,sizeof(tkr_time->RtcTime.hhmmss_ctr)); 
 
       if(settings.fEnable_Switch_Relay_Binding){
         RingDoorBellSet(2, 500); //1 per sec for 2 secs (2 rings)
@@ -194,8 +194,8 @@ void mDoorBell::EveryLoop(){
       doorbell_switch.event.isactive = false;
     }
     doorbell_switch.event.ischanged = true;
-    // doorbell_switch.changedtime = pCONT_time->RtcTime;
-    doorbell_switch.event.detected_time = pCONT_time->GetTimeShortNowU32();
+    // doorbell_switch.changedtime = tkr_time->RtcTime;
+    doorbell_switch.event.detected_time = tkr_time->GetTimeShortNowU32();
     // fUpdateSendDoorSensor = true;
     mqtthandler_sensor_ifchanged.flags.SendNow = true;
     

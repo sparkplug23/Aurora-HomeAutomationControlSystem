@@ -147,7 +147,7 @@ void mUARTLogger::SubTask_UpdateOLED()
   //[ ] //Also show lat/long so I know its working
   //[] packets received on serialRSS in thousands
 #ifdef USE_MODULE_DISPLAYS_OLED_SSD1306
-  pCONT_set->Settings.display.mode = EM_DISPLAY_MODE_LOG_STATIC_ID;
+  tkr_set->Settings.display.mode = EM_DISPLAY_MODE_LOG_STATIC_ID;
   char buffer[25];
   snprintf(buffer, sizeof(buffer), "%s %s","Op","fMillis123456");
   pCONT_iDisp->LogBuffer_AddRow(buffer, 0);
@@ -157,7 +157,7 @@ void mUARTLogger::SubTask_UpdateOLED()
 
 
   
-  snprintf(buffer, sizeof(buffer), "%s %s","Op",pCONT_time->RtcTime.hhmmss_ctr);//pCONT_time->GEt DT_UTC;
+  snprintf(buffer, sizeof(buffer), "%s %s","Op",tkr_time->RtcTime.hhmmss_ctr);//tkr_time->GEt DT_UTC;
   pCONT_iDisp->LogBuffer_AddRow(buffer, 3);
   #endif // USE_MODULE_DISPLAYS_OLED_SSD1306
 

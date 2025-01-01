@@ -69,7 +69,7 @@ void EmergencySerial_SettingsReset(void) {
   delay(1);
   if (Serial.available() == 2) {
     if ((Serial.read() == 0xA5) && (Serial.read() == 0x5A)) {
-      pCONT_set->SettingsErase(3);       // Reset all settings including QuickPowerCycle flag
+      tkr_set->SettingsErase(3);       // Reset all settings including QuickPowerCycle flag
 
       do {                    // Wait for user to remove Rx Tx jumper and power cycle
         Serial.write(0xA5);
@@ -266,8 +266,8 @@ void setup(void)
  ** LOGGING: Set boot log levels *********************************************************************
  ********************************************************************************************/
 
-  pCONT_set->runtime.seriallog_level_during_boot = SERIAL_LOG_LEVEL_DURING_BOOT;
-  pCONT_set->Settings.logging.serial_level = pCONT_set->runtime.seriallog_level_during_boot;
+  tkr_set->runtime.seriallog_level_during_boot = SERIAL_LOG_LEVEL_DURING_BOOT;
+  tkr_set->Settings.logging.serial_level = tkr_set->runtime.seriallog_level_during_boot;
 
   DEBUG_LINE_HERE
   
@@ -313,8 +313,8 @@ void setup(void)
   #endif
 
   #ifdef ENABLE_DEVFEATURE__SETTINGS_NEW_STRUCT_2023
-  if (pCONT_set->Settings2 == nullptr) {
-    pCONT_set->Settings2 = (mSettings::TSettings2*)malloc(sizeof(mSettings::TSettings2));
+  if (tkr_set->Settings2 == nullptr) {
+    tkr_set->Settings2 = (mSettings::TSettings2*)malloc(sizeof(mSettings::TSettings2));
   }
   #endif
 
@@ -322,7 +322,7 @@ void setup(void)
  ** Settings ********************************************************************************
  ********************************************************************************************/
 
-  pCONT_set->SettingsInit();
+  tkr_set->SettingsInit();
 
   #ifdef ENABLE_FEATURE_RESET__EMERGENCY_SERIAL_SETTINGS_RESET_TO_DEFAULT
     EmergencySerial_SettingsReset();
@@ -331,21 +331,21 @@ void setup(void)
   pCONT_sup->init_FirmwareVersion();
 
    //preload minimal required
-  pCONT_set->SettingsDefault();
+  tkr_set->SettingsDefault();
   ALOG_DBG(PSTR("Loading minimal defaults"));
    // Overwrite with latest values, including template if new SETTINGS_CONFIG exists  
   ALOG_DBG(PSTR("Loading settings from saved memory"));
-  pCONT_set->SettingsLoad();                   // Only the system level settings are loaded here, not the module settings which should happen below
+  tkr_set->SettingsLoad();                   // Only the system level settings are loaded here, not the module settings which should happen below
   
-  // sprintf(pCONT_set->Settings.debug, "debug12\0");
+  // sprintf(tkr_set->Settings.debug, "debug12\0");
 
 /********************************************************************************************
  ** LOGGING: Set boot log levels again to override settings load *********************************************************************
  ********************************************************************************************/
 
-  uint8_t saved_serial_loglevel = pCONT_set->Settings.logging.serial_level;
-  pCONT_set->runtime.seriallog_level_during_boot = SERIAL_LOG_LEVEL_DURING_BOOT;
-  pCONT_set->Settings.logging.serial_level = pCONT_set->runtime.seriallog_level_during_boot;
+  uint8_t saved_serial_loglevel = tkr_set->Settings.logging.serial_level;
+  tkr_set->runtime.seriallog_level_during_boot = SERIAL_LOG_LEVEL_DURING_BOOT;
+  tkr_set->Settings.logging.serial_level = tkr_set->runtime.seriallog_level_during_boot;
 
   ALOG_INF(PSTR("Log level for boot: %d"), saved_serial_loglevel);
 
@@ -370,13 +370,13 @@ void setup(void)
   
     ALOG_DBM( PSTR("ARESET TWICE! \t\t\t%d"), RtcFastboot.fast_reboot_count);
 
-    if (pCONT_set->Settings.setoption_255[P_BOOT_LOOP_OFFSET]) // SetOption36
+    if (tkr_set->Settings.setoption_255[P_BOOT_LOOP_OFFSET]) // SetOption36
     {         
       // Disable functionality as possible cause of fast restart within BOOT_LOOP_TIME seconds (Exception, WDT or restarts)
-      if (RtcFastboot.fast_reboot_count > pCONT_set->Settings.setoption_255[P_BOOT_LOOP_OFFSET]) {       // Restart twice
+      if (RtcFastboot.fast_reboot_count > tkr_set->Settings.setoption_255[P_BOOT_LOOP_OFFSET]) {       // Restart twice
         
         // Settings->flag3.user_esp8285_enable = 0;       // SetOption51 - Enable ESP8285 user GPIO's - Disable ESP8285 Generic GPIOs interfering with flash SPI
-        if (RtcFastboot.fast_reboot_count > pCONT_set->Settings.setoption_255[P_BOOT_LOOP_OFFSET] +1) {  // Restart 3 times
+        if (RtcFastboot.fast_reboot_count > tkr_set->Settings.setoption_255[P_BOOT_LOOP_OFFSET] +1) {  // Restart 3 times
           // for (
             uint32_t i = 0; //i < MAX_RULE_SETS; i++) {
           //   if (bitRead(Settings->rule_stop, i)) {
@@ -385,18 +385,18 @@ void setup(void)
           //   }
           // }
         }
-        if (RtcFastboot.fast_reboot_count > pCONT_set->Settings.setoption_255[P_BOOT_LOOP_OFFSET] +2) {  // Restarted 4 times
+        if (RtcFastboot.fast_reboot_count > tkr_set->Settings.setoption_255[P_BOOT_LOOP_OFFSET] +2) {  // Restarted 4 times
           // Settings->rule_enabled = 0;                  // Disable all rules
           // TasmotaGlobal.no_autoexec = true;
           ALOG_INF( PSTR("Fastboot: Disable All Rules") );
         }
-        if (RtcFastboot.fast_reboot_count > pCONT_set->Settings.setoption_255[P_BOOT_LOOP_OFFSET] +3) {  // Restarted 5 times
+        if (RtcFastboot.fast_reboot_count > tkr_set->Settings.setoption_255[P_BOOT_LOOP_OFFSET] +3) {  // Restarted 5 times
           // for (uint32_t i = 0; i < nitems(Settings->my_gp.io); i++) {
           //   Settings->my_gp.io[i] = GPIO_NONE;         // Reset user defined GPIO disabling sensors
           // }
           ALOG_INF( PSTR("Fastboot: Disable GPIO Functions") );
         }
-        if (RtcFastboot.fast_reboot_count > pCONT_set->Settings.setoption_255[P_BOOT_LOOP_OFFSET] +4) {  // Restarted 6 times
+        if (RtcFastboot.fast_reboot_count > tkr_set->Settings.setoption_255[P_BOOT_LOOP_OFFSET] +4) {  // Restarted 6 times
           // Settings->module = Settings->fallback_module;  // Reset module to fallback module
           // Settings->last_module = Settings->fallback_module;
           ALOG_INF( PSTR("Fastboot: Reset Module") );
@@ -456,8 +456,8 @@ void setup(void)
  ** Set RUNTIME log values *********************************************************************
  ********************************************************************************************/
 
-  pCONT_set->runtime.seriallog_level_during_boot = SERIAL_LOG_LEVEL_DURING_BOOT;
-  pCONT_set->Settings.logging.serial_level = pCONT_set->runtime.seriallog_level_during_boot;  
+  tkr_set->runtime.seriallog_level_during_boot = SERIAL_LOG_LEVEL_DURING_BOOT;
+  tkr_set->Settings.logging.serial_level = tkr_set->runtime.seriallog_level_during_boot;  
     
   /********************************************************************************************
    ** Initialise System and Modules ***********************************************************
@@ -535,7 +535,7 @@ void setup(void)
  ** LOGGING: Set runtime log levels *********************************************************************
  ********************************************************************************************/
 
-  pCONT_set->Settings.logging.serial_level = saved_serial_loglevel;
+  tkr_set->Settings.logging.serial_level = saved_serial_loglevel;
 
   /********************************************************************************************
    ** // For debugging, allow method to override init/loaded values **************************************************************************
@@ -586,7 +586,7 @@ void LoopTasker()
    
   pCONT->Tasker_Interface(TASK_LOOP); DEBUG_LINE;
  
-  if(pCONT_time->UpTime() > 30){ pCONT->Tasker_Interface(TASK_FUNCTION_LAMBDA_LOOP); } // Only run after stable boot
+  if(tkr_time->UpTime() > 30){ pCONT->Tasker_Interface(TASK_FUNCTION_LAMBDA_LOOP); } // Only run after stable boot
  
   if(mTime::TimeReached(&pCONT_sup->tSavedLoop50mSec ,50  )){ pCONT->Tasker_Interface(TASK_EVERY_50_MSECOND);  }  DEBUG_LINE;
   if(mTime::TimeReached(&pCONT_sup->tSavedLoop100mSec,100 )){ pCONT->Tasker_Interface(TASK_EVERY_100_MSECOND); }  DEBUG_LINE;
@@ -596,7 +596,7 @@ void LoopTasker()
 
     /**Since this only gets checked every second, we can use the uptime ticking to make sure it runs just once*/
     #ifdef ENABLE_DEBUGFEATURE_TASKER__DELAYED_START_OF_MODULES_SECONDS
-    if(pCONT_time->UpTime()==ENABLE_DEBUGFEATURE_TASKER__DELAYED_START_OF_MODULES_SECONDS){
+    if(tkr_time->UpTime()==ENABLE_DEBUGFEATURE_TASKER__DELAYED_START_OF_MODULES_SECONDS){
       pCONT->Tasker_Interface(TASK_PRE_INIT_DELAYED);     // Configure sub modules and classes as needed, should this be renamed to "INIT_PINS"?
       pCONT->Tasker_Interface(TASK_INIT_DELAYED);         // Actually complete init, read sensors, enable modules fully etc
       pCONT->Tasker_Interface(TASK_MQTT_HANDLERS_INIT_DELAYED);
@@ -606,34 +606,34 @@ void LoopTasker()
 
     pCONT->Tasker_Interface(TASK_EVERY_SECOND); 
 
-    if((pCONT_time->UpTime()%60)==0){                  pCONT->Tasker_Interface(TASK_EVERY_MINUTE); }
+    if((tkr_time->UpTime()%60)==0){                  pCONT->Tasker_Interface(TASK_EVERY_MINUTE); }
     
     if(
-      ((pCONT_time->UpTime()%5)==0)&&
-      (pCONT_time->UpTime()>20)
+      ((tkr_time->UpTime()%5)==0)&&
+      (tkr_time->UpTime()>20)
     ){                                      pCONT->Tasker_Interface(TASK_EVERY_FIVE_SECOND); }
 
     if(
-      ((pCONT_time->UpTime()%300)==0)&&
-      (pCONT_time->UpTime()>60)
+      ((tkr_time->UpTime()%300)==0)&&
+      (tkr_time->UpTime()>60)
     ){                                    pCONT->Tasker_Interface(TASK_EVERY_FIVE_MINUTE); }
 
     // Uptime triggers: Fire Once (based on uptime seconds, but due to this function being called every second, it will only fire once)
-    if(pCONT_time->UpTime() == 10){   pCONT->Tasker_Interface(TASK_UPTIME_10_SECONDS); }
-    if(pCONT_time->UpTime() == 30){   pCONT->Tasker_Interface(TASK_UPTIME_30_SECONDS); }
-    if(pCONT_time->UpTime() == 60){   pCONT->Tasker_Interface(TASK_UPTIME_1_MINUTES); }
-    if(pCONT_time->UpTime() == 600){   pCONT->Tasker_Interface(TASK_UPTIME_10_MINUTES); }
-    if(pCONT_time->UpTime() == 36000){ pCONT->Tasker_Interface(TASK_UPTIME_60_MINUTES); }
+    if(tkr_time->UpTime() == 10){   pCONT->Tasker_Interface(TASK_UPTIME_10_SECONDS); }
+    if(tkr_time->UpTime() == 30){   pCONT->Tasker_Interface(TASK_UPTIME_30_SECONDS); }
+    if(tkr_time->UpTime() == 60){   pCONT->Tasker_Interface(TASK_UPTIME_1_MINUTES); }
+    if(tkr_time->UpTime() == 600){   pCONT->Tasker_Interface(TASK_UPTIME_10_MINUTES); }
+    if(tkr_time->UpTime() == 36000){ pCONT->Tasker_Interface(TASK_UPTIME_60_MINUTES); }
 
     // Check for midnight
-    if((pCONT_time->RtcTime.hour==0)&&(pCONT_time->RtcTime.minute==0)&&(pCONT_time->RtcTime.second==0)&&(pCONT_time->lastday_run != pCONT_time->RtcTime.day_of_year)){
-      pCONT_time->lastday_run = pCONT_time->RtcTime.day_of_year;
+    if((tkr_time->RtcTime.hour==0)&&(tkr_time->RtcTime.minute==0)&&(tkr_time->RtcTime.second==0)&&(tkr_time->lastday_run != tkr_time->RtcTime.day_of_year)){
+      tkr_time->lastday_run = tkr_time->RtcTime.day_of_year;
       pCONT->Tasker_Interface(TASK_EVERY_MIDNIGHT); 
     }
 
-    if(pCONT_time->UpTime()==10){       pCONT->Tasker_Interface(TASK_BOOT_MESSAGE);}
+    if(tkr_time->UpTime()==10){       pCONT->Tasker_Interface(TASK_BOOT_MESSAGE);}
 
-    if(pCONT_time->UpTime()==120){       pCONT->Tasker_Interface(TASK_ON_BOOT_SUCCESSFUL);}
+    if(tkr_time->UpTime()==120){       pCONT->Tasker_Interface(TASK_ON_BOOT_SUCCESSFUL);}
       
     pCONT->Tasker_Interface(TASK_INIT_DELAYED_SECONDS);
 
@@ -684,19 +684,19 @@ void SmartLoopDelay()
   pCONT_sup->SleepDelay(20);
 
   // #ifndef DISABLE_SLEEP
-  // if(pCONT_set->Settings.enable_sleep){
-  //   if (pCONT_set->Settings.flag_network.sleep_normal) {
-  //     pCONT_sup->SleepDelay(pCONT_set->runtime.sleep);
+  // if(tkr_set->Settings.enable_sleep){
+  //   if (tkr_set->Settings.flag_network.sleep_normal) {
+  //     pCONT_sup->SleepDelay(tkr_set->runtime.sleep);
   //   } else {
   //     // Loop time < sleep length of time
-  //     if (pCONT_sup->loop_runtime_millis < (uint32_t)pCONT_set->runtime.sleep) {
+  //     if (pCONT_sup->loop_runtime_millis < (uint32_t)tkr_set->runtime.sleep) {
   //       //delay by loop time
-  //       pCONT_sup->SleepDelay((uint32_t)pCONT_set->runtime.sleep - pCONT_sup->loop_runtime_millis);  // Provide time for background tasks like wifi
+  //       pCONT_sup->SleepDelay((uint32_t)tkr_set->runtime.sleep - pCONT_sup->loop_runtime_millis);  // Provide time for background tasks like wifi
   //     } else {
 
   //       // if loop takes longer than sleep period, no delay, IF wifi is down, devote half loop time to wifi connect 
   //       // If wifi down and loop_runtime_millis > setoption36 then force loop delay to 1/3 of loop_runtime_millis period
-  //       if (pCONT_set->global_state.wifi_down) {
+  //       if (tkr_set->global_state.wifi_down) {
   //         pCONT_sup->SleepDelay(pCONT_sup->loop_runtime_millis /2);
   //       }
 
@@ -723,7 +723,7 @@ void loop(void)
   
   pCONT_sup->loop_runtime_millis = millis() - pCONT_sup->loop_start_millis;
 
-  if(mTime::TimeReached(&pCONT_set->runtime.tSavedUpdateLoopStatistics, 1000)){
+  if(mTime::TimeReached(&tkr_set->runtime.tSavedUpdateLoopStatistics, 1000)){
     pCONT_sup->activity.cycles_per_sec = pCONT_sup->activity.loop_counter; 
     #ifdef ENABLE_DEBUGFEATURE__SPLASH__LOOPS_PER_SECOND
     ALOG_INF(PSTR("LOOPSEC = \t\t\t\tLPS=%d, LoopTime=%d"), pCONT_sup->activity.cycles_per_sec, pCONT_sup->loop_runtime_millis);
@@ -741,10 +741,10 @@ void loop(void)
   #endif
 
   if (!pCONT_sup->loop_runtime_millis) { pCONT_sup->loop_runtime_millis++; } // We cannot divide by 0
-  pCONT_sup->loop_delay_temp = pCONT_set->runtime.sleep; 
+  pCONT_sup->loop_delay_temp = tkr_set->runtime.sleep; 
   if (!pCONT_sup->loop_delay_temp) { pCONT_sup->loop_delay_temp++; }              // We cannot divide by 0
   pCONT_sup->loops_per_second = 1000 / pCONT_sup->loop_delay_temp;  // We need to keep track of this many loops per second, 20ms delay gives 1000/20 = 50 loops per second (50hz)
   pCONT_sup->this_cycle_ratio = 100 * pCONT_sup->loop_runtime_millis / pCONT_sup->loop_delay_temp;
-  pCONT_set->runtime.loop_load_avg = pCONT_set->runtime.loop_load_avg - (pCONT_set->runtime.loop_load_avg / pCONT_sup->loops_per_second) + (pCONT_sup->this_cycle_ratio / pCONT_sup->loops_per_second); // Take away one loop average away and add the new one
+  tkr_set->runtime.loop_load_avg = tkr_set->runtime.loop_load_avg - (tkr_set->runtime.loop_load_avg / pCONT_sup->loops_per_second) + (pCONT_sup->this_cycle_ratio / pCONT_sup->loops_per_second); // Take away one loop average away and add the new one
 
 }

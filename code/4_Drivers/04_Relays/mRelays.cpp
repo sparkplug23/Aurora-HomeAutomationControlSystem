@@ -416,11 +416,11 @@ int8_t mRelays::GetRelayIDbyName(const char* c){
 
   // show options
   if(device_id_found == -1){
-    // for(int ii=0;ii<pCONT_set->GetDeviceNameCount(D_MODULE_DRIVERS_RELAY_ID);ii++){
-    //   ALOG_INF(PSTR("GetDeviceIDbyName option #%d"),ii,pCONT_set->GetDeviceIDbyName(c,pCONT_set->Settings.device_name_buffer.name_buffer,&ii,&class_id));
+    // for(int ii=0;ii<tkr_set->GetDeviceNameCount(D_MODULE_DRIVERS_RELAY_ID);ii++){
+    //   ALOG_INF(PSTR("GetDeviceIDbyName option #%d"),ii,tkr_set->GetDeviceIDbyName(c,tkr_set->Settings.device_name_buffer.name_buffer,&ii,&class_id));
     // }
     AddLog(LOG_LEVEL_INFO,PSTR("\n\r\n\nsearching=%s"),c);
-    AddLog(LOG_LEVEL_INFO,PSTR("\n\r\n\name_buffer = %s"),pCONT_set->Settings.device_name_buffer.name_buffer);
+    AddLog(LOG_LEVEL_INFO,PSTR("\n\r\n\name_buffer = %s"),tkr_set->Settings.device_name_buffer.name_buffer);
 
 
   }
@@ -441,7 +441,7 @@ bool mRelays::IsRelayTimeWindowAllowed(uint8_t relay_id, uint8_t range_id){
   //check all, one for now
   // for(int range_id=0;range_id<D_SCHEDULED_ENABLED_TIME_PERIODS_AMOUNT;range_id++){
   //   if(
-  //     pCONT_time->CheckBetween_Day_DateTimesShort(
+  //     tkr_time->CheckBetween_Day_DateTimesShort(
   //       &rt.relay_status[relay_id].enabled_ranges[range_id].ontime,
   //       &rt.relay_status[relay_id].enabled_ranges[range_id].offtime
   //     )
@@ -467,9 +467,9 @@ void mRelays::SetLatchingRelay(power_t lpower, uint32_t state)
   // power xx10 - toggle REL1 (Off) and REL4 (On)  - device 1 Off, device 2 On
   // power xx11 - toggle REL2 (On)  and REL4 (On)  - device 1 On,  device 2 On
 
-  if (state && !pCONT_set->runtime.latching_relay_pulse) {  // Set latching relay to power if previous pulse has finished
+  if (state && !tkr_set->runtime.latching_relay_pulse) {  // Set latching relay to power if previous pulse has finished
     rt.bitpacked.latching_power = lpower;
-    pCONT_set->runtime.latching_relay_pulse = 2;            // max 200mS (initiated by stateloop())
+    tkr_set->runtime.latching_relay_pulse = 2;            // max 200mS (initiated by stateloop())
   }
 
   for (uint32_t i = 0; i < rt.devices_present; i++) {
@@ -484,29 +484,29 @@ void mRelays::SetDevicePower(power_t rpower, uint32_t source)
   DEBUG_LINE;
 
   pCONT_sup->ShowSource(source);
-  pCONT_set->runtime.last_source = source;
+  tkr_set->runtime.last_source = source;
   DEBUG_LINE;
   
   ALOG_INF(PSTR(D_LOG_RELAYS "SetDevicePower(%d,%d)"),rpower,source);
 
-  if (POWER_ALL_ALWAYS_ON == pCONT_set->Settings.poweronstate) {  // All on and stay on
-    pCONT_set->runtime.power = (1 << rt.devices_present);// -1;
-    rpower = pCONT_set->runtime.power;
+  if (POWER_ALL_ALWAYS_ON == tkr_set->Settings.poweronstate) {  // All on and stay on
+    tkr_set->runtime.power = (1 << rt.devices_present);// -1;
+    rpower = tkr_set->runtime.power;
   }
 
   // Allow only one or no relay set - CMND_INTERLOCK - Enable/disable interlock
-  // if (pCONT_set->Settings.flag_system.interlock) {        
+  // if (tkr_set->Settings.flag_system.interlock) {        
   //   for (uint32_t i = 0; i < MAX_INTERLOCKS; i++) {
   //     power_t mask = 1;
   //     uint32_t count = 0;
   //     for (uint32_t j = 0; j < rt.devices_present; j++) {
-  //       if ((pCONT_set->Settings.interlock[i] & mask) && (rpower & mask)) {
+  //       if ((tkr_set->Settings.interlock[i] & mask) && (rpower & mask)) {
   //         count++;
   //       }
   //       mask <<= 1;
   //     }
   //     if (count > 1) {
-  //       mask = ~pCONT_set->Settings.interlock[i];    // Turn interlocked group off as there would be multiple relays on
+  //       mask = ~tkr_set->Settings.interlock[i];    // Turn interlocked group off as there would be multiple relays on
   //       power &= mask;
   //       rpower &= mask;
   //     }
@@ -519,15 +519,15 @@ DEBUG_LINE;
   }
 
   // PHASE OUT and replace with something else
-  // pCONT_set->XdrvMailbox.index = rpower;
+  // tkr_set->XdrvMailbox.index = rpower;
   // pCONT->Tasker_Interface(TASK_SET_POWER);               // Signal power state
-  // pCONT_set->XdrvMailbox.index = rpower;
-  // pCONT_set->XdrvMailbox.payload = source;
+  // tkr_set->XdrvMailbox.index = rpower;
+  // tkr_set->XdrvMailbox.payload = source;
 
   // if (pCONT->Tasker_Interface(TASK_SET_DEVICE_POWER)) {  // Set power state and stop if serviced
   //   // Serviced
   // }
-  // else if ((MODULE_SONOFF_DUAL == pCONT_set->my_module_type) || (MODULE_CH4 == pCONT_set->my_module_type)) {
+  // else if ((MODULE_SONOFF_DUAL == tkr_set->my_module_type) || (MODULE_CH4 == tkr_set->my_module_type)) {
   //   Serial.write(0xA0);
   //   Serial.write(0x04);
   //   Serial.write(rpower &0xFF);
@@ -535,7 +535,7 @@ DEBUG_LINE;
   //   Serial.write('\n');
   //   Serial.flush();
   // }
-  // else if (MODULE_EXS_RELAY == pCONT_set->my_module_type) {
+  // else if (MODULE_EXS_RELAY == tkr_set->my_module_type) {
   //   SetLatchingRelay(rpower, 1);
   // }
   // else {
@@ -600,7 +600,7 @@ DEBUG_LINE;
 
 void mRelays::RestorePower(bool publish_power, uint32_t source)
 {
-  if (pCONT_set->runtime.power != rt.bitpacked.last_power) {
+  if (tkr_set->runtime.power != rt.bitpacked.last_power) {
     SetDevicePower(rt.bitpacked.last_power, source);
     if (publish_power) {
       mqtthandler_state_teleperiod.flags.SendNow = true;
@@ -629,15 +629,15 @@ void mRelays::SetAllPower(uint32_t state, uint32_t source)
     power_t all_on = (1 << rt.devices_present);// -1;
     switch (state) {
     case POWER_OFF:
-      pCONT_set->runtime.power = 0;
+      tkr_set->runtime.power = 0;
       break;
     case POWER_ON:
-      pCONT_set->runtime.power = all_on;
+      tkr_set->runtime.power = all_on;
       break;
     case POWER_TOGGLE:
-      pCONT_set->runtime.power ^= all_on;                    // Complement current state
+      tkr_set->runtime.power ^= all_on;                    // Complement current state
     }
-    SetDevicePower(pCONT_set->runtime.power, source);
+    SetDevicePower(tkr_set->runtime.power, source);
   }
   if (publish_power) {
     mqtthandler_state_teleperiod.flags.SendNow = true;
@@ -648,7 +648,7 @@ void mRelays::SetAllPower(uint32_t state, uint32_t source)
 void mRelays::SetPowerOnState(void)
 {
   
-  if (POWER_ALL_ALWAYS_ON == pCONT_set->Settings.poweronstate) {
+  if (POWER_ALL_ALWAYS_ON == tkr_set->Settings.poweronstate) {
     SetDevicePower(1, SRC_RESTART);
   } else {
     
@@ -657,41 +657,41 @@ void mRelays::SetPowerOnState(void)
       (pCONT_sup->ResetReason() == REASON_EXT_SYS_RST)
     ){
 
-      switch (pCONT_set->Settings.poweronstate)
+      switch (tkr_set->Settings.poweronstate)
       {
       case POWER_ALL_OFF:
       case POWER_ALL_OFF_PULSETIME_ON:
-        pCONT_set->runtime.power = 0;
-        SetDevicePower(pCONT_set->runtime.power, SRC_RESTART);
+        tkr_set->runtime.power = 0;
+        SetDevicePower(tkr_set->runtime.power, SRC_RESTART);
         break;
       case POWER_ALL_ON:  // All on
-        pCONT_set->runtime.power = (1 << rt.devices_present);// -1;
-        SetDevicePower(pCONT_set->runtime.power, SRC_RESTART);
+        tkr_set->runtime.power = (1 << rt.devices_present);// -1;
+        SetDevicePower(tkr_set->runtime.power, SRC_RESTART);
         break;
       case POWER_ALL_SAVED_TOGGLE:
-        pCONT_set->runtime.power = (pCONT_set->Settings.power & ((1 << rt.devices_present) )) ^ POWER_MASK;
-        if (pCONT_set->Settings.flag_system.save_state) {  // SetOption0 - Save power state and use after restart
-          SetDevicePower(pCONT_set->runtime.power, SRC_RESTART);
+        tkr_set->runtime.power = (tkr_set->Settings.power & ((1 << rt.devices_present) )) ^ POWER_MASK;
+        if (tkr_set->Settings.flag_system.save_state) {  // SetOption0 - Save power state and use after restart
+          SetDevicePower(tkr_set->runtime.power, SRC_RESTART);
         }
         break;
       case POWER_ALL_SAVED:
-        pCONT_set->runtime.power = pCONT_set->Settings.power & ((1 << rt.devices_present) );
-        if (pCONT_set->Settings.flag_system.save_state) {  // SetOption0 - Save power state and use after restart
-          SetDevicePower(pCONT_set->runtime.power, SRC_RESTART);
+        tkr_set->runtime.power = tkr_set->Settings.power & ((1 << rt.devices_present) );
+        if (tkr_set->Settings.flag_system.save_state) {  // SetOption0 - Save power state and use after restart
+          SetDevicePower(tkr_set->runtime.power, SRC_RESTART);
         }
         break;
       }
 
     } else {
-      pCONT_set->runtime.power = pCONT_set->Settings.power & ((1 << rt.devices_present) );
-      if (pCONT_set->Settings.flag_system.save_state) {    // SetOption0 - Save power state and use after restart
-        SetDevicePower(pCONT_set->runtime.power, SRC_RESTART);
+      tkr_set->runtime.power = tkr_set->Settings.power & ((1 << rt.devices_present) );
+      if (tkr_set->Settings.flag_system.save_state) {    // SetOption0 - Save power state and use after restart
+        SetDevicePower(tkr_set->runtime.power, SRC_RESTART);
       }
     }
     
   }
 
-  rt.bitpacked.blink_powersave = pCONT_set->runtime.power;
+  rt.bitpacked.blink_powersave = tkr_set->runtime.power;
 }
 
 
@@ -775,15 +775,15 @@ void mRelays::ExecuteCommandPower(uint32_t device, uint32_t state, uint32_t sour
 
     switch (state) {
     case POWER_OFF: {
-      pCONT_set->runtime.power &= (POWER_MASK ^ mask);
+      tkr_set->runtime.power &= (POWER_MASK ^ mask);
       break; }
     case POWER_ON:
-      pCONT_set->runtime.power |= mask;
+      tkr_set->runtime.power |= mask;
       break;
     case POWER_TOGGLE: // STATE_NUMBER_TOGGLE_ID
-      pCONT_set->runtime.power ^= mask;
+      tkr_set->runtime.power ^= mask;
     }
-    SetDevicePower(pCONT_set->runtime.power, source);
+    SetDevicePower(tkr_set->runtime.power, source);
 
     // if (device <= MAX_PULSETIMERS) {  // Restart PulseTime if powered On
     //   SetPulseTimer(device , (((POWER_ALL_OFF_PULSETIME_ON == module_state.poweronstate) ? ~power : power) & mask) ? module_state.pulse_timer[device -1] : 0);
@@ -949,8 +949,8 @@ void mRelays::SubCommandSet_EnabledTime(JsonParserObject jobj, uint8_t relay_id)
     // }
 
 
-    // pCONT_time->PrintDateTime(ontime);
-    // pCONT_time->PrintDateTime(offtime);
+    // tkr_time->PrintDateTime(ontime);
+    // tkr_time->PrintDateTime(offtime);
 
 
   // }
@@ -998,7 +998,7 @@ void mRelays::CommandSet_Relay_Power(uint8_t state, uint8_t num){
      * */
     if(state==1)
     {
-      if(module_state.flags.enabled_relays_allowed_time_window_checks && pCONT_time->RtcTime.valid)
+      if(module_state.flags.enabled_relays_allowed_time_window_checks && tkr_time->RtcTime.valid)
       {  
         if(!IsRelayTimeWindowAllowed(num))
         {
@@ -1022,13 +1022,13 @@ void mRelays::CommandSet_Relay_Power(uint8_t state, uint8_t num){
   }
 
   // relay_status[num].onoff = state;
-  bitWrite(pCONT_set->runtime.power, num, state);
+  bitWrite(tkr_set->runtime.power, num, state);
 
   if(state){ 
-    rt.relay_status[num].last.ontime = pCONT_time->RtcTime; //create future "operators" to handle these conversions
+    rt.relay_status[num].last.ontime = tkr_time->RtcTime; //create future "operators" to handle these conversions
     rt.relay_status[num].time_seconds_on = 1;
   }else{ 
-    rt.relay_status[num].last.offtime = pCONT_time->RtcTime; 
+    rt.relay_status[num].last.offtime = tkr_time->RtcTime; 
     rt.relay_status[num].time_seconds_on = 0; // Off 
   }
 
@@ -1037,7 +1037,7 @@ void mRelays::CommandSet_Relay_Power(uint8_t state, uint8_t num){
 }
 
 uint8_t mRelays::CommandGet_Relay_Power(uint8_t num){
-  return bitRead(pCONT_set->runtime.power, num);
+  return bitRead(tkr_set->runtime.power, num);
 }
 
 

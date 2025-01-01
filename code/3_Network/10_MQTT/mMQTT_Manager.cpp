@@ -16,7 +16,7 @@ int8_t mMQTTManager::Tasker(uint8_t function, JsonParserObject obj){ DEBUG_PRINT
     break;
   }
 
-  if(!pCONT_set->Settings.flag_system.mqtt_enabled){ return 0; }
+  if(!tkr_set->Settings.flag_system.mqtt_enabled){ return 0; }
 
   switch(function){
   /************
@@ -178,8 +178,8 @@ void mMQTTManager::Default_Module()
   // strlcpy(dt.connection[idx].user, MQTT_USER, sizeof(dt.connection[idx].user));
   // strlcpy(dt.connection[idx].pwd, MQTT_PASS, sizeof(dt.connection[idx].pwd));
   // dt.connection[idx].retry = MQTT_RETRY_SECS;
-  // snprintf_P(dt.connection[idx].client, sizeof(dt.connection[idx].client), PSTR("%s-%s"), pCONT_set->Settings.system_name.device, WiFi.macAddress().c_str());
-  // strlcpy(dt.connection[idx].prefixtopic, pCONT_set->Settings.system_name.device, sizeof(dt.connection[idx].prefixtopic));
+  // snprintf_P(dt.connection[idx].client, sizeof(dt.connection[idx].client), PSTR("%s-%s"), tkr_set->Settings.system_name.device, WiFi.macAddress().c_str());
+  // strlcpy(dt.connection[idx].prefixtopic, tkr_set->Settings.system_name.device, sizeof(dt.connection[idx].prefixtopic));
   // dt.connection[idx].status = 1;
     
   // ALOG_INF(PSTR("Ghost_address: %s"), dt.connection[idx].host_address);
@@ -211,8 +211,8 @@ void mMQTTManager::Default_Module__Connection_WiFi()
   // strlcpy(con->user, MQTT_USER, sizeof(con->user));
   // strlcpy(con->pwd, MQTT_PASS, sizeof(con->pwd));
   // con->retry = MQTT_RETRY_SECS;
-  // snprintf_P(con->client_name, sizeof(con->client_name), PSTR("%s-%s"), pCONT_set->Settings.system_name.device, WiFi.macAddress().c_str());
-  // strlcpy(con->prefix_topic, pCONT_set->Settings.system_name.device, sizeof(con->prefix_topic));
+  // snprintf_P(con->client_name, sizeof(con->client_name), PSTR("%s-%s"), tkr_set->Settings.system_name.device, WiFi.macAddress().c_str());
+  // strlcpy(con->prefix_topic, tkr_set->Settings.system_name.device, sizeof(con->prefix_topic));
   // con->status = 1;
     
   // ALOG_INF(PSTR("Ghost_address: %s"), con->host_address);

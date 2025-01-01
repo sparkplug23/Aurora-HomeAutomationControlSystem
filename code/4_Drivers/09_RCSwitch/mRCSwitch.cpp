@@ -53,7 +53,7 @@ int8_t mRCSwitch::Tasker(uint8_t function, JsonParserObject obj){
     break;
     case TASK_EVERY_SECOND:{
       
-      // AddLog(LOG_LEVEL_INFO,PSTR("pCONT_set->Settings.rf_protocol_mask=%d"), pCONT_set->Settings.rf_protocol_mask);
+      // AddLog(LOG_LEVEL_INFO,PSTR("tkr_set->Settings.rf_protocol_mask=%d"), tkr_set->Settings.rf_protocol_mask);
 
     }break;
     /************
@@ -99,20 +99,20 @@ void mRCSwitch::Init(void)
   }
   if (pCONT_pins->PinUsed(GPIO_RF_433MHZ_RX_ID)) 
   {
-    if (pCONT_set->Settings.rf_duplicate_time < 10) {
-      pCONT_set->Settings.rf_duplicate_time = RF_TIME_AVOID_DUPLICATE;
+    if (tkr_set->Settings.rf_duplicate_time < 10) {
+      tkr_set->Settings.rf_duplicate_time = RF_TIME_AVOID_DUPLICATE;
     }
     pinMode( pCONT_pins->GetPin(GPIO_RF_433MHZ_RX_ID), INPUT);
 
     mySwitch = new RCSwitch();
 
     mySwitch->enableReceive(pCONT_pins->GetPin(GPIO_RF_433MHZ_RX_ID));
-    // if (!pCONT_set->Settings.rf_protocol_mask) {
-      // pCONT_set->Settings.rf_protocol_mask = (1ULL << mySwitch->getNumProtos()) -1;
+    // if (!tkr_set->Settings.rf_protocol_mask) {
+      // tkr_set->Settings.rf_protocol_mask = (1ULL << mySwitch->getNumProtos()) -1;
       // Correctly only permits protocol 1 through
-      pCONT_set->Settings.rf_protocol_mask = (1ULL << 1) -1; //only want number 2?
+      tkr_set->Settings.rf_protocol_mask = (1ULL << 1) -1; //only want number 2?
     // }
-    mySwitch->setReceiveProtocolMask(pCONT_set->Settings.rf_protocol_mask);
+    mySwitch->setReceiveProtocolMask(tkr_set->Settings.rf_protocol_mask);
     settings.fEnableSensor = true;
   }
 
@@ -133,7 +133,7 @@ void mRCSwitch::ReceiveCheck(void)
     ALOG_DBG(PSTR("RFR: Data 0x%lX (%u), Bits %d, Protocol %d, Delay %d"), data, data, bits, protocol, delay);
 
     uint32_t now = millis();
-    if ((now - rx_pkt.received_time_millis > pCONT_set->Settings.rf_duplicate_time) && (data > 0))
+    if ((now - rx_pkt.received_time_millis > tkr_set->Settings.rf_duplicate_time) && (data > 0))
     {
       rx_pkt.received_time_millis = now;
 
@@ -144,7 +144,7 @@ void mRCSwitch::ReceiveCheck(void)
       rx_pkt.bit_length = bits;
       rx_pkt.protocol = protocol;
       rx_pkt.delay = delay;
-      rx_pkt.received_utc_time = pCONT_time->GetTimeShortNowU32();
+      rx_pkt.received_utc_time = tkr_time->GetTimeShortNowU32();
 
       /**
        * @brief Share with mqtt
@@ -156,7 +156,7 @@ void mRCSwitch::ReceiveCheck(void)
        **/
 
       //char stemp[16];
-      // if (pCONT_set->Settings.flag.rf_receive_decimal) {      // SetOption28 - RF receive data format (0 = hexadecimal, 1 = decimal)
+      // if (tkr_set->Settings.flag.rf_receive_decimal) {      // SetOption28 - RF receive data format (0 = hexadecimal, 1 = decimal)
       //   snprintf_P(stemp, sizeof(stemp), PSTR("%u"), (uint32_t)data);
       // } else {
       //  snprintf_P(stemp, sizeof(stemp), PSTR("\"0x%lX\""), (uint32_t)data);
@@ -188,9 +188,9 @@ void mRCSwitch::ReceiveCheck(void)
 //     if (XdrvMailbox.payload >= 0) {
 //       thisdat = (1ULL << (XdrvMailbox.index -1));
 //       if (XdrvMailbox.payload &1) {
-//         pCONT_set->Settings.rf_protocol_mask |= thisdat;
+//         tkr_set->Settings.rf_protocol_mask |= thisdat;
 //       } else {
-//         pCONT_set->Settings.rf_protocol_mask &= ~thisdat;
+//         tkr_set->Settings.rf_protocol_mask &= ~thisdat;
 //       }
 //     }
 //     else if (XdrvMailbox.data_len > 0) {
@@ -199,24 +199,24 @@ void mRCSwitch::ReceiveCheck(void)
 //   } else {
 //     if (XdrvMailbox.data_len > 0) {
 //       if ('A' == toupper(XdrvMailbox.data[0])) {
-//         pCONT_set->Settings.rf_protocol_mask = (1ULL << mySwitch->getNumProtos()) -1;
+//         tkr_set->Settings.rf_protocol_mask = (1ULL << mySwitch->getNumProtos()) -1;
 //       } else {
 //         thisdat = strtoull(XdrvMailbox.data, nullptr, 0);
 //         if ((thisdat > 0) || ('0' == XdrvMailbox.data[0])) {
-//           pCONT_set->Settings.rf_protocol_mask = thisdat;
+//           tkr_set->Settings.rf_protocol_mask = thisdat;
 //         } else {
 //           return;  // Not a number
 //         }
 //       }
 //     }
 //   }
-//   mySwitch->setReceiveProtocolMask(pCONT_set->Settings.rf_protocol_mask);
+//   mySwitch->setReceiveProtocolMask(tkr_set->Settings.rf_protocol_mask);
 // //  ALOG_INF(PSTR("RFR: CmndRfProtocol:: Start responce"));
 //   Response_P(PSTR("{\"" D_CMND_RFPROTOCOL "\":\""));
 //   bool gotone = false;
 //   thisdat = 1;
 //   for (uint32_t i = 0; i < mySwitch->getNumProtos(); i++) {
-//     if (pCONT_set->Settings.rf_protocol_mask & thisdat) {
+//     if (tkr_set->Settings.rf_protocol_mask & thisdat) {
 //       ResponseAppend_P(PSTR("%s%d"), (gotone) ? "," : "", i+1);
 //       gotone = true;
 //     }
@@ -297,9 +297,9 @@ void mRCSwitch::ReceiveCheck(void)
 
 // void CmndRfTimeOut(void) {
 //   if (XdrvMailbox.payload >= 10) {
-//     pCONT_set->Settings.rf_duplicate_time = XdrvMailbox.payload;
+//     tkr_set->Settings.rf_duplicate_time = XdrvMailbox.payload;
 //   }
-//   ResponseCmndNumber(pCONT_set->Settings.rf_duplicate_time);
+//   ResponseCmndNumber(tkr_set->Settings.rf_duplicate_time);
 // }
 
 /******************************************************************************************************************

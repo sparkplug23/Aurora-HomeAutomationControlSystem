@@ -26,17 +26,17 @@ int8_t mEthernet::Tasker(uint8_t function, JsonParserObject obj){
 
       // AddLog(LOG_LEVEL_INFO,PSTR("connection.config_type=%s"),GetWiFiConfigTypeCtr());
       //  Serial.println(WiFi.localIP());
-      // Serial.println(pCONT_set->Settings.sta_ssid[0]);
+      // Serial.println(tkr_set->Settings.sta_ssid[0]);
       // #ifdef ESP32
       // #endif
 
-      if (pCONT_set->Settings.flag_network.network_wifi) 
+      if (tkr_set->Settings.flag_network.network_wifi) 
       {
-        WifiCheck(pCONT_set->wifi_state_flag);
-        pCONT_set->wifi_state_flag = ETHERNET_RESTART;
+        WifiCheck(tkr_set->wifi_state_flag);
+        tkr_set->wifi_state_flag = ETHERNET_RESTART;
       }
             
-      //ALOG_DBG(PSTR(D_LOG_ETHERNET "WifiCheck(pCONT_set->wifi_state_flag=%d)"),pCONT_set->wifi_state_flag);
+      //ALOG_DBG(PSTR(D_LOG_ETHERNET "WifiCheck(tkr_set->wifi_state_flag=%d)"),tkr_set->wifi_state_flag);
 
     break;
     case TASK_EVERY_MINUTE:

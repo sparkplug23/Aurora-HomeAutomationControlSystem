@@ -1649,7 +1649,7 @@ void mAnimatorLight::getSettingsJS(byte subPage, char* dest)
       k[0] = 'S'; sappend('v',k,staticSubnet[i]);
     }
 
-    sappends('s',SET_F("CM"),pCONT_set->Settings.system_name.device);
+    sappends('s',SET_F("CM"),tkr_set->Settings.system_name.device);
     sappend('i',SET_F("AB"),apBehavior);
     sappends('s',SET_F("AS"),apSSID);
     sappend('c',SET_F("AH"),apHide);
@@ -2907,7 +2907,7 @@ bool  mAnimatorLight::captivePortal(AsyncWebServerRequest *request)
   if (!request->hasHeader("Host")) return false;
   hostH = request->getHeader("Host")->value();
 
-  if (!isIp(hostH) && hostH.indexOf("wled.me") < 0 && hostH.indexOf(pCONT_set->Settings.system_name.device) < 0) {
+  if (!isIp(hostH) && hostH.indexOf("wled.me") < 0 && hostH.indexOf(tkr_set->Settings.system_name.device) < 0) {
     DEBUG_PRINTLN("Captive portal");
     AsyncWebServerResponse *response = request->beginResponse(302);
     response->addHeader(F("Location"), F("http://4.3.2.1"));

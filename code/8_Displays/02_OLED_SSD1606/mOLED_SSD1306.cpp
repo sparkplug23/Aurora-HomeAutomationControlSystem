@@ -103,7 +103,7 @@ void mOLED_SSD1306::EverySecond(void)
   /**
    * RefreshDisplay
    * */
-  switch (pCONT_set->Settings.display.mode) {
+  switch (tkr_set->Settings.display.mode) {
     default:
     case EM_DISPLAY_MODE_LOG_SCROLLING_ID:
       ShowScrollingLog();
@@ -125,44 +125,44 @@ void mOLED_SSD1306::EverySecond(void)
 
 void mOLED_SSD1306::InitDriver(void)
 {
-  if (!pCONT_set->i2c_enabled) 
+  if (!tkr_set->i2c_enabled) 
   {
     return; 
   }
 
-  if (!pCONT_set->Settings.display.model)
+  if (!tkr_set->Settings.display.model)
   {
     if (pCONT_sup->I2cSetDevice(OLED_ADDRESS1))
     {
-      pCONT_set->Settings.display.address[0] = OLED_ADDRESS1;
-      pCONT_set->Settings.display.model = D_GROUP_MODULE_DISPLAYS_OLED_SSD1306_ID;
+      tkr_set->Settings.display.address[0] = OLED_ADDRESS1;
+      tkr_set->Settings.display.model = D_GROUP_MODULE_DISPLAYS_OLED_SSD1306_ID;
     }
     else if (pCONT_sup->I2cSetDevice(OLED_ADDRESS2))
     {
-      pCONT_set->Settings.display.address[0] = OLED_ADDRESS2;
-      pCONT_set->Settings.display.model = D_GROUP_MODULE_DISPLAYS_OLED_SSD1306_ID;
+      tkr_set->Settings.display.address[0] = OLED_ADDRESS2;
+      tkr_set->Settings.display.model = D_GROUP_MODULE_DISPLAYS_OLED_SSD1306_ID;
     }
   }
 
-  ALOG_INF(PSTR("DSP: SD1306 address[0] %d"),pCONT_set->Settings.display.address[0]);
+  ALOG_INF(PSTR("DSP: SD1306 address[0] %d"),tkr_set->Settings.display.address[0]);
   
-  if(pCONT_set->Settings.display.model == D_GROUP_MODULE_DISPLAYS_OLED_SSD1306_ID)
+  if(tkr_set->Settings.display.model == D_GROUP_MODULE_DISPLAYS_OLED_SSD1306_ID)
   {
-    pCONT_sup->I2cSetActiveFound(pCONT_set->Settings.display.address[0], "SSD1306");
+    pCONT_sup->I2cSetActiveFound(tkr_set->Settings.display.address[0], "SSD1306");
 
-    if((pCONT_set->Settings.display.width != 64) && (pCONT_set->Settings.display.width != 96) && (pCONT_set->Settings.display.width != 128))
+    if((tkr_set->Settings.display.width != 64) && (tkr_set->Settings.display.width != 96) && (tkr_set->Settings.display.width != 128))
     {
-      pCONT_set->Settings.display.width = 128;
+      tkr_set->Settings.display.width = 128;
     }
-    if((pCONT_set->Settings.display.height != 16) && (pCONT_set->Settings.display.height != 32) && (pCONT_set->Settings.display.height != 48) && (pCONT_set->Settings.display.height != 64))
+    if((tkr_set->Settings.display.height != 16) && (tkr_set->Settings.display.height != 32) && (tkr_set->Settings.display.height != 48) && (tkr_set->Settings.display.height != 64))
     {
-      pCONT_set->Settings.display.height = 64;
+      tkr_set->Settings.display.height = 64;
     }
 
-    oled1306 = new Adafruit_SSD1306(pCONT_set->Settings.display.width, pCONT_set->Settings.display.height, pCONT_i2c->wire, pCONT_pins->Pin(GPIO_OLED_RESET_ID));
-    oled1306->begin(SSD1306_SWITCHCAPVCC, pCONT_set->Settings.display.address[0], pCONT_pins->Pin(GPIO_OLED_RESET_ID) >= 0);
+    oled1306 = new Adafruit_SSD1306(tkr_set->Settings.display.width, tkr_set->Settings.display.height, pCONT_i2c->wire, pCONT_pins->Pin(GPIO_OLED_RESET_ID));
+    oled1306->begin(SSD1306_SWITCHCAPVCC, tkr_set->Settings.display.address[0], pCONT_pins->Pin(GPIO_OLED_RESET_ID) >= 0);
     pCONT_iDisp->renderer = oled1306;
-    pCONT_iDisp->renderer->DisplayInit(pCONT_iDisp->DISPLAY_INIT_MODE, pCONT_set->Settings.display.size, pCONT_set->Settings.display.rotate, pCONT_set->Settings.display.font);
+    pCONT_iDisp->renderer->DisplayInit(pCONT_iDisp->DISPLAY_INIT_MODE, tkr_set->Settings.display.size, tkr_set->Settings.display.rotate, tkr_set->Settings.display.font);
     pCONT_iDisp->renderer->setTextColor(1,0);
 
     #ifdef SHOW_SPLASH
@@ -192,11 +192,11 @@ void mOLED_SSD1306::ShowScrollingLog(void)
   char* txt = pCONT_iDisp->LogBuffer_GetRowPointer('\370');
   if (txt != NULL) {
     // Last row is row_size - 1 for indexing
-    uint8_t last_row = pCONT_set->Settings.display.rows -1;
+    uint8_t last_row = tkr_set->Settings.display.rows -1;
 
     // Start by clearing the display
     pCONT_iDisp->renderer->clearDisplay();
-    pCONT_iDisp->renderer->setTextSize(pCONT_set->Settings.display.size);
+    pCONT_iDisp->renderer->setTextSize(tkr_set->Settings.display.size);
     pCONT_iDisp->renderer->setCursor(0,0);
 
     // Shift the logs by moving the rows from next into current and display this
@@ -231,11 +231,11 @@ void mOLED_SSD1306::ShowStaticLog(void)
 
   // Start by clearing the display
   pCONT_iDisp->renderer->clearDisplay();
-  pCONT_iDisp->renderer->setTextSize(pCONT_set->Settings.display.size);
+  pCONT_iDisp->renderer->setTextSize(tkr_set->Settings.display.size);
   pCONT_iDisp->renderer->setCursor(0,0);
 
   // Copy log_buffer contents into screen_buffer
-  for(int row_index=0; row_index<pCONT_set->Settings.display.rows; row_index++)
+  for(int row_index=0; row_index<tkr_set->Settings.display.rows; row_index++)
   {
     // Get log_buffer by row
     char* row_ptr = pCONT_iDisp->LogBuffer_GetRowPointerByRowIndex(row_index);
@@ -258,13 +258,13 @@ void mOLED_SSD1306::ShowUTCTime(void)
 
   char line[12];
   pCONT_iDisp->renderer->clearDisplay();
-  pCONT_iDisp->renderer->setTextSize(pCONT_set->Settings.display.size);
-  pCONT_iDisp->renderer->setTextFont(pCONT_set->Settings.display.font);
+  pCONT_iDisp->renderer->setTextSize(tkr_set->Settings.display.size);
+  pCONT_iDisp->renderer->setTextFont(tkr_set->Settings.display.font);
   pCONT_iDisp->renderer->setCursor(0, 0);
-  snprintf_P(line, sizeof(line), PSTR(" %02d" D_HOUR_MINUTE_SEPARATOR "%02d" D_MINUTE_SECOND_SEPARATOR "%02d"), pCONT_time->RtcTime.hour,  pCONT_time->RtcTime.minute,  pCONT_time->RtcTime.second);  // [ 12:34:56 ]
+  snprintf_P(line, sizeof(line), PSTR(" %02d" D_HOUR_MINUTE_SEPARATOR "%02d" D_MINUTE_SECOND_SEPARATOR "%02d"), tkr_time->RtcTime.hour,  tkr_time->RtcTime.minute,  tkr_time->RtcTime.second);  // [ 12:34:56 ]
   pCONT_iDisp->renderer->println(line);
   pCONT_iDisp->renderer->println();
-  snprintf_P(line, sizeof(line), PSTR("%02d" D_MONTH_DAY_SEPARATOR "%02d" D_YEAR_MONTH_SEPARATOR "%04d"),  pCONT_time->RtcTime.Mday,  pCONT_time->RtcTime.month,  pCONT_time->RtcTime.year);   // [01-02-2018]
+  snprintf_P(line, sizeof(line), PSTR("%02d" D_MONTH_DAY_SEPARATOR "%02d" D_YEAR_MONTH_SEPARATOR "%04d"),  tkr_time->RtcTime.Mday,  tkr_time->RtcTime.month,  tkr_time->RtcTime.year);   // [01-02-2018]
   pCONT_iDisp->renderer->println(line);
   pCONT_iDisp->renderer->Updateframe();
 

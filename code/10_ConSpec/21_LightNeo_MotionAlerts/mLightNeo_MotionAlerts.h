@@ -76,6 +76,8 @@ class mLightNeo_MotionAlerts :
      ************************************************************************************************/
 
     void EverySecond();
+    void Handle_ButtonEvents();
+    void Handle_MotionEvents();
 
     /************************************************************************************************
      * SECTION: Commands

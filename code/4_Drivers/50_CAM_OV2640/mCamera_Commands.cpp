@@ -39,69 +39,69 @@
 //   ",\"" D_CMND_RTSP "\":%d"
 // #endif // ENABLE_RTSPSERVER
 //   "}}"),
-//     pCONT_set->Settings.webcam_config.stream, pCONT_set->Settings.webcam_config.resolution, pCONT_set->Settings.webcam_config.mirror,
-//     pCONT_set->Settings.webcam_config.flip,
-//     pCONT_set->Settings.webcam_config.saturation -2, pCONT_set->Settings.webcam_config.brightness -2, pCONT_set->Settings.webcam_config.contrast -2
+//     tkr_set->Settings.webcam_config.stream, tkr_set->Settings.webcam_config.resolution, tkr_set->Settings.webcam_config.mirror,
+//     tkr_set->Settings.webcam_config.flip,
+//     tkr_set->Settings.webcam_config.saturation -2, tkr_set->Settings.webcam_config.brightness -2, tkr_set->Settings.webcam_config.contrast -2
 // #ifdef ENABLE_RTSPSERVER
-//   , pCONT_set->Settings.webcam_config.rtsp
+//   , tkr_set->Settings.webcam_config.rtsp
 // #endif // ENABLE_RTSPSERVER
 //   );
 // }
 
 // void CmndWebcamStream(void) {
 //   if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 1)) {
-//     pCONT_set->Settings.webcam_config.stream = XdrvMailbox.payload;
-//     if (!pCONT_set->Settings.webcam_config.stream) { WcStreamControl(); }  // Stop stream
+//     tkr_set->Settings.webcam_config.stream = XdrvMailbox.payload;
+//     if (!tkr_set->Settings.webcam_config.stream) { WcStreamControl(); }  // Stop stream
 //   }
-//   ResponseCmndStateText(pCONT_set->Settings.webcam_config.stream);
+//   ResponseCmndStateText(tkr_set->Settings.webcam_config.stream);
 // }
 
 // void CmndWebcamResolution(void) {
 //   if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload < FRAMESIZE_FHD)) {
-//     pCONT_set->Settings.webcam_config.resolution = XdrvMailbox.payload;
-//     WcSetOptions(0, pCONT_set->Settings.webcam_config.resolution);
+//     tkr_set->Settings.webcam_config.resolution = XdrvMailbox.payload;
+//     WcSetOptions(0, tkr_set->Settings.webcam_config.resolution);
 //   }
-//   ResponseCmndNumber(pCONT_set->Settings.webcam_config.resolution);
+//   ResponseCmndNumber(tkr_set->Settings.webcam_config.resolution);
 // }
 
 // void CmndWebcamMirror(void) {
 //   if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 1)) {
-//     pCONT_set->Settings.webcam_config.mirror = XdrvMailbox.payload;
-//     WcSetOptions(3, pCONT_set->Settings.webcam_config.mirror);
+//     tkr_set->Settings.webcam_config.mirror = XdrvMailbox.payload;
+//     WcSetOptions(3, tkr_set->Settings.webcam_config.mirror);
 //   }
-//   ResponseCmndStateText(pCONT_set->Settings.webcam_config.mirror);
+//   ResponseCmndStateText(tkr_set->Settings.webcam_config.mirror);
 // }
 
 // void CmndWebcamFlip(void) {
 //   if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 1)) {
-//     pCONT_set->Settings.webcam_config.flip = XdrvMailbox.payload;
-//     WcSetOptions(2, pCONT_set->Settings.webcam_config.flip);
+//     tkr_set->Settings.webcam_config.flip = XdrvMailbox.payload;
+//     WcSetOptions(2, tkr_set->Settings.webcam_config.flip);
 //   }
-//   ResponseCmndStateText(pCONT_set->Settings.webcam_config.flip);
+//   ResponseCmndStateText(tkr_set->Settings.webcam_config.flip);
 // }
 
 // void CmndWebcamSaturation(void) {
 //   if ((XdrvMailbox.payload >= -2) && (XdrvMailbox.payload <= 2)) {
-//     pCONT_set->Settings.webcam_config.saturation = XdrvMailbox.payload +2;
-//     WcSetOptions(6, pCONT_set->Settings.webcam_config.saturation -2);
+//     tkr_set->Settings.webcam_config.saturation = XdrvMailbox.payload +2;
+//     WcSetOptions(6, tkr_set->Settings.webcam_config.saturation -2);
 //   }
-//   ResponseCmndNumber(pCONT_set->Settings.webcam_config.saturation -2);
+//   ResponseCmndNumber(tkr_set->Settings.webcam_config.saturation -2);
 // }
 
 // void CmndWebcamBrightness(void) {
 //   if ((XdrvMailbox.payload >= -2) && (XdrvMailbox.payload <= 2)) {
-//     pCONT_set->Settings.webcam_config.brightness = XdrvMailbox.payload +2;
-//     WcSetOptions(5, pCONT_set->Settings.webcam_config.brightness -2);
+//     tkr_set->Settings.webcam_config.brightness = XdrvMailbox.payload +2;
+//     WcSetOptions(5, tkr_set->Settings.webcam_config.brightness -2);
 //   }
-//   ResponseCmndNumber(pCONT_set->Settings.webcam_config.brightness -2);
+//   ResponseCmndNumber(tkr_set->Settings.webcam_config.brightness -2);
 // }
 
 // void CmndWebcamContrast(void) {
 //   if ((XdrvMailbox.payload >= -2) && (XdrvMailbox.payload <= 2)) {
-//     pCONT_set->Settings.webcam_config.contrast = XdrvMailbox.payload +2;
-//     WcSetOptions(4, pCONT_set->Settings.webcam_config.contrast -2);
+//     tkr_set->Settings.webcam_config.contrast = XdrvMailbox.payload +2;
+//     WcSetOptions(4, tkr_set->Settings.webcam_config.contrast -2);
 //   }
-//   ResponseCmndNumber(pCONT_set->Settings.webcam_config.contrast -2);
+//   ResponseCmndNumber(tkr_set->Settings.webcam_config.contrast -2);
 // }
 
 // void CmndWebcamInit(void) {
@@ -112,9 +112,9 @@
 // #ifdef ENABLE_RTSPSERVER
 // void CmndWebRtsp(void) {
 //   if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 1)) {
-//     pCONT_set->Settings.webcam_config.rtsp = XdrvMailbox.payload;
+//     tkr_set->Settings.webcam_config.rtsp = XdrvMailbox.payload;
 //     TasmotaGlobal.restart_flag = 2;
 //   }
-//   ResponseCmndStateText(pCONT_set->Settings.webcam_config.rtsp);
+//   ResponseCmndStateText(tkr_set->Settings.webcam_config.rtsp);
 // }
 // #endif // ENABLE_RTSPSERVER

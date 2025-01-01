@@ -1630,7 +1630,7 @@ GetColourFromPalette_WithColourMapScale(normal colour map, pass in vector float 
     case PALETTELIST_DYNAMIC__TIMEREACTIVE__RGBCCT_PRIMARY_TO_SECONDARY_WITH_SECONDS_IN_MINUTE_01__ID:
     {
 
-      float progress = mSupport::mapfloat(pCONT_time->RtcTime.second, 0,59, 0.0f, 1.0f);
+      float progress = mSupport::mapfloat(tkr_time->RtcTime.second, 0,59, 0.0f, 1.0f);
       
       #ifdef ENABLE_DEBUGFEATURE_LIGHT__PALETTE_RELOAD_LOGGING
       Serial.println(progress);

@@ -940,7 +940,7 @@ void mHardwarePins::ModuleSettings_ShowTemplateLog()
 
   DEBUG_LINE;
   
-    // const char* buffer2 = GetModuleNameByID(pCONT_set->Settings.user_template.base, buffer);
+    // const char* buffer2 = GetModuleNameByID(tkr_set->Settings.user_template.base, buffer);
     // AddLog(LOG_LEVEL_INFO,PSTR("user_template2.base=%s"),buffer2);
 
 }
@@ -972,13 +972,13 @@ void mHardwarePins::ModuleSettings_FlashSerial()
   //     "BASE: %d"
   //   ),
 #ifdef ENABLE_DEBUG_MODULE_HARDWAREPINS_SUBSECTION_TEMPLATES
-// ALOG_TST(PSTR("ARRAY_SIZE(pCONT_set->Settings.user_template.hardware.gp.io)=%d"),ARRAY_SIZE(pCONT_set->Settings.user_template.hardware.gp.io));
+// ALOG_TST(PSTR("ARRAY_SIZE(tkr_set->Settings.user_template.hardware.gp.io)=%d"),ARRAY_SIZE(tkr_set->Settings.user_template.hardware.gp.io));
 #endif // ENABLE_DEBUG_MODULE_HARDWAREPINS_SUBSECTION_TEMPLATES
   uint8_t real_gpio = 0;
   // DEBUG_PRINTF("\n\r");
-  // DEBUG_PRINTF("Template: %s\n\r", pCONT_set->Settings.user_template.full_ctr);
-  // DEBUG_PRINTF("Name: %s\n\r", pCONT_set->Settings.user_template.hardware.name);
-  for(uint8_t gpio=0;gpio<ARRAY_SIZE(pCONT_set->Settings.user_template.hardware.gp.io);gpio++){
+  // DEBUG_PRINTF("Template: %s\n\r", tkr_set->Settings.user_template.full_ctr);
+  // DEBUG_PRINTF("Name: %s\n\r", tkr_set->Settings.user_template.hardware.name);
+  for(uint8_t gpio=0;gpio<ARRAY_SIZE(tkr_set->Settings.user_template.hardware.gp.io);gpio++){
     //get proper gpio number
 
 //change to pin getter
@@ -1000,11 +1000,11 @@ void mHardwarePins::ModuleSettings_FlashSerial()
     // }
 
 #ifdef ENABLE_DEBUG_MODULE_HARDWAREPINS_SUBSECTION_TEMPLATES
-    AddLog(LOG_LEVEL_DEV_TEST,PSTR("\t%d(%d):%d"),gpio,real_gpio,pCONT_set->Settings.user_template.hardware.gp.io[gpio]);
+    AddLog(LOG_LEVEL_DEV_TEST,PSTR("\t%d(%d):%d"),gpio,real_gpio,tkr_set->Settings.user_template.hardware.gp.io[gpio]);
 #endif
   }
-  // DEBUG_PRINTF("FLAGS: %08X\n\r",pCONT_set->Settings.user_template.flags);
-  // DEBUG_PRINTF("BASE : %08X\n\r",pCONT_set->Settings.user_template.base);
+  // DEBUG_PRINTF("FLAGS: %08X\n\r",tkr_set->Settings.user_template.flags);
+  // DEBUG_PRINTF("BASE : %08X\n\r",tkr_set->Settings.user_template.base);
   // DEBUG_PRINTF("\n\r\n\r"); 
 
 }
@@ -1126,7 +1126,7 @@ bool mHardwarePins::UsuableGPIOPin(uint8_t pin)
     return false; // Flash pins
   }
   // flash pins on 8265
-  else if ((pin == 9) || (pin == 10)){ //(MODULE_WEMOS_ID == pCONT_set->Settings.module) // not on esp8625
+  else if ((pin == 9) || (pin == 10)){ //(MODULE_WEMOS_ID == tkr_set->Settings.module) // not on esp8625
     return true; // Flash pins
   }
   // Valid
@@ -1296,9 +1296,9 @@ void mHardwarePins::SetPin(uint32_t real_pin, uint32_t gpio) {
 void mHardwarePins::DigitalWrite(uint32_t gpio_pin, uint32_t state)
 {
   DigitalWrite(gpio_pin, 0, state);
-  // if (pCONT_set->pin[gpio_pin] < 99) {
-        // AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_RELAYS "DigitalWrite(%d[%d],%d)"),pCONT_set->pin[gpio_pin],gpio_pin,state);
-    // digitalWrite(pCONT_set->pin[gpio_pin], state &1);
+  // if (tkr_set->pin[gpio_pin] < 99) {
+        // AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_RELAYS "DigitalWrite(%d[%d],%d)"),tkr_set->pin[gpio_pin],gpio_pin,state);
+    // digitalWrite(tkr_set->pin[gpio_pin], state &1);
   // }
 }
 /**
@@ -1380,7 +1380,7 @@ uint8_t mHardwarePins::ModuleNr()
 {
   // 0    = User module (255)
   // 1 up = Template module 0 up
-  return (USER_MODULE == pCONT_set->Settings.module) ? 0 : pCONT_set->Settings.module +1;
+  return (USER_MODULE == tkr_set->Settings.module) ? 0 : tkr_set->Settings.module +1;
 }
 
 bool mHardwarePins::ValidTemplateModule(uint8_t index)
@@ -1421,7 +1421,7 @@ bool mHardwarePins::ValidUserGPIOFunction(uint16_t* pin_array, uint8_t index)
 
 const char* mHardwarePins::ModuleName()
 {
-  return AnyModuleName(pCONT_set->Settings.module);
+  return AnyModuleName(tkr_set->Settings.module);
 }
 const char* mHardwarePins::AnyModuleName(uint8_t index)
 {
@@ -1436,7 +1436,7 @@ const char* mHardwarePins::AnyModuleName(uint8_t index)
  
   // if (USER_MODULE == index) {
   // // ALOG_TST(PSTR(D_LOG_HTTP "USER_MODULE == index"));
-  //   return PM_SEARCH_NOMATCH;//pCONT_set->Settings.user_template.hardware.name; //returns pointer
+  //   return PM_SEARCH_NOMATCH;//tkr_set->Settings.user_template.hardware.name; //returns pointer
   // } else {
     // ALOG_TST(PSTR(D_LOG_HTTP "USER_MODULE != %d index %s"),index,ModuleTemplate_GPIO_Map[index].name);
     // return ModuleTemplate_GPIO_Map[index].name;
@@ -1499,10 +1499,10 @@ gpio_flag mHardwarePins::ModuleFlag()
 {
   gpio_flag flag;
 
-  if (USER_MODULE == pCONT_set->Settings.module) {
-    flag = pCONT_set->Settings.user_template.hardware.flag;
+  if (USER_MODULE == tkr_set->Settings.module) {
+    flag = tkr_set->Settings.user_template.hardware.flag;
   } else {
-    memcpy_P(&flag, &ModuleTemplate_GPIO_Map[pCONT_set->Settings.module].flag, sizeof(gpio_flag));
+    memcpy_P(&flag, &ModuleTemplate_GPIO_Map[tkr_set->Settings.module].flag, sizeof(gpio_flag));
   }
 
   return flag;
@@ -1511,8 +1511,8 @@ gpio_flag mHardwarePins::ModuleFlag()
 void mHardwarePins::ModuleDefault(uint8_t module)
 {
   if (USER_MODULE == module) { module = MODULE_DEFAULT; }  // Generic
-  pCONT_set->Settings.user_template.base = module;
-  memcpy_P(&pCONT_set->Settings.user_template.hardware, &ModuleTemplate_GPIO_Map[module], sizeof(mytmplt));
+  tkr_set->Settings.user_template.base = module;
+  memcpy_P(&tkr_set->Settings.user_template.hardware, &ModuleTemplate_GPIO_Map[module], sizeof(mytmplt));
 
   // if (USER_MODULE == module) { module = WEMOS; }  // Generic
   // Settings.user_template_base = module;
@@ -1533,7 +1533,7 @@ void mHardwarePins::ModuleDefault(uint8_t module)
 
 void mHardwarePins::SetModuleType()
 {
-  pCONT_set->runtime.my_module_type = (USER_MODULE == pCONT_set->Settings.module) ? pCONT_set->Settings.user_template.base : pCONT_set->Settings.module;
+  tkr_set->runtime.my_module_type = (USER_MODULE == tkr_set->Settings.module) ? tkr_set->Settings.user_template.base : tkr_set->Settings.module;
 }
 
 /**
@@ -1555,7 +1555,7 @@ uint16_t mHardwarePins::ValidPin_AdjustGPIO(uint8_t pin, uint16_t gpio)
   // }
   // DEBUG_LINE;
   // // need to add my other boards here
-  // if ((MODULE_WEMOS_ID == pCONT_set->Settings.module) && (!pCONT_set->Settings.flag_network.user_esp8285_enable)) {
+  // if ((MODULE_WEMOS_ID == tkr_set->Settings.module) && (!tkr_set->Settings.flag_network.user_esp8285_enable)) {
   //   if ((pin == 9) || (pin == 10)) { result = GPIO_NONE_ID; }  // Disable possible flash GPIO9 and GPIO10
   // }
   // DEBUG_LINE;
@@ -1615,11 +1615,11 @@ bool mHardwarePins::GetUsedInModule(uint8_t val, uint8_t *arr)
 
 void mHardwarePins::TemplateJson()
 {
-  // Response_P(PSTR("{\"" D_NAME "\":\"%s\",\"" D_GPIO "\":["), pCONT_set->Settings.user_template.name);
-  // for (uint8_t i = 0; i < sizeof(pCONT_set->Settings.user_template.hardware.gp); i++) {
-  //   ResponseAppend_P(PSTR("%s%d"), (i>0)?",":"", pCONT_set->Settings.user_template.hardware.gp.io[i]);
+  // Response_P(PSTR("{\"" D_NAME "\":\"%s\",\"" D_GPIO "\":["), tkr_set->Settings.user_template.name);
+  // for (uint8_t i = 0; i < sizeof(tkr_set->Settings.user_template.hardware.gp); i++) {
+  //   ResponseAppend_P(PSTR("%s%d"), (i>0)?",":"", tkr_set->Settings.user_template.hardware.gp.io[i]);
   // }
-  // ResponseAppend_P(PSTR("],\"" D_FLAG "\":%d,\"" D_BASE "\":%d}"), pCONT_set->Settings.user_template.flag, pCONT_set->Settings.user_template_base +1);
+  // ResponseAppend_P(PSTR("],\"" D_FLAG "\":%d,\"" D_BASE "\":%d}"), tkr_set->Settings.user_template.flag, tkr_set->Settings.user_template_base +1);
 }
 
 

@@ -234,7 +234,7 @@ enum MODULE_SUBTYPE_IDS{ //ignores the "interface"
  **/
 #ifdef USE_MODULE_CORE_SETTINGS
   #include "2_CoreSystem/01_Settings/mSettings.h"
-  #define   pCONT_set                               static_cast<mSettings*>(mTaskerManager::GetInstance()->GetModule(D_UNIQUE_MODULE_CORE_SETTINGS_ID))
+  #define   tkr_set                               static_cast<mSettings*>(mTaskerManager::GetInstance()->GetModule(D_UNIQUE_MODULE_CORE_SETTINGS_ID))
 #endif 
 #ifdef USE_MODULE_CORE_FILESYSTEM
   #include "2_CoreSystem/03_FileSystem/mFileSystem.h"
@@ -250,7 +250,7 @@ enum MODULE_SUBTYPE_IDS{ //ignores the "interface"
 #endif 
 #ifdef USE_MODULE_CORE_TIME
   #include "2_CoreSystem/07_Time/mTime.h"
-  #define   pCONT_time                              static_cast<mTime*>(mTaskerManager::GetInstance()->GetModule(D_UNIQUE_MODULE_CORE_TIME_ID))
+  #define   tkr_time                              static_cast<mTime*>(mTaskerManager::GetInstance()->GetModule(D_UNIQUE_MODULE_CORE_TIME_ID))
 #endif 
 #ifdef USE_MODULE_CORE_LOGGING
   #include "2_CoreSystem/08_Logging/mLogging.h"

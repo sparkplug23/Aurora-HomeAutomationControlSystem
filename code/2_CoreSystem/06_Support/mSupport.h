@@ -71,9 +71,9 @@ enum STATE_NUMBER_IDS{
 #define P_PHASE_OUT() Serial.println(F("PHASE OUT"));
 
 // Methods for disable (returning from loop early) until an uptime, network established, or network uptime > x amount
-#define DEBUG_OTA_FLASH_BLOCKER_UNTIL_STABLE_RETURN_ZERO()   if(pCONT_time->RtcTime.seconds_nonreset < 120){ return 0; }
-#define DEBUG_OTA_FLASH_BLOCKER_UNTIL_UPTIME_X_RETURN_ZERO(X)   if(pCONT_time->RtcTime.seconds_nonreset < X){ return 0; }
-// #define DEBUG_OTA_FLASH_BLOCKER_UNTIL_NETWORK_UPTIME_X_RETURN_ZERO(X)   if(pCONT_time->RtcTime.seconds_nonreset < X){ return 0; }
+#define DEBUG_OTA_FLASH_BLOCKER_UNTIL_STABLE_RETURN_ZERO()   if(tkr_time->RtcTime.seconds_nonreset < 120){ return 0; }
+#define DEBUG_OTA_FLASH_BLOCKER_UNTIL_UPTIME_X_RETURN_ZERO(X)   if(tkr_time->RtcTime.seconds_nonreset < X){ return 0; }
+// #define DEBUG_OTA_FLASH_BLOCKER_UNTIL_NETWORK_UPTIME_X_RETURN_ZERO(X)   if(tkr_time->RtcTime.seconds_nonreset < X){ return 0; }
 
 
 #define CALL_VOID_FUNCTION(object,ptrToMember)  ((object).*(ptrToMember))

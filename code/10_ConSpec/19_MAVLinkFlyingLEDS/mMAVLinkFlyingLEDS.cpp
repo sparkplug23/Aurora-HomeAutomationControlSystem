@@ -146,7 +146,7 @@ void mMavlinkFlyingLEDS::Effect_LandingLights()
   // For testing of full range, lets use "seconds" as the ticker
   HsbColor color_hatch_chase = HsbColor(0, 1, 1);
   // #ifdef ENABLE_DEVFEATURE_MAVLINK__USE_TIME_FOR_RANGE_TESTING
-  // hue = map(pCONT_time->RtcTime.second, 0,59, 0,359);
+  // hue = map(tkr_time->RtcTime.second, 0,59, 0,359);
   // ALOG_INF(PSTR("Hue: %d"), hue);
   // color_hatch_chase = HsbColor(hue/360.0f, 1, 1);
   // #else
@@ -376,7 +376,7 @@ void mMavlinkFlyingLEDS::Effect_Flight01_RandomSweep()
   // For testing of full range, lets use "seconds" as the ticker
   HsbColor color_hatch_chase = HsbColor(0, 1, 1);
   // #ifdef ENABLE_DEVFEATURE_MAVLINK__USE_TIME_FOR_RANGE_TESTING
-  // hue = map(pCONT_time->RtcTime.second, 0,59, 0,359);
+  // hue = map(tkr_time->RtcTime.second, 0,59, 0,359);
   // ALOG_INF(PSTR("Hue: %d"), hue);
   // color_hatch_chase = HsbColor(hue/360.0f, 1, 1);
   // #else

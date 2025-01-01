@@ -58,8 +58,6 @@ class mButtons :
      ************************************************************************************************/
 
    
-#ifdef ENABLE_DEVFEATURE_BUTTON__V2
-
 /*********************************************************************************************\
  * Button support with input filter
  *
@@ -119,28 +117,27 @@ struct TOUCH_BUTTON {
 
 
 uint8_t GetHardwareSpecificPullMethod(uint8_t real_pin);
-void ButtonPullupFlag(uint32_t button_bit);
-void ButtonPulldownFlag(uint32_t button_bit);
-void ButtonInvertFlag(uint32_t button_bit);
+void PullupFlag(uint32_t button_bit);
+void PulldownFlag(uint32_t button_bit);
+void InvertFlag(uint32_t button_bit);
 #if defined(SOC_TOUCH_VERSION_1) || defined(SOC_TOUCH_VERSION_2)
-void ButtonTouchFlag(uint32_t button_bit);
+void TouchFlag(uint32_t button_bit);
 #endif  // ESP32 SOC_TOUCH_VERSION_1 or SOC_TOUCH_VERSION_2
-void ButtonSetVirtualPinState(uint32_t index, uint32_t state);
-uint8_t ButtonGetState(uint32_t index);
-uint8_t ButtonLastState(uint32_t index);
-bool ButtonUsed(uint32_t index);
-void ButtonProbe(void);
-uint8_t ButtonSerial(uint8_t serial_in_byte);
-void ButtonHandler(void);
+void SetVirtualPinState(uint32_t index, uint32_t state);
+uint8_t GetState(uint32_t index);
+uint8_t LastState(uint32_t index);
+bool Used(uint32_t index);
+void Probe(void);
+uint8_t Serial(uint8_t serial_in_byte);
+void Handler(void);
 void MqttButtonTopic(uint32_t button_id, uint32_t action, uint32_t hold);
-void ButtonLoop(void);
+void Loop(void);
 bool SendKey(uint32_t key, uint32_t device, uint32_t state);
 
 void SetButtonUsed(uint32_t index);
 
     uint8_t ConstructJSON_Settings(uint8_t json_level = 0, bool json_appending = true);
     uint8_t ConstructJSON_Sensor(uint8_t json_level = 0, bool json_appending = true);
-#endif // ENABLE_DEVFEATURE_BUTTON__V2
 
   #ifdef USE_MODULE_NETWORK_MQTT
     void MQTTHandler_Init();
@@ -150,107 +147,6 @@ void SetButtonUsed(uint32_t index);
     struct handler<mButtons> mqtthandler_sensor_teleperiod;
   #endif // USE_MODULE_NETWORK_MQTT
 
-#ifdef ENABLE_DEVFEATURE_BUTTON__V1
-
-// /*********************************************************************************************\
-//  * Button support
-// \*********************************************************************************************/
-
-enum ButtonStates 
-{ 
-  BUTTON_PRESSED_ID, 
-  BUTTON_NOT_PRESSED_ID 
-};
-
-
-
-    struct SETTINGS{
-      uint8_t buttons_found = 0;
-      uint8_t fEnableSensor = false;
-
-    }settings;
-
-    
-bool ModuleEnabled();
-
-#ifndef ENABLE_DEVFEATURE_BUILD_REPAIR__FIXING_RELAY_KEYS_DEFINES_TO_SETTINGS_HEADER
-
-#ifndef MAX_KEYS
-#define MAX_KEYS 8                 // Max number of keys or buttons
-#endif // MAX_KEYS
-
-#endif
-Ticker* TickerButton;
-
-void SetPullupFlag(uint8_t button_bit);
-void SetInvertFlag(uint8_t button_bit);
-void ButtonHandler(void);
-
-void ButtonLoop(void);
-bool IsButtonActive(uint8_t id);
-char* IsButtonActiveCtr(uint8_t id, char* buffer, uint8_t buflen);
-
-
-
-uint8_t GetHardwareSpecificPullMethod(uint8_t real_pin);
-
-// unsigned long button_debounce = 0;          // Button debounce timer
-
-struct BUTTONS{
-  uint16_t hold_timer =0;      // Timer for button hold
-  uint8_t window_timer = 0;//multiwindow = 0;      // Max time between button presses to record press count
-  uint8_t press_counter = 0;//multipress = 0;       // Number of button presses within multiwindow
-  
-  // uint8_t lastbutton_active_state = BUTTON_NOT_PRESSED_ID;  // Last button states
-  uint8_t last_state = BUTTON_NOT_PRESSED_ID;  // Last button states
-
-
-  uint8_t active_state_value = false; //defualt active high
-
-  /**
-   * @note isactive will always signify active or not
-   * */
-  uint8_t  isactive     = false;
-  uint8_t  state     = BUTTON_NOT_PRESSED_ID;
-  // uint8_t  isactive  = false;
-  uint8_t  ischanged = false;
-  int8_t pin = -1; // -1 is not active
-
-}buttons[MAX_KEYS];
-
-/**
- * @brief Need button event, so its stored as last event
- * Single/Multi/Hold
- * 
- * If the event is reported BEFORE rules_event can clear, then it can be used in the json mqtt message
- * 
- * 
- **/
-// struct BUTTON_EVENT{
-//   uint8_t type_id = INPUT_TYPE_LENGTH_ID;
-//   uint8_t device_id = 0;
-//   uint8_t state = 0;
-//   uint8_t count = 0;
-// }last_event;
-
-
-uint8_t dual_hex_code = 0;                  // Sonoff dual input flag
-uint8_t key_no_pullup = 0x00;                  // key no pullup flag (1 = no pullup)
-uint8_t key_inverted = 0x00; // Must be set to 0, 8 bits wide                   // Key inverted flag (1 = inverted)
-// uint8_t buttons_found = 0;                  // Number of buttons found flag
-
-// timereached_t tsaved_button_debounce;
-uint32_t tsaved_button_debounce;
-
-uint16_t dual_button_code = 0;              // Sonoff dual received code
-
-
-
-    uint8_t ConstructJSON_Settings(uint8_t json_level = 0, bool json_appending = true);
-    uint8_t ConstructJSON_Sensor(uint8_t json_level = 0, bool json_appending = true);
-  
-  
-#endif // ENABLE_DEVFEATURE_BUTTON__V1
 
 };
 

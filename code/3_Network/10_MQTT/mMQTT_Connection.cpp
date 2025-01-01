@@ -10,7 +10,7 @@ void MQTTConnection::MqttConnected(void)
   cConnectionAttempts = 0; // reset
 
   char lwt_message_ondisconnect_ctr[200];
-  sprintf_P(lwt_message_ondisconnect_ctr, PM_MQTT_LWT_PAYLOAD_FORMATED, pCONT_sup->GetResetReason().c_str(), pCONT_time->GetUptime().c_str() );
+  sprintf_P(lwt_message_ondisconnect_ctr, PM_MQTT_LWT_PAYLOAD_FORMATED, pCONT_sup->GetResetReason().c_str(), tkr_time->GetUptime().c_str() );
   
   #ifdef ENABLE_MQTT_SEND_DISCONNECT_ON_RECONNECT // Show disconnect occured if we have reconnected inside timeout
     char lwt_topic[40];
@@ -60,7 +60,7 @@ void MQTTConnection::EverySecond()
     ALOG_INF(PSTR("MqttIsConnected == FALSE"));
     #endif
 
-    pCONT_set->runtime.global_state.mqtt_down = 1;
+    tkr_set->runtime.global_state.mqtt_down = 1;
     uptime_seconds = 0;
     downtime_counter++;
 
@@ -86,7 +86,7 @@ void MQTTConnection::EverySecond()
     #ifdef ENABLE_DEBUGFEATURE__LOGGING_MQTT__CHECK_CONNECTION
     ALOG_INF(PSTR("MqttIsConnected == TRUE"));
     #endif 
-    pCONT_set->runtime.global_state.mqtt_down = 0;
+    tkr_set->runtime.global_state.mqtt_down = 0;
     downtime_counter = 0;
     uptime_seconds++;
   }  
@@ -102,7 +102,7 @@ void MQTTConnection::MqttReconnect(void){ DEBUG_PRINT_FUNCTION_NAME;
   
   connected = false;
   retry_counter = retry_counter_start_value;// pCONT_mqtt->dt.connection[0].retry;
-  pCONT_set->runtime.global_state.mqtt_down = 1;
+  tkr_set->runtime.global_state.mqtt_down = 1;
 
   if(pubsub!=nullptr)
   {
@@ -119,10 +119,10 @@ void MQTTConnection::MqttReconnect(void){ DEBUG_PRINT_FUNCTION_NAME;
   
   // Generate will message
   char lwt_message_ondisconnect_ctr[200];
-  sprintf_P(lwt_message_ondisconnect_ctr, PM_MQTT_LWT_PAYLOAD_FORMATED, pCONT_sup->GetResetReason().c_str(), pCONT_time->GetUptime().c_str());
+  sprintf_P(lwt_message_ondisconnect_ctr, PM_MQTT_LWT_PAYLOAD_FORMATED, pCONT_sup->GetResetReason().c_str(), tkr_time->GetUptime().c_str());
 
   char lwt_topic[40];
-  snprintf_P(lwt_topic, sizeof(lwt_topic), PM_MQTT_LWT_TOPIC_FORMATED, pCONT_set->Settings.system_name.device);
+  snprintf_P(lwt_topic, sizeof(lwt_topic), PM_MQTT_LWT_TOPIC_FORMATED, tkr_set->Settings.system_name.device);
 
   uint8_t loglevel = LOG_LEVEL_INFO;
   #ifdef ENABLE_DEVFEATURE_DEBUG_MQTT_RECONNECT
@@ -204,7 +204,7 @@ void MQTTConnection::MqttDataHandler(char* mqtt_topic, uint8_t* mqtt_data, unsig
     if(data_buffer.flags.waiting)
     {
       data_buffer.flags.waiting = false;
-      // if (LOG_LEVEL_DEBUG_MORE <= pCONT_set->Settings.logging.serial_level) {
+      // if (LOG_LEVEL_DEBUG_MORE <= tkr_set->Settings.logging.serial_level) {
         LoggingLevels level = LOG_LEVEL_DEBUG_MORE;
         #ifdef ENABLE_DEVFEATURE_SHOW_INCOMING_MQTT_COMMANDS
         level = LOG_LEVEL_DEV_TEST;

@@ -576,7 +576,7 @@ void mSerialPositionalLogger::UpdateInternalRTCTimeWithGPSTime()
 {
 
   
-    // pCONT_time->SetUTCTime(
+    // tkr_time->SetUTCTime(
     //   2021,//pCONT_gps->gps_result_stored.dateTime.year,
     //   9,//pCONT_gps->gps_result_stored.dateTime.month,
     //   19,//pCONT_gps->gps_result_stored.dateTime.day,
@@ -593,7 +593,7 @@ void mSerialPositionalLogger::UpdateInternalRTCTimeWithGPSTime()
   if(pCONT_sdcard->sdcard_status.isopened==0)
   {
 
-    pCONT_time->SetUTCTime(
+    tkr_time->SetUTCTime(
       pCONT_gps->gps_result_stored.dateTime.year,
       pCONT_gps->gps_result_stored.dateTime.month,
       pCONT_gps->gps_result_stored.dateTime.day,
@@ -1026,7 +1026,7 @@ void mSerialPositionalLogger::SubTask_UpdateOLED()
   char line_ctr[15] = {0};
   char buffer[15] = {0};
 
-  pCONT_set->Settings.display.mode = EM_DISPLAY_MODE_LOG_STATIC_ID;
+  tkr_set->Settings.display.mode = EM_DISPLAY_MODE_LOG_STATIC_ID;
 
   /**
    * Row 1
@@ -1130,7 +1130,7 @@ void mSerialPositionalLogger::SubTask_UpdateOLED()
   pCONT_iDisp->LogBuffer_AddRow(buffer,2);
   #endif // USE_MODULE_DRIVERS_SDCARD
 
-  snprintf(buffer, sizeof(buffer), "T:%s",pCONT_time->RtcTime.hhmmss_ctr);//pCONT_time->GEt DT_UTC;
+  snprintf(buffer, sizeof(buffer), "T:%s",tkr_time->RtcTime.hhmmss_ctr);//tkr_time->GEt DT_UTC;
   pCONT_iDisp->LogBuffer_AddRow(buffer, 3);
   #endif // USE_MODULE_DISPLAYS_OLED_SSD1306
 
@@ -1381,8 +1381,8 @@ uint8_t mSerialPositionalLogger::ConstructJSON_SDCardSuperFrame(uint8_t json_lev
 //   //   }
 
 
-//   //   pCONT_time->PrintDateTime(ontime);
-//   //   pCONT_time->PrintDateTime(offtime);
+//   //   tkr_time->PrintDateTime(ontime);
+//   //   tkr_time->PrintDateTime(offtime);
 
 
 //   // }

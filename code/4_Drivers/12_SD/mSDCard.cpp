@@ -337,7 +337,7 @@ void mSDCard::SubTask_Append_To_Open_File(char* buffer, uint16_t buflen)
 			sprintf(writer_settings.file_name, "/%s_%s_%02d%02d%02d_%03d.txt", // Unique name each time it is opened
 				"APPEND", 
 				DEVICENAME_FOR_SDCARD_FRIENDLY_CTR, 
-				pCONT_time->RtcTime.hour, pCONT_time->RtcTime.minute, pCONT_time->RtcTime.second, 
+				tkr_time->RtcTime.hour, tkr_time->RtcTime.minute, tkr_time->RtcTime.second, 
 				random(1,1000)
 			);
 
@@ -1059,7 +1059,7 @@ void mSDCard::CommandSet_SDCard_Appending_File_Method_State(uint8_t state)
     if(sdcard_status.isopened)
     {
       #ifdef USE_MODULE_SENSORS_GPS_SERIAL
-      pCONT_time->SetUTCTime(
+      tkr_time->SetUTCTime(
                     pCONT_gps->gps_result_stored.dateTime.year,
                     pCONT_gps->gps_result_stored.dateTime.month,
                     pCONT_gps->gps_result_stored.dateTime.day,

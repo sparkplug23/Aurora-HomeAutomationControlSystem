@@ -114,7 +114,7 @@ void mCellularBlackBox::EverySecond()
 void mCellularBlackBox::SubTask_UpdateOLED()
 {
   
-  pCONT_set->Settings.display.mode = EM_DISPLAY_MODE_LOG_STATIC_ID;
+  tkr_set->Settings.display.mode = EM_DISPLAY_MODE_LOG_STATIC_ID;
   char buffer[30] = {0};
   char buffer_f[100] = {0};
   char buffer_n[100] = {0};

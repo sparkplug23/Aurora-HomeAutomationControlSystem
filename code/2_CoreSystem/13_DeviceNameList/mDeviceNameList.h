@@ -323,7 +323,7 @@ class DeviceNameList{
 //     // Count delimeters
 //     if(*read == '|'){
 //       if(limit_result_to_class_ids){
-//         if(pCONT_set->Settings.device_name_buffer.class_id[delimeter_count] == class_id){
+//         if(tkr_set->Settings.device_name_buffer.class_id[delimeter_count] == class_id){
 //           delimeter_within_class_count++;
 //           // #ifdef ENABLE_LOG_LEVEL_INFO
 //           // // AddLog(LOG_LEVEL_DEV_TEST,PSTR("\n\r%s\n\r found wclass_count\n\r %s\n\r %d %d\n\r\n\r"),haystack,read,delimeter_within_class_count,Settings.device_name_buffer.class_id[delimeter_count]);
@@ -598,7 +598,7 @@ class DeviceNameList{
 //     // Count delimeters
 //     if(*read == '|'){
 //       if(limit_result_to_class_ids){
-//         if(pCONT_set->Settings.device_name_buffer.class_id[delimeter_count] == class_id){
+//         if(tkr_set->Settings.device_name_buffer.class_id[delimeter_count] == class_id){
 //           delimeter_within_class_count++;
 //           // #ifdef ENABLE_LOG_LEVEL_INFO
 //           // // AddLog(LOG_LEVEL_DEV_TEST,PSTR("\n\r%s\n\r found wclass_count\n\r %s\n\r %d %d\n\r\n\r"),haystack,read,delimeter_within_class_count,Settings.device_name_buffer.class_id[delimeter_count]);

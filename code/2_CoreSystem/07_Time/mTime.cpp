@@ -92,7 +92,7 @@ bool mTime::MidnightNow(void)
 
 bool mTime::IsDst(void) 
 {
-  return (Rtc.time_timezone == pCONT_set->Settings.toffset[1]);
+  return (Rtc.time_timezone == tkr_set->Settings.toffset[1]);
 }
 
 // // mktime works only with local time
@@ -333,7 +333,7 @@ String mTime::GetDateAndTime(uint8_t datetime_type)
       time = Rtc.restart_time;
       break;
     case DT_BOOTCOUNT:
-      time = pCONT_set->Settings.bootcount_reset_time;
+      time = tkr_set->Settings.bootcount_reset_time;
       break;
   }
   String dt = GetDT(time);  // 2017-03-07T11:08:02
@@ -348,7 +348,7 @@ String mTime::GetDateAndTime(uint8_t datetime_type)
   if (DT_UTC == datetime_type) {
     dt += "Z";              // 2017-03-07T11:08:02.123Z
   }
-  else if (pCONT_set->Settings.flag3.time_append_timezone && (DT_LOCAL == datetime_type)) {  // SetOption52 - Append timezone to JSON time
+  else if (tkr_set->Settings.flag3.time_append_timezone && (DT_LOCAL == datetime_type)) {  // SetOption52 - Append timezone to JSON time
     dt += GetTimeZone();    // 2017-03-07T11:08:02-07:00
   }
   return dt;                // 2017-03-07T11:08:02-07:00 or 2017-03-07T11:08:02.123-07:00
@@ -547,23 +547,23 @@ void mTime::RtcGetDaylightSavingTimes(uint32_t local_time)
    * @brief Temporary fix for the time rules, since loading of settings is erasing these values.
    * 
    */
-  pCONT_set->Settings.tflag[0].hemis = TIME_STD_HEMISPHERE;
-  pCONT_set->Settings.tflag[0].week = TIME_STD_WEEK;
-  pCONT_set->Settings.tflag[0].dow = TIME_STD_DAY;
-  pCONT_set->Settings.tflag[0].month = TIME_STD_MONTH;
-  pCONT_set->Settings.tflag[0].hour = TIME_STD_HOUR;
-  pCONT_set->Settings.toffset[0] = TIME_STD_OFFSET;
+  tkr_set->Settings.tflag[0].hemis = TIME_STD_HEMISPHERE;
+  tkr_set->Settings.tflag[0].week = TIME_STD_WEEK;
+  tkr_set->Settings.tflag[0].dow = TIME_STD_DAY;
+  tkr_set->Settings.tflag[0].month = TIME_STD_MONTH;
+  tkr_set->Settings.tflag[0].hour = TIME_STD_HOUR;
+  tkr_set->Settings.toffset[0] = TIME_STD_OFFSET;
 
-  pCONT_set->Settings.tflag[1].hemis = TIME_DST_HEMISPHERE;
-  pCONT_set->Settings.tflag[1].week = TIME_DST_WEEK;
-  pCONT_set->Settings.tflag[1].dow = TIME_DST_DAY;
-  pCONT_set->Settings.tflag[1].month = TIME_DST_MONTH;
-  pCONT_set->Settings.tflag[1].hour = TIME_DST_HOUR;
-  pCONT_set->Settings.toffset[1] = TIME_DST_OFFSET;
+  tkr_set->Settings.tflag[1].hemis = TIME_DST_HEMISPHERE;
+  tkr_set->Settings.tflag[1].week = TIME_DST_WEEK;
+  tkr_set->Settings.tflag[1].dow = TIME_DST_DAY;
+  tkr_set->Settings.tflag[1].month = TIME_DST_MONTH;
+  tkr_set->Settings.tflag[1].hour = TIME_DST_HOUR;
+  tkr_set->Settings.toffset[1] = TIME_DST_OFFSET;
 
 
-  Rtc.daylight_saving_time = RuleToTime(pCONT_set->Settings.tflag[1], tmpTime.year);
-  Rtc.standard_time = RuleToTime( pCONT_set->Settings.tflag[0], tmpTime.year);
+  Rtc.daylight_saving_time = RuleToTime(tkr_set->Settings.tflag[1], tmpTime.year);
+  Rtc.standard_time = RuleToTime( tkr_set->Settings.tflag[0], tmpTime.year);
 
   // ALOG_HGL(PSTR("RtcGetDaylightSavingTimes: %s %s"), GetDT(Rtc.daylight_saving_time).c_str(), GetDT(Rtc.standard_time).c_str());
 
@@ -574,19 +574,19 @@ uint32_t mTime::RtcTimeZoneOffset(uint32_t local_time)
 {
   
   // ALOG_INF(PSTR(D_LOG_TIME2 "RtcTimeZoneOffset"));
-  pCONT_set->Settings.toffset[1] = 60;//FORCED TO TEST
-  pCONT_set->Settings.toffset[0] = 0;//FORCED TO TEST
+  tkr_set->Settings.toffset[1] = 60;//FORCED TO TEST
+  tkr_set->Settings.toffset[0] = 0;//FORCED TO TEST
 
-  int16_t timezone_minutes = pCONT_set->Settings.timezone_minutes2;
-  if (pCONT_set->Settings.timezone2 < 0) { timezone_minutes *= -1; }
-  uint32_t timezone = (pCONT_set->Settings.timezone2 * SECS_PER_HOUR) + (timezone_minutes * SECS_PER_MIN);
+  int16_t timezone_minutes = tkr_set->Settings.timezone_minutes2;
+  if (tkr_set->Settings.timezone2 < 0) { timezone_minutes *= -1; }
+  uint32_t timezone = (tkr_set->Settings.timezone2 * SECS_PER_HOUR) + (timezone_minutes * SECS_PER_MIN);
   // ALOG_INF(PSTR(D_LOG_TIME2 "RtcTimeZoneOffset timezone %d"), timezone);
   
-  if (99 == pCONT_set->Settings.timezone2) 
+  if (99 == tkr_set->Settings.timezone2) 
   {
-    int32_t dstoffset = pCONT_set->Settings.toffset[1] * SECS_PER_MIN;
-    int32_t stdoffset = pCONT_set->Settings.toffset[0] * SECS_PER_MIN;
-    if (pCONT_set->Settings.tflag[1].hemis) {
+    int32_t dstoffset = tkr_set->Settings.toffset[1] * SECS_PER_MIN;
+    int32_t stdoffset = tkr_set->Settings.toffset[0] * SECS_PER_MIN;
+    if (tkr_set->Settings.tflag[1].hemis) {
       // Southern hemisphere
       if (
           (local_time >= (Rtc.standard_time        - dstoffset)) && 
@@ -647,9 +647,9 @@ void mTime::RtcSecond(void)
       GetDateAndTime(DT_UTC).c_str(), GetDateAndTime(DT_DST).c_str(), GetDateAndTime(DT_STD).c_str());
 
     if (Rtc.local_time < START_VALID_TIME) {  // 2016-01-01
-      pCONT_set->Settings.rules_flag.time_init = 1;
+      tkr_set->Settings.rules_flag.time_init = 1;
     } else {
-      pCONT_set->Settings.rules_flag.time_set = 1;
+      tkr_set->Settings.rules_flag.time_set = 1;
     }
   } else {
     if (Rtc.last_synced) {
@@ -671,8 +671,8 @@ void mTime::RtcSecond(void)
       Rtc.time_timezone = RtcTimeZoneOffset(Rtc.utc_time);
     Rtc.local_time = Rtc.utc_time + Rtc.time_timezone;
     Rtc.time_timezone /= 60;
-    if (pCONT_set->Settings.bootcount_reset_time < START_VALID_TIME) {
-      pCONT_set->Settings.bootcount_reset_time = Rtc.local_time;
+    if (tkr_set->Settings.bootcount_reset_time < START_VALID_TIME) {
+      tkr_set->Settings.bootcount_reset_time = Rtc.local_time;
     }
   } else {
     Rtc.local_time = Rtc.utc_time;
@@ -739,9 +739,9 @@ void mTime::Init(void)
     TickerRtc->attach   (1,            [this](void){ this->RtcSecond(); });
   #endif
 
-  if (pCONT_set->Settings.cfg_timestamp > START_VALID_TIME) {
+  if (tkr_set->Settings.cfg_timestamp > START_VALID_TIME) {
     // Fix file timestamp while utctime is not synced
-    uint32_t utc_time = pCONT_set->Settings.cfg_timestamp;
+    uint32_t utc_time = tkr_set->Settings.cfg_timestamp;
     if (RtcSettings.utc_time > utc_time) {
       utc_time = RtcSettings.utc_time;
     }
@@ -784,7 +784,7 @@ void mTime::WifiPollNtp()
   static uint8_t ntp_sync_minute = 0;
   static uint32_t ntp_run_time = 0;
 
-  if (pCONT_set->runtime.global_state.wifi_down || Rtc.user_time_entry) { return; }
+  if (tkr_set->runtime.global_state.wifi_down || Rtc.user_time_entry) { return; }
 
   uint8_t uptime_minute = (uptime_seconds_nonreset / 60) % 60;  // 0 .. 59
   if ((ntp_sync_minute > 59) && (uptime_minute > 2)) {
@@ -837,13 +837,13 @@ uint64_t mTime::WifiGetNtp(void)
   IPAddress time_server_ip;
 
   char fallback_ntp_server[2][32];
-  ext_snprintf_P(fallback_ntp_server[0], sizeof(fallback_ntp_server[0]), PSTR("%_I"), pCONT_set->Settings.ipv4_address[1]);  // #17984
+  ext_snprintf_P(fallback_ntp_server[0], sizeof(fallback_ntp_server[0]), PSTR("%_I"), tkr_set->Settings.ipv4_address[1]);  // #17984
   ext_snprintf_P(fallback_ntp_server[1], sizeof(fallback_ntp_server[1]), PSTR("%d.pool.ntp.org"), random(0,3));
 
   char* ntp_server;
   for (uint32_t i = 0; i < MAX_NTP_SERVERS +2; i++) {
     if (ntp_server_id >= MAX_NTP_SERVERS +2) { ntp_server_id = 0; }
-    ntp_server = (ntp_server_id < MAX_NTP_SERVERS) ? pCONT_set->SettingsText(SET_NTPSERVER1 + ntp_server_id) : fallback_ntp_server[ntp_server_id - MAX_NTP_SERVERS];
+    ntp_server = (ntp_server_id < MAX_NTP_SERVERS) ? tkr_set->SettingsText(SET_NTPSERVER1 + ntp_server_id) : fallback_ntp_server[ntp_server_id - MAX_NTP_SERVERS];
     if (strlen(ntp_server)) {
       break;
     }
@@ -1164,8 +1164,8 @@ void mTime::DuskTillDawn(uint8_t *hour_up,uint8_t *minute_up, uint8_t *hour_down
   const float h = SUNRISE_DAWN_ANGLE * RAD;
   const float sin_h = sinf(h);    // let GCC pre-compute the sin() at compile time // \phi  is the north latitude of the observer (north is positive, south is negative) on the Earth.
 
-  float lat = pCONT_set->Settings.sensors.latitude / (1000000.0f / RAD); // geographische Breite
-  float lon = ((float) pCONT_set->Settings.sensors.longitude)/1000000;
+  float lat = tkr_set->Settings.sensors.latitude / (1000000.0f / RAD); // geographische Breite
+  float lon = ((float) tkr_set->Settings.sensors.longitude)/1000000;
   
   /**
    * The Earth rotates at an angular velocity of 15°/hour. 

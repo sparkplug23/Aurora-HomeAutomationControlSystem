@@ -158,8 +158,8 @@ uint8_t mCellular::ConstructJSON_State(uint8_t json_level, bool json_appending){
 
   JBI->Start();
 
-    JBI->Add("uptime", pCONT_time->uptime_seconds_nonreset);
-    JBI->Add("rtcseconds", pCONT_time->RtcTime.second);
+    JBI->Add("uptime", tkr_time->uptime_seconds_nonreset);
+    JBI->Add("rtcseconds", tkr_time->RtcTime.second);
     JBI->Object_Start("GPRS");
         JBI->Add("ConSec", gprs.connected_seconds);
         JBI->Add("rss_dbm", gprs.signal_quality_rssi_dbm);

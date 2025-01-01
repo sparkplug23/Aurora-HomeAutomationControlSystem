@@ -586,7 +586,7 @@ void mGPS_Serial::ReadGPSStream()
 //             {
 //               gps_latest.fix_used_to_update_internal_rtc = true;
 //               // Later, do this as a rule event              
-//               pCONT_time->SetUTCTime(
+//               tkr_time->SetUTCTime(
 //                 fix_valid.dateTime.year,
 //                 fix_valid.dateTime.month,
 //                 fix_valid.dateTime.day,

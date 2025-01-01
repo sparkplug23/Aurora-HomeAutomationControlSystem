@@ -144,6 +144,36 @@ void mLightNeo_MotionAlerts::EverySecond()
 }
 
 
+/**
+ * @brief Will react to button presses, then change the state of this module accordinly
+ * 
+ */
+void mLightNeo_MotionAlerts::Handle_ButtonEvents()
+{
+
+  ALOG_DBM(PSTR("mLightNeo_MotionAlerts::Handle_ButtonEvents"));
+
+
+}
+
+/**
+ * @brief When mqtt topic is received in json commands, this function will parse the command
+ * It will set up the lights to react to motion
+ * 
+ * Most likely, I will have different segments, but in all, the lights will turn on by a colour, with a slow fade off.
+ * 
+ */
+void mLightNeo_MotionAlerts::Handle_MotionEvents()
+{
+
+  ALOG_DBM(PSTR("mLightNeo_MotionAlerts::Handle_MotionEvents"));
+
+
+}
+
+
+
+
 void mLightNeo_MotionAlerts::parse_JSONCommand(JsonParserObject obj)
 {
 

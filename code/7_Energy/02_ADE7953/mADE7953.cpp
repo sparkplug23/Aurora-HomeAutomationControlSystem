@@ -12,10 +12,10 @@ void mEnergyADE7953::Pre_Init(void)
     pinMode(pCONT_pins->GetPin(GPIO_ADE7953_IRQ_ID), INPUT);     // Related to resetPins() - Must be set to input
     delay(100);                                                  // Need 100mS to init ADE7953
     if (pCONT_sup->I2cSetDevice(ADE7953_ADDR)) {
-      if (HLW_PREF_PULSE == pCONT_set->Settings.energy_usage.energy_power_calibration) {
-        pCONT_set->Settings.energy_usage.energy_power_calibration = ADE7953_PREF;
-        pCONT_set->Settings.energy_usage.energy_voltage_calibration = ADE7953_UREF;
-        pCONT_set->Settings.energy_usage.energy_current_calibration = ADE7953_IREF;
+      if (HLW_PREF_PULSE == tkr_set->Settings.energy_usage.energy_power_calibration) {
+        tkr_set->Settings.energy_usage.energy_power_calibration = ADE7953_PREF;
+        tkr_set->Settings.energy_usage.energy_voltage_calibration = ADE7953_UREF;
+        tkr_set->Settings.energy_usage.energy_current_calibration = ADE7953_IREF;
       }
       pCONT_sup->I2cSetActiveFound(ADE7953_ADDR, "ADE7953");
       settings.fEnableSensor = true;
@@ -23,7 +23,7 @@ void mEnergyADE7953::Pre_Init(void)
       pCONT_iEnergy->Energy.phase_count = 2;                     // Handle two channels as two phases
       pCONT_iEnergy->Energy.voltage_common = true;               // Use common voltage
       // pCONT_iEnergy->Energy.frequency_common = true;             // Use common frequency
-      pCONT_set->runtime_var.energy_driver = D_GROUP_MODULE_ENERGY_ADE7953_ID;
+      tkr_set->runtime_var.energy_driver = D_GROUP_MODULE_ENERGY_ADE7953_ID;
     }
   }
 }
@@ -179,18 +179,18 @@ void mEnergyADE7953::GetData(void)
     measured.active_power[0], measured.active_power[1], active_power_sum);
 
   if (pCONT_iEnergy->Energy.power_on) {  // Powered on
-    pCONT_iEnergy->Energy.voltage[0] = (float)measured.voltage_rms / pCONT_set->Settings.energy_usage.energy_voltage_calibration;
+    pCONT_iEnergy->Energy.voltage[0] = (float)measured.voltage_rms / tkr_set->Settings.energy_usage.energy_voltage_calibration;
     pCONT_iEnergy->Energy.frequency[0] = 223750.0f / ( (float)measured.period + 1);
 
     for (uint32_t channel = 0; channel < 2; channel++) {
       pCONT_iEnergy->Energy.data_valid[channel] = 0;
-      pCONT_iEnergy->Energy.active_power[channel] = (float)measured.active_power[channel] / (pCONT_set->Settings.energy_usage.energy_power_calibration / 10);
-      pCONT_iEnergy->Energy.reactive_power[channel] = (float)reactive_power[channel] / (pCONT_set->Settings.energy_usage.energy_power_calibration / 10);
-      pCONT_iEnergy->Energy.apparent_power[channel] = (float)apparent_power[channel] / (pCONT_set->Settings.energy_usage.energy_power_calibration / 10);
+      pCONT_iEnergy->Energy.active_power[channel] = (float)measured.active_power[channel] / (tkr_set->Settings.energy_usage.energy_power_calibration / 10);
+      pCONT_iEnergy->Energy.reactive_power[channel] = (float)reactive_power[channel] / (tkr_set->Settings.energy_usage.energy_power_calibration / 10);
+      pCONT_iEnergy->Energy.apparent_power[channel] = (float)apparent_power[channel] / (tkr_set->Settings.energy_usage.energy_power_calibration / 10);
       if (0 == pCONT_iEnergy->Energy.active_power[channel]) {
         pCONT_iEnergy->Energy.current[channel] = 0;
       } else {
-        pCONT_iEnergy->Energy.current[channel] = (float)measured.current_rms[channel] / (pCONT_set->Settings.energy_usage.energy_current_calibration * 10);
+        pCONT_iEnergy->Energy.current[channel] = (float)measured.current_rms[channel] / (tkr_set->Settings.energy_usage.energy_current_calibration * 10);
       }
     }
 /*
@@ -201,7 +201,7 @@ void mEnergyADE7953::GetData(void)
   }
 
   // if (active_power_sum) {
-  //   pCONT_iEnergy->Energy.kWhtoday_delta += ((active_power_sum * (100000 / (pCONT_set->Settings.energy_usage.energy_power_calibration / 10))) / 3600);
+  //   pCONT_iEnergy->Energy.kWhtoday_delta += ((active_power_sum * (100000 / (tkr_set->Settings.energy_usage.energy_power_calibration / 10))) / 3600);
   //   EnergyUpdateToday();
   // }
 }

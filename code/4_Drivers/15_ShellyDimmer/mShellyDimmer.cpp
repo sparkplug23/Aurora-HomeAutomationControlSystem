@@ -44,7 +44,7 @@ void mShellyDimmer::Pre_Init(){
     pCONT_pins->PinUsed(GPIO_HWSERIAL0_RX_ID) && 
     pCONT_pins->PinUsed(GPIO_HWSERIAL0_TX_ID)
     ) {
-      pCONT_set->runtime.devices_present++;
+      tkr_set->runtime.devices_present++;
     // TasmotaGlobal.light_type = LT_SERIAL1;
     settings.fEnableModule = true;
   }else{

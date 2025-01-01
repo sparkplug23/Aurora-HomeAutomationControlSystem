@@ -99,7 +99,7 @@
 //     }
 //   }
 
-//   pCONT_set->devices_present += settings.leds_found;
+//   tkr_set->devices_present += settings.leds_found;
 //   if(settings.leds_found){ settings.fEnableSensor = true; }
 
 // }
@@ -124,7 +124,7 @@
 //   //   door_detect.tDetectTimeforDebounce = millis();
 //   //   if(door_detect.state){ 
 //   //     door_detect.isactive = true;
-//   //     door_detect.detected_time = pCONT_time->GetTimeShortNow();
+//   //     door_detect.detected_time = tkr_time->GetTimeShortNow();
 //   //     mqtthandler_sensor_ifchanged.flags.SendNow = true;
 //   //   }else{ 
 //   //     door_detect.isactive = false;
@@ -181,8 +181,8 @@
 
 // void mLEDs::UpdateLedPowerAll()
 // {
-// 	// for (uint32_t i = 0; i < pCONT_set->leds_present; i++) {
-// 	// 	SetLedPowerIdx(i, bitRead(pCONT_set->led_power, i));
+// 	// for (uint32_t i = 0; i < tkr_set->leds_present; i++) {
+// 	// 	SetLedPowerIdx(i, bitRead(tkr_set->led_power, i));
 // 	// }
 // }
 
@@ -197,24 +197,24 @@
 // //     uint32_t mask = 1 << led;
 // //     if (state) {
 // //       state = 1;
-// //       pCONT_set->led_power |= mask;
+// //       tkr_set->led_power |= mask;
 // //     } else {
-// //       pCONT_set->led_power &= (0xFF ^ mask);
+// //       tkr_set->led_power &= (0xFF ^ mask);
 // //     }
 // //     uint16_t pwm = 0;
-// //     if (bitRead(pCONT_set->Settings.ledpwm_mask, led)) {
+// //     if (bitRead(tkr_set->Settings.ledpwm_mask, led)) {
 // // // #ifdef USE_LIGHT
 // // //       pwm = mapvalue(ledGamma10(state ? Settings.ledpwm_on : Settings.ledpwm_off), 0, 1023, 0, Settings.pwm_range); // gamma corrected
 // // // #else //USE_LIGHT
-// //       pwm = mapvalue((uint16_t)(state ? pCONT_set->Settings.ledpwm_on : pCONT_set->Settings.ledpwm_off), 0, 255, 0, pCONT_set->Settings.pwm_range); // linear
+// //       pwm = mapvalue((uint16_t)(state ? tkr_set->Settings.ledpwm_on : tkr_set->Settings.ledpwm_off), 0, 255, 0, tkr_set->Settings.pwm_range); // linear
 // // // #endif //USE_LIGHT
 
 // // #ifdef ESP8266
-// //       analogWrite(pCONT_pins->Pin(GPIO_LED1_ID, led), bitRead(pCONT_set->inverted_bitmask, led) ? pCONT_set->Settings.pwm_range - pwm : pwm);
+// //       analogWrite(pCONT_pins->Pin(GPIO_LED1_ID, led), bitRead(tkr_set->inverted_bitmask, led) ? tkr_set->Settings.pwm_range - pwm : pwm);
       
 // // #endif // ESP8266
 // //     } else {
-// //       pCONT_pins->DigitalWrite(GPIO_LED1_ID+led, bitRead(pCONT_set->inverted_bitmask, led) ? !state : state);
+// //       pCONT_pins->DigitalWrite(GPIO_LED1_ID+led, bitRead(tkr_set->inverted_bitmask, led) ? !state : state);
 // //     }
 // //   }
 // // // #ifdef USE_MODULE__DRIVERS_BUZZER_BASIC
@@ -233,8 +233,8 @@
 //   // //   SetLedPowerIdx(0, state);
 //   // // } else {
 //   //   power_t mask = 1;
-//   //   for (uint32_t i = 0; i < pCONT_set->leds_present; i++) {  // Map leds to power
-//   //     bool tstate = (pCONT_set->power & mask);
+//   //   for (uint32_t i = 0; i < tkr_set->leds_present; i++) {  // Map leds to power
+//   //     bool tstate = (tkr_set->power & mask);
 //   //     SetLedPowerIdx(i, tstate);
 //   //     mask <<= 1;
 //   //   }
@@ -243,7 +243,7 @@
 
 // void mLEDs::SetLedPowerAll(uint32_t state)
 // {
-//   // for (uint32_t i = 0; i < pCONT_set->leds_present; i++) {
+//   // for (uint32_t i = 0; i < tkr_set->leds_present; i++) {
 //   //   SetLedPowerIdx(i, state);
 //   // }
 // }
@@ -255,7 +255,7 @@
 // //     #endif// ENABLE_LOG_LEVEL_INFO
 
 // //   uint32_t led_pin = pCONT_pins->GetPin(GPIO_LED1_ID);
-// //   uint32_t led_inv = pCONT_set->ledlnk_inverted;
+// //   uint32_t led_inv = tkr_set->ledlnk_inverted;
 // //   if (99 == led_pin) {                    // Legacy - LED1 is status
 // //     SetLedPowerIdx(0, state);
 // //   }
@@ -284,22 +284,22 @@
   
 //   DEBUG_LINE;
 //   uint8_t blinkinterval = 1;
-//   // pCONT_set->global_state.network_down = (pCONT_set->global_state.wifi_down && pCONT_set->global_state.eth_down);
+//   // tkr_set->global_state.network_down = (tkr_set->global_state.wifi_down && tkr_set->global_state.eth_down);
 
-//   if (!pCONT_set->Settings.flag_system.global_state) {                      // Problem blinkyblinky enabled
-//     if (pCONT_set->global_state.data) {                              // Any problem
-//       if (pCONT_set->global_state.mqtt_down) { blinkinterval = 7; }  // MQTT problem so blink every 2 seconds (slowest)
-//       if (pCONT_set->global_state.wifi_down) { blinkinterval = 3; }  // Wifi problem so blink every second (slow)
-//       pCONT_set->blinks = 201;                                       // Allow only a single blink in case the problem is solved
+//   if (!tkr_set->Settings.flag_system.global_state) {                      // Problem blinkyblinky enabled
+//     if (tkr_set->global_state.data) {                              // Any problem
+//       if (tkr_set->global_state.mqtt_down) { blinkinterval = 7; }  // MQTT problem so blink every 2 seconds (slowest)
+//       if (tkr_set->global_state.wifi_down) { blinkinterval = 3; }  // Wifi problem so blink every second (slow)
+//       tkr_set->blinks = 201;                                       // Allow only a single blink in case the problem is solved
 //     }
 //   }
 
 // //DEBUG_LINE_HERE;
 //   DEBUG_LINE;
-//   if (pCONT_set->blinks || pCONT_set->restart_flag || pCONT_set->ota_state_flag) {
+//   if (tkr_set->blinks || tkr_set->restart_flag || tkr_set->ota_state_flag) {
 
 //     // Work out the led state based on time
-//     if (pCONT_set->restart_flag || pCONT_set->ota_state_flag) {                 // Overrule blinks and keep led lit
+//     if (tkr_set->restart_flag || tkr_set->ota_state_flag) {                 // Overrule blinks and keep led lit
     
 //     #ifdef ENABLE_LOG_LEVEL_INFO
 //       AddLog(LOG_LEVEL_WARN, PSTR("blinkstate phasing out for new method"));
@@ -308,46 +308,46 @@
 //     #endif //  ENABLE_LOG_LEVEL_INFO
       
       
-//       pCONT_set->blinkstate = true;                                  // Stay lit
+//       tkr_set->blinkstate = true;                                  // Stay lit
 //     } else {
-//       pCONT_set->blinkspeed--; // based of multiples of 200ms
-//       if (!pCONT_set->blinkspeed) {
-//         pCONT_set->blinkspeed = blinkinterval;                       // Set interval to 0.2 (default), 1 or 2 seconds
-//         pCONT_set->blinkstate ^= 1;                                  // Blink
+//       tkr_set->blinkspeed--; // based of multiples of 200ms
+//       if (!tkr_set->blinkspeed) {
+//         tkr_set->blinkspeed = blinkinterval;                       // Set interval to 0.2 (default), 1 or 2 seconds
+//         tkr_set->blinkstate ^= 1;                                  // Blink
 //       }
 //     }
 
 // //DEBUG_LINE_HERE;
 //   DEBUG_LINE;
 //     // Update Link LED
-//     if ((!(pCONT_set->Settings.ledstate &0x08)) && ((pCONT_set->Settings.ledstate &0x06) || (pCONT_set->blinks > 200) || (pCONT_set->blinkstate))) {
-//       pCONT_led->SetLedLink(pCONT_set->blinkstate);                            // Set led on or off
+//     if ((!(tkr_set->Settings.ledstate &0x08)) && ((tkr_set->Settings.ledstate &0x06) || (tkr_set->blinks > 200) || (tkr_set->blinkstate))) {
+//       pCONT_led->SetLedLink(tkr_set->blinkstate);                            // Set led on or off
 //     }
 
 //     // If blink has completed
-//     if (!pCONT_set->blinkstate) {
-//       pCONT_set->blinks--;
-//       if (200 == pCONT_set->blinks) pCONT_set->blinks = 0;                      // Disable blink
+//     if (!tkr_set->blinkstate) {
+//       tkr_set->blinks--;
+//       if (200 == tkr_set->blinks) tkr_set->blinks = 0;                      // Disable blink
 //     }
 
 //   }
 
 
 // //DEBUG_LINE_HERE;
-//   // if (pCONT_set->Settings.ledstate &1 && (pCONT_pins->PinUsed(GPIO_LEDLNK_ID) || !(pCONT_set->blinks || pCONT_set->restart_flag || pCONT_set->ota_state_flag)) ) {
-//   //   bool tstate = pCONT_set->power & pCONT_set->Settings.ledmask;
-//   //   // if ((MODULE_SONOFF_TOUCH == pCONT_set->my_module_type) || 
-//   //   //(MODULE_SONOFF_T11 == pCONT_set->my_module_type) || 
-//   //   //(MODULE_SONOFF_T12 == pCONT_set->my_module_type) || 
-//   //   //(MODULE_SONOFF_T13 == pCONT_set->my_module_type)) {
-//   //   //   tstate = (!pCONT_set->power) ? 1 : 0;                          // As requested invert signal for Touch devices to find them in the dark
+//   // if (tkr_set->Settings.ledstate &1 && (pCONT_pins->PinUsed(GPIO_LEDLNK_ID) || !(tkr_set->blinks || tkr_set->restart_flag || tkr_set->ota_state_flag)) ) {
+//   //   bool tstate = tkr_set->power & tkr_set->Settings.ledmask;
+//   //   // if ((MODULE_SONOFF_TOUCH == tkr_set->my_module_type) || 
+//   //   //(MODULE_SONOFF_T11 == tkr_set->my_module_type) || 
+//   //   //(MODULE_SONOFF_T12 == tkr_set->my_module_type) || 
+//   //   //(MODULE_SONOFF_T13 == tkr_set->my_module_type)) {
+//   //   //   tstate = (!tkr_set->power) ? 1 : 0;                          // As requested invert signal for Touch devices to find them in the dark
 //   //   // }
 //   //  SetLedPower(tstate);
 //   // }
 
 //   DEBUG_LINE;
 //   //   #ifdef ENABLE_LOG_LEVEL_INFO
-//   // AddLog(LOG_LEVEL_DEBUG_MORE,PSTR("{blinkstate:%d,blinks:%d}"),pCONT_set->blinkstate,pCONT_set->blinks);
+//   // AddLog(LOG_LEVEL_DEBUG_MORE,PSTR("{blinkstate:%d,blinks:%d}"),tkr_set->blinkstate,tkr_set->blinks);
 //   //   #endif// ENABLE_LOG_LEVEL_INFO
 
 // }

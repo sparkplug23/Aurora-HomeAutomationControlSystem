@@ -24,28 +24,28 @@ void AddLog(uint8_t loglevel, PGM_P formatP, ...)
 {
 
   #ifdef DEBUG_FOR_FAULT
-    pCONT_set->Settings.logging.serial_level = LOG_LEVEL_ALL;
+    tkr_set->Settings.logging.serial_level = LOG_LEVEL_ALL;
   #endif
   // SERIAL_DEBUG.printf("%s %d\r\n","START",millis()); 
 
   // Speed/stability improvements, check log level and return early if it doesnt apply to any log events
   if(
-    (loglevel>pCONT_set->Settings.logging.serial_level)&&
-    (loglevel>pCONT_set->Settings.logging.web_level)
+    (loglevel>tkr_set->Settings.logging.serial_level)&&
+    (loglevel>tkr_set->Settings.logging.web_level)
     ){
     return;
   }
   
   // Filtering
-  if(pCONT_set->runtime.enable_serial_logging_filtering){ // if true, only permit exact log level and not all above
-    if(loglevel == pCONT_set->Settings.logging.serial_level){
+  if(tkr_set->runtime.enable_serial_logging_filtering){ // if true, only permit exact log level and not all above
+    if(loglevel == tkr_set->Settings.logging.serial_level){
       //permit messages
     }else{
       return;
     }
   }
-  if(pCONT_set->runtime.enable_web_logging_filtering){ // if true, only permit exact log level and not all above
-    if(loglevel == pCONT_set->Settings.logging.web_level){
+  if(tkr_set->runtime.enable_web_logging_filtering){ // if true, only permit exact log level and not all above
+    if(loglevel == tkr_set->Settings.logging.web_level){
       //permit messages
     }else{
       return;
@@ -67,30 +67,30 @@ void AddLog(uint8_t loglevel, PGM_P formatP, ...)
 
   memset(mxtime,0,sizeof(mxtime));
   // if time is short, ie debugging, them only show uptime (not RTCTime)
-  // if(pCONT_set->Settings.logging.time_isshort){
+  // if(tkr_set->Settings.logging.time_isshort){
   //   #ifdef ENABLE_FEATURE_LOGGING__INCLUDE_RTC_IN_LOGS
   //     // Only show hour
-  //     if(pCONT_time->uptime.hour<1){
-  //       snprintf_P(mxtime, sizeof(mxtime), PSTR("%02d:%02d:%02d-%02d:%02d "), pCONT_time->RtcTime.hour,pCONT_time->RtcTime.minute,pCONT_time->RtcTime.second, pCONT_time->uptime.minute,pCONT_time->uptime.second);
+  //     if(tkr_time->uptime.hour<1){
+  //       snprintf_P(mxtime, sizeof(mxtime), PSTR("%02d:%02d:%02d-%02d:%02d "), tkr_time->RtcTime.hour,tkr_time->RtcTime.minute,tkr_time->RtcTime.second, tkr_time->uptime.minute,tkr_time->uptime.second);
   //     }else{
-  //       snprintf_P(mxtime, sizeof(mxtime), PSTR("%02d:%02d:%02d-%02d:%02d:%02d "), pCONT_time->RtcTime.hour,pCONT_time->RtcTime.minute,pCONT_time->RtcTime.second, pCONT_time->uptime.hour,pCONT_time->uptime.minute,pCONT_time->uptime.second);
+  //       snprintf_P(mxtime, sizeof(mxtime), PSTR("%02d:%02d:%02d-%02d:%02d:%02d "), tkr_time->RtcTime.hour,tkr_time->RtcTime.minute,tkr_time->RtcTime.second, tkr_time->uptime.hour,tkr_time->uptime.minute,tkr_time->uptime.second);
   //     }
   //   #else
-  //     if(pCONT_time->uptime.hour<1){
+  //     if(tkr_time->uptime.hour<1){
   //       snprintf_P(mxtime, sizeof(mxtime), PSTR("%02d:%02d "),
-  //         pCONT_time->uptime.minute,pCONT_time->uptime.second
+  //         tkr_time->uptime.minute,tkr_time->uptime.second
   //       );
   //     }else{
   //       snprintf_P(mxtime, sizeof(mxtime), PSTR("%02d:%02d:%02d "), //add hour
-  //         pCONT_time->uptime.hour,pCONT_time->uptime.minute,pCONT_time->uptime.second);
+  //         tkr_time->uptime.hour,tkr_time->uptime.minute,tkr_time->uptime.second);
   //     }
   //   #endif
     
   // }else{
     snprintf_P(mxtime, sizeof(mxtime), PSTR("%02d" D_HOUR_MINUTE_SEPARATOR "%02d" D_MINUTE_SECOND_SEPARATOR "%02d %s "),
     // sprintf(mxtime, PSTR("%02d" D_HOUR_MINUTE_SEPARATOR "%02d" D_MINUTE_SECOND_SEPARATOR "%02d %02dT%02d:%02d:%02d "),
-      pCONT_time->RtcTime.hour,pCONT_time->RtcTime.minute,pCONT_time->RtcTime.second,
-      pCONT_time->GetUptime().c_str());
+      tkr_time->RtcTime.hour,tkr_time->RtcTime.minute,tkr_time->RtcTime.second,
+      tkr_time->GetUptime().c_str());
   // }
 
   // SERIAL_DEBUG.printf("%s %d\r\n","serail",millis());
@@ -102,7 +102,7 @@ void AddLog(uint8_t loglevel, PGM_P formatP, ...)
 
   #ifndef DISABLE_SERIAL_LOGGING
   // LOG : SERIAL
-  if (loglevel <= pCONT_set->Settings.logging.serial_level) 
+  if (loglevel <= tkr_set->Settings.logging.serial_level) 
   {
     #ifdef ENABLE_FREERAM_APPENDING_SERIAL
       // register uint32_t *sp asm("a1"); 
@@ -110,7 +110,7 @@ void AddLog(uint8_t loglevel, PGM_P formatP, ...)
       SERIAL_DEBUG.printf(PSTR("R%05d%c %s %S %s\r\n"), 
         ESP.getFreeHeap(), // 4 * (sp - g_pcont->stack), 
         isconnected ? 'Y' : 'N',
-        pCONT_time->GetUptime().c_str(),
+        tkr_time->GetUptime().c_str(),
         pCONT_log->GetLogLevelNamebyID(loglevel),
         pCONT_log->log_data
       );
@@ -147,7 +147,7 @@ void AddLog(uint8_t loglevel, PGM_P formatP, ...)
     SERIAL_DEBUG.flush(); // To ensure all serial is sent before a reset
     #endif
 
-    if((pCONT_set->Settings.logging.serial_level == LOG_LEVEL_DEBUG)||(pCONT_set->Settings.logging.serial_level == LOG_LEVEL_ALL)){ SERIAL_DEBUG.flush(); } 
+    if((tkr_set->Settings.logging.serial_level == LOG_LEVEL_DEBUG)||(tkr_set->Settings.logging.serial_level == LOG_LEVEL_ALL)){ SERIAL_DEBUG.flush(); } 
   } 
   #endif //DISABLE_SERIAL_LOGGING
 
@@ -156,7 +156,7 @@ void AddLog(uint8_t loglevel, PGM_P formatP, ...)
   #endif 
 
   // LOG : TELNET
-  if (loglevel <= pCONT_set->Settings.logging.telnet_level) 
+  if (loglevel <= tkr_set->Settings.logging.telnet_level) 
   {    
     if(pCONT_log->Telnet)
     {
@@ -167,7 +167,7 @@ void AddLog(uint8_t loglevel, PGM_P formatP, ...)
   // LOG : WEBSERVER
   #ifdef USE_MODULE_NETWORK_WEBSERVER
   // if(pCONT_web->fConsole_active && !pCONT_web->fConsole_history){ //only append values when active, however, this stops history
-  //   if (pCONT_set->Settings.webserver && (loglevel <= pCONT_set->Settings.logging.web_level)) {
+  //   if (tkr_set->Settings.webserver && (loglevel <= tkr_set->Settings.logging.web_level)) {
   //     // Delimited, zero-terminated buffer of log lines.
   //     // Each entry has this format: [index][log data]['\1']
   //     if (!web_log_index) web_log_index++;   // Index 0 is not allowed as it is the end of char string
@@ -203,7 +203,7 @@ void AddLog(uint8_t loglevel, PGM_P formatP, ...)
    * 
    */
   #ifdef ENABLE_LOGGING_ADDLOG__MESSAGES_OVER_MQTT
-  if (loglevel <= pCONT_set->Settings.logging.mqtt_level) 
+  if (loglevel <= tkr_set->Settings.logging.mqtt_level) 
   {    
     char topic[100];
     snprintf_P(topic, sizeof(topic), "logging/message/%S", pCONT_log->GetLogLevelNamebyID(loglevel));
@@ -254,8 +254,8 @@ void AddLog_NoTime(uint8_t loglevel, PGM_P formatP, ...)
 
   // Speed/stability improvements, check log level and return early if it doesnt apply to any log events
   if(
-    (loglevel>pCONT_set->Settings.logging.serial_level)&&
-    (loglevel>pCONT_set->Settings.logging.web_level)
+    (loglevel>tkr_set->Settings.logging.serial_level)&&
+    (loglevel>tkr_set->Settings.logging.web_level)
     ){
     return;
   }
@@ -279,14 +279,14 @@ void AddLog_NoTime(uint8_t loglevel, PGM_P formatP, ...)
   // uint8_t uhour = 0;
   // uint8_t uminute = 0;
   // uint8_t usecond = 0;
-  // if(pCONT_time!=NULL){ 
-  //   hour = pCONT_time->RtcTime.hour; 
-  //   minute = pCONT_time->RtcTime.minute; 
-  //   second = pCONT_time->RtcTime.second; 
-  //   uday = pCONT_time->uptime.Mday; 
-  //   usecond = pCONT_time->uptime.second; 
-  //   uminute = pCONT_time->uptime.minute; 
-  //   uhour = pCONT_time->uptime.hour;   
+  // if(tkr_time!=NULL){ 
+  //   hour = tkr_time->RtcTime.hour; 
+  //   minute = tkr_time->RtcTime.minute; 
+  //   second = tkr_time->RtcTime.second; 
+  //   uday = tkr_time->uptime.Mday; 
+  //   usecond = tkr_time->uptime.second; 
+  //   uminute = tkr_time->uptime.minute; 
+  //   uhour = tkr_time->uptime.hour;   
   // }
 
   // memset(mxtime,0,sizeof(mxtime));
@@ -295,11 +295,11 @@ void AddLog_NoTime(uint8_t loglevel, PGM_P formatP, ...)
   // Overrides
   //uint8_t seriallog_level = LOG_LEVEL_DEBUG_MORE;
   //pCONT_log->seriallog_level = LOG_LEVEL_DEBUG_MORE;
-  //pCONT_set->Settings.logging.serial_level = LOG_LEVEL_DEBUG;
-  //pCONT_set->Settings.logging.web_level = LOG_LEVEL_INFO;
+  //tkr_set->Settings.logging.serial_level = LOG_LEVEL_DEBUG;
+  //tkr_set->Settings.logging.web_level = LOG_LEVEL_INFO;
 
   // LOG : SERIAL
-  if (loglevel <= pCONT_set->Settings.logging.serial_level) {
+  if (loglevel <= tkr_set->Settings.logging.serial_level) {
     SERIAL_DEBUG.printf("%s%S %s\r\n", 
     mxtime,
     pCONT_log->GetLogLevelNamebyID(loglevel),  
@@ -309,7 +309,7 @@ void AddLog_NoTime(uint8_t loglevel, PGM_P formatP, ...)
   }
 
   // LOG : TELNET
-  // if (loglevel <= pCONT_set->Settings.telnetlog_level) {
+  // if (loglevel <= tkr_set->Settings.telnetlog_level) {
   //   if((pCONT_log!=NULL)&&(pCONT_log->server!=NULL)){
   //     if(!pCONT_log->client.connected()) {
   //       pCONT_log->client = pCONT_log->server->available();
@@ -334,7 +334,7 @@ void AddLog_NoTime(uint8_t loglevel, PGM_P formatP, ...)
 
   // LOG : WEBSERVER
   #ifdef USE_MODULE_NETWORK_WEBSERVER
-  if (pCONT_set->Settings.webserver && (loglevel <= pCONT_set->Settings.logging.web_level)) {
+  if (tkr_set->Settings.webserver && (loglevel <= tkr_set->Settings.logging.web_level)) {
     // Delimited, zero-terminated buffer of log lines.
     // Each entry has this format: [index][log data]['\1']
     if (!pCONT_log->web_log_index) pCONT_log->web_log_index++;   // Index 0 is not allowed as it is the end of char string
@@ -373,8 +373,8 @@ void AddLog_NoTime(uint8_t loglevel, PGM_P formatP, ...)
 
 //   // Speed/stability improvements, check log level and return early if it doesnt apply to any log events
 //   if(
-//     (loglevel>pCONT_set->Settings.logging.serial_level)&&
-//     (loglevel>pCONT_set->Settings.logging.web_level)
+//     (loglevel>tkr_set->Settings.logging.serial_level)&&
+//     (loglevel>tkr_set->Settings.logging.web_level)
 //     ){
 //     return;
 //   }
@@ -387,7 +387,7 @@ void AddLog_NoTime(uint8_t loglevel, PGM_P formatP, ...)
 //   char level_buffer[10];
 
 //   // LOG : SERIAL
-//   if (loglevel <= pCONT_set->Settings.logging.serial_level) {
+//   if (loglevel <= tkr_set->Settings.logging.serial_level) {
 //     SERIAL_DEBUG.printf("%s%s %s\r\n", 
 //       mxtime,
 //       pCONT_log->GetLogLevelNamebyID(loglevel, level_buffer),  
@@ -438,7 +438,7 @@ void AddLog_NoTime(uint8_t loglevel, PGM_P formatP, ...)
 
 void mLogging::SetSeriallog(uint8_t loglevel)
 {
-  pCONT_set->Settings.logging.serial_level = loglevel;
+  tkr_set->Settings.logging.serial_level = loglevel;
   // seriallog_level = loglevel;
   // seriallog_timer = 0;
 }
@@ -579,21 +579,21 @@ void mLogging::AddLogMissed(char *sensor, uint8_t misses)
 int Response_mP(const char* format, ...)     // Content send snprintf_P char data
 {
   
-  // if(pCONT_time->uptime_seconds_nonreset<60){ return 0 ;}
+  // if(tkr_time->uptime_seconds_nonreset<60){ return 0 ;}
 
-  memset(&pCONT_set->response_msg,0,sizeof(pCONT_set->response_msg));
+  memset(&tkr_set->response_msg,0,sizeof(tkr_set->response_msg));
 
   // This uses char strings. Be aware of sending %% if % is needed
   va_list args;
   va_start(args, format);
-  int len = vsnprintf_P(pCONT_set->response_msg, RESPONSE_MESSAGE_BUFFER_SIZE, format, args);
+  int len = vsnprintf_P(tkr_set->response_msg, RESPONSE_MESSAGE_BUFFER_SIZE, format, args);
   va_end(args);
 
 //   //Share on serial/telnet
-  ALOG_DBG(PSTR(D_LOG_RESPONSE "%s"), pCONT_set->response_msg);
+  ALOG_DBG(PSTR(D_LOG_RESPONSE "%s"), tkr_set->response_msg);
 //   //Send via mqtt
 //   #ifdef USE_MODULE_NETWORK_MQTT
-//   pCONT_mqtt->publish_device("status/result",pCONT_set->response_msg,false);
+//   pCONT_mqtt->publish_device("status/result",tkr_set->response_msg,false);
 //   #endif
   
   return 0;// len;
@@ -604,17 +604,17 @@ int ResponseAppend_mP(const char* format, ...)  // Content send snprintf_P char 
   // This uses char strings. Be aware of sending %% if % is needed
   // va_list args;
   // va_start(args, format);
-  // int mlen = strlen(pCONT_set->response_msg);
-  // int len = vsnprintf_P(pCONT_set->response_msg + mlen, sizeof(pCONT_set->response_msg) - mlen, format, args);
+  // int mlen = strlen(tkr_set->response_msg);
+  // int len = vsnprintf_P(tkr_set->response_msg + mlen, sizeof(tkr_set->response_msg) - mlen, format, args);
   // va_end(args);
-  // AddLog(LOG_LEVEL_DEBUG,PSTR(D_LOG_RESPONSE "Response_P %s"),pCONT_set->response_msg);
+  // AddLog(LOG_LEVEL_DEBUG,PSTR(D_LOG_RESPONSE "Response_P %s"),tkr_set->response_msg);
   return 0;// len + mlen;
 }
 
 
 void mLogging::StartTelnetServer()
 {  
-  // if(pCONT_set->global_state.network_down) return;
+  // if(tkr_set->global_state.network_down) return;
   TelnetServer = new WiFiServer(TELNET_PORT);  // set port here
   TelnetServer->begin();
   telnet_started = true;
@@ -687,11 +687,11 @@ int8_t mLogging::Tasker(uint8_t function, JsonParserObject obj)
       // Serial.println("mLogging::Tasker");
       
       #ifdef ENABLE_FEATURE_LOGGING__NORMAL_OPERATION_REDUCE_LOGGING_LEVEL_WHEN_NOT_DEBUGGING
-      if(pCONT_time->uptime_seconds_nonreset == 60*1)
+      if(tkr_time->uptime_seconds_nonreset == 60*1)
       {
         SetSeriallog(LOG_LEVEL_INFO);
-        Serial.printf("Reducing log level to %d to improve performance when not debugging", pCONT_set->Settings.logging.serial_level);
-        // ALOG_INF(PSTR(D_LOG_APPLICATION "Reducing log level to %d to improve performance when not debugging"), pCONT_set->Settings.logging.serial_level);
+        Serial.printf("Reducing log level to %d to improve performance when not debugging", tkr_set->Settings.logging.serial_level);
+        // ALOG_INF(PSTR(D_LOG_APPLICATION "Reducing log level to %d to improve performance when not debugging"), tkr_set->Settings.logging.serial_level);
       }
       #endif
 
@@ -703,7 +703,7 @@ int8_t mLogging::Tasker(uint8_t function, JsonParserObject obj)
   /**** For increasing log level temporarily then reseting
    * 
    * */
-  // if (pCONT_set->seriallog_timer) {
+  // if (tkr_set->seriallog_timer) {
   //   seriallog_timer--;
   //   if (!seriallog_timer) {
   //     if (seriallog_level) {

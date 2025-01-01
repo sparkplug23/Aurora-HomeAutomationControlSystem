@@ -165,9 +165,9 @@ void RtcSettingsSave(void)
   // Check at least the first module has been initialised (change to function later, to check variable)  
   if(!pCONT->pModule.size()){ return; }
   
-  RtcSettings.baudrate = pCONT_set->Settings.baudrate * 300;
-  if (pCONT_time->GetUTCTime() > START_VALID_UTC_TIME) {  // 2016-01-01
-    RtcSettings.utc_time = pCONT_time->GetUTCTime();
+  RtcSettings.baudrate = tkr_set->Settings.baudrate * 300;
+  if (tkr_time->GetUTCTime() > START_VALID_UTC_TIME) {  // 2016-01-01
+    RtcSettings.utc_time = tkr_time->GetUTCTime();
   }
   if (GetRtcSettingsCrc() != rtc_settings_crc) {
 

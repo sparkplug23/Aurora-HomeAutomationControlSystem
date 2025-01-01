@@ -445,12 +445,12 @@
 //    * */
 //   pCONT_iLight->animation.flags.fForceUpdate = true;
 //   pCONT_iLight->animation_override.time_ms = 500; // Instant
-//   pCONT_set->settings_save_decounter_seconds_delayed_save = 10; // delay the saving until the lights have updated
+//   tkr_set->settings_save_decounter_seconds_delayed_save = 10; // delay the saving until the lights have updated
 
 
 
   
-//   // pCONT_set->SettingsSave(2);
+//   // tkr_set->SettingsSave(2);
 
 // }
 
@@ -542,10 +542,10 @@
 //   pCONT_iLight->animation.time_ms = pCONT_iLight->animation.cycle_time__rate_ms*0.90;
 // }
   
-//   // pCONT_set->Settings.animation_settings.xmas_controller_params[0] = user_input.selected.palette_id;
-//   // pCONT_set->Settings.animation_settings.xmas_controller_params[1] = user_input.selected.brightness_id;
-//   // pCONT_set->Settings.animation_settings.xmas_controller_params[2] = user_input.selected.effects_id;
-//   // pCONT_set->Settings.animation_settings.xmas_controller_params[3] = user_input.selected.intensity_id;
+//   // tkr_set->Settings.animation_settings.xmas_controller_params[0] = user_input.selected.palette_id;
+//   // tkr_set->Settings.animation_settings.xmas_controller_params[1] = user_input.selected.brightness_id;
+//   // tkr_set->Settings.animation_settings.xmas_controller_params[2] = user_input.selected.effects_id;
+//   // tkr_set->Settings.animation_settings.xmas_controller_params[3] = user_input.selected.intensity_id;
   
 //   /**
 //    * check we are in range, or shift back into range

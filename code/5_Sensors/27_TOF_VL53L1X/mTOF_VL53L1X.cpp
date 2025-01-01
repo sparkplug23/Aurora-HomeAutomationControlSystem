@@ -205,7 +205,7 @@
 //     }
 //   }
 
-//   pCONT_set->devices_present += settings.buttons_found;
+//   tkr_set->devices_present += settings.buttons_found;
 //   if(settings.buttons_found){ settings.fEnableSensor = true; }
 
 //   // buttons_found = 0;
@@ -255,7 +255,7 @@
 // // void mButtons::ButtonHandler(void)
 // // {
   
-// //   if (pCONT_time->uptime.seconds_nonreset < 4) // Block GPIO for 4 seconds after poweron to workaround Wemos D1 / Obi RTS circuit
+// //   if (tkr_time->uptime.seconds_nonreset < 4) // Block GPIO for 4 seconds after poweron to workaround Wemos D1 / Obi RTS circuit
 // //   {
 // //     return; 
 // //   } 
@@ -267,10 +267,10 @@
 // //   uint8_t state = BUTTON_NOT_PRESSED_ID;
 // //   uint8_t button_present = 0;
 // //   uint8_t hold_time_extent = IMMINENT_RESET_FACTOR;            // Extent hold time factor in case of iminnent Reset command
-// //   uint16_t loops_per_second = 1000 / pCONT_set->Settings.button_debounce;
+// //   uint16_t loops_per_second = 1000 / tkr_set->Settings.button_debounce;
 // //   // char scmnd[20];
 
-// //  uint8_t maxdev = (pCONT_set->devices_present > MAX_KEYS) ? MAX_KEYS : pCONT_set->devices_present;
+// //  uint8_t maxdev = (tkr_set->devices_present > MAX_KEYS) ? MAX_KEYS : tkr_set->devices_present;
 
 // //   // AddLog(LOG_LEVEL_DEV_TEST, PSTR("maxdev=%d"),maxdev);
 
@@ -316,7 +316,7 @@
 
 // //       // new PRESS, was not previously pressed
 // //       if ((BUTTON_PRESSED_ID == state) && (BUTTON_NOT_PRESSED_ID == buttons[button_index].last_state)) {
-// //         // if (pCONT_set->Settings.flag_system.button_single) {                   // Allow only single button press for immediate action
+// //         // if (tkr_set->Settings.flag_system.button_single) {                   // Allow only single button press for immediate action
         
 // //           // AddLog(LOG_LEVEL_DEV_TEST, PSTR("state=%d:%d"),
 // //           // // state==BUTTON_PRESSED_ID?"pressed":"NOTpressed",
@@ -371,20 +371,20 @@
 // //         buttons[button_index].hold_timer = 0;
 // //       } else {
 // //         buttons[button_index].hold_timer++;
-// //         if (pCONT_set->Settings.flag_system.button_single) {                   // Allow only single button press for immediate action
-// //           if (buttons[button_index].hold_timer == loops_per_second * hold_time_extent * pCONT_set->Settings.setoption_255[P_HOLD_TIME] / 10) {  // Button held for factor times longer
-// //             pCONT_set->Settings.flag_system.button_single = 0;
+// //         if (tkr_set->Settings.flag_system.button_single) {                   // Allow only single button press for immediate action
+// //           if (buttons[button_index].hold_timer == loops_per_second * hold_time_extent * tkr_set->Settings.setoption_255[P_HOLD_TIME] / 10) {  // Button held for factor times longer
+// //             tkr_set->Settings.flag_system.button_single = 0;
 // //             // snprintf_P(scmnd, sizeof(scmnd), PSTR(D_JSON_SETOPTION "13 0"));  // Disable single press only
 // //             // ExecuteCommand(scmnd, SRC_BUTTON);
 // //           }
 // //         } else {
-// //           if (pCONT_set->Settings.flag_system.button_restrict) {               // Button restriction
-// //             if (buttons[button_index].hold_timer == loops_per_second * pCONT_set->Settings.setoption_255[P_HOLD_TIME] / 10) {  // Button hold
+// //           if (tkr_set->Settings.flag_system.button_restrict) {               // Button restriction
+// //             if (buttons[button_index].hold_timer == loops_per_second * tkr_set->Settings.setoption_255[P_HOLD_TIME] / 10) {  // Button hold
 // //               buttons[button_index].multipress = 0;
 // //               // SendKey(0, button_index, 3);                // Execute Hold command via MQTT if ButtonTopic is set
 // //             }
 // //           } else {
-// //             if (buttons[button_index].hold_timer == loops_per_second * hold_time_extent * pCONT_set->Settings.setoption_255[P_HOLD_TIME] / 10) {  // Button held for factor times longer
+// //             if (buttons[button_index].hold_timer == loops_per_second * hold_time_extent * tkr_set->Settings.setoption_255[P_HOLD_TIME] / 10) {  // Button held for factor times longer
 // //               buttons[button_index].multipress = 0;
 // //               // snprintf_P(scmnd, sizeof(scmnd), PSTR(D_JSON_RESET " 1"));
 // //               // Serial.println("WARNING -- Disabled \"ExecuteCommand(scmnd, SRC_BUTTON);\" command from support_button");
@@ -395,7 +395,7 @@
 // //       }
 
 // //       #ifdef ENABLE_DEVFEATURE_BUTTON_MULTIPRESS
-// //       if (!pCONT_set->Settings.flag_system.button_single) {                    // Allow multi-press
+// //       if (!tkr_set->Settings.flag_system.button_single) {                    // Allow multi-press
 // //         if (multiwindow[button_index]) {
 // //           multiwindow[button_index]--;
 // //         } else {
@@ -405,7 +405,7 @@
 // //           //     if ((SONOFF_DUAL_R2 == my_module_type) || (SONOFF_DUAL == my_module_type) || (CH4 == my_module_type)) {
 // //           //       single_press = true;
 // //           //     } else  {
-// //           //       single_press = (pCONT_set->Settings.flag_system.button_swap +1 == buttons[button_index].multipress);
+// //           //       single_press = (tkr_set->Settings.flag_system.button_swap +1 == buttons[button_index].multipress);
 // //           //       buttons[button_index].multipress = 1;
 // //           //     }
 // //           //   }
@@ -422,7 +422,7 @@
 // //           //     //       //ExecuteCommandPower(button_index + buttons[button_index].multipress, POWER_TOGGLE, SRC_BUTTON);  // Execute Toggle command internally
 // //           //     //     }
 // //           //     //   } else {                                     // 3 - 7 press
-// //           //     //     if (!pCONT_set->Settings.flag_system.button_restrict) {
+// //           //     //     if (!tkr_set->Settings.flag_system.button_restrict) {
 // //           //     //       snprintf_P(scmnd, sizeof(scmnd), kCommands[buttons[button_index].multipress -3]);
 // //           //     //       // ExecuteCommand(scmnd, SRC_BUTTON);
 // //           //     //     }
@@ -465,10 +465,10 @@
 // void mButtons::ButtonHandler(void) {
 
 
-//   if (pCONT_time->uptime.seconds_nonreset < 4) { return; }                     // Block GPIO for 4 seconds after poweron to workaround Wemos D1 / Obi RTS circuit
+//   if (tkr_time->uptime.seconds_nonreset < 4) { return; }                     // Block GPIO for 4 seconds after poweron to workaround Wemos D1 / Obi RTS circuit
 
 //   uint8_t hold_time_extent = IMMINENT_RESET_FACTOR;             // Extent hold time factor in case of iminnent Reset command
-//   uint16_t loops_per_second = 1000 / pCONT_set->Settings.button_debounce;  // ButtonDebounce (50) - How often is the button polled? = 20 per second
+//   uint16_t loops_per_second = 1000 / tkr_set->Settings.button_debounce;  // ButtonDebounce (50) - How often is the button polled? = 20 per second
 //   char scmnd[20];
 
 //   for (uint8_t id = 0; id < MAX_KEYS; id++) 
@@ -543,7 +543,7 @@
 //         (BUTTON_NOT_PRESSED_ID == buttons[id].last_state)
 //       ){
 
-//         if(pCONT_set->Settings.flag_system.button_single) // SetOption13 (0) - Allow only single button press for immediate action
+//         if(tkr_set->Settings.flag_system.button_single) // SetOption13 (0) - Allow only single button press for immediate action
 //         {           
 //           AddLog(LOG_LEVEL_INFO,PSTR(D_LOG_BUTTONS "#%d Changed : Level %d | %s " D_IMMEDIATE), id, state, state==BUTTON_PRESSED_ID?"ACTIVE":"Not Active" );          
 //           // <length of data>,<state>,<type ie single/multi/hold><count>  
@@ -575,10 +575,10 @@
 //       {
 //         buttons[id].hold_timer++;
 
-//         if (pCONT_set->Settings.flag_system.button_single)
+//         if (tkr_set->Settings.flag_system.button_single)
 //         {           // SetOption13 (0) - Allow only single button press for immediate action
         
-//           if (buttons[id].hold_timer == loops_per_second * hold_time_extent * pCONT_set->Settings.setoption_255[P_HOLD_TIME] / 10) {  // SetOption32 (40) - Button held for factor times longer
+//           if (buttons[id].hold_timer == loops_per_second * hold_time_extent * tkr_set->Settings.setoption_255[P_HOLD_TIME] / 10) {  // SetOption32 (40) - Button held for factor times longer
 //             // snprintf_P(scmnd, sizeof(scmnd), PSTR(D_CMND_SETOPTION "13 0"));  // Disable single press only             // ExecuteCommand(scmnd, SRC_BUTTON); 
 //           // <length of data>,<state>,<type ie single/multi/hold><count>  
 //             pCONT_rules->NewEventRun_NumArg(D_UNIQUE_MODULE_SENSORS_BUTTONS_ID, FUNC_EVENT_INPUT_STATE_CHANGED_ID, id, 2, state, INPUT_TYPE_SINGLE_HOLD_ID);    // ERROR - Not sure what this section will do, long press no multi?
@@ -590,10 +590,10 @@
 //          **/
 //         {
 
-//           if (buttons[id].hold_timer == loops_per_second * pCONT_set->Settings.setoption_255[P_HOLD_TIME] / 10) {  // SetOption32 (40) - Button hold
+//           if (buttons[id].hold_timer == loops_per_second * tkr_set->Settings.setoption_255[P_HOLD_TIME] / 10) {  // SetOption32 (40) - Button hold
 //             buttons[id].press_counter = 0;
           
-//             AddLog(LOG_LEVEL_INFO,PSTR(D_LOG_BUTTONS "#%d Changed : Level %d | %s " "LongPress of (%d) seconds"), id, state, state==BUTTON_PRESSED_ID?"ACTIVE":"Not Active", pCONT_set->Settings.setoption_255[P_HOLD_TIME] / 10 );            
+//             AddLog(LOG_LEVEL_INFO,PSTR(D_LOG_BUTTONS "#%d Changed : Level %d | %s " "LongPress of (%d) seconds"), id, state, state==BUTTON_PRESSED_ID?"ACTIVE":"Not Active", tkr_set->Settings.setoption_255[P_HOLD_TIME] / 10 );            
           
 //             // 3 = button pressed state, presses of button, type is long press?
 //             // <length of data>,<state>,<type ie single/multi/hold><count>  
@@ -601,13 +601,13 @@
 //           }
 //           // Long pressed not yet reached 
 //           else {
-//             if (pCONT_set->Settings.flag_system.button_restrict) {     // SetOption1 (0) - Control button multipress
-//               if (buttons[id].hold_timer > loops_per_second * pCONT_set->Settings.setoption_255[P_HOLD_IGNORE] / 10) {
+//             if (tkr_set->Settings.flag_system.button_restrict) {     // SetOption1 (0) - Control button multipress
+//               if (buttons[id].hold_timer > loops_per_second * tkr_set->Settings.setoption_255[P_HOLD_IGNORE] / 10) {
 //                 buttons[id].hold_timer = 0;     // Reset button hold counter to stay below hold trigger
 //                 buttons[id].press_counter = 0;  // Discard button press to disable functionality
 //               }
 //             } else {
-//               if ((buttons[id].hold_timer == loops_per_second * hold_time_extent * pCONT_set->Settings.setoption_255[P_HOLD_TIME] / 10)) {  // SetOption32 (40) - Button held for factor times longer
+//               if ((buttons[id].hold_timer == loops_per_second * hold_time_extent * tkr_set->Settings.setoption_255[P_HOLD_TIME] / 10)) {  // SetOption32 (40) - Button held for factor times longer
 //                 buttons[id].press_counter = 0;
 //                 ALOG_INF(PSTR(D_LOG_BUTTONS "ENABLE_DEVFEATURE_DISABLE_BUTTON_CAN_RESET_DEVICE id=%d"), id);
 //                 #ifndef ENABLE_DEVFEATURE_DISABLE_BUTTON_CAN_RESET_DEVICE
@@ -619,11 +619,11 @@
 //               }
 //             }
 //           }
-//         } // if (pCONT_set->Settings.flag_system.button_single)
+//         } // if (tkr_set->Settings.flag_system.button_single)
 //       }
 
 //     // #ifdef ENABLE_DEVFEATURE_BUTTON_MULTIPRESS
-//       if (!pCONT_set->Settings.flag_system.button_single) {            // SetOption13 (0) - Allow multi-press
+//       if (!tkr_set->Settings.flag_system.button_single) {            // SetOption13 (0) - Allow multi-press
 //         if (buttons[id].window_timer) {
 //           buttons[id].window_timer--;
 //         } else {
@@ -632,7 +632,7 @@
 //            * @brief Hold timer is counting (pressed) and press count is within range
 //            * */
 //           if (
-//             !pCONT_set->restart_flag && 
+//             !tkr_set->restart_flag && 
 //             !buttons[id].hold_timer && 
 //             (buttons[id].press_counter > 0) && (buttons[id].press_counter < 7)
 //           ){
@@ -665,7 +665,7 @@
 // {
 
 //   if (settings.buttons_found) {
-//     if(mTime::TimeReached(&tsaved_button_debounce, pCONT_set->Settings.button_debounce)){
+//     if(mTime::TimeReached(&tsaved_button_debounce, tkr_set->Settings.button_debounce)){
 //       ButtonHandler();
 //     }
 //   }
@@ -823,9 +823,9 @@
 // {
 //   for(auto& handle:mqtthandler_list){
 //     if(handle->topic_type == MQTT_TOPIC_TYPE_TELEPERIOD_ID)
-//       handle->tRateSecs = pCONT_set->Settings.sensors.teleperiod_secs;
+//       handle->tRateSecs = tkr_set->Settings.sensors.teleperiod_secs;
 //     if(handle->topic_type == MQTT_TOPIC_TYPE_IFCHANGED_ID)
-//       handle->tRateSecs = pCONT_set->Settings.sensors.ifchanged_secs;
+//       handle->tRateSecs = tkr_set->Settings.sensors.ifchanged_secs;
 //   }
 // }
 

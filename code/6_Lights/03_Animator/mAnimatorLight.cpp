@@ -43,7 +43,7 @@ int8_t mAnimatorLight::Tasker(uint8_t function, JsonParserObject obj)
 
 
       #ifdef ENABLE_DEBUGFEATURE_LIGHTING__TIME_CRITICAL_RECORDING
-      uint8_t log_level = pCONT_time->UpTime() < 3600 ? LOG_LEVEL_DEV_TEST : LOG_LEVEL_DEBUG_MORE;
+      uint8_t log_level = tkr_time->UpTime() < 3600 ? LOG_LEVEL_DEV_TEST : LOG_LEVEL_DEBUG_MORE;
       AddLog(log_level, PSTR("getFPS %d"), getFps());
       AddLog(log_level, PSTR("starting %d%s"), lighting_time_critical_logging.time_unit_output_ms ? lighting_time_critical_logging.dynamic_buffer__starting_colour / 1000 : lighting_time_critical_logging.dynamic_buffer__starting_colour, lighting_time_critical_logging.time_unit_output_ms ? "ms" : "us");
       AddLog(log_level, PSTR("part1  ---------> %d%s"), lighting_time_critical_logging.time_unit_output_ms ? lighting_time_critical_logging.dynamic_buffer__starting_colour_part1 / 1000 : lighting_time_critical_logging.dynamic_buffer__starting_colour_part1, lighting_time_critical_logging.time_unit_output_ms ? "ms" : "us");
@@ -169,7 +169,7 @@ void mAnimatorLight::Save_Module()
   JBI->Start();
 
   #ifdef ENABLE_DEVFEATURE_ADD_TIMESTAMP_ON_SAVE_FILES
-    JBI->Add(PM_UTC_TIME, pCONT_time->GetDateAndTime(DT_UTC).c_str() );
+    JBI->Add(PM_UTC_TIME, tkr_time->GetDateAndTime(DT_UTC).c_str() );
   #endif // ENABLE_DEVFEATURE_ADD_TIMESTAMP_ON_SAVE_FILES
 
   uint8_t bus_appended = 0;
@@ -629,15 +629,15 @@ void mAnimatorLight::Init(void)
 
   #ifdef USE_DEBUGFEATURE_DEVICE_CLONE_TESTBED
   #ifdef ENABLE_DEBUGFEATURE_WEBUI__SHOW_BUILD_DATETIME_IN_FOOTER
-  snprintf(serverDescription, sizeof(serverDescription), "PulSar %s \"%s\" [%s]", pCONT_set->Settings.system_name.friendly, DEVICENAME_DESCRIPTION_CTR, pCONT_time->GetBuildDateAndTime().c_str() );
+  snprintf(serverDescription, sizeof(serverDescription), "PulSar %s \"%s\" [%s]", tkr_set->Settings.system_name.friendly, DEVICENAME_DESCRIPTION_CTR, tkr_time->GetBuildDateAndTime().c_str() );
   #else
-  snprintf(serverDescription, sizeof(serverDescription), pCONT_set->Settings.system_name.friendly);
+  snprintf(serverDescription, sizeof(serverDescription), tkr_set->Settings.system_name.friendly);
   #endif
   #else
   #ifdef ENABLE_DEBUGFEATURE_WEBUI__SHOW_BUILD_DATETIME_IN_FOOTER
-  snprintf(serverDescription, sizeof(serverDescription), "tb_PulSar %s \"%s\" [%s]", pCONT_set->Settings.system_name.friendly, DEVICENAME_DESCRIPTION_CTR, pCONT_time->GetBuildDateAndTime().c_str() );
+  snprintf(serverDescription, sizeof(serverDescription), "tb_PulSar %s \"%s\" [%s]", tkr_set->Settings.system_name.friendly, DEVICENAME_DESCRIPTION_CTR, tkr_time->GetBuildDateAndTime().c_str() );
   #else
-  snprintf(serverDescription, sizeof(serverDescription), pCONT_set->Settings.system_name.friendly);
+  snprintf(serverDescription, sizeof(serverDescription), tkr_set->Settings.system_name.friendly);
   #endif
   #endif
 

@@ -548,13 +548,13 @@ void AddLog_NoTime(uint8_t loglevel, PGM_P formatP, ...);
 // {
 
 //   // if(
-//   //   (loglevel>pCONT_set->Settings.logging.serial_level)&&
-//   //   (loglevel>pCONT_set->Settings.logging.web_level)
+//   //   (loglevel>tkr_set->Settings.logging.serial_level)&&
+//   //   (loglevel>tkr_set->Settings.logging.web_level)
 //   //   ){
 //   //   return;
 //   // }  
 
-//   // if(loglevel>pCONT_set->Settings.logging.serial_level){
+//   // if(loglevel>tkr_set->Settings.logging.serial_level){
 //   //   return;
 //   // }
   

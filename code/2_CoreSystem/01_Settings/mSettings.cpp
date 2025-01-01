@@ -21,7 +21,7 @@ int8_t mSettings::Tasker(uint8_t function, JsonParserObject obj)
       #ifdef USE_MODULE_CORE_FILESYSTEM
       #ifdef ENABLE_SYSTEM_SETTINGS_IN_FILESYSTEM
         // Copy Settings as Last Known Good if no changes have been saved since 30 minutes
-        if (!runtime.settings_lkg && (pCONT_time->UtcTime() > START_VALID_UTC_TIME) && (Settings.cfg_timestamp < pCONT_time->UtcTime() - (3 * 60))) 
+        if (!runtime.settings_lkg && (tkr_time->UtcTime() > START_VALID_UTC_TIME) && (Settings.cfg_timestamp < tkr_time->UtcTime() - (3 * 60))) 
         {
           pCONT_mfile->TfsSaveFile(TASM_FILE_SETTINGS_LKG_LAST_KNOWN_GOOD, (const uint8_t*)&Settings, sizeof(SETTINGS));
           runtime.settings_lkg = true;
@@ -29,10 +29,10 @@ int8_t mSettings::Tasker(uint8_t function, JsonParserObject obj)
         else
         {
           ALOG_INF(PSTR("UtcTime()%d > START_VALID_UTC_TIME%d) && (Settings.cfg_timestamp%d < UtcTime() - (30 * 60)) %d"), 
-            pCONT_time->UtcTime(),
+            tkr_time->UtcTime(),
             START_VALID_UTC_TIME,
             Settings.cfg_timestamp,
-            pCONT_time->UtcTime() - (3 * 60)
+            tkr_time->UtcTime() - (3 * 60)
          );
         }
       #endif // ENABLE_SYSTEM_SETTINGS_IN_FILESYSTEM
@@ -43,7 +43,7 @@ int8_t mSettings::Tasker(uint8_t function, JsonParserObject obj)
 
       #ifdef ENABLE_DEVFEATURE_PERIODIC_SETTINGS_SAVING__EVERY_HOUR
         #ifdef ENABLE_FEATURE_SETTINGS_STORAGE__ENABLED_AS_FULL_USER_CONFIGURATION_REQUIRING_SETTINGS_HOLDER_CONTROL
-        pCONT_set->SettingsSaveAll();
+        tkr_set->SettingsSaveAll();
         #endif
       #else 
       #ifdef ENABLE_LOG_LEVEL_INFO
@@ -461,17 +461,17 @@ void mSettings::CommandSet_SystemRestartID(uint8_t value){
     ALOG_DBM(PSTR("REBOOT TEST" DEBUG_INSERT_PAGE_BREAK));
     ALOG_DBM(PSTR("Current bootcount is %d"), Settings.bootcount);
 
-    pCONT_set->TestSettings_ShowLocal_Header();
-    pCONT_set->TestSettingsLoad();
+    tkr_set->TestSettings_ShowLocal_Header();
+    tkr_set->TestSettingsLoad();
 
     ALOG_DBM(PSTR("Modying bootcount to %d"), Settings.bootcount++);
     
-    pCONT_set->SettingsSaveAll();
+    tkr_set->SettingsSaveAll();
 
     ALOG_DBM(PSTR("Settings should be saved now to %d"), Settings.bootcount);
 
-    pCONT_set->TestSettings_ShowLocal_Header();
-    pCONT_set->TestSettingsLoad();
+    tkr_set->TestSettings_ShowLocal_Header();
+    tkr_set->TestSettingsLoad();
 
     pCONT_wif->EspRestart();
 

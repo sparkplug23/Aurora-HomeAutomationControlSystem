@@ -48,7 +48,7 @@ int8_t mDevelopmentDebugging::Tasker(uint8_t function, JsonParserObject obj){
 
       // ALOG_INF( PSTR("loops_per_second %d"), pCONT_sup->loops_per_second);
       // ALOG_INF( PSTR("this_cycle_ratio %d"), pCONT_sup->this_cycle_ratio);
-      // ALOG_INF( PSTR("loop_load_avg %d"), pCONT_set->loop_load_avg);
+      // ALOG_INF( PSTR("loop_load_avg %d"), tkr_set->loop_load_avg);
 
       #ifdef ENABLE_DEBUGFEATURE_TASKERMANAGER__ADVANCED_METRICS
       for (const auto& metrics : pCONT->task_metrics) {

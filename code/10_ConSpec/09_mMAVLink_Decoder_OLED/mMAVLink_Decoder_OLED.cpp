@@ -115,7 +115,7 @@ void mMAVLink_Decoder_OLED::EverySecond()
 void mMAVLink_Decoder_OLED::SubTask_UpdateOLED()
 {
   
-  pCONT_set->Settings.display.mode = EM_DISPLAY_MODE_LOG_STATIC_ID;
+  tkr_set->Settings.display.mode = EM_DISPLAY_MODE_LOG_STATIC_ID;
 
   pCONT_iDisp->renderer->setTextSize(1);
 

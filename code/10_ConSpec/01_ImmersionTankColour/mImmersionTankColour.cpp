@@ -256,7 +256,7 @@ void mImmersionTankColour::SubTask_StripSet_Showing()
 
     // Check for matches with variables names  
     // if ((
-      // index_found = pCONT_sup->GetDListIDbyNameCtr(buffer, sizeof(buffer), c, pCONT_set->Settings.animation_settings.palette_user_variable_name_list_ctr)) >= 0) {
+      // index_found = pCONT_sup->GetDListIDbyNameCtr(buffer, sizeof(buffer), c, tkr_set->Settings.animation_settings.palette_user_variable_name_list_ctr)) >= 0) {
     //   // index_found = STATE_NUMBER_OFF_ID;    
     //     ALOG_DBM( PSTR("index_found = %d"),index_found);    
     //     return index_found;
@@ -362,7 +362,7 @@ void mImmersionTankColour::SubTask_StripSet_Showing()
 
   // AddLog_Array(LOG_LEVEL_DEV_TEST, "encoded_gradient_temp_array", encoded_gradient_temp_array, index);
   
-  // if(pCONT_time->uptime_seconds_nonreset > 60){
+  // if(tkr_time->uptime_seconds_nonreset > 60){
 
   
   // //print result over mqtt so I can test

@@ -326,10 +326,10 @@ void mADCInternal::Update_Channel1_ADC_Readings()
   }
   #else
     readings[0].adc_level = adc1_get_raw(ADC1_CHANNEL_6);
-    readings[0].utc_measured_timestamp = pCONT_time->UtcTime();
+    readings[0].utc_measured_timestamp = tkr_time->UtcTime();
     ets_delay_us(1);
     readings[1].adc_level = adc1_get_raw(ADC1_CHANNEL_7);
-    readings[1].utc_measured_timestamp = pCONT_time->UtcTime();
+    readings[1].utc_measured_timestamp = tkr_time->UtcTime();
     ALOG_INF(PSTR("adc_level = \t%d\t%d"), readings[0].adc_level, readings[1].adc_level);
   #endif
 
@@ -682,9 +682,9 @@ void mADCInternal::MQTTHandler_Init(){
 // // //   //If its null (nothing passed), try global parameter
 // // //   if(_obj == nullptr){
 // // //     AddLog(LOG_LEVEL_ERROR, PSTR(D_LOG_MQTT "obj == nullptr"));
-// // //     if(pCONT_set->pObj != nullptr){
-// // //       AddLog(LOG_LEVEL_ERROR, PSTR(D_LOG_MQTT "pCONT_set->pObj != nullptr"));
-// // //       _obj = pCONT_set->pObj;
+// // //     if(tkr_set->pObj != nullptr){
+// // //       AddLog(LOG_LEVEL_ERROR, PSTR(D_LOG_MQTT "tkr_set->pObj != nullptr"));
+// // //       _obj = tkr_set->pObj;
 // // //     }else{
 // // //       AddLog(LOG_LEVEL_ERROR, PSTR(D_LOG_MQTT "No Object"));
 // // //       return;

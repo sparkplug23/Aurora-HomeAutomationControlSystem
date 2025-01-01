@@ -52,7 +52,7 @@ int8_t mRuleEngine::Tasker(uint8_t function, JsonParserObject obj){
     // break;
     // case TASK_SETTINGS_OVERWRITE_SAVED_TO_DEFAULT:
     //   // Settings_Default();
-    //   // pCONT_set->SettingsSave(2);
+    //   // tkr_set->SettingsSave(2);
     // break;
     // /************
     //  * PERIODIC SECTION * 
@@ -66,7 +66,7 @@ int8_t mRuleEngine::Tasker(uint8_t function, JsonParserObject obj){
       // MQTTHandler_RefreshAll();
 
       // if(){ pCONT->Tasker_Interface(TASK_RULES_LOAD_FROM_PROGMEM_ID) };
-      if(pCONT_time->uptime_seconds_nonreset == D_RULES_DELAY_LOAD_FROM_BOOT_TIME_SECOND){ RulesLoad_From_Progmem(); }
+      if(tkr_time->uptime_seconds_nonreset == D_RULES_DELAY_LOAD_FROM_BOOT_TIME_SECOND){ RulesLoad_From_Progmem(); }
 
     break;
     /************
@@ -136,7 +136,7 @@ void mRuleEngine::RulesLoad_From_Progmem()
   pCONT->Tasker_Interface(TASK_JSON_COMMAND_ID);
   
   //IF TASKER RESULT WAS TRUE, THEN SUCCESS
-  // pCONT_set->runtime.boot_status.rules_template_parse_success = 1;
+  // tkr_set->runtime.boot_status.rules_template_parse_success = 1;
   #endif //USE_RULES_TEMPLATE
 
   
@@ -288,7 +288,7 @@ void mRuleEngine::NewEventRun_NumArg(uint16_t _module_id, uint16_t function_even
   // ShowRuleEvent_AddLog();
 
   // va_start(arg, formatP);
-  // vsnprintf_P(pCONT_set->log_data, sizeof(pCONT_set->log_data), formatP, arg);
+  // vsnprintf_P(tkr_set->log_data, sizeof(tkr_set->log_data), formatP, arg);
   // va_end(arg);
 
   /**
@@ -439,22 +439,22 @@ rules_active_index = 0;
 
 #ifdef ESP8266
   #ifdef USE_MODULE_TEMPLATE_SONOFF_4CHPRO
-    if(pCONT_set->Settings.module == mHardwarePins::MODULE_SONOFF_4CHPRO_ID){
+    if(tkr_set->Settings.module == mHardwarePins::MODULE_SONOFF_4CHPRO_ID){
       DefaultRule_Sonoff_4CHPRO();
     }else
   #endif // USE_MODULE_TEMPLATE_SONOFF_IFAN03
   #ifdef USE_MODULE_TEMPLATE_SONOFF_IFAN03
-    if(pCONT_set->Settings.module == mHardwarePins::MODULE_SONOFF_IFAN03_ID){
+    if(tkr_set->Settings.module == mHardwarePins::MODULE_SONOFF_IFAN03_ID){
       DefaultRule_Sonoff_iFan03();
     }else
   #endif // USE_MODULE_TEMPLATE_SONOFF_IFAN03
   #ifdef USE_MODULE_TEMPLATE_SHELLY_DIMMER2
-    if(pCONT_set->Settings.module == mHardwarePins::MODULE_SHELLY_DIMMER2_ID){
+    if(tkr_set->Settings.module == mHardwarePins::MODULE_SHELLY_DIMMER2_ID){
       DefaultRule_Shelly_Dimmer2();
     }else
   #endif // USE_MODULE_TEMPLATE_SHELLY_DIMMER2
   #ifdef USE_MODULE_TEMPLATE_SHELLY_2P5
-    if(pCONT_set->Settings.module == mHardwarePins::MODULE_SHELLY2P5_ID){
+    if(tkr_set->Settings.module == mHardwarePins::MODULE_SHELLY2P5_ID){
       DefaultRule_Shelly_2p5();
     }
   #endif // USE_MODULE_TEMPLATE_SHELLY_2P5
@@ -542,7 +542,7 @@ void mRuleEngine::parsesub_Rule_Part(JsonParserObject jobj, mEvent::EVENT_PART* 
 
     if(jtok = jobj["Function"]){
       if(jtok.isStr()){
-        if((matched_id=pCONT_set->GetFunctionIDbyName(jtok.getStr()))>=0){
+        if((matched_id=tkr_set->GetFunctionIDbyName(jtok.getStr()))>=0){
           event->function_id = matched_id;
           data_buffer.isserviced++;
         }
@@ -562,7 +562,7 @@ void mRuleEngine::parsesub_Rule_Part(JsonParserObject jobj, mEvent::EVENT_PART* 
     if(jtok = jobj["DeviceName"]){
       //Use module_id to know which devicelist item to try find
       // if(jtok.isStr()){
-      //   if((matched_id=pCONT_set->GetFunctionIDbyFriendlyName(jtok.getStr()))>=0){
+      //   if((matched_id=tkr_set->GetFunctionIDbyFriendlyName(jtok.getStr()))>=0){
       //     event->function_id = matched_id;
       //     data_buffer.isserviced++;
       //   }

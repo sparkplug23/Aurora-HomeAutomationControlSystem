@@ -92,17 +92,17 @@ void mWebCamera::Pre_Init()
 void mWebCamera::Init()
 {
   
-  if (!pCONT_set->Settings.webcam_config.data) {
-    pCONT_set->Settings.webcam_config.stream = 1;
-    pCONT_set->Settings.webcam_config.resolution = FRAMESIZE_QVGA;
+  if (!tkr_set->Settings.webcam_config.data) {
+    tkr_set->Settings.webcam_config.stream = 1;
+    tkr_set->Settings.webcam_config.resolution = FRAMESIZE_QVGA;
     WcSetDefaults(0);
   }
   // previous webcam driver had only a small subset of possible config vars
   // in this case we have to only set the new variables to default values
-  if(!pCONT_set->Settings.webcam_config2.upgraded) {
+  if(!tkr_set->Settings.webcam_config2.upgraded) {
     ALOG_DBG(PSTR("CAM: Upgrade settings"));
     WcSetDefaults(1);
-    pCONT_set->Settings.webcam_config2.upgraded = 1;
+    tkr_set->Settings.webcam_config2.upgraded = 1;
   }
 
   settings.fEnableSensor = true;
@@ -120,7 +120,7 @@ void mWebCamera::EveryLoop()
   if (wc_motion.motion_detect) { WcDetectMotion(); }
 
 #ifdef ENABLE_RTSPSERVER
-    if (pCONT_set->Settings.webcam_config.rtsp && !pCONT_set->global_state.wifi_down && Wc.up) {
+    if (tkr_set->Settings.webcam_config.rtsp && !tkr_set->global_state.wifi_down && Wc.up) {
       if (!Wc.rtsp_start) {
         Wc.rtspp = new WiFiServer(8554);
         Wc.rtspp->begin();
@@ -200,7 +200,7 @@ bool WcPinUsed(void) {
   }
   if (!pCONT_pins->(GPIO_WEBCAM_XCLK_ID) || !pCONT_pins->(GPIO_WEBCAM_PCLK_ID) ||
       !pCONT_pins->(GPIO_WEBCAM_VSYNC_ID) || !pCONT_pins->(GPIO_WEBCAM_HREF_ID) ||
-      ((!pCONT_pins->(GPIO_WEBCAM_SIOD_ID) || !pCONT_pins->(GPIO_WEBCAM_SIOC_ID)) && !pCONT_set->i2c_enabled_2)    // preferred option is to reuse and share I2Cbus 2
+      ((!pCONT_pins->(GPIO_WEBCAM_SIOD_ID) || !pCONT_pins->(GPIO_WEBCAM_SIOC_ID)) && !tkr_set->i2c_enabled_2)    // preferred option is to reuse and share I2Cbus 2
       ) {
         pin_used = false;
   }
@@ -244,72 +244,72 @@ void mWebCamera::WcApplySettings() {
   sensor_t * wc_s = esp_camera_sensor_get();
   if (!wc_s) { return; }
 
-  wc_s->set_vflip(wc_s, pCONT_set->Settings.webcam_config.flip);
-  wc_s->set_hmirror(wc_s, pCONT_set->Settings.webcam_config.mirror);
+  wc_s->set_vflip(wc_s, tkr_set->Settings.webcam_config.flip);
+  wc_s->set_hmirror(wc_s, tkr_set->Settings.webcam_config.mirror);
 
-  wc_s->set_brightness(wc_s, pCONT_set->Settings.webcam_config.brightness - 2);
-  wc_s->set_saturation(wc_s, pCONT_set->Settings.webcam_config.saturation - 2);
-  wc_s->set_contrast(wc_s, pCONT_set->Settings.webcam_config.contrast - 2);
+  wc_s->set_brightness(wc_s, tkr_set->Settings.webcam_config.brightness - 2);
+  wc_s->set_saturation(wc_s, tkr_set->Settings.webcam_config.saturation - 2);
+  wc_s->set_contrast(wc_s, tkr_set->Settings.webcam_config.contrast - 2);
 
-  wc_s->set_special_effect(wc_s, pCONT_set->Settings.webcam_config2.special_effect);
+  wc_s->set_special_effect(wc_s, tkr_set->Settings.webcam_config2.special_effect);
 
-  wc_s->set_whitebal(wc_s, pCONT_set->Settings.webcam_config.awb);
-  wc_s->set_wb_mode(wc_s, pCONT_set->Settings.webcam_config2.wb_mode);
-  wc_s->set_awb_gain(wc_s, pCONT_set->Settings.webcam_config.awb_gain);
+  wc_s->set_whitebal(wc_s, tkr_set->Settings.webcam_config.awb);
+  wc_s->set_wb_mode(wc_s, tkr_set->Settings.webcam_config2.wb_mode);
+  wc_s->set_awb_gain(wc_s, tkr_set->Settings.webcam_config.awb_gain);
 
-  wc_s->set_exposure_ctrl(wc_s, pCONT_set->Settings.webcam_config.aec);
-  wc_s->set_aec_value(wc_s, pCONT_set->Settings.webcam_config2.aec_value - 2);
-  wc_s->set_ae_level(wc_s, pCONT_set->Settings.webcam_config2.ae_level);
-  wc_s->set_aec2(wc_s, pCONT_set->Settings.webcam_config.aec2);
+  wc_s->set_exposure_ctrl(wc_s, tkr_set->Settings.webcam_config.aec);
+  wc_s->set_aec_value(wc_s, tkr_set->Settings.webcam_config2.aec_value - 2);
+  wc_s->set_ae_level(wc_s, tkr_set->Settings.webcam_config2.ae_level);
+  wc_s->set_aec2(wc_s, tkr_set->Settings.webcam_config.aec2);
 
-  wc_s->set_gain_ctrl(wc_s, pCONT_set->Settings.webcam_config.agc);
-  wc_s->set_agc_gain(wc_s, pCONT_set->Settings.webcam_config2.agc_gain);
-  wc_s->set_gainceiling(wc_s, (gainceiling_t)pCONT_set->Settings.webcam_config2.gainceiling);
+  wc_s->set_gain_ctrl(wc_s, tkr_set->Settings.webcam_config.agc);
+  wc_s->set_agc_gain(wc_s, tkr_set->Settings.webcam_config2.agc_gain);
+  wc_s->set_gainceiling(wc_s, (gainceiling_t)tkr_set->Settings.webcam_config2.gainceiling);
 
-  wc_s->set_raw_gma(wc_s, pCONT_set->Settings.webcam_config.raw_gma);
-  wc_s->set_lenc(wc_s, pCONT_set->Settings.webcam_config.lenc);
-  wc_s->set_wpc(wc_s, pCONT_set->Settings.webcam_config.wpc);
-  wc_s->set_dcw(wc_s, pCONT_set->Settings.webcam_config.dcw);
-  wc_s->set_bpc(wc_s, pCONT_set->Settings.webcam_config.bpc);
+  wc_s->set_raw_gma(wc_s, tkr_set->Settings.webcam_config.raw_gma);
+  wc_s->set_lenc(wc_s, tkr_set->Settings.webcam_config.lenc);
+  wc_s->set_wpc(wc_s, tkr_set->Settings.webcam_config.wpc);
+  wc_s->set_dcw(wc_s, tkr_set->Settings.webcam_config.dcw);
+  wc_s->set_bpc(wc_s, tkr_set->Settings.webcam_config.bpc);
 
-  WcFeature(pCONT_set->Settings.webcam_config.feature);
+  WcFeature(tkr_set->Settings.webcam_config.feature);
 
   ALOG_DBG(PSTR("CAM: Settings updated"));
 }
 
 void mWebCamera::WcSetDefaults(uint32_t upgrade) {
   if (!upgrade) {
-    pCONT_set->Settings.webcam_config.flip = 0;
-    pCONT_set->Settings.webcam_config.mirror = 0;
+    tkr_set->Settings.webcam_config.flip = 0;
+    tkr_set->Settings.webcam_config.mirror = 0;
 
-    pCONT_set->Settings.webcam_config.saturation = 2; // = 0
-    pCONT_set->Settings.webcam_config.brightness = 2; // = 0
-    pCONT_set->Settings.webcam_config.contrast = 2;   // = 0
+    tkr_set->Settings.webcam_config.saturation = 2; // = 0
+    tkr_set->Settings.webcam_config.brightness = 2; // = 0
+    tkr_set->Settings.webcam_config.contrast = 2;   // = 0
   }
 
-  pCONT_set->Settings.webcam_config2.special_effect = 0;
-  pCONT_set->Settings.webcam_config.colorbar = 0;
+  tkr_set->Settings.webcam_config2.special_effect = 0;
+  tkr_set->Settings.webcam_config.colorbar = 0;
 
-  pCONT_set->Settings.webcam_config.awb = 1;        // white balance
-  pCONT_set->Settings.webcam_config2.wb_mode = 0;   // white balance mode
-  pCONT_set->Settings.webcam_config.awb_gain = 1;   // white blance gain
+  tkr_set->Settings.webcam_config.awb = 1;        // white balance
+  tkr_set->Settings.webcam_config2.wb_mode = 0;   // white balance mode
+  tkr_set->Settings.webcam_config.awb_gain = 1;   // white blance gain
 
-  pCONT_set->Settings.webcam_config.aec = 1;          // autoexposure (sensor)
-  pCONT_set->Settings.webcam_config.aec2 = 1;         // autoexposure (dsp)
-  pCONT_set->Settings.webcam_config2.ae_level = 2;    // autoexposure level (-2 - +2, default 0)
-  pCONT_set->Settings.webcam_config2.aec_value = 204; // manual exposure value
+  tkr_set->Settings.webcam_config.aec = 1;          // autoexposure (sensor)
+  tkr_set->Settings.webcam_config.aec2 = 1;         // autoexposure (dsp)
+  tkr_set->Settings.webcam_config2.ae_level = 2;    // autoexposure level (-2 - +2, default 0)
+  tkr_set->Settings.webcam_config2.aec_value = 204; // manual exposure value
 
-  pCONT_set->Settings.webcam_config.agc = 1;          // auto gain control
-  pCONT_set->Settings.webcam_config2.agc_gain = 5;    // manual gain control
-  pCONT_set->Settings.webcam_config2.gainceiling = 0; // auto gain ceiling
+  tkr_set->Settings.webcam_config.agc = 1;          // auto gain control
+  tkr_set->Settings.webcam_config2.agc_gain = 5;    // manual gain control
+  tkr_set->Settings.webcam_config2.gainceiling = 0; // auto gain ceiling
 
-  pCONT_set->Settings.webcam_config.raw_gma = 1;      // gamma correct
-  pCONT_set->Settings.webcam_config.lenc = 1;         // lens correction
-  pCONT_set->Settings.webcam_config.wpc = 1;          // white pixel correct
-  pCONT_set->Settings.webcam_config.dcw = 1;          // downsize en
-  pCONT_set->Settings.webcam_config.bpc = 0;          // black pixel correct?
+  tkr_set->Settings.webcam_config.raw_gma = 1;      // gamma correct
+  tkr_set->Settings.webcam_config.lenc = 1;         // lens correction
+  tkr_set->Settings.webcam_config.wpc = 1;          // white pixel correct
+  tkr_set->Settings.webcam_config.dcw = 1;          // downsize en
+  tkr_set->Settings.webcam_config.bpc = 0;          // black pixel correct?
 
-  pCONT_set->Settings.webcam_config.feature = 0;
+  tkr_set->Settings.webcam_config.feature = 0;
 
   ALOG_DBG(PSTR("CAM: Defaults set"));
 
@@ -354,7 +354,7 @@ uint32_t WcSetup(int32_t fsiz) {
     config.pin_sccb_sda = Pin(GPIO_WEBCAM_SIOD_ID);  // SIOD_GPIO_NUM; - unset to use shared I2C bus 2
     config.pin_sccb_scl = Pin(GPIO_WEBCAM_SIOC_ID);  // SIOC_GPIO_NUM;
     // My fix, just use port 1 for now
-    // if(pCONT_set->i2c_enabled_2){              // configure SIOD and SIOC as SDA,2 and SCL,2
+    // if(tkr_set->i2c_enabled_2){              // configure SIOD and SIOC as SDA,2 and SCL,2
     //   config.sccb_i2c_port = 1;                   // reuse initialized bus 2, can be shared now
     //   if(config.pin_sccb_sda < 0){                // GPIO_WEBCAM_SIOD must not be set to really make it happen
     //     ALOG_INF(PSTR("CAM: use I2C bus 2"));
@@ -396,7 +396,7 @@ uint32_t WcSetup(int32_t fsiz) {
   AddLog(LOG_LEVEL_DEBUG_MORE, "CAM: XCLK on GPIO %i using ledc channel %i", config.pin_xclk, config.ledc_channel);
   config.ledc_timer = LEDC_TIMER_0;
 //  config.xclk_freq_hz = 20000000;
-  config.xclk_freq_hz = pCONT_set->Settings.webcam_clk * 1000000;
+  config.xclk_freq_hz = tkr_set->Settings.webcam_clk * 1000000;
   config.pixel_format = PIXFORMAT_JPEG;
 
   //esp_log_level_set("*", ESP_LOG_INFO);
@@ -739,7 +739,7 @@ bool WebcamAuthenticate(void)
 bool WebcamCheckPriviledgedAccess(bool autorequestauth = true)
 {
 
-  if(pCONT_set->Settings.webcam_config2.auth == 0){
+  if(tkr_set->Settings.webcam_config2.auth == 0){
     return true;
   }
 
@@ -808,7 +808,7 @@ void mWebCamera::HandleImageBasic(void) {
 
   AddLog(LOG_LEVEL_DEBUG_MORE, PSTR(D_LOG_HTTP "Capture image"));
 
-  if (pCONT_set->Settings.webcam_config.stream) {
+  if (tkr_set->Settings.webcam_config.stream) {
     if (!Wc.CamServer) {
       WcInterruptControl();
     }
@@ -959,7 +959,7 @@ void mWebCamera::HandleWebcamRoot(void) {
 /*********************************************************************************************/
 
 uint32_t WcSetStreamserver(uint32_t flag) {
-  if (pCONT_set->global_state.network_down) { return 0; }
+  if (tkr_set->global_state.network_down) { return 0; }
 
   Wc.stream_active = 0;
 
@@ -989,8 +989,8 @@ uint32_t WcSetStreamserver(uint32_t flag) {
 }
 
 void mWebCamera::WcInterruptControl() {
-  WcSetStreamserver(pCONT_set->Settings.webcam_config.stream);
-  WcSetup(pCONT_set->Settings.webcam_config.resolution);
+  WcSetStreamserver(tkr_set->Settings.webcam_config.stream);
+  WcSetup(tkr_set->Settings.webcam_config.resolution);
 }
 
 /*********************************************************************************************/
@@ -1008,7 +1008,7 @@ void mWebCamera::WcShowStream(void) {
   
   #ifdef ENABLE_DEVFEATURE_CAMERA_TASMOTA_INCLUDE_WEBSERVER
   #ifdef USE_MODULE_NETWORK_WEBSERVER
-  if (pCONT_set->Settings.webcam_config.stream) {
+  if (tkr_set->Settings.webcam_config.stream) {
 //    if (!Wc.CamServer || !Wc.up) {
     if (!Wc.CamServer) {
       WcInterruptControl();
@@ -1045,234 +1045,234 @@ void mWebCamera::CmndWebcam(void) {
 //   ",\"" D_CMND_RTSP "\":%d"
 // #endif // ENABLE_RTSPSERVER
 //   "}}"),
-//     pCONT_set->Settings.webcam_config.stream, pCONT_set->Settings.webcam_config.resolution, pCONT_set->Settings.webcam_config.mirror,
-//     pCONT_set->Settings.webcam_config.flip,
-//     pCONT_set->Settings.webcam_config.saturation -2, pCONT_set->Settings.webcam_config.brightness -2, pCONT_set->Settings.webcam_config.contrast -2,
-//     pCONT_set->Settings.webcam_config2.special_effect, pCONT_set->Settings.webcam_config.awb, pCONT_set->Settings.webcam_config2.wb_mode,
-//     pCONT_set->Settings.webcam_config.awb_gain, pCONT_set->Settings.webcam_config.aec, pCONT_set->Settings.webcam_config2.aec_value,
-//     pCONT_set->Settings.webcam_config2.ae_level -2, pCONT_set->Settings.webcam_config.aec2, pCONT_set->Settings.webcam_config.agc,
-//     pCONT_set->Settings.webcam_config2.agc_gain, pCONT_set->Settings.webcam_config2.gainceiling, pCONT_set->Settings.webcam_config.raw_gma,
-//     pCONT_set->Settings.webcam_config.lenc, pCONT_set->Settings.webcam_config.wpc, pCONT_set->Settings.webcam_config.dcw, pCONT_set->Settings.webcam_config.bpc,
-//     pCONT_set->Settings.webcam_config.colorbar, pCONT_set->Settings.webcam_config.feature, pCONT_set->Settings.webcam_config2.auth
+//     tkr_set->Settings.webcam_config.stream, tkr_set->Settings.webcam_config.resolution, tkr_set->Settings.webcam_config.mirror,
+//     tkr_set->Settings.webcam_config.flip,
+//     tkr_set->Settings.webcam_config.saturation -2, tkr_set->Settings.webcam_config.brightness -2, tkr_set->Settings.webcam_config.contrast -2,
+//     tkr_set->Settings.webcam_config2.special_effect, tkr_set->Settings.webcam_config.awb, tkr_set->Settings.webcam_config2.wb_mode,
+//     tkr_set->Settings.webcam_config.awb_gain, tkr_set->Settings.webcam_config.aec, tkr_set->Settings.webcam_config2.aec_value,
+//     tkr_set->Settings.webcam_config2.ae_level -2, tkr_set->Settings.webcam_config.aec2, tkr_set->Settings.webcam_config.agc,
+//     tkr_set->Settings.webcam_config2.agc_gain, tkr_set->Settings.webcam_config2.gainceiling, tkr_set->Settings.webcam_config.raw_gma,
+//     tkr_set->Settings.webcam_config.lenc, tkr_set->Settings.webcam_config.wpc, tkr_set->Settings.webcam_config.dcw, tkr_set->Settings.webcam_config.bpc,
+//     tkr_set->Settings.webcam_config.colorbar, tkr_set->Settings.webcam_config.feature, tkr_set->Settings.webcam_config2.auth
 // #ifdef ENABLE_RTSPSERVER
-//   , pCONT_set->Settings.webcam_config.rtsp
+//   , tkr_set->Settings.webcam_config.rtsp
 // #endif // ENABLE_RTSPSERVER
 //   );
 }
 
 void mWebCamera::CmndWebcamStream(void) {
   // if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 1)) {
-  //   pCONT_set->Settings.webcam_config.stream = XdrvMailbox.payload;
-  //   if (!pCONT_set->Settings.webcam_config.stream) { WcInterruptControl(); }  // Stop stream
+  //   tkr_set->Settings.webcam_config.stream = XdrvMailbox.payload;
+  //   if (!tkr_set->Settings.webcam_config.stream) { WcInterruptControl(); }  // Stop stream
   // }
-  // ResponseCmndStateText(pCONT_set->Settings.webcam_config.stream);
+  // ResponseCmndStateText(tkr_set->Settings.webcam_config.stream);
 }
 
 void mWebCamera::CmndWebcamResolution(void) {
   // if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload < FRAMESIZE_FHD)) {
-  //   pCONT_set->Settings.webcam_config.resolution = XdrvMailbox.payload;
-  //   WcSetOptions(0, pCONT_set->Settings.webcam_config.resolution);
+  //   tkr_set->Settings.webcam_config.resolution = XdrvMailbox.payload;
+  //   WcSetOptions(0, tkr_set->Settings.webcam_config.resolution);
   // }
-  // ResponseCmndNumber(pCONT_set->Settings.webcam_config.resolution);
+  // ResponseCmndNumber(tkr_set->Settings.webcam_config.resolution);
 }
 
 void mWebCamera::CmndWebcamMirror(void) {
   // if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 1)) {
-  //   pCONT_set->Settings.webcam_config.mirror = XdrvMailbox.payload;
-  //   WcSetOptions(3, pCONT_set->Settings.webcam_config.mirror);
+  //   tkr_set->Settings.webcam_config.mirror = XdrvMailbox.payload;
+  //   WcSetOptions(3, tkr_set->Settings.webcam_config.mirror);
   // }
-  // ResponseCmndStateText(pCONT_set->Settings.webcam_config.mirror);
+  // ResponseCmndStateText(tkr_set->Settings.webcam_config.mirror);
 }
 
 void mWebCamera::CmndWebcamFlip(void) {
   // if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 1)) {
-  //   pCONT_set->Settings.webcam_config.flip = XdrvMailbox.payload;
-  //   WcSetOptions(2, pCONT_set->Settings.webcam_config.flip);
+  //   tkr_set->Settings.webcam_config.flip = XdrvMailbox.payload;
+  //   WcSetOptions(2, tkr_set->Settings.webcam_config.flip);
   // }
-  // ResponseCmndStateText(pCONT_set->Settings.webcam_config.flip);
+  // ResponseCmndStateText(tkr_set->Settings.webcam_config.flip);
 }
 
 void mWebCamera::CmndWebcamSaturation(void) {
   // if ((XdrvMailbox.payload >= -2) && (XdrvMailbox.payload <= 2)) {
-  //   pCONT_set->Settings.webcam_config.saturation = XdrvMailbox.payload +2;
-  //   WcSetOptions(6, pCONT_set->Settings.webcam_config.saturation -2);
+  //   tkr_set->Settings.webcam_config.saturation = XdrvMailbox.payload +2;
+  //   WcSetOptions(6, tkr_set->Settings.webcam_config.saturation -2);
   // }
-  // ResponseCmndNumber(pCONT_set->Settings.webcam_config.saturation -2);
+  // ResponseCmndNumber(tkr_set->Settings.webcam_config.saturation -2);
 }
 
 void mWebCamera::CmndWebcamBrightness(void) {
   // if ((XdrvMailbox.payload >= -2) && (XdrvMailbox.payload <= 2)) {
-  //   pCONT_set->Settings.webcam_config.brightness = XdrvMailbox.payload +2;
-  //   WcSetOptions(5, pCONT_set->Settings.webcam_config.brightness -2);
+  //   tkr_set->Settings.webcam_config.brightness = XdrvMailbox.payload +2;
+  //   WcSetOptions(5, tkr_set->Settings.webcam_config.brightness -2);
   // }
-  // ResponseCmndNumber(pCONT_set->Settings.webcam_config.brightness -2);
+  // ResponseCmndNumber(tkr_set->Settings.webcam_config.brightness -2);
 }
 
 void mWebCamera::CmndWebcamContrast(void) {
   // if ((XdrvMailbox.payload >= -2) && (XdrvMailbox.payload <= 2)) {
-  //   pCONT_set->Settings.webcam_config.contrast = XdrvMailbox.payload +2;
-  //   WcSetOptions(4, pCONT_set->Settings.webcam_config.contrast -2);
+  //   tkr_set->Settings.webcam_config.contrast = XdrvMailbox.payload +2;
+  //   WcSetOptions(4, tkr_set->Settings.webcam_config.contrast -2);
   // }
-  // ResponseCmndNumber(pCONT_set->Settings.webcam_config.contrast -2);
+  // ResponseCmndNumber(tkr_set->Settings.webcam_config.contrast -2);
 }
 
 void mWebCamera::CmndWebcamSpecialEffect(void) {
   // if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 6)) {
-  //   pCONT_set->Settings.webcam_config2.special_effect = XdrvMailbox.payload;
-  //   WcSetOptions(1, pCONT_set->Settings.webcam_config2.special_effect);
+  //   tkr_set->Settings.webcam_config2.special_effect = XdrvMailbox.payload;
+  //   WcSetOptions(1, tkr_set->Settings.webcam_config2.special_effect);
   // }
-  // ResponseCmndNumber(pCONT_set->Settings.webcam_config2.special_effect);
+  // ResponseCmndNumber(tkr_set->Settings.webcam_config2.special_effect);
 }
 
 void mWebCamera::CmndWebcamAWB(void) {
   // if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 1)) {
-  //   pCONT_set->Settings.webcam_config.awb = XdrvMailbox.payload;
-  //   WcSetOptions(7, pCONT_set->Settings.webcam_config.awb);
+  //   tkr_set->Settings.webcam_config.awb = XdrvMailbox.payload;
+  //   WcSetOptions(7, tkr_set->Settings.webcam_config.awb);
   // }
-  // ResponseCmndStateText(pCONT_set->Settings.webcam_config.awb);
+  // ResponseCmndStateText(tkr_set->Settings.webcam_config.awb);
 }
 
 void mWebCamera::CmndWebcamWBMode(void) {
   // if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 4)) {
-  //   pCONT_set->Settings.webcam_config2.wb_mode = XdrvMailbox.payload;
-  //   WcSetOptions(8, pCONT_set->Settings.webcam_config2.wb_mode);
+  //   tkr_set->Settings.webcam_config2.wb_mode = XdrvMailbox.payload;
+  //   WcSetOptions(8, tkr_set->Settings.webcam_config2.wb_mode);
   // }
-  // ResponseCmndNumber(pCONT_set->Settings.webcam_config2.wb_mode);
+  // ResponseCmndNumber(tkr_set->Settings.webcam_config2.wb_mode);
 }
 
 void mWebCamera::CmndWebcamAWBGain(void) {
   // if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 1)) {
-  //   pCONT_set->Settings.webcam_config.awb_gain = XdrvMailbox.payload;
-  //   WcSetOptions(9, pCONT_set->Settings.webcam_config.awb_gain);
+  //   tkr_set->Settings.webcam_config.awb_gain = XdrvMailbox.payload;
+  //   WcSetOptions(9, tkr_set->Settings.webcam_config.awb_gain);
   // }
-  // ResponseCmndStateText(pCONT_set->Settings.webcam_config.awb_gain);
+  // ResponseCmndStateText(tkr_set->Settings.webcam_config.awb_gain);
 }
 
 void mWebCamera::CmndWebcamAEC(void) {
   // if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 1)) {
-  //   pCONT_set->Settings.webcam_config.aec = XdrvMailbox.payload;
-  //   WcSetOptions(10, pCONT_set->Settings.webcam_config.aec);
+  //   tkr_set->Settings.webcam_config.aec = XdrvMailbox.payload;
+  //   WcSetOptions(10, tkr_set->Settings.webcam_config.aec);
   // }
-  // ResponseCmndStateText(pCONT_set->Settings.webcam_config.aec);
+  // ResponseCmndStateText(tkr_set->Settings.webcam_config.aec);
 }
 
 void mWebCamera::CmndWebcamAECValue(void) {
   // if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 1200)) {
-  //   pCONT_set->Settings.webcam_config2.aec_value = XdrvMailbox.payload;
-  //   WcSetOptions(11, pCONT_set->Settings.webcam_config2.aec_value);
+  //   tkr_set->Settings.webcam_config2.aec_value = XdrvMailbox.payload;
+  //   WcSetOptions(11, tkr_set->Settings.webcam_config2.aec_value);
   // }
-  // ResponseCmndNumber(pCONT_set->Settings.webcam_config2.aec_value);
+  // ResponseCmndNumber(tkr_set->Settings.webcam_config2.aec_value);
 }
 
 void mWebCamera::CmndWebcamAELevel(void) {
   // if ((XdrvMailbox.payload >= -2) && (XdrvMailbox.payload <= 2)) {
-  //   pCONT_set->Settings.webcam_config2.ae_level = XdrvMailbox.payload + 2;
-  //   WcSetOptions(12, pCONT_set->Settings.webcam_config2.ae_level - 2);
+  //   tkr_set->Settings.webcam_config2.ae_level = XdrvMailbox.payload + 2;
+  //   WcSetOptions(12, tkr_set->Settings.webcam_config2.ae_level - 2);
   // }
-  // ResponseCmndNumber(pCONT_set->Settings.webcam_config2.ae_level - 2);
+  // ResponseCmndNumber(tkr_set->Settings.webcam_config2.ae_level - 2);
 }
 
 void mWebCamera::CmndWebcamAEC2(void) {
   // if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 1)) {
-  //   pCONT_set->Settings.webcam_config.aec2 = XdrvMailbox.payload;
-  //   WcSetOptions(13, pCONT_set->Settings.webcam_config.aec2);
+  //   tkr_set->Settings.webcam_config.aec2 = XdrvMailbox.payload;
+  //   WcSetOptions(13, tkr_set->Settings.webcam_config.aec2);
   // }
-  // ResponseCmndStateText(pCONT_set->Settings.webcam_config.aec2);
+  // ResponseCmndStateText(tkr_set->Settings.webcam_config.aec2);
 }
 
 void mWebCamera::CmndWebcamAGC(void) {
   // if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 1)) {
-  //   pCONT_set->Settings.webcam_config.agc = XdrvMailbox.payload;
-  //   WcSetOptions(14, pCONT_set->Settings.webcam_config.agc);
+  //   tkr_set->Settings.webcam_config.agc = XdrvMailbox.payload;
+  //   WcSetOptions(14, tkr_set->Settings.webcam_config.agc);
   // }
-  // ResponseCmndStateText(pCONT_set->Settings.webcam_config.agc);
+  // ResponseCmndStateText(tkr_set->Settings.webcam_config.agc);
 }
 
 void mWebCamera::CmndWebcamAGCGain(void) {
   // if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 30)) {
-  //   pCONT_set->Settings.webcam_config2.agc_gain = XdrvMailbox.payload;
-  //   WcSetOptions(15, pCONT_set->Settings.webcam_config2.agc_gain);
+  //   tkr_set->Settings.webcam_config2.agc_gain = XdrvMailbox.payload;
+  //   WcSetOptions(15, tkr_set->Settings.webcam_config2.agc_gain);
   // }
-  // ResponseCmndNumber(pCONT_set->Settings.webcam_config2.agc_gain);
+  // ResponseCmndNumber(tkr_set->Settings.webcam_config2.agc_gain);
 }
 
 void mWebCamera::CmndWebcamGainCeiling(void) {
   // if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 6)) {
-  //   pCONT_set->Settings.webcam_config2.gainceiling = XdrvMailbox.payload;
-  //   WcSetOptions(16, pCONT_set->Settings.webcam_config2.gainceiling);
+  //   tkr_set->Settings.webcam_config2.gainceiling = XdrvMailbox.payload;
+  //   WcSetOptions(16, tkr_set->Settings.webcam_config2.gainceiling);
   // }
-  // ResponseCmndNumber(pCONT_set->Settings.webcam_config2.gainceiling);
+  // ResponseCmndNumber(tkr_set->Settings.webcam_config2.gainceiling);
 }
 
 void mWebCamera::CmndWebcamGammaCorrect(void) {
   // if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 1)) {
-  //   pCONT_set->Settings.webcam_config.raw_gma = XdrvMailbox.payload;
-  //   WcSetOptions(17, pCONT_set->Settings.webcam_config.raw_gma);
+  //   tkr_set->Settings.webcam_config.raw_gma = XdrvMailbox.payload;
+  //   WcSetOptions(17, tkr_set->Settings.webcam_config.raw_gma);
   // }
-  // ResponseCmndStateText(pCONT_set->Settings.webcam_config.raw_gma);
+  // ResponseCmndStateText(tkr_set->Settings.webcam_config.raw_gma);
 }
 
 void mWebCamera::CmndWebcamLensCorrect(void) {
   // if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 1)) {
-  //   pCONT_set->Settings.webcam_config.lenc = XdrvMailbox.payload;
-  //   WcSetOptions(18, pCONT_set->Settings.webcam_config.lenc);
+  //   tkr_set->Settings.webcam_config.lenc = XdrvMailbox.payload;
+  //   WcSetOptions(18, tkr_set->Settings.webcam_config.lenc);
   // }
-  // ResponseCmndStateText(pCONT_set->Settings.webcam_config.lenc);
+  // ResponseCmndStateText(tkr_set->Settings.webcam_config.lenc);
 }
 
 void mWebCamera::CmndWebcamWPC(void) {
   // if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 1)) {
-  //   pCONT_set->Settings.webcam_config.wpc = XdrvMailbox.payload;
-  //   WcSetOptions(19, pCONT_set->Settings.webcam_config.wpc);
+  //   tkr_set->Settings.webcam_config.wpc = XdrvMailbox.payload;
+  //   WcSetOptions(19, tkr_set->Settings.webcam_config.wpc);
   // }
-  // ResponseCmndStateText(pCONT_set->Settings.webcam_config.wpc);
+  // ResponseCmndStateText(tkr_set->Settings.webcam_config.wpc);
 }
 
 void mWebCamera::CmndWebcamDCW(void) {
   // if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 1)) {
-  //   pCONT_set->Settings.webcam_config.dcw = XdrvMailbox.payload;
-  //   WcSetOptions(20, pCONT_set->Settings.webcam_config.dcw);
+  //   tkr_set->Settings.webcam_config.dcw = XdrvMailbox.payload;
+  //   WcSetOptions(20, tkr_set->Settings.webcam_config.dcw);
   // }
-  // ResponseCmndStateText(pCONT_set->Settings.webcam_config.dcw);
+  // ResponseCmndStateText(tkr_set->Settings.webcam_config.dcw);
 }
 
 void mWebCamera::CmndWebcamBPC(void) {
   // if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 1)) {
-  //   pCONT_set->Settings.webcam_config.bpc = XdrvMailbox.payload;
-  //   WcSetOptions(21, pCONT_set->Settings.webcam_config.bpc);
+  //   tkr_set->Settings.webcam_config.bpc = XdrvMailbox.payload;
+  //   WcSetOptions(21, tkr_set->Settings.webcam_config.bpc);
   // }
-  // ResponseCmndStateText(pCONT_set->Settings.webcam_config.bpc);
+  // ResponseCmndStateText(tkr_set->Settings.webcam_config.bpc);
 }
 
 void mWebCamera::CmndWebcamColorbar(void) {
   // if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 1)) {
-  //   pCONT_set->Settings.webcam_config.colorbar = XdrvMailbox.payload;
-  //   WcSetOptions(22, pCONT_set->Settings.webcam_config.colorbar);
+  //   tkr_set->Settings.webcam_config.colorbar = XdrvMailbox.payload;
+  //   WcSetOptions(22, tkr_set->Settings.webcam_config.colorbar);
   // }
-  // ResponseCmndStateText(pCONT_set->Settings.webcam_config.colorbar);
+  // ResponseCmndStateText(tkr_set->Settings.webcam_config.colorbar);
 }
 
 void mWebCamera::CmndWebcamFeature(void) {
   // if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 2)) {
-  //   pCONT_set->Settings.webcam_config.feature = XdrvMailbox.payload;
-  //   WcSetOptions(23, pCONT_set->Settings.webcam_config.feature);
+  //   tkr_set->Settings.webcam_config.feature = XdrvMailbox.payload;
+  //   WcSetOptions(23, tkr_set->Settings.webcam_config.feature);
   // }
-  // ResponseCmndNumber(pCONT_set->Settings.webcam_config.feature);
+  // ResponseCmndNumber(tkr_set->Settings.webcam_config.feature);
 }
 
 void mWebCamera::CmndWebcamAuth(void){
   // if((XdrvMailbox.payload >=0) && (XdrvMailbox.payload <= 1)){
-  //   pCONT_set->Settings.webcam_config2.auth = XdrvMailbox.payload;
+  //   tkr_set->Settings.webcam_config2.auth = XdrvMailbox.payload;
   // }
-  // ResponseCmndNumber(pCONT_set->Settings.webcam_config2.auth);
+  // ResponseCmndNumber(tkr_set->Settings.webcam_config2.auth);
 }
 
 void mWebCamera::CmndWebcamClock(void){
 //   if((XdrvMailbox.payload >= 10) && (XdrvMailbox.payload <= 200)){
-//     pCONT_set->Settings.webcam_clk = XdrvMailbox.payload;
+//     tkr_set->Settings.webcam_clk = XdrvMailbox.payload;
 //     WcInterruptControl();
 //   }
-//   ResponseCmndNumber(pCONT_set->Settings.webcam_clk);
+//   ResponseCmndNumber(tkr_set->Settings.webcam_clk);
 }
 
 void mWebCamera::CmndWebcamInit(void) {
@@ -1297,10 +1297,10 @@ void mWebCamera::CmndWebcamStats(void) {
 #ifdef ENABLE_RTSPSERVER
 void mWebCamera::CmndWebRtsp(void) {
   if ((XdrvMailbox.payload >= 0) && (XdrvMailbox.payload <= 1)) {
-    pCONT_set->Settings.webcam_config.rtsp = XdrvMailbox.payload;
-    pCONT_set->restart_flag = 2;
+    tkr_set->Settings.webcam_config.rtsp = XdrvMailbox.payload;
+    tkr_set->restart_flag = 2;
   }
-  ResponseCmndStateText(pCONT_set->Settings.webcam_config.rtsp);
+  ResponseCmndStateText(tkr_set->Settings.webcam_config.rtsp);
 }
 #endif // ENABLE_RTSPSERVER
 

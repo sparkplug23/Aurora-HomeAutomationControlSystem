@@ -1163,7 +1163,7 @@ struct SETTINGS {
     bool settings_holder_hardcorded_stored_changed = false; // if true, other files may want to reset too
   }runtime;
 
-  #define RESET_BOOT_STATUS() memset(&pCONT_set->runtime.boot_status,0,sizeof(pCONT_set->runtime.boot_status))
+  #define RESET_BOOT_STATUS() memset(&tkr_set->runtime.boot_status,0,sizeof(tkr_set->runtime.boot_status))
 
   void CommandSet_SystemRestartID(uint8_t value);
 

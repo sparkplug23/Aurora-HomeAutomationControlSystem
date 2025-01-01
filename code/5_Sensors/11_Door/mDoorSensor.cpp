@@ -138,7 +138,7 @@ void mDoorSensor::EveryLoop(){
     door_detect.tDetectTimeforDebounce = millis();
     if(door_detect.state){ 
       door_detect.isactive = true;
-      door_detect.detected_time = pCONT_time->GetTimeShortNow();
+      door_detect.detected_time = tkr_time->GetTimeShortNow();
       pCONT_rules->NewEventRun( GetModuleUniqueID(), TASK_EVENT_MOTION_STARTED_ID, 0, door_detect.isactive);
     }else{ 
       door_detect.isactive = false;
@@ -161,7 +161,7 @@ void mDoorSensor::EveryLoop(){
     lock_detect.tDetectTimeforDebounce = millis();
     if(lock_detect.state){ 
       lock_detect.isactive = true;
-      lock_detect.detected_time = pCONT_time->GetTimeShortNow();
+      lock_detect.detected_time = tkr_time->GetTimeShortNow();
       pCONT_rules->NewEventRun( GetModuleUniqueID(), TASK_EVENT_MOTION_STARTED_ID, 1, lock_detect.isactive);
     }else{ 
       lock_detect.isactive = false;

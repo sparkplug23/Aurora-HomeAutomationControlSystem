@@ -61,8 +61,8 @@
 //       JBI->Add("id",row);
 //       switch(row){
 //         case 0:
-//           JBI->Add_FV("ih",PSTR("\"%s U%s\""), pCONT_time->RtcTime.hhmmss_ctr, pCONT_time->uptime.hhmmss_ctr);
-//           JBI->Add("fc", pCONT_time->uptime_seconds_nonreset<SEC_IN_HOUR?PSTR("#ff0000"):PSTR("#ffffff"));    
+//           JBI->Add_FV("ih",PSTR("\"%s U%s\""), tkr_time->RtcTime.hhmmss_ctr, tkr_time->uptime.hhmmss_ctr);
+//           JBI->Add("fc", tkr_time->uptime_seconds_nonreset<SEC_IN_HOUR?PSTR("#ff0000"):PSTR("#ffffff"));    
 //         break;
 //         case 1:{        
 //           int8_t wifi_perc = pCONT_wif->GetRSSPercentage();
@@ -74,17 +74,17 @@
 //           JBI->Add("fc", colour_ctr);    
 //         }break;
 //         case 2:
-//           JBI->Add("ihr",pCONT_set->runtime.firmware_version.current.name_ctr);
+//           JBI->Add("ihr",tkr_set->runtime.firmware_version.current.name_ctr);
 //           JBI->Add("fc", pCONT_sup->GetVersionColour(buffer));    
 
 //         break;
 //         case 3:
 //             JBI->Add_FV("ih",PSTR("\"ROW3%dc %d %s|%s PT(%s) LPS(%d)\""), 
-//                 pCONT_set->Settings.bootcount, 
+//                 tkr_set->Settings.bootcount, 
 //                 ESP.getFreeHeap(), 
 //                 F(__DATE__), 
 //                 F(__TIME__), 
-//                 pCONT_set->runtime.boot_status.module_template_used ? "Y" : "N", 
+//                 tkr_set->runtime.boot_status.module_template_used ? "Y" : "N", 
 //                 pCONT_sup->activity.cycles_per_sec
 //             );
 //         break;
@@ -96,7 +96,7 @@
   
 //   // JBI->Array_Start("debug_line");// Class name
 //   //   JBI->Object_Start();
-//   //     JBI->Add_FV("ih",PSTR("\"%dc %d %s|%s PT(%s) LPS(%d)\""), pCONT_set->Settings.bootcount, ESP.getFreeHeap(), F(__DATE__), F(__TIME__), pCONT_set->runtime.boot_status.module_template_used ? "Y" : "N", pCONT_sup->activity.cycles_per_sec);
+//   //     JBI->Add_FV("ih",PSTR("\"%dc %d %s|%s PT(%s) LPS(%d)\""), tkr_set->Settings.bootcount, ESP.getFreeHeap(), F(__DATE__), F(__TIME__), tkr_set->runtime.boot_status.module_template_used ? "Y" : "N", pCONT_sup->activity.cycles_per_sec);
 //   //   JBI->Object_End();
 //   // JBI->Array_End();
 //   JBI->End();
@@ -122,8 +122,8 @@
 //       JBI->Add("id",row);
 //       switch(row){
 //         case 0:
-//           JBI->Add_FV("ih",PSTR("\"%s U%s\""), pCONT_time->RtcTime.hhmmss_ctr, pCONT_time->uptime.hhmmss_ctr);
-//           JBI->Add("fc", pCONT_time->uptime_seconds_nonreset<SEC_IN_HOUR?PSTR("#ff0000"):PSTR("#ffffff"));    
+//           JBI->Add_FV("ih",PSTR("\"%s U%s\""), tkr_time->RtcTime.hhmmss_ctr, tkr_time->uptime.hhmmss_ctr);
+//           JBI->Add("fc", tkr_time->uptime_seconds_nonreset<SEC_IN_HOUR?PSTR("#ff0000"):PSTR("#ffffff"));    
 //         break;
 //         case 1:{        
 //           int8_t wifi_perc = pCONT_wif->GetRSSPercentage();
@@ -135,14 +135,14 @@
 //           JBI->Add("fc", colour_ctr);   
 //         }break;
 //         case 2:
-//           JBI->Add("ihr",pCONT_set->runtime.firmware_version.current.name_ctr);
+//           JBI->Add("ihr",tkr_set->runtime.firmware_version.current.name_ctr);
 //           JBI->Add("fc", pCONT_sup->GetVersionColour(buffer));    
 //         break;
 //         case 3:
-//           JBI->Add_FV("ih",PSTR("\"Boot: %dc PT(%s)\""), pCONT_set->Settings.bootcount, pCONT_set->runtime.boot_status.module_template_used ? "Y" : "N");
+//           JBI->Add_FV("ih",PSTR("\"Boot: %dc PT(%s)\""), tkr_set->Settings.bootcount, tkr_set->runtime.boot_status.module_template_used ? "Y" : "N");
 //         break;
 //         case 4:
-//           JBI->Add_FV("ih",PSTR("\"Firmware: %s %s|%s\""), pCONT_set->runtime.firmware_version.current.name_ctr, F(__DATE__), F(__TIME__));
+//           JBI->Add_FV("ih",PSTR("\"Firmware: %s %s|%s\""), tkr_set->runtime.firmware_version.current.name_ctr, F(__DATE__), F(__TIME__));
 //           JBI->Add("fc", pCONT_sup->GetVersionColour(buffer));    
 //         break;
 //         case 5:
@@ -159,7 +159,7 @@
   
 //   // JBI->Array_Start("debug_line");// Class name
 //   //   JBI->Object_Start();
-//   //     JBI->Add_FV("ih",PSTR("\"%dc %d %s|%s PT(%s) LPS(%d)\""), pCONT_set->Settings.bootcount, ESP.getFreeHeap(), F(__DATE__), F(__TIME__), pCONT_set->runtime.boot_status.module_template_used ? "Y" : "N", pCONT_sup->activity.cycles_per_sec);
+//   //     JBI->Add_FV("ih",PSTR("\"%dc %d %s|%s PT(%s) LPS(%d)\""), tkr_set->Settings.bootcount, ESP.getFreeHeap(), F(__DATE__), F(__TIME__), tkr_set->runtime.boot_status.module_template_used ? "Y" : "N", pCONT_sup->activity.cycles_per_sec);
 //   //   JBI->Object_End();
 //   // JBI->Array_End();
 //   JBI->End();
@@ -201,13 +201,13 @@
 //   // if (WifiIsInManagerMode()) {
 //   //   #ifndef FIRMWARE_MINIMAL
 //   //     if (
-//   //         (pCONT_set->Settings.web_password[0] != 0) && 
+//   //         (tkr_set->Settings.web_password[0] != 0) && 
 //   //         !(request->hasParam("USER1")) && !(request->hasParam("PASS1")
 //   //       ) && HTTP_MANAGER_RESET_ONLY != webserver_state) {
 //   //       HandleWifiLogin(request);
 //   //     } else {
-//   //       if (!(pCONT_set->Settings.web_password[0] != 0) || 
-//   //           (((request->arg("USER1") == WEB_USERNAME ) && (request->arg("PASS1") == pCONT_set->Settings.web_password )) || HTTP_MANAGER_RESET_ONLY == webserver_state)) {
+//   //       if (!(tkr_set->Settings.web_password[0] != 0) || 
+//   //           (((request->arg("USER1") == WEB_USERNAME ) && (request->arg("PASS1") == tkr_set->Settings.web_password )) || HTTP_MANAGER_RESET_ONLY == webserver_state)) {
 //   //         HandleWifiConfiguration(request);
 //   //       } else {
 //   //         // wrong user and pass
@@ -316,7 +316,7 @@
 
 //   JBI->Array_Start("page_title");// Class name
 //     JBI->Object_Start();
-//       JBI->Add("ihr",pCONT_set->Settings.system_name.friendly);
+//       JBI->Add("ihr",tkr_set->Settings.system_name.friendly);
 //       JBI->Add("fc", D_COLOUR_PAGE_TITLE);           
 //     JBI->Object_End();
 //   JBI->Array_End();
@@ -324,19 +324,19 @@
 //   // char buffer[10];
 //   // JBI->Array_Start("row_version_data");// Class name
 //   //   JBI->Object_Start();
-//   //     JBI->Add("ihr",pCONT_set->runtime.firmware_version.current.name_ctr);
+//   //     JBI->Add("ihr",tkr_set->runtime.firmware_version.current.name_ctr);
 //   //     JBI->Add("fc", pCONT_sup->GetVersionColour(buffer));           
 //   //   JBI->Object_End();
 //   // JBI->Array_End();
 
 //   // JBI->Object_Start("function");
-//   //     JBI->Add("SetTitle",pCONT_set->Settings.system_name.friendly);
+//   //     JBI->Add("SetTitle",tkr_set->Settings.system_name.friendly);
 //   // JBI->Object_End();  
 
   
 //   // JBI->Array_Start("function");// Class name
 //   //   JBI->Object_Start();
-//   //     JBI->Add("SetTitle","Heelo");//pCONT_set->Settings.system_name.friendly);
+//   //     JBI->Add("SetTitle","Heelo");//tkr_set->Settings.system_name.friendly);
 //   //   JBI->Object_End();
 //   // JBI->Array_End();
 
@@ -507,15 +507,15 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
       "}1"
       "%d" //reset_web_log_flag
       "}1")
-    , pCONT_set->web_log_index, reset_web_log_flag);
+    , tkr_set->web_log_index, reset_web_log_flag);
 
   if (!reset_web_log_flag) {
     counter = 0;                  //reset counter from webpage 
     reset_web_log_flag = true;
   }
-  if (counter != pCONT_set->web_log_index) {   //if webpage counter does not match internal counter
+  if (counter != tkr_set->web_log_index) {   //if webpage counter does not match internal counter
     if (!counter) {    //and counter is not FIRST position
-      counter = pCONT_set->web_log_index;  //use internal counter
+      counter = tkr_set->web_log_index;  //use internal counter
       cflg = false;     //no NEW line
     }
 
@@ -536,7 +536,7 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
       counter++; //internal counter
       if (!counter) { counter++; }  // Skip log index 0 as it is not allowed
       if(counter>100) break;
-    } while (counter != pCONT_set->web_log_index);
+    } while (counter != tkr_set->web_log_index);
 
   }
 
@@ -712,7 +712,7 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 // //     }
 
 // //     // As WIFI_HOSTNAME may contain %s-%04d it cannot be part of HTTP_FORM_WIFI where it will exception
-// //     WSBufferAppend_P(response, HTTP_FORM_WIFI, pCONT_set->Settings.sta_ssid[0], pCONT_set->Settings.sta_ssid[1], WIFI_HOSTNAME, WIFI_HOSTNAME, pCONT_set->Settings.hostname);
+// //     WSBufferAppend_P(response, HTTP_FORM_WIFI, tkr_set->Settings.sta_ssid[0], tkr_set->Settings.sta_ssid[1], WIFI_HOSTNAME, WIFI_HOSTNAME, tkr_set->Settings.hostname);
 // //     WSBufferAppend_P(response, HTTP_FORM_END);
 // //   }
 
@@ -729,24 +729,24 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 
 // void mWebServer::WifiSaveSettings(AsyncWebServerRequest *request)
 // {
-//   // char tmp[sizeof(pCONT_set->Settings.sta_pwd[0])];  // Max length is currently 65
+//   // char tmp[sizeof(tkr_set->Settings.sta_pwd[0])];  // Max length is currently 65
 
 //   // WebGetArg(request,"h", tmp, sizeof(tmp));
-//   // strlcpy(pCONT_set->Settings.hostname, (!strlen(tmp)) ? WIFI_HOSTNAME : tmp, sizeof(pCONT_set->Settings.hostname));
-//   // if (strstr(pCONT_set->Settings.hostname, "%") != nullptr) {
-//   //   strlcpy(pCONT_set->Settings.hostname, WIFI_HOSTNAME, sizeof(pCONT_set->Settings.hostname));
+//   // strlcpy(tkr_set->Settings.hostname, (!strlen(tmp)) ? WIFI_HOSTNAME : tmp, sizeof(tkr_set->Settings.hostname));
+//   // if (strstr(tkr_set->Settings.hostname, "%") != nullptr) {
+//   //   strlcpy(tkr_set->Settings.hostname, WIFI_HOSTNAME, sizeof(tkr_set->Settings.hostname));
 //   // }
 //   // WebGetArg(request,"s1", tmp, sizeof(tmp));
-//   // strlcpy(pCONT_set->Settings.sta_ssid[0], (!strlen(tmp)) ? STA_SSID1 : tmp, sizeof(pCONT_set->Settings.sta_ssid[0]));
+//   // strlcpy(tkr_set->Settings.sta_ssid[0], (!strlen(tmp)) ? STA_SSID1 : tmp, sizeof(tkr_set->Settings.sta_ssid[0]));
 //   // WebGetArg(request,"s2", tmp, sizeof(tmp));
-//   // strlcpy(pCONT_set->Settings.sta_ssid[1], (!strlen(tmp)) ? STA_SSID2 : tmp, sizeof(pCONT_set->Settings.sta_ssid[1]));
+//   // strlcpy(tkr_set->Settings.sta_ssid[1], (!strlen(tmp)) ? STA_SSID2 : tmp, sizeof(tkr_set->Settings.sta_ssid[1]));
 //   // WebGetArg(request,"s3", tmp, sizeof(tmp));
-//   // strlcpy(pCONT_set->Settings.sta_ssid[2], (!strlen(tmp)) ? STA_SSID3 : tmp, sizeof(pCONT_set->Settings.sta_ssid[2]));
+//   // strlcpy(tkr_set->Settings.sta_ssid[2], (!strlen(tmp)) ? STA_SSID3 : tmp, sizeof(tkr_set->Settings.sta_ssid[2]));
 //   // WebGetArg(request,"p1", tmp, sizeof(tmp));
-//   // strlcpy(pCONT_set->Settings.sta_pwd[0], (!strlen(tmp)) ? "" : (strlen(tmp) < 5) ? pCONT_set->Settings.sta_pwd[0] : tmp, sizeof(pCONT_set->Settings.sta_pwd[0]));
+//   // strlcpy(tkr_set->Settings.sta_pwd[0], (!strlen(tmp)) ? "" : (strlen(tmp) < 5) ? tkr_set->Settings.sta_pwd[0] : tmp, sizeof(tkr_set->Settings.sta_pwd[0]));
 //   // WebGetArg(request,"p2", tmp, sizeof(tmp));
-//   // strlcpy(pCONT_set->Settings.sta_pwd[1], (!strlen(tmp)) ? "" : (strlen(tmp) < 5) ? pCONT_set->Settings.sta_pwd[1] : tmp, sizeof(pCONT_set->Settings.sta_pwd[1]));
-//   // ALOG_INF(PSTR(D_LOG_WIFI D_HOSTNAME " %s, " D_SSID "1 %s, " D_SSID "2 %s"), pCONT_set->Settings.hostname, pCONT_set->Settings.sta_ssid[0], pCONT_set->Settings.sta_ssid[1]);
+//   // strlcpy(tkr_set->Settings.sta_pwd[1], (!strlen(tmp)) ? "" : (strlen(tmp) < 5) ? tkr_set->Settings.sta_pwd[1] : tmp, sizeof(tkr_set->Settings.sta_pwd[1]));
+//   // ALOG_INF(PSTR(D_LOG_WIFI D_HOSTNAME " %s, " D_SSID "1 %s, " D_SSID "2 %s"), tkr_set->Settings.hostname, tkr_set->Settings.sta_ssid[0], tkr_set->Settings.sta_ssid[1]);
 // }
 
 // /*-------------------------------------------------------------------------------------------*/
@@ -770,7 +770,7 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 //   // char stemp2[32];
 //   // uint8_t dlevel[3] = { LOG_LEVEL_INFO, LOG_LEVEL_INFO, LOG_LEVEL_NONE };
 //   // for (uint8_t idx = 0; idx < 3; idx++) {
-//   //   uint8_t llevel = (0==idx)?pCONT_set->Settings.logging.serial_level:(1==idx)?pCONT_set->Settings.logging.web_level:pCONT_set->Settings.syslog_level;
+//   //   uint8_t llevel = (0==idx)?tkr_set->Settings.logging.serial_level:(1==idx)?tkr_set->Settings.logging.web_level:tkr_set->Settings.syslog_level;
 //   //   WSBufferAppend_P(response, PSTR("<p><b>%s</b> (%s)<br/><select id='l%d' name='l%d'>"),
 //   //     pCONT_sup->GetTextIndexed_P(stemp1, sizeof(stemp1), idx, kLoggingOptions),
 //   //     pCONT_sup->GetTextIndexed_P(stemp2, sizeof(stemp2), dlevel[idx], kLoggingLevels),
@@ -782,7 +782,7 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 //   //   }
 //   //   WSBufferAppend_P(response, PSTR("</select></p>"));
 //   // }
-//   // WSBufferAppend_P(response, HTTP_FORM_LOG2, pCONT_set->Settings.syslog_host, pCONT_set->Settings.syslog_port, pCONT_set->Settings.tele_period);
+//   // WSBufferAppend_P(response, HTTP_FORM_LOG2, tkr_set->Settings.syslog_host, tkr_set->Settings.syslog_port, tkr_set->Settings.tele_period);
 //   // WSBufferAppend_P(response, HTTP_FORM_END);
 //   // WSContentSpaceButton(request, BUTTON_CONFIGURATION);
 //   // WSContentStop(request);
@@ -790,27 +790,27 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 
 // void mWebServer::LoggingSaveSettings(AsyncWebServerRequest *request)
 // {
-//   // char tmp[sizeof(pCONT_set->Settings.syslog_host)];  // Max length is currently 33
+//   // char tmp[sizeof(tkr_set->Settings.syslog_host)];  // Max length is currently 33
 
 //   // WebGetArg(request,"l0", tmp, sizeof(tmp));
-//   // pCONT_set->Settings.logging.serial_level = (!strlen(tmp)) ? SERIAL_LOG_LEVEL : atoi(tmp);
+//   // tkr_set->Settings.logging.serial_level = (!strlen(tmp)) ? SERIAL_LOG_LEVEL : atoi(tmp);
 //   // WebGetArg(request,"l1", tmp, sizeof(tmp));
-//   // pCONT_set->Settings.logging.web_level = (!strlen(tmp)) ? WEB_LOG_LEVEL : atoi(tmp);
+//   // tkr_set->Settings.logging.web_level = (!strlen(tmp)) ? WEB_LOG_LEVEL : atoi(tmp);
 //   // WebGetArg(request,"l2", tmp, sizeof(tmp));
-//   // pCONT_set->Settings.syslog_level = (!strlen(tmp)) ? SYS_LOG_LEVEL : atoi(tmp);
-//   // pCONT_set->syslog_level = pCONT_set->Settings.syslog_level;
-//   // pCONT_set->syslog_timer = 0;
+//   // tkr_set->Settings.syslog_level = (!strlen(tmp)) ? SYS_LOG_LEVEL : atoi(tmp);
+//   // tkr_set->syslog_level = tkr_set->Settings.syslog_level;
+//   // tkr_set->syslog_timer = 0;
 //   // WebGetArg(request,"lh", tmp, sizeof(tmp));
-//   // strlcpy(pCONT_set->Settings.syslog_host, (!strlen(tmp)) ? SYS_LOG_HOST : tmp, sizeof(pCONT_set->Settings.syslog_host));
+//   // strlcpy(tkr_set->Settings.syslog_host, (!strlen(tmp)) ? SYS_LOG_HOST : tmp, sizeof(tkr_set->Settings.syslog_host));
 //   // WebGetArg(request,"lp", tmp, sizeof(tmp));
-//   // pCONT_set->Settings.syslog_port = (!strlen(tmp)) ? SYS_LOG_PORT : atoi(tmp);
+//   // tkr_set->Settings.syslog_port = (!strlen(tmp)) ? SYS_LOG_PORT : atoi(tmp);
 //   // WebGetArg(request,"lt", tmp, sizeof(tmp));
-//   // pCONT_set->Settings.tele_period = (!strlen(tmp)) ? TELE_PERIOD : atoi(tmp);
-//   // if ((pCONT_set->Settings.tele_period > 0) && (pCONT_set->Settings.tele_period < 10)) {
-//   //   pCONT_set->Settings.tele_period = 10;   // Do not allow periods < 10 seconds
+//   // tkr_set->Settings.tele_period = (!strlen(tmp)) ? TELE_PERIOD : atoi(tmp);
+//   // if ((tkr_set->Settings.tele_period > 0) && (tkr_set->Settings.tele_period < 10)) {
+//   //   tkr_set->Settings.tele_period = 10;   // Do not allow periods < 10 seconds
 //   // }
 //   // ALOG_INF(PSTR(D_LOG_LOG D_SERIALLOG " %d, " D_WEBLOG " %d, " D_SYSLOG " %d, " D_LOGHOST " %s, " D_LOGPORT " %d, " D_TELEPERIOD " %d"),
-//   //   pCONT_set->Settings.logging.serial_level, pCONT_set->Settings.logging.web_level, pCONT_set->Settings.syslog_level, pCONT_set->Settings.syslog_host, pCONT_set->Settings.syslog_port, pCONT_set->Settings.tele_period);
+//   //   tkr_set->Settings.logging.serial_level, tkr_set->Settings.logging.web_level, tkr_set->Settings.syslog_level, tkr_set->Settings.syslog_host, tkr_set->Settings.syslog_port, tkr_set->Settings.tele_period);
 // }
 
 // /*-------------------------------------------------------------------------------------------*/
@@ -833,10 +833,10 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 // //   pCONT_sup->TemplateJson(); 
 // //   char stemp[strlen(data_buffer.payload.ctr) +1];
 // //   strlcpy(stemp, data_buffer.payload.ctr, sizeof(stemp));  // Get JSON template
-// //   WSBufferAppend_P(response, HTTP_FORM_OTHER, stemp, (USER_MODULE == pCONT_set->Settings.module) ? " checked disabled" : "", (pCONT_set->Settings.flag_system.mqtt_enabled) ? " checked" : "");
+// //   WSBufferAppend_P(response, HTTP_FORM_OTHER, stemp, (USER_MODULE == tkr_set->Settings.module) ? " checked disabled" : "", (tkr_set->Settings.flag_system.mqtt_enabled) ? " checked" : "");
 
-// //   uint8_t maxfn = (pCONT_set->devices_present > MAX_FRIENDLYNAMES) ? MAX_FRIENDLYNAMES : (!pCONT_set->devices_present) ? 1 : pCONT_set->devices_present;
-// //   if (MODULE_SONOFF_IFAN02 == pCONT_set->my_module_type) { maxfn = 1; }
+// //   uint8_t maxfn = (tkr_set->devices_present > MAX_FRIENDLYNAMES) ? MAX_FRIENDLYNAMES : (!tkr_set->devices_present) ? 1 : tkr_set->devices_present;
+// //   if (MODULE_SONOFF_IFAN02 == tkr_set->my_module_type) { maxfn = 1; }
 // //   for (uint8_t i = 0; i < maxfn; i++) {
 // //     snprintf_P(stemp, sizeof(stemp), PSTR("%d"), i +1);
 // //     WSBufferAppend_P(response, PSTR("<b>" D_FRIENDLY_NAME " %d</b> (" FRIENDLY_NAME "%s)<br/><input id='a%d' name='a%d' placeholder='" FRIENDLY_NAME "%s' value='%s'><p></p>"),
@@ -844,7 +844,7 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 // //       (i) ? stemp : "",
 // //       i, i,
 // //       (i) ? stemp : "",
-// //       pCONT_set->Settings.system_name.friendly[i]);
+// //       tkr_set->Settings.system_name.friendly[i]);
 // //   }
 
 // // #ifdef USE_EMULATION
@@ -852,7 +852,7 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 // //   for (uint8_t i = 0; i < EMUL_MAX; i++) {
 // //     WSBufferAppend_P(response, PSTR("<input id='r%d' name='b2' type='radio' value='%d'%s><b>%s</b> %s<br/>"),  // Different id only used for labels
 // //       i, i,
-// //       (i == pCONT_set->Settings.flag_power.emulation) ? " checked" : "",
+// //       (i == tkr_set->Settings.flag_power.emulation) ? " checked" : "",
 // //       pCONT_sup->GetTextIndexed_P(stemp, sizeof(stemp), i, kEmulationOptions),
 // //       (i == EMUL_NONE) ? "" : (i == EMUL_WEMO) ? D_SINGLE_DEVICE : D_MULTI_DEVICE);
 // //   }
@@ -868,22 +868,22 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 // {
 // //   char tmp[128];
 // //   char webindex[5];
-// //   char friendlyname[sizeof(pCONT_set->Settings.system_name.friendly[0])];
+// //   char friendlyname[sizeof(tkr_set->Settings.system_name.friendly[0])];
 
 // //   WebGetArg(request,"wp", tmp, sizeof(tmp));
-// //   strlcpy(pCONT_set->Settings.web_password, (!strlen(tmp)) ? "" : (strchr(tmp,'*')) ? pCONT_set->Settings.web_password : tmp, sizeof(pCONT_set->Settings.web_password));
-// //   pCONT_set->Settings.flag_system.mqtt_enabled = request->hasParam("b1");
+// //   strlcpy(tkr_set->Settings.web_password, (!strlen(tmp)) ? "" : (strchr(tmp,'*')) ? tkr_set->Settings.web_password : tmp, sizeof(tkr_set->Settings.web_password));
+// //   tkr_set->Settings.flag_system.mqtt_enabled = request->hasParam("b1");
 // // #ifdef USE_EMULATION
 // //   WebGetArg(request,"b2", tmp, sizeof(tmp));
-// //   pCONT_set->Settings.flag_power.emulation = (!strlen(tmp)) ? 0 : atoi(tmp);
+// //   tkr_set->Settings.flag_power.emulation = (!strlen(tmp)) ? 0 : atoi(tmp);
 // // #endif  // USE_EMULATION
-// //   snprintf_P(pCONT_set->log_data, sizeof(pCONT_set->log_data), PSTR(D_LOG_OTHER D_MQTT_ENABLE " %s, " D_EMULATION " %d, " D_FRIENDLYNAME), pCONT_sup->GetStateText(pCONT_set->Settings.flag_system.mqtt_enabled), pCONT_set->Settings.flag_power.emulation);
+// //   snprintf_P(tkr_set->log_data, sizeof(tkr_set->log_data), PSTR(D_LOG_OTHER D_MQTT_ENABLE " %s, " D_EMULATION " %d, " D_FRIENDLYNAME), pCONT_sup->GetStateText(tkr_set->Settings.flag_system.mqtt_enabled), tkr_set->Settings.flag_power.emulation);
 // //   for (uint8_t i = 0; i < MAX_FRIENDLYNAMES; i++) {
 // //     snprintf_P(webindex, sizeof(webindex), PSTR("a%d"), i);
 // //     WebGetArg(request, webindex, tmp, sizeof(tmp));
 // //     snprintf_P(friendlyname, sizeof(friendlyname), PSTR(FRIENDLY_NAME"%d"), i +1);
-// //     strlcpy(pCONT_set->Settings.system_name.friendly[i], (!strlen(tmp)) ? (i) ? friendlyname : FRIENDLY_NAME : tmp, sizeof(pCONT_set->Settings.system_name.friendly[i]));
-// //     snprintf_P(pCONT_set->log_data, sizeof(pCONT_set->log_data), PSTR("%s%s %s"), pCONT_set->log_data, (i) ? "," : "", pCONT_set->Settings.system_name.friendly[i]);
+// //     strlcpy(tkr_set->Settings.system_name.friendly[i], (!strlen(tmp)) ? (i) ? friendlyname : FRIENDLY_NAME : tmp, sizeof(tkr_set->Settings.system_name.friendly[i]));
+// //     snprintf_P(tkr_set->log_data, sizeof(tkr_set->log_data), PSTR("%s%s %s"), tkr_set->log_data, (i) ? "," : "", tkr_set->Settings.system_name.friendly[i]);
 // //   }
 // //   //AddLogAddLog(LOG_LEVEL_INFO);
 // //   WebGetArg(request,"t1", tmp, sizeof(tmp));
@@ -908,40 +908,40 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 
 // //   ALOG_DBG(PSTR(D_LOG_HTTP D_BACKUP_CONFIGURATION));
 
-// //   if (!pCONT_set->SettingsBufferAlloc()) { return; }
+// //   if (!tkr_set->SettingsBufferAlloc()) { return; }
 
 // //   // WiFiClient myClient = pWebServer->client();
-// //   pWebServer->setContentLength(sizeof(pCONT_set->Settings));
+// //   pWebServer->setContentLength(sizeof(tkr_set->Settings));
 
 // //   char attachment[100];
-// //   char friendlyname[sizeof(pCONT_set->Settings.system_name.friendly)];
-// //   snprintf_P(attachment, sizeof(attachment), PSTR("attachment; filename=Config_%s_%s.dmp"), pCONT_sup->NoAlNumToUnderscore(friendlyname, pCONT_set->Settings.system_name.friendly), pCONT_set->my_version);
+// //   char friendlyname[sizeof(tkr_set->Settings.system_name.friendly)];
+// //   snprintf_P(attachment, sizeof(attachment), PSTR("attachment; filename=Config_%s_%s.dmp"), pCONT_sup->NoAlNumToUnderscore(friendlyname, tkr_set->Settings.system_name.friendly), tkr_set->my_version);
 // //   //request->sendHeader(F("Content-Disposition"), attachment);// asyncedit
 
 // //   WSSend(200, CT_STREAM, "");
 
-// //   uint16_t cfg_crc = pCONT_set->Settings.cfg_crc;
-// //   pCONT_set->Settings.cfg_crc = pCONT_set->GetSettingsCrc();  // Calculate crc (again) as it might be wrong when savedata = 0 (#3918)
+// //   uint16_t cfg_crc = tkr_set->Settings.cfg_crc;
+// //   tkr_set->Settings.cfg_crc = tkr_set->GetSettingsCrc();  // Calculate crc (again) as it might be wrong when savedata = 0 (#3918)
 
-// //   memcpy(pCONT_set->settings_buffer, &pCONT_set->Settings, sizeof(pCONT_set->Settings));
+// //   memcpy(tkr_set->settings_buffer, &tkr_set->Settings, sizeof(tkr_set->Settings));
 // //   if (config_xor_on_set) {
-// //     for (uint16_t i = 2; i < sizeof(pCONT_set->Settings); i++) {
-// //       pCONT_set->settings_buffer[i] ^= (config_xor_on_set +i);
+// //     for (uint16_t i = 2; i < sizeof(tkr_set->Settings); i++) {
+// //       tkr_set->settings_buffer[i] ^= (config_xor_on_set +i);
 // //     }
 // //   }
 
 // // #ifdef ARDUINO_ESP8266_RELEASE_2_3_0
-// //   size_t written = myClient.write((const char*)pCONT_set->settings_buffer, sizeof(pCONT_set->Settings));
-// //   if (written < sizeof(pCONT_set->Settings)) {  // https://github.com/esp8266/Arduino/issues/3218
-// //     myClient.write((const char*)pCONT_set->settings_buffer +written, sizeof(pCONT_set->Settings) -written);
+// //   size_t written = myClient.write((const char*)tkr_set->settings_buffer, sizeof(tkr_set->Settings));
+// //   if (written < sizeof(tkr_set->Settings)) {  // https://github.com/esp8266/Arduino/issues/3218
+// //     myClient.write((const char*)tkr_set->settings_buffer +written, sizeof(tkr_set->Settings) -written);
 // //   }
 // // #else
-// //   myClient.write((const char*)pCONT_set->settings_buffer, sizeof(pCONT_set->Settings));
+// //   myClient.write((const char*)tkr_set->settings_buffer, sizeof(tkr_set->Settings));
 // // #endif
 
-// //   pCONT_set->SettingsBufferFree();
+// //   tkr_set->SettingsBufferFree();
 
-// //   pCONT_set->Settings.cfg_crc = cfg_crc;  // Restore crc in case savedata = 0 to make sure settings will be noted as changed
+// //   tkr_set->Settings.cfg_crc = cfg_crc;  // Restore crc in case savedata = 0 to make sure settings will be noted as changed
 // }
 
 // /*-------------------------------------------------------------------------------------------*/
@@ -1053,12 +1053,12 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 //   // WebGetArg(request,"t", stemp, sizeof(stemp));                     // 0 - 69 Template number
 //   // if (strlen(stemp)) {
 //   //   uint8_t module = atoi(stemp);
-//   //   uint8_t module_save = pCONT_set->Settings.module;
-//   //   pCONT_set->Settings.module = module;
+//   //   uint8_t module_save = tkr_set->Settings.module;
+//   //   tkr_set->Settings.module = module;
 //   //   myio cmodule;
 //   //   pCONT_sup->TemplateGPIOs(&cmodule);
 //   //   gpio_flag flag = pCONT_sup->ModuleFlag();
-//   //   pCONT_set->Settings.module = module_save;
+//   //   tkr_set->Settings.module = module_save;
 
 //   //  WSContentBegin(request, 200, CT_PLAIN);
 //   //   WSBufferAppend_P(response, PSTR("%s}1"), pCONT_sup->AnyModuleName(module).c_str());  // NAME: Generic
@@ -1078,7 +1078,7 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 //   //       WSBufferAppend_P(response, PSTR("%s%d"), (i>0)?",":"", cmodule.io[i]);
 //   //     }
 //   //   }
-//   //   WSBufferAppend_P(response, PSTR("}1%d}1%d"), flag, pCONT_set->Settings.user_template_base);  // FLAG: 1  BASE: 17
+//   //   WSBufferAppend_P(response, PSTR("}1%d}1%d"), flag, tkr_set->Settings.user_template_base);  // FLAG: 1  BASE: 17
 //   //   WSContentEnd(request);
 //   //   return;
 //   // }
@@ -1099,7 +1099,7 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 //   // for (uint8_t i = 0; i < 17; i++) {
 //   //   if ((i < 6) || ((i > 8) && (i != 11))) {                // Ignore flash pins GPIO06, 7, 8 and 11
 //   //     WSBufferAppend_P(response, PSTR("<tr><td><b><font color='#%06x'>" D_GPIO "%d</font></b></td><td%s><select id='g%d' name='g%d'></select></td></tr>"),
-//   //       ((9==i)||(10==i)) ? WebColor(pCONT_set->COL_TEXT_WARNING) : WebColor(pCONT_set->COL_TEXT), i, (0==i) ? " style='width:200px'" : "", i, i);
+//   //       ((9==i)||(10==i)) ? WebColor(tkr_set->COL_TEXT_WARNING) : WebColor(tkr_set->COL_TEXT), i, (0==i) ? " style='width:200px'" : "", i, i);
 //   //   }
 //   // }
 //   // WSBufferAppend_P(response, PSTR("</table>"));
@@ -1111,7 +1111,7 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 
 // void mWebServer::TemplateSaveSettings(void)
 // {
-//   // char tmp[sizeof(pCONT_set->Settings.user_template.name)];            // WebGetArg NAME and GPIO/BASE/FLAG byte value
+//   // char tmp[sizeof(tkr_set->Settings.user_template.name)];            // WebGetArg NAME and GPIO/BASE/FLAG byte value
 //   // char webindex[5];                                         // WebGetArg name
 //   // char svalue[128];                                         // Template command string
 
@@ -1119,7 +1119,7 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 //   // snprintf_P(svalue, sizeof(svalue), PSTR(D_TEMPLATE " {\"" D_NAME "\":\"%s\",\"" D_GPIO "\":["), tmp);
 
 //   // uint8_t j = 0;
-//   // for (uint8_t i = 0; i < sizeof(pCONT_set->Settings.user_template.hardware.gp); i++) {
+//   // for (uint8_t i = 0; i < sizeof(tkr_set->Settings.user_template.hardware.gp); i++) {
 //   //   if (6 == i) { j = 9; }
 //   //   if (8 == i) { j = 12; }
 //   //   snprintf_P(webindex, sizeof(webindex), PSTR("g%d"), j);
@@ -1206,15 +1206,15 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 
 //   // ALOG_DBG(S_LOG_HTTP, S_CONFIGURE_MODULE);
 
-//   // ALOG_TST(PSTR(D_LOG_HTTP "pCONT_set->Settings.module=%d,sizeof(cmodule)=%d"),pCONT_set->Settings.module,sizeof(cmodule));
+//   // ALOG_TST(PSTR(D_LOG_HTTP "tkr_set->Settings.module=%d,sizeof(cmodule)=%d"),tkr_set->Settings.module,sizeof(cmodule));
   
 
 //   // WSStartAppend_P(S_CONFIGURE_MODULE);
 //   // WSBufferAppend_P(response, HTTP_SCRIPT_MODULE_TEMPLATE);
-//   // WSBufferAppend_P(response, HTTP_SCRIPT_MODULE1, pCONT_set->Settings.module);
+//   // WSBufferAppend_P(response, HTTP_SCRIPT_MODULE1, tkr_set->Settings.module);
 //   // for (uint8_t i = 0; i < sizeof(cmodule); i++) {
 //   //   if (pCONT_sup->ValidGPIO(i, cmodule.io[i])) {
-//   //     WSBufferAppend_P(response, PSTR("sk(%d,%d);"), pCONT_set->my_module.io[i], i);  // g0 - g16
+//   //     WSBufferAppend_P(response, PSTR("sk(%d,%d);"), tkr_set->my_module.io[i], i);  // g0 - g16
 //   //   }
 //   // }
 //   // WSBufferAppend_P(response, HTTP_SCRIPT_MODULE2);
@@ -1223,16 +1223,16 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 //   // // ALOG_TST(PSTR(D_LOG_HTTP "AnyModuleName=%s,%d,%d"),pCONT_sup->AnyModuleName(MODULE).c_str(),MODULE,sizeof(cmodule));
 
 //   // uint8_t show_pin_names = false;
-//   // if((pCONT_set->Settings.module==MODULE_WEMOS)||(pCONT_set->Settings.module==MODULE_NODEMCU)){
+//   // if((tkr_set->Settings.module==MODULE_WEMOS)||(tkr_set->Settings.module==MODULE_NODEMCU)){
 //   //   show_pin_names = true;
 //   // }
 
-//   // WSBufferAppend_P(response, HTTP_FORM_MODULE, pCONT_sup->AnyModuleName(pCONT_set->Settings.module).c_str());
+//   // WSBufferAppend_P(response, HTTP_FORM_MODULE, pCONT_sup->AnyModuleName(tkr_set->Settings.module).c_str());
 //   // for (uint8_t i = 0; i < sizeof(cmodule); i++) {
 //   //   if (pCONT_sup->ValidGPIO(i, cmodule.io[i])) {
 //   //     snprintf_P(stemp, 3, PINS_WEMOS +i*2);
 //   //     char sesp8285[40];
-//   //     snprintf_P(sesp8285, sizeof(sesp8285), PSTR("<font color='#%06x'>ESP8285</font>"), WebColor(pCONT_set->COL_TEXT_WARNING));
+//   //     snprintf_P(sesp8285, sizeof(sesp8285), PSTR("<font color='#%06x'>ESP8285</font>"), WebColor(tkr_set->COL_TEXT_WARNING));
 //   //     WSBufferAppend_P(response, PSTR("<tr><td style='width:190px'>%s <b>" D_GPIO "%d</b> %s</td><td style='width:176px'><select id='g%d' name='g%d'></select></td></tr>"),
 //   //       show_pin_names?stemp:"", 
 //   //       i,
@@ -1263,21 +1263,21 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 
 //   // WebGetArg(request,"g99", tmp, sizeof(tmp));
 //   // uint8_t new_module = (!strlen(tmp)) ? MODULE : atoi(tmp);
-//   // pCONT_set->Settings.last_module = pCONT_set->Settings.module;
-//   // pCONT_set->Settings.module = new_module;
+//   // tkr_set->Settings.last_module = tkr_set->Settings.module;
+//   // tkr_set->Settings.module = new_module;
 //   // pCONT_sup->SetModuleType();
 //   // myio cmodule;
 //   // pCONT_sup->TemplateGPIOs(&cmodule);
 //   // String gpios = "";
 //   // for (uint8_t i = 0; i < sizeof(cmodule); i++) {
-//   //   if (pCONT_set->Settings.last_module != new_module) {
-//   //     pCONT_set->Settings.module_pins.io[i] = GPIO_NONE;
+//   //   if (tkr_set->Settings.last_module != new_module) {
+//   //     tkr_set->Settings.module_pins.io[i] = GPIO_NONE;
 //   //   } else {
 //   //     if (pCONT_sup->ValidGPIO(i, cmodule.io[i])) {
 //   //       snprintf_P(webindex, sizeof(webindex), PSTR("g%d"), i);
 //   //       WebGetArg(webindex, tmp, sizeof(tmp));
-//   //       pCONT_set->Settings.module_pins.io[i] = (!strlen(tmp)) ? 0 : atoi(tmp);
-//   //       gpios += F(", " D_GPIO ); gpios += String(i); gpios += F(" "); gpios += String(pCONT_set->Settings.module_pins.io[i]);
+//   //       tkr_set->Settings.module_pins.io[i] = (!strlen(tmp)) ? 0 : atoi(tmp);
+//   //       gpios += F(", " D_GPIO ); gpios += String(i); gpios += F(" "); gpios += String(tkr_set->Settings.module_pins.io[i]);
 //   //     }
 //   //   }
 //   // }
@@ -1329,20 +1329,20 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 //   // //? basic style
 //   // WSBufferAppend_P2(buffer, "<style>");
 //   // pCONT_web->WSBufferAppend_P2(buffer, PM_HTTP_HEAD_STYLE1_MINIMAL,
-//   //   pCONT_web->WebColor(pCONT_set->COL_FORM), 
-//   //   pCONT_web->WebColor(pCONT_set->COL_BACKGROUND),
-//   //   pCONT_web->WebColor(pCONT_set->COL_BUTTON),  
-//   //   pCONT_web->WebColor(pCONT_set->COL_BUTTON_TEXT)
+//   //   pCONT_web->WebColor(tkr_set->COL_FORM), 
+//   //   pCONT_web->WebColor(tkr_set->COL_BACKGROUND),
+//   //   pCONT_web->WebColor(tkr_set->COL_BUTTON),  
+//   //   pCONT_web->WebColor(tkr_set->COL_BUTTON_TEXT)
 //   // );
 //   // WSBufferAppend_P2(buffer, "</style>");
 
 //   // WSBufferAppend_P2(buffer, "</head>" "<body>");
 //   // WSBufferAppend_P2(buffer, PSTR("<div class='tb_con'></div>"));
 //   // WSBufferAppend_P2(buffer, HTTP_STYLE_TITLE_CONTAINER_HEAD, 
-//   //   WebColor(pCONT_set->COL_TEXT),
-//   //   WebColor(pCONT_set->COL_TEXT_MODULE_TITLE), 
+//   //   WebColor(tkr_set->COL_TEXT),
+//   //   WebColor(tkr_set->COL_TEXT_MODULE_TITLE), 
 //   //   //PROJECT_NAME_CTR, 
-//   //   pCONT_set->Settings.system_name.friendly
+//   //   tkr_set->Settings.system_name.friendly
 //   // );
 //   //   // pCONT->Tasker_Interface(TASK_WEB_ADD_BUTTON_SYSTEM_SETTINGS);
 
@@ -1420,7 +1420,7 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 //   // WSContentStop(request);
 
 //   // ShowWebSource(SRC_WEBGUI);
-//   pCONT_set->restart_flag = 2;
+//   tkr_set->restart_flag = 2;
 // }
 
 
@@ -1449,7 +1449,7 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 
 //   // WSStartAppend_P(request, S_FIRMWARE_UPGRADE);
 //   // WSContentSendStyle(request);
-//   // WSBufferAppend_P(response, HTTP_FORM_UPG, pCONT_set->Settings.ota_url);
+//   // WSBufferAppend_P(response, HTTP_FORM_UPG, tkr_set->Settings.ota_url);
 //   // WSBufferAppend_P(response, HTTP_FORM_RST_UPG, D_UPGRADE);
 //   // WSContentSpaceButton(request, BUTTON_MAIN);
 //   // WSContentStop(request);
@@ -1462,12 +1462,12 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 // {
 //   // //if (!HttpCheckPriviledgedAccess()) { return; }
 
-//   // char command[sizeof(pCONT_set->Settings.ota_url) + 10];  // OtaUrl
+//   // char command[sizeof(tkr_set->Settings.ota_url) + 10];  // OtaUrl
 
 //   // ALOG_DBG(PSTR(D_LOG_HTTP D_UPGRADE_STARTED));
 //   // pCONT_wif->WifiConfigCounter();
 
-//   // char otaurl[sizeof(pCONT_set->Settings.ota_url)];
+//   // char otaurl[sizeof(tkr_set->Settings.ota_url)];
 //   // WebGetArg(request,"o", otaurl, sizeof(otaurl));
 //   // if (strlen(otaurl)) {
 //   //   snprintf_P(command, sizeof(command), PSTR(D_OTAURL " %s"), otaurl);
@@ -1495,7 +1495,7 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 // //   char error[100];
 
 // //   pCONT_wif->WifiConfigCounter();
-// //   pCONT_set->restart_flag = 0;
+// //   tkr_set->restart_flag = 0;
 // //   //MqttRetryCounter(0);
 
 // //   WSStartAppend_P(request, PM_INFORMATION);
@@ -1506,7 +1506,7 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 // //   WSBufferAppend_P(response, PSTR("<div style='text-align:center;'><b>" D_UPLOAD " <font color='#"));
 // //   if (upload_error) {
 // // //    WSBufferAppend_P(response, PSTR(COLOR_TEXT_WARNING "'>" D_FAILED "</font></b><br/><br/>"));
-// //     WSBufferAppend_P(response, PSTR("%06x'>" D_FAILED "</font></b><br/><br/>"), WebColor(pCONT_set->COL_TEXT_WARNING));
+// //     WSBufferAppend_P(response, PSTR("%06x'>" D_FAILED "</font></b><br/><br/>"), WebColor(tkr_set->COL_TEXT_WARNING));
 // // #ifdef USE_RF_FLASH
 // //     if (upload_error < 14) {
 // // #else
@@ -1518,12 +1518,12 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 // //     }
 // //     WSBufferAppend_P(response, error);
 // //     ALOG_DBG(PSTR(D_UPLOAD ": %s"), error);
-// //     pCONT_set->stop_flash_rotate = pCONT_set->Settings.flag_system.stop_flash_rotate;
+// //     tkr_set->stop_flash_rotate = tkr_set->Settings.flag_system.stop_flash_rotate;
 // //   } else {
-// //     WSBufferAppend_P(response, PSTR("%06x'>" D_SUCCESSFUL "</font></b><br/>"), WebColor(pCONT_set->COL_TEXT_SUCCESS));
+// //     WSBufferAppend_P(response, PSTR("%06x'>" D_SUCCESSFUL "</font></b><br/>"), WebColor(tkr_set->COL_TEXT_SUCCESS));
 // //     WSBufferAppend_P(response, HTTP_MSG_RSTRT);
 // //     ShowWebSource(SRC_WEBGUI);
-// //     pCONT_set->restart_flag = 2;  // Always restart to re-enable disabled features during update
+// //     tkr_set->restart_flag = 2;  // Always restart to re-enable disabled features during update
 // //   }
 // //   //SettingsBufferFree();
 // //   WSBufferAppend_P(response, PSTR("</div><br/>"));
@@ -1536,7 +1536,7 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
   
 // //   //AddSerialLog_mP2(LOG_LEVEL_INFO, PSTR(D_LOG_HTTP "HandleUploadLoop1"));
 // //   // Based on ESP8266HTTPUpdateServer.cpp uses ESP8266WebServer Parsing.cpp and Cores Updater.cpp (Update)
-// //   bool _serialoutput = (LOG_LEVEL_DEBUG <= pCONT_set->seriallog_level);
+// //   bool _serialoutput = (LOG_LEVEL_DEBUG <= tkr_set->seriallog_level);
 
 // //   // if (HTTP_USER == webserver_state) { 
 // //   //   AddSerialLog_mP2(LOG_LEVEL_INFO, PSTR(D_LOG_HTTP "HTTP_USER == webserver_state"));
@@ -1558,7 +1558,7 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 
 // //   if (UPLOAD_FILE_START == upload.status) { 
 
-// //     pCONT_set->restart_flag = 60;
+// //     tkr_set->restart_flag = 60;
 // //     if (0 == upload.filename.c_str()[0]) {
 // //       upload_error = 1;  // No file selected
 // //       return;
@@ -1566,7 +1566,7 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 // //     //SettingsSave(1);  // Free flash for upload
 // //     AddSerialLog_mP2(LOG_LEVEL_INFO, PSTR(D_LOG_UPLOAD D_FILE " %s ..."), upload.filename.c_str());
 // //     if (UPL_SETTINGS == upload_file_type) {
-// //       if (!pCONT_set->SettingsBufferAlloc()) {
+// //       if (!tkr_set->SettingsBufferAlloc()) {
 // //         upload_error = 2;  // Not enough space
         
 // //   AddSerialLog_mP2(LOG_LEVEL_INFO, PSTR(D_LOG_HTTP "Not enough space"));
@@ -1578,7 +1578,7 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 // //       //UdpDisconnect();
 // // #endif  // USE_EMULATION
 
-// //       //if (pCONT_set->Settings.flag_system.mqtt_enabled) MqttDisconnect();
+// //       //if (tkr_set->Settings.flag_system.mqtt_enabled) MqttDisconnect();
 // //       uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
       
 // //   AddSerialLog_mP2(LOG_LEVEL_INFO, PSTR(D_LOG_HTTP "maxSketchSpace=%d"),maxSketchSpace);
@@ -1604,7 +1604,7 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 // //       }
 // //       else {
 // // // #ifdef USE_RF_FLASH
-// // //         if ((SONOFF_BRIDGE == pCONT_set->my_module_type) && (upload.buf[0] == ':')) {  // Check if this is a RF bridge FW file
+// // //         if ((SONOFF_BRIDGE == tkr_set->my_module_type) && (upload.buf[0] == ':')) {  // Check if this is a RF bridge FW file
 // // //           Update.end();              // End esp8266 update session
 // // //           upload_file_type = UPL_EFM8BB1;
 // // //
@@ -1630,11 +1630,11 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 // //     }
 // //     if (UPL_SETTINGS == upload_file_type) {
 // //       if (!upload_error) {
-// //         if (upload.currentSize > (sizeof(pCONT_set->Settings) - (config_block_count * HTTP_UPLOAD_BUFLEN))) {
+// //         if (upload.currentSize > (sizeof(tkr_set->Settings) - (config_block_count * HTTP_UPLOAD_BUFLEN))) {
 // //           upload_error = 9;  // File too large
 // //           return;
 // //         }
-// //         memcpy(pCONT_set->settings_buffer + (config_block_count * HTTP_UPLOAD_BUFLEN), upload.buf, upload.currentSize);
+// //         memcpy(tkr_set->settings_buffer + (config_block_count * HTTP_UPLOAD_BUFLEN), upload.buf, upload.currentSize);
 // //         config_block_count++;
 // //       }
 // //     }
@@ -1692,27 +1692,27 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 // //     }
 // //     if (UPL_SETTINGS == upload_file_type) {
 // //       if (config_xor_on_set) {
-// //         for (uint16_t i = 2; i < sizeof(pCONT_set->Settings); i++) {
-// //           pCONT_set->settings_buffer[i] ^= (config_xor_on_set +i);
+// //         for (uint16_t i = 2; i < sizeof(tkr_set->Settings); i++) {
+// //           tkr_set->settings_buffer[i] ^= (config_xor_on_set +i);
 // //         }
 // //       }
 // //       bool valid_settings = false;
-// //       unsigned long buffer_version = pCONT_set->settings_buffer[11] << 24 | pCONT_set->settings_buffer[10] << 16 | pCONT_set->settings_buffer[9] << 8 | pCONT_set->settings_buffer[8];
+// //       unsigned long buffer_version = tkr_set->settings_buffer[11] << 24 | tkr_set->settings_buffer[10] << 16 | tkr_set->settings_buffer[9] << 8 | tkr_set->settings_buffer[8];
 // //       if (buffer_version > 0x06000000) {
-// //         uint16_t buffer_size = pCONT_set->settings_buffer[3] << 8 | pCONT_set->settings_buffer[2];
-// //         uint16_t buffer_crc = pCONT_set->settings_buffer[15] << 8 | pCONT_set->settings_buffer[14];
+// //         uint16_t buffer_size = tkr_set->settings_buffer[3] << 8 | tkr_set->settings_buffer[2];
+// //         uint16_t buffer_crc = tkr_set->settings_buffer[15] << 8 | tkr_set->settings_buffer[14];
 // //         uint16_t crc = 0;
 // //         for (uint16_t i = 0; i < buffer_size; i++) {
-// //           if ((i < 14) || (i > 15)) { crc += pCONT_set->settings_buffer[i]*(i+1); }  // Skip crc
+// //           if ((i < 14) || (i > 15)) { crc += tkr_set->settings_buffer[i]*(i+1); }  // Skip crc
 // //         }
 // //         valid_settings = (buffer_crc == crc);
 // //       } else {
-// //         valid_settings = (pCONT_set->settings_buffer[0] == CONFIG_FILE_SIGN);
+// //         valid_settings = (tkr_set->settings_buffer[0] == CONFIG_FILE_SIGN);
 // //       }
 // //       if (valid_settings) {
 // //         //SystemSettings_DefaultBody();
-// //         memcpy((char*)&pCONT_set->Settings +16, pCONT_set->settings_buffer +16, sizeof(pCONT_set->Settings) -16);
-// //         pCONT_set->Settings.version = buffer_version;  // Restore version and auto upgrade after restart
+// //         memcpy((char*)&tkr_set->Settings +16, tkr_set->settings_buffer +16, sizeof(tkr_set->Settings) -16);
+// //         tkr_set->Settings.version = buffer_version;  // Restore version and auto upgrade after restart
 // //         //SettingsBufferFree();
 // //       } else {
 // //         upload_error = 8;  // File invalid
@@ -1738,7 +1738,7 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 // //       ALOG_INF(PSTR(D_LOG_UPLOAD D_SUCCESSFUL " %u bytes. " D_RESTARTING), upload.totalSize);
 // //     }
 // //   } else if (UPLOAD_FILE_ABORTED == upload.status) {
-// //     pCONT_set->restart_flag = 0;
+// //     tkr_set->restart_flag = 0;
 // //     //MqttRetryCounter(0);
 // //     upload_error = 7;  // Upload aborted
 // //     #ifdef ESP8266
@@ -1821,7 +1821,7 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 // }
 // void mWebServer::WebAppend_Start_Head_P(const char* title, bool auth)
 // {
-//   // if (auth && (pCONT_set->Settings.web_password[0] != 0) && !pWebServer->authenticate(WEB_USERNAME, pCONT_set->Settings.web_password)) {
+//   // if (auth && (tkr_set->Settings.web_password[0] != 0) && !pWebServer->authenticate(WEB_USERNAME, tkr_set->Settings.web_password)) {
 //   //  return pWebServer->requestAuthentication();
 //   // }
 
@@ -1830,9 +1830,9 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 //   //   strcpy_P(ctitle, title);                       // Get title from flash to RAM
     
 //   //   #ifdef ESP8266
-//   //     BufferWriterI->Append_P(PM_HTTP_HEAD3, pCONT_set->Settings.system_name.friendly, ctitle);
+//   //     BufferWriterI->Append_P(PM_HTTP_HEAD3, tkr_set->Settings.system_name.friendly, ctitle);
 //   //   #else
-//   //     BufferWriterI->Append_P(HTTP_HEAD2, pCONT_set->Settings.system_name.friendly, ctitle);
+//   //     BufferWriterI->Append_P(HTTP_HEAD2, tkr_set->Settings.system_name.friendly, ctitle);
 //   //   #endif
 
 //   // }
@@ -2082,36 +2082,36 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 
 // //   // // move sections into progmem
     
-// //   // AppendBuffer_PI2(PSTR(D_PROGRAM_VERSION "}2%s(%s)"), pCONT_set->my_version, "my_image");//pCONT_set->my_image
+// //   // AppendBuffer_PI2(PSTR(D_PROGRAM_VERSION "}2%s(%s)"), tkr_set->my_version, "my_image");//tkr_set->my_image
 // //   // // #ifdef ESP8266
-// //   // //   AppendBuffer_PI2(PSTR("}1" D_BUILD_DATE_AND_TIME "}2%s"), pCONT_time->GetBuildDateAndTime(dd));
+// //   // //   AppendBuffer_PI2(PSTR("}1" D_BUILD_DATE_AND_TIME "}2%s"), tkr_time->GetBuildDateAndTime(dd));
 // //   // //   AppendBuffer_PI2(PSTR("}1" D_CORE_AND_SDK_VERSION "}2" ARDUINO_ESP8266_RELEASE "/%s"), ESP.getSdkVersion());
 // //   // // #endif
-// //   // // AppendBuffer_PI2(PSTR("}1" D_UPTIME "}2%s"), pCONT_time->getFormattedUptime());
+// //   // // AppendBuffer_PI2(PSTR("}1" D_UPTIME "}2%s"), tkr_time->getFormattedUptime());
 // //   // // #ifdef ESP8266
-// //   // //   AppendBuffer_PI2(PSTR("}1" D_FLASH_WRITE_COUNT "}2%d at 0x%X"), pCONT_set->Settings.save_flag, pCONT_set->GetSettingsAddress());
+// //   // //   AppendBuffer_PI2(PSTR("}1" D_FLASH_WRITE_COUNT "}2%d at 0x%X"), tkr_set->Settings.save_flag, tkr_set->GetSettingsAddress());
 // //   // // #endif
-// //   // AppendBuffer_PI2(PSTR("}1" D_BOOT_COUNT "}2%d"), pCONT_set->Settings.bootcount);
+// //   // AppendBuffer_PI2(PSTR("}1" D_BOOT_COUNT "}2%d"), tkr_set->Settings.bootcount);
 // //   // #ifdef ESP8266
 // //   //   AppendBuffer_PI2(PSTR("}1" D_RESTART_REASON "}2%s"), pCONT_sup->GetResetReason().c_str());
 // //   // #endif
-// //   // // uint8_t maxfn = 1;//(pCONT_set->devices_present > MAX_FRIENDLYNAMES) ? MAX_FRIENDLYNAMES : pCONT_set->devices_present;
-// //   // // //if (SONOFF_IFAN02 == pCONT_set->my_module_type) { maxfn = 1; }
+// //   // // uint8_t maxfn = 1;//(tkr_set->devices_present > MAX_FRIENDLYNAMES) ? MAX_FRIENDLYNAMES : tkr_set->devices_present;
+// //   // // //if (SONOFF_IFAN02 == tkr_set->my_module_type) { maxfn = 1; }
 // //   // // for (uint8_t i = 0; i < maxfn; i++) {
-// //   // //   AppendBuffer_PI2(PSTR("}1" D_FRIENDLY_NAME " %d}2%s"), i +1, pCONT_set->Settings.system_name.friendly[i]);
+// //   // //   AppendBuffer_PI2(PSTR("}1" D_FRIENDLY_NAME " %d}2%s"), i +1, tkr_set->Settings.system_name.friendly[i]);
 // //   // // }
 // //   // AppendBuffer_PI2(PSTR("}1}2&nbsp;"));  // Empty line
 
 // //   // // Show SSID direct for testing
 // //   // AppendBuffer_PI2(PSTR("}1" "SSID (RSS)" "}2%s (%d dBm)"), WiFi.SSID().c_str(), WiFi.RSSI());
     
-// //   // AppendBuffer_PI2(PSTR("}1" D_AP "%d " D_SSID " (" D_RSSI ")}2%s (%d%%)"), pCONT_set->Settings.sta_active +1, pCONT_set->Settings.sta_ssid[pCONT_set->Settings.sta_active], pCONT_wif->WifiGetRssiAsQuality(WiFi.RSSI()));
-// //   // AppendBuffer_PI2(PSTR("}1" D_HOSTNAME "}2%s%s"), pCONT_set->my_hostname, (pCONT_wif->mdns_begun) ? ".local" : "");
+// //   // AppendBuffer_PI2(PSTR("}1" D_AP "%d " D_SSID " (" D_RSSI ")}2%s (%d%%)"), tkr_set->Settings.sta_active +1, tkr_set->Settings.sta_ssid[tkr_set->Settings.sta_active], pCONT_wif->WifiGetRssiAsQuality(WiFi.RSSI()));
+// //   // AppendBuffer_PI2(PSTR("}1" D_HOSTNAME "}2%s%s"), tkr_set->my_hostname, (pCONT_wif->mdns_begun) ? ".local" : "");
 // //   // if (static_cast<uint32_t>(WiFi.localIP()) != 0) {
 // //   //   AppendBuffer_PI2(PSTR("}1" D_IP_ADDRESS "}2%s"), WiFi.localIP().toString().c_str());
-// //   //   AppendBuffer_PI2(PSTR("}1" D_GATEWAY "}2%s"), IPAddress(pCONT_set->Settings.ip_address[1]).toString().c_str());
-// //   //   AppendBuffer_PI2(PSTR("}1" D_SUBNET_MASK "}2%s"), IPAddress(pCONT_set->Settings.ip_address[2]).toString().c_str());
-// //   //   AppendBuffer_PI2(PSTR("}1" D_DNS_SERVER "}2%s"), IPAddress(pCONT_set->Settings.ip_address[3]).toString().c_str());
+// //   //   AppendBuffer_PI2(PSTR("}1" D_GATEWAY "}2%s"), IPAddress(tkr_set->Settings.ip_address[1]).toString().c_str());
+// //   //   AppendBuffer_PI2(PSTR("}1" D_SUBNET_MASK "}2%s"), IPAddress(tkr_set->Settings.ip_address[2]).toString().c_str());
+// //   //   AppendBuffer_PI2(PSTR("}1" D_DNS_SERVER "}2%s"), IPAddress(tkr_set->Settings.ip_address[3]).toString().c_str());
 // //   //   AppendBuffer_PI2(PSTR("}1" D_MAC_ADDRESS "}2%s"), WiFi.macAddress().c_str());
 // //   // }
 // //   // if (static_cast<uint32_t>(WiFi.softAPIP()) != 0) {
@@ -2121,13 +2121,13 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 // //   // }
 // //   // AppendBuffer_PI2(PSTR("}1}2&nbsp;"));  // Empty line
 
-// //   // // if (pCONT_set->Settings.flag_system.mqtt_enabled) {
-// //   // //   AppendBuffer_PI2(PSTR("}1" D_MQTT_HOST "}2%s"), pCONT_set->Settings.mqtt_host);
-// //   // //   AppendBuffer_PI2(PSTR("}1" MQTT_PORT "}2%d"), pCONT_set->Settings.mqtt_port);
-// //   // //   AppendBuffer_PI2(PSTR("}1" D_MQTT_USER "}2%s"), pCONT_set->Settings.mqtt_user);
-// //   // //   AppendBuffer_PI2(PSTR("}1" D_MQTT_CLIENT "}2%s"), pCONT_set->mqtt_client);
-// //   // //   AppendBuffer_PI2(PSTR("}1" D_MQTT_TOPIC "}2%s"), pCONT_set->Settings.mqtt_topic);
-// //   // //   AppendBuffer_PI2(PSTR("}1" D_MQTT_GROUP_TOPIC "}2%s"), pCONT_set->Settings.mqtt_grptopic);
+// //   // // if (tkr_set->Settings.flag_system.mqtt_enabled) {
+// //   // //   AppendBuffer_PI2(PSTR("}1" D_MQTT_HOST "}2%s"), tkr_set->Settings.mqtt_host);
+// //   // //   AppendBuffer_PI2(PSTR("}1" MQTT_PORT "}2%d"), tkr_set->Settings.mqtt_port);
+// //   // //   AppendBuffer_PI2(PSTR("}1" D_MQTT_USER "}2%s"), tkr_set->Settings.mqtt_user);
+// //   // //   AppendBuffer_PI2(PSTR("}1" D_MQTT_CLIENT "}2%s"), tkr_set->mqtt_client);
+// //   // //   AppendBuffer_PI2(PSTR("}1" D_MQTT_TOPIC "}2%s"), tkr_set->Settings.mqtt_topic);
+// //   // //   AppendBuffer_PI2(PSTR("}1" D_MQTT_GROUP_TOPIC "}2%s"), tkr_set->Settings.mqtt_grptopic);
 // //   // // } else {
 // //   // //   //AppendBuffer_PI2(PSTR("}1" D_MQTT "}2%s"), D_DISABLED);
 // //   // // }
@@ -2240,7 +2240,7 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 // //   // if (strlen(tmp)) {
 // //   //   ShowWebSource(SRC_WEBGUI);
 // //   //   uint8_t device = atoi(tmp);
-// //   //   if (MODULE_SONOFF_IFAN02 == pCONT_set->my_module_type) {
+// //   //   if (MODULE_SONOFF_IFAN02 == tkr_set->my_module_type) {
 // //   //     if (device < 2) {
 // //   //       //ExecuteCommandPower(1, POWER_TOGGLE, SRC_IGNORE);
 // //   //     } else {
@@ -2291,18 +2291,18 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 // // void mWebServer::WebAppend_SystemVersionBar(){  
 
 // //   uint32_t text_colour = WebColor(255,255,255);
-// //   if(pCONT_set->runtime.firmware_version.fNewVersionAvailable){
-// //     text_colour = WebColor(pCONT_set->COL_TEXT_SUCCESS);
+// //   if(tkr_set->runtime.firmware_version.fNewVersionAvailable){
+// //     text_colour = WebColor(tkr_set->COL_TEXT_SUCCESS);
 // //   }
-// //   if(pCONT_set->runtime.firmware_version.fCurrentVersionNotSupported){
-// //     text_colour = WebColor(pCONT_set->COL_TEXT_WARNING);
+// //   if(tkr_set->runtime.firmware_version.fCurrentVersionNotSupported){
+// //     text_colour = WebColor(tkr_set->COL_TEXT_WARNING);
 // //   }
 
 // //   char message_version1[100];
 // //   sprintf(message_version1,PSTR("%s %s%s"),
 // //     PROJECT_NAME_CTR,
-// //     pCONT_set->runtime.firmware_version.current.name_ctr,
-// //     pCONT_set->runtime.firmware_version.fNewVersionAvailable ? " Update Available" : ""  
+// //     tkr_set->runtime.firmware_version.current.name_ctr,
+// //     tkr_set->runtime.firmware_version.fNewVersionAvailable ? " Update Available" : ""  
 // //   );
 
 // //   BufferWriterI->Append_P(PM_HTTP_END_WITH_UPDATE_NOEND,
@@ -2321,10 +2321,10 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 
 // //   BufferWriterI->Append_P("<style>");
 // //   BufferWriterI->Append_P(PM_HTTP_HEAD_STYLE1_MINIMAL,
-// //     pCONT_web->WebColor(pCONT_set->COL_FORM), 
-// //     pCONT_web->WebColor(pCONT_set->COL_BACKGROUND),
-// //     pCONT_web->WebColor(pCONT_set->COL_BUTTON),  
-// //     pCONT_web->WebColor(pCONT_set->COL_BUTTON_TEXT)
+// //     pCONT_web->WebColor(tkr_set->COL_FORM), 
+// //     pCONT_web->WebColor(tkr_set->COL_BACKGROUND),
+// //     pCONT_web->WebColor(tkr_set->COL_BUTTON),  
+// //     pCONT_web->WebColor(tkr_set->COL_BUTTON_TEXT)
 // //   );
 // //   BufferWriterI->Append_P("</style>");
 
@@ -2332,9 +2332,9 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 
 // // void mWebServer::WebAppend_Title(){
 // //   BufferWriterI->Append_P(HTTP_STYLE_TITLE_CONTAINER_HEAD, 
-// //     WebColor(pCONT_set->COL_TEXT),
-// //     WebColor(pCONT_set->COL_TEXT_MODULE_TITLE), 
-// //     pCONT_set->Settings.system_name.friendly
+// //     WebColor(tkr_set->COL_TEXT),
+// //     WebColor(tkr_set->COL_TEXT_MODULE_TITLE), 
+// //     tkr_set->Settings.system_name.friendly
 // //   );
 // // }
 

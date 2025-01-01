@@ -2697,7 +2697,7 @@ Bathroom
   /***********************************
    * SECTION: Controller Configs
   ************************************/  
- 
+
   #define USE_MODULE_CONTROLLER_CUSTOM__LIGHTNEO_MOTION_ALERTS
 
 
@@ -2797,27 +2797,27 @@ Bathroom
         "ColourOrder":"GRBW",
         "BusType":"SK6812_RGBW",
         "Start":0,
-        "Length":100
+        "Length":127
       },
       {
         "Pin":12,
         "ColourOrder":"GRBW",
         "BusType":"SK6812_RGBW",
-        "Start":100,
+        "Start":127,
         "Length":100
       },
       {
         "Pin":13,
         "ColourOrder":"GRB",
         "BusType":"WS2812_RGB",
-        "Start":200,
+        "Start":227,
         "Length":100
       }
     ],
     "Segment0": {
       "PixelRange": [
         0,
-        300
+        327
       ],
       "ColourPalette":"Snowy 02",
       "Effects": {

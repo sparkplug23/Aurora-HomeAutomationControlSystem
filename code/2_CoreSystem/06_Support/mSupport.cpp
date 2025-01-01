@@ -461,7 +461,7 @@ int8_t mSupport::Tasker(uint8_t function, JsonParserObject obj)
       #endif // INSERT_CODE_EVERY_SECOND
 
       #ifdef ENABLE_DEVFEATURE_DEBUG_TEMPLATE_LIGHTING_MQTT_SEND
-      if(pCONT_time->UpTime()>60)
+      if(tkr_time->UpTime()>60)
       {
         if(pCONT_mqtt->pubsub->connected())
         {
@@ -482,7 +482,7 @@ int8_t mSupport::Tasker(uint8_t function, JsonParserObject obj)
     break;
 
     case TASK_LOG__SHOW_UPTIME:      
-      ALOG_INF(PSTR("TASK_LOG__SHOW_UPTIME Uptime %s"), pCONT_time->GetUptime().c_str());
+      ALOG_INF(PSTR("TASK_LOG__SHOW_UPTIME Uptime %s"), tkr_time->GetUptime().c_str());
     break;
 
     /************
@@ -532,7 +532,7 @@ void mSupport::AppendDList(char* buffer, uint16_t buflen, const char* formatP, .
 String mSupport::GetSwitchText(uint32_t i) {
   String switch_text = "";
   if (i < MAX_SWITCHES_TXT) {
-    switch_text = pCONT_set->SettingsText(SET_SWITCH_TXT1 + i);
+    switch_text = tkr_set->SettingsText(SET_SWITCH_TXT1 + i);
   }
   if ('\0' == switch_text[0]) {
     switch_text = F("D_JSON_SWITCH");
@@ -556,17 +556,17 @@ void mSupport::ArduinoOTAInit(void)
 
   if(ota_init_success){ return; }
 
-  ArduinoOTA.setHostname(pCONT_set->runtime.my_hostname);
+  ArduinoOTA.setHostname(tkr_set->runtime.my_hostname);
   
   ArduinoOTA.onStart([this]()
   {
     #ifdef ENABLE_DEVFEATURE_ARDUINOOTA__ADVANCED
-      pCONT_set->SettingsSave(1);    // Free flash for OTA update
+      tkr_set->SettingsSave(1);    // Free flash for OTA update
       #ifdef USE_MODULE_NETWORK_WEBSERVER
-        if (pCONT_set->Settings.webserver) { pCONT_web->StopWebserver(); }
+        if (tkr_set->Settings.webserver) { pCONT_web->StopWebserver(); }
       #endif  // USE_MODULE_NETWORK_WEBSERVER
       AllowInterrupts(0);
-      if (pCONT_set->Settings.flag_system.mqtt_enabled) {
+      if (tkr_set->Settings.flag_system.mqtt_enabled) {
         MqttDisconnect();      // SetOption3  - Enable MQTT
       }
     #endif
@@ -585,7 +585,7 @@ void mSupport::ArduinoOTAInit(void)
 
   ArduinoOTA.onProgress([this](unsigned int progress, unsigned int total)
   {
-    if (pCONT_set->runtime.seriallog_level >= LOG_LEVEL_DEBUG) { // for when hardware serial is in use for modules
+    if (tkr_set->runtime.seriallog_level >= LOG_LEVEL_DEBUG) { // for when hardware serial is in use for modules
       uint8_t progress_now = (progress/(total/100));
       if(arduino_ota_progress_dot_count != progress_now){
         Serial.println(progress_now);
@@ -848,23 +848,23 @@ void mSupport::init_FirmwareVersion()
 {
 
   // Version Current
-  pCONT_set->runtime.firmware_version.current.part_branch = (PROJECT_VERSION >> 30) & 0x03;
-  pCONT_set->runtime.firmware_version.current.part_major =  (PROJECT_VERSION >> 24) & 0x3F;
-  pCONT_set->runtime.firmware_version.current.part_minor =  (PROJECT_VERSION >> 16) & 0xff;
-  pCONT_set->runtime.firmware_version.current.part_system = (PROJECT_VERSION >> 8 ) & 0xff;
-  pCONT_set->runtime.firmware_version.current.part_module = (PROJECT_VERSION      ) & 0xff;
-  pCONT_set->runtime.firmware_version.current.number =       PROJECT_VERSION;
+  tkr_set->runtime.firmware_version.current.part_branch = (PROJECT_VERSION >> 30) & 0x03;
+  tkr_set->runtime.firmware_version.current.part_major =  (PROJECT_VERSION >> 24) & 0x3F;
+  tkr_set->runtime.firmware_version.current.part_minor =  (PROJECT_VERSION >> 16) & 0xff;
+  tkr_set->runtime.firmware_version.current.part_system = (PROJECT_VERSION >> 8 ) & 0xff;
+  tkr_set->runtime.firmware_version.current.part_module = (PROJECT_VERSION      ) & 0xff;
+  tkr_set->runtime.firmware_version.current.number =       PROJECT_VERSION;
 
   // Display Version Output
   // DEBUG_PRINTF("firmware_version.current = %X\n\r",PROJECT_VERSION);
     
   // Create ascii version name
-  sprintf_P(pCONT_set->runtime.firmware_version.current.name_ctr,PSTR("%c%d.%d.%d.%d"),
-      pCONT_sup->GetVersionBranchTypeCharNameByID(pCONT_set->runtime.firmware_version.current.part_branch),
-      pCONT_set->runtime.firmware_version.current.part_major,
-      pCONT_set->runtime.firmware_version.current.part_minor,
-      pCONT_set->runtime.firmware_version.current.part_system,
-      pCONT_set->runtime.firmware_version.current.part_module
+  sprintf_P(tkr_set->runtime.firmware_version.current.name_ctr,PSTR("%c%d.%d.%d.%d"),
+      pCONT_sup->GetVersionBranchTypeCharNameByID(tkr_set->runtime.firmware_version.current.part_branch),
+      tkr_set->runtime.firmware_version.current.part_major,
+      tkr_set->runtime.firmware_version.current.part_minor,
+      tkr_set->runtime.firmware_version.current.part_system,
+      tkr_set->runtime.firmware_version.current.part_module
   );
 
 }
@@ -1058,12 +1058,12 @@ const char* mSupport::GetResetReason(char* buffer, uint8_t buflen)
 #ifdef ENABLE_DEVFEATURE_FIRMWARE__FOR_FUTURE_RELEASE
 void mSupport::SetPulseTimer(uint32_t index, uint32_t time)
 {
-  //pCONT_set->pulse_timer[index] = (time > 111) ? millis() + (1000 * (time - 100)) : (time > 0) ? millis() + (100 * time) : 0L;
+  //tkr_set->pulse_timer[index] = (time > 111) ? millis() + (1000 * (time - 100)) : (time > 0) ? millis() + (100 * time) : 0L;
 }
 
 uint32_t mSupport::GetPulseTimer(uint32_t index)
 {
-  // long time = TimePassedSince(pCONT_set->pulse_timer[index]);
+  // long time = TimePassedSince(tkr_set->pulse_timer[index]);
   // if (time < 0) {
   //   time *= -1;
   //   return (time > 11100) ? (time / 1000) + 100 : (time > 0) ? time / 100 : 0;
@@ -1612,7 +1612,7 @@ char* mSupport::GetState_Name_by_ID(uint8_t id, char* buffer, uint8_t buflen)
 #ifdef ENABLE_DEVFEATURE_FIRMWARE__FOR_FUTURE_RELEASE
 void mSupport::SetSerialBaudrate(int baudrate)
 {
-  // pCONT_set->Settings.baudrate = baudrate / 1200;
+  // tkr_set->Settings.baudrate = baudrate / 1200;
   // if (Serial.baudRate() != baudrate) {
   //   //if (seriallog_level) {
   //     AddLog_P2(LOG_LEVEL_INFO, PSTR(D_LOG_APPLICATION D_SET_BAUDRATE_TO " %d"), baudrate);
@@ -1942,23 +1942,23 @@ void mSupport::CheckResetConditions()
 
 
 
-    if (pCONT_set->runtime.restart_flag && (pCONT_set->runtime.backlog_pointer == pCONT_set->runtime.backlog_index)) {
-      if ((214 == pCONT_set->runtime.restart_flag) || (215 == pCONT_set->runtime.restart_flag) || (216 == pCONT_set->runtime.restart_flag)) {
+    if (tkr_set->runtime.restart_flag && (tkr_set->runtime.backlog_pointer == tkr_set->runtime.backlog_index)) {
+      if ((214 == tkr_set->runtime.restart_flag) || (215 == tkr_set->runtime.restart_flag) || (216 == tkr_set->runtime.restart_flag)) {
 // Backup current SSIDs and Passwords
 
 
 
                                       // Loading in new network configs only if they are considered save and correct
 
-        // char storage_wifi[sizeof(pCONT_set->Settings.sta_ssid) +
-        //                   sizeof(pCONT_set->Settings.sta_pwd)];
-        // char storage_mqtt[sizeof(pCONT_set->Settings.mqtt_host) +
-        //                   sizeof(pCONT_set->Settings.mqtt_port) +
-        //                   sizeof(pCONT_set->Settings.mqtt_client) +
-        //                   sizeof(pCONT_set->Settings.mqtt_user) +
-        //                   sizeof(pCONT_set->Settings.mqtt_pwd) +
-        //                   sizeof(pCONT_set->Settings.mqtt_topic)];
-        // memcpy(storage_wifi, pCONT_set->Settings.sta_ssid, sizeof(storage_wifi));     // Backup current SSIDs and Passwords
+        // char storage_wifi[sizeof(tkr_set->Settings.sta_ssid) +
+        //                   sizeof(tkr_set->Settings.sta_pwd)];
+        // char storage_mqtt[sizeof(tkr_set->Settings.mqtt_host) +
+        //                   sizeof(tkr_set->Settings.mqtt_port) +
+        //                   sizeof(tkr_set->Settings.mqtt_client) +
+        //                   sizeof(tkr_set->Settings.mqtt_user) +
+        //                   sizeof(tkr_set->Settings.mqtt_pwd) +
+        //                   sizeof(tkr_set->Settings.mqtt_topic)];
+        // memcpy(storage_wifi, tkr_set->Settings.sta_ssid, sizeof(storage_wifi));     // Backup current SSIDs and Passwords
 
         // // Backup current SSIDs and Passwords
         // char storage_ssid1[strlen(SettingsText(SET_STASSID1)) +1];
@@ -1980,42 +1980,42 @@ void mSupport::CheckResetConditions()
         // strncpy(storage_mqtttopic, SettingsText(SET_MQTT_TOPIC), sizeof(storage_mqtttopic));
         // uint16_t mqtt_port = Settings.mqtt_port;
 
-        // if (216 == pCONT_set->restart_flag) {
-        //   memcpy(storage_mqtt, pCONT_set->Settings.mqtt_host, sizeof(storage_mqtt));  // Backup mqtt host, port, client, username and password
+        // if (216 == tkr_set->restart_flag) {
+        //   memcpy(storage_mqtt, tkr_set->Settings.mqtt_host, sizeof(storage_mqtt));  // Backup mqtt host, port, client, username and password
         // }
-        if ((215 == pCONT_set->runtime.restart_flag) || (216 == pCONT_set->runtime.restart_flag)) {
-          pCONT_set->SettingsErase(0);  // Erase all flash from program end to end of physical flash
+        if ((215 == tkr_set->runtime.restart_flag) || (216 == tkr_set->runtime.restart_flag)) {
+          tkr_set->SettingsErase(0);  // Erase all flash from program end to end of physical flash
         }
-        pCONT_set->SettingsDefault();
-        // memcpy(pCONT_set->Settings.sta_ssid, storage_wifi, sizeof(storage_wifi));     // Restore current SSIDs and Passwords
-        // if (216 == pCONT_set->restart_flag) {
-        //   memcpy(pCONT_set->Settings.mqtt_host, storage_mqtt, sizeof(storage_mqtt));  // Restore the mqtt host, port, client, username and password
-        //   strlcpy(pCONT_set->Settings.mqtt_client, MQTT_CLIENT_ID, sizeof(pCONT_set->Settings.mqtt_client));  // Set client to default
+        tkr_set->SettingsDefault();
+        // memcpy(tkr_set->Settings.sta_ssid, storage_wifi, sizeof(storage_wifi));     // Restore current SSIDs and Passwords
+        // if (216 == tkr_set->restart_flag) {
+        //   memcpy(tkr_set->Settings.mqtt_host, storage_mqtt, sizeof(storage_mqtt));  // Restore the mqtt host, port, client, username and password
+        //   strlcpy(tkr_set->Settings.mqtt_client, MQTT_CLIENT_ID, sizeof(tkr_set->Settings.mqtt_client));  // Set client to default
         // }
-        pCONT_set->runtime.restart_flag = 2;
+        tkr_set->runtime.restart_flag = 2;
       }
 
 
 
-      else if (213 == pCONT_set->runtime.restart_flag) {
-        pCONT_set->SettingsSdkErase();  // Erase flash SDK parameters
-        pCONT_set->runtime.restart_flag = 2;
+      else if (213 == tkr_set->runtime.restart_flag) {
+        tkr_set->SettingsSdkErase();  // Erase flash SDK parameters
+        tkr_set->runtime.restart_flag = 2;
       }
-      else if (212 == pCONT_set->runtime.restart_flag) {
-        pCONT_set->SettingsErase(0);    // Erase all flash from program end to end of physical flash
-        pCONT_set->runtime.restart_flag = 211;
+      else if (212 == tkr_set->runtime.restart_flag) {
+        tkr_set->SettingsErase(0);    // Erase all flash from program end to end of physical flash
+        tkr_set->runtime.restart_flag = 211;
       }
-      if (211 == pCONT_set->runtime.restart_flag) {
-        pCONT_set->SettingsDefault();
-        pCONT_set->runtime.restart_flag = 2;
+      if (211 == tkr_set->runtime.restart_flag) {
+        tkr_set->SettingsDefault();
+        tkr_set->runtime.restart_flag = 2;
       }
-      // pCONT_set->SettingsSaveAll();
-      pCONT_set->runtime.restart_flag--;
-      if (pCONT_set->runtime.restart_flag <= 0) 
+      // tkr_set->SettingsSaveAll();
+      tkr_set->runtime.restart_flag--;
+      if (tkr_set->runtime.restart_flag <= 0) 
       {
 
         #ifdef ENABLE_LOG_LEVEL_INFO
-        ALOG_INF(PSTR(D_LOG_APPLICATION "pCONT_set->restart_flag <= 0 " D_RESTARTING));
+        ALOG_INF(PSTR(D_LOG_APPLICATION "tkr_set->restart_flag <= 0 " D_RESTARTING));
         #endif// ENABLE_LOG_LEVEL_INFO
     
         #ifdef USE_MODULE_NETWORK_WIFI   

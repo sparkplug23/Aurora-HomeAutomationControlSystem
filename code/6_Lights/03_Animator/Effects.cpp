@@ -1770,7 +1770,7 @@ void mAnimatorLight::EffectAnim__TimeBased__HourProgress()
     SEGMENT.Set_DynamicBuffer_DesiredColour(pixel, 0);
   }
 
-  uint16_t seconds_into_hour = pCONT_time->RtcTime.second + (pCONT_time->RtcTime.minute * 60); // Using seconds for improved accuracy
+  uint16_t seconds_into_hour = tkr_time->RtcTime.second + (tkr_time->RtcTime.minute * 60); // Using seconds for improved accuracy
   uint16_t progress = map(seconds_into_hour, 0,3550, 1,SEGLEN); // using 3550 to enable 50 seconds on full display
 
   for(uint16_t pixel = 0; pixel < progress; pixel++)
@@ -3223,23 +3223,23 @@ void mAnimatorLight::LCDDisplay_displayTime(time_t t, byte color, byte colorSpac
   byte posOffset = 0;                                                                     // this offset will be used to move hours and minutes...
   if ( LED_DIGITS / 2 > 2 ) posOffset = 2;                                                // ... to the left so we have room for the seconds when there's 6 digits available
   if ( displayMode == 0 ) {                                                               // if 12h mode is selected...
-    if ( pCONT_time->hourFormat12(t) >= 10 ){
+    if ( tkr_time->hourFormat12(t) >= 10 ){
       LCDDisplay_showDigit(1, color + colorSpacing * 2, 3 + posOffset);   // ...and hour > 10, display 1 at position 3
     }
-    LCDDisplay_showDigit((pCONT_time->hourFormat12(t) % 10), color + colorSpacing * 3, 2  + posOffset);          // display 2nd digit of HH anyways
+    LCDDisplay_showDigit((tkr_time->hourFormat12(t) % 10), color + colorSpacing * 3, 2  + posOffset);          // display 2nd digit of HH anyways
   } else if ( displayMode == 1 ) {                                                        // if 24h mode is selected...
-    if ( pCONT_time->hour(t) > 9 ) LCDDisplay_showDigit(pCONT_time->hour(t) / 10, color + colorSpacing * 2, 3 + posOffset);  // ...and hour > 9, show 1st digit at position 3 (this is to avoid a leading 0 from 0:00 - 9:00 in 24h mode)
-    LCDDisplay_showDigit(pCONT_time->hour(t) % 10, color + colorSpacing * 3, 2 + posOffset);                     // again, display 2nd digit of HH anyways
+    if ( tkr_time->hour(t) > 9 ) LCDDisplay_showDigit(tkr_time->hour(t) / 10, color + colorSpacing * 2, 3 + posOffset);  // ...and hour > 9, show 1st digit at position 3 (this is to avoid a leading 0 from 0:00 - 9:00 in 24h mode)
+    LCDDisplay_showDigit(tkr_time->hour(t) % 10, color + colorSpacing * 3, 2 + posOffset);                     // again, display 2nd digit of HH anyways
   }
-  LCDDisplay_showDigit((pCONT_time->minute(t) / 10), color + colorSpacing * 4, 1 + posOffset);                   // minutes thankfully don't differ between 12h/24h, so this can be outside the above if/else
-  LCDDisplay_showDigit((pCONT_time->minute(t) % 10), color + colorSpacing * 5, 0 + posOffset);                   // each digit is drawn with an increasing color (*2, *3, *4, *5) (*6 and *7 for seconds only in HH:MM:SS)
+  LCDDisplay_showDigit((tkr_time->minute(t) / 10), color + colorSpacing * 4, 1 + posOffset);                   // minutes thankfully don't differ between 12h/24h, so this can be outside the above if/else
+  LCDDisplay_showDigit((tkr_time->minute(t) % 10), color + colorSpacing * 5, 0 + posOffset);                   // each digit is drawn with an increasing color (*2, *3, *4, *5) (*6 and *7 for seconds only in HH:MM:SS)
   if ( posOffset > 0 ) {
-    LCDDisplay_showDigit((pCONT_time->second(t) / 10), color + colorSpacing * 6, 1);
-    LCDDisplay_showDigit((pCONT_time->second(t) % 10), color + colorSpacing * 7, 0);
+    LCDDisplay_showDigit((tkr_time->second(t) / 10), color + colorSpacing * 6, 1);
+    LCDDisplay_showDigit((tkr_time->second(t) % 10), color + colorSpacing * 7, 0);
   }
-  if ( pCONT_time->second(t) % 2 == 0 ) 
-    LCDDisplay_showDots(2, pCONT_time->second(t) * 4.25);                                // show : between hours and minutes on even seconds with the color cycling through the palette once per minute
-  lastSecond = pCONT_time->second(t);
+  if ( tkr_time->second(t) % 2 == 0 ) 
+    LCDDisplay_showDots(2, tkr_time->second(t) * 4.25);                                // show : between hours and minutes on even seconds with the color cycling through the palette once per minute
+  lastSecond = tkr_time->second(t);
 }
 
 
@@ -3370,7 +3370,7 @@ void mAnimatorLight::EffectAnim__7SegmentDisplay__ClockTime_01()
 
   ALOG_DBM(PSTR("colour_offset = %d"), colour_offset);
 
-  LCDDisplay_displayTime(pCONT_time->Rtc.local_time, 0, colour_offset);
+  LCDDisplay_displayTime(tkr_time->Rtc.local_time, 0, colour_offset);
 
   // Get starting positions already on show
   SEGMENT.DynamicBuffer_StartingColour_GetAllSegment();
@@ -3418,7 +3418,7 @@ void mAnimatorLight::EffectAnim__7SegmentDisplay__ClockTime_02(){
 //   // Pick new colours
 //   //Display on all pixels
 //   UpdateDesiredColourFromPaletteSelected();
-  // pCONT_set->Settings.light_settings.type = ADDRESSABLE_SK6812;
+  // tkr_set->Settings.light_settings.type = ADDRESSABLE_SK6812;
     
   // SEGMENT.colour_width__used_in_effect_generate = RgbcctColor::ColourType::LIGHT_TYPE__RGBW__ID;
   
@@ -3450,7 +3450,7 @@ void mAnimatorLight::EffectAnim__7SegmentDisplay__ClockTime_02(){
   
   }
 
-  LCDDisplay_displayTime(pCONT_time->Rtc.local_time, 0, colorOffset);
+  LCDDisplay_displayTime(tkr_time->Rtc.local_time, 0, colorOffset);
   
   // if (overlayMode == 1) LCDDisplay_colorOverlay();
   // for (byte i = 0; i < LED_COUNT; i++) {                                                                    // check each led...
@@ -18773,31 +18773,31 @@ void mAnimatorLight::EffectAnim__2D__ScrollingText()
 
   // DEBUG_LINE_HERE;
   char sec[5];
-  int  AmPmHour = pCONT_time->RtcTime.hour;// hour(localTime);
+  int  AmPmHour = tkr_time->RtcTime.hour;// hour(localTime);
   bool isitAM = true;
   if (useAMPM) {
     if (AmPmHour > 11) { AmPmHour -= 12; isitAM = false; }
     if (AmPmHour == 0) { AmPmHour  = 12; }
     sprintf_P(sec, PSTR(" %2s"), (isitAM ? "AM" : "PM"));
   } else {
-    sprintf_P(sec, PSTR(":%02d"), pCONT_time->RtcTime.second);//(localTime));
+    sprintf_P(sec, PSTR(":%02d"), tkr_time->RtcTime.second);//(localTime));
   }
 
   // DEBUG_LINE_HERE;
   if (!strlen(text)) { // fallback if empty segment name: display date and time
     
-    // pCONT_time->GetDateAndTime(DT_DST).c_str();
+    // tkr_time->GetDateAndTime(DT_DST).c_str();
 
-    // sprintf_P(text, PSTR("%s %d, %d %d:%02d%s"), monthShortStr(month(localTime)), pCONT_time->RtcTime.days, pCONT_time->RtcTime.year, AmPmHour, pCONT_time->RtcTime.minute, sec);
+    // sprintf_P(text, PSTR("%s %d, %d %d:%02d%s"), monthShortStr(month(localTime)), tkr_time->RtcTime.days, tkr_time->RtcTime.year, AmPmHour, tkr_time->RtcTime.minute, sec);
     sprintf_P(text, PSTR("Test Message"));
   } else {
-    if      (!strncmp_P(text,PSTR("#DATE"),5)) sprintf_P(text, zero?PSTR("%02d.%02d.%04d"):PSTR("%d.%d.%d"),   pCONT_time->RtcTime.days,   pCONT_time->RtcTime.month,  pCONT_time->RtcTime.year);
-    else if (!strncmp_P(text,PSTR("#DDMM"),5)) sprintf_P(text, zero?PSTR("%02d.%02d")     :PSTR("%d.%d"),      pCONT_time->RtcTime.days,   pCONT_time->RtcTime.month);
-    else if (!strncmp_P(text,PSTR("#MMDD"),5)) sprintf_P(text, zero?PSTR("%02d/%02d")     :PSTR("%d/%d"),      pCONT_time->RtcTime.month, pCONT_time->RtcTime.days);
-    else if (!strncmp_P(text,PSTR("#TIME"),5)) sprintf_P(text, zero?PSTR("%02d:%02d%s")   :PSTR("%2d:%02d%s"), AmPmHour,         pCONT_time->RtcTime.minute, sec);
-    else if (!strncmp_P(text,PSTR("#HHMM"),5)) sprintf_P(text, zero?PSTR("%02d:%02d")     :PSTR("%d:%02d"),    AmPmHour,         pCONT_time->RtcTime.minute);
+    if      (!strncmp_P(text,PSTR("#DATE"),5)) sprintf_P(text, zero?PSTR("%02d.%02d.%04d"):PSTR("%d.%d.%d"),   tkr_time->RtcTime.days,   tkr_time->RtcTime.month,  tkr_time->RtcTime.year);
+    else if (!strncmp_P(text,PSTR("#DDMM"),5)) sprintf_P(text, zero?PSTR("%02d.%02d")     :PSTR("%d.%d"),      tkr_time->RtcTime.days,   tkr_time->RtcTime.month);
+    else if (!strncmp_P(text,PSTR("#MMDD"),5)) sprintf_P(text, zero?PSTR("%02d/%02d")     :PSTR("%d/%d"),      tkr_time->RtcTime.month, tkr_time->RtcTime.days);
+    else if (!strncmp_P(text,PSTR("#TIME"),5)) sprintf_P(text, zero?PSTR("%02d:%02d%s")   :PSTR("%2d:%02d%s"), AmPmHour,         tkr_time->RtcTime.minute, sec);
+    else if (!strncmp_P(text,PSTR("#HHMM"),5)) sprintf_P(text, zero?PSTR("%02d:%02d")     :PSTR("%d:%02d"),    AmPmHour,         tkr_time->RtcTime.minute);
     else if (!strncmp_P(text,PSTR("#HH"),3))   sprintf_P(text, zero?PSTR("%02d")          :PSTR("%d"),         AmPmHour);
-    else if (!strncmp_P(text,PSTR("#MM"),3))   sprintf_P(text, zero?PSTR("%02d")          :PSTR("%d"),         pCONT_time->RtcTime.minute);
+    else if (!strncmp_P(text,PSTR("#MM"),3))   sprintf_P(text, zero?PSTR("%02d")          :PSTR("%d"),         tkr_time->RtcTime.minute);
   }
 
   // DEBUG_LINE_HERE;
@@ -18895,14 +18895,14 @@ void mAnimatorLight::EffectAnim__2D__DigitalClock()
 
   // DEBUG_LINE_HERE;
   char sec[5];
-  int  AmPmHour = pCONT_time->RtcTime.hour;// hour(localTime);
+  int  AmPmHour = tkr_time->RtcTime.hour;// hour(localTime);
   bool isitAM = true;
   if (useAMPM) {
     if (AmPmHour > 11) { AmPmHour -= 12; isitAM = false; }
     if (AmPmHour == 0) { AmPmHour  = 12; }
     sprintf_P(sec, PSTR(" %2s"), (isitAM ? "AM" : "PM"));
   } else {
-    sprintf_P(sec, PSTR(":%02d"), pCONT_time->RtcTime.second);//(localTime));
+    sprintf_P(sec, PSTR(":%02d"), tkr_time->RtcTime.second);//(localTime));
   }
   
   sprintf_P(text, PSTR("#HHMM"));
@@ -18910,18 +18910,18 @@ void mAnimatorLight::EffectAnim__2D__DigitalClock()
   // DEBUG_LINE_HERE;
   if (!strlen(text)) { // fallback if empty segment name: display date and time
     
-    // pCONT_time->GetDateAndTime(DT_DST).c_str();
+    // tkr_time->GetDateAndTime(DT_DST).c_str();
 
-    // sprintf_P(text, PSTR("%s %d, %d %d:%02d%s"), monthShortStr(month(localTime)), pCONT_time->RtcTime.days, pCONT_time->RtcTime.year, AmPmHour, pCONT_time->RtcTime.minute, sec);
+    // sprintf_P(text, PSTR("%s %d, %d %d:%02d%s"), monthShortStr(month(localTime)), tkr_time->RtcTime.days, tkr_time->RtcTime.year, AmPmHour, tkr_time->RtcTime.minute, sec);
     sprintf_P(text, PSTR("Test Message"));
   } else {
-    if      (!strncmp_P(text,PSTR("#DATE"),5)) sprintf_P(text, zero?PSTR("%02d.%02d.%04d"):PSTR("%d.%d.%d"),   pCONT_time->RtcTime.days,   pCONT_time->RtcTime.month,  pCONT_time->RtcTime.year);
-    else if (!strncmp_P(text,PSTR("#DDMM"),5)) sprintf_P(text, zero?PSTR("%02d.%02d")     :PSTR("%d.%d"),      pCONT_time->RtcTime.days,   pCONT_time->RtcTime.month);
-    else if (!strncmp_P(text,PSTR("#MMDD"),5)) sprintf_P(text, zero?PSTR("%02d/%02d")     :PSTR("%d/%d"),      pCONT_time->RtcTime.month, pCONT_time->RtcTime.days);
-    else if (!strncmp_P(text,PSTR("#TIME"),5)) sprintf_P(text, zero?PSTR("%02d:%02d%s")   :PSTR("%2d:%02d%s"), AmPmHour,         pCONT_time->RtcTime.minute, sec);
-    else if (!strncmp_P(text,PSTR("#HHMM"),5)) sprintf_P(text, zero?PSTR("%02d:%02d")     :PSTR("%d:%02d"),    AmPmHour,         pCONT_time->RtcTime.minute);
+    if      (!strncmp_P(text,PSTR("#DATE"),5)) sprintf_P(text, zero?PSTR("%02d.%02d.%04d"):PSTR("%d.%d.%d"),   tkr_time->RtcTime.days,   tkr_time->RtcTime.month,  tkr_time->RtcTime.year);
+    else if (!strncmp_P(text,PSTR("#DDMM"),5)) sprintf_P(text, zero?PSTR("%02d.%02d")     :PSTR("%d.%d"),      tkr_time->RtcTime.days,   tkr_time->RtcTime.month);
+    else if (!strncmp_P(text,PSTR("#MMDD"),5)) sprintf_P(text, zero?PSTR("%02d/%02d")     :PSTR("%d/%d"),      tkr_time->RtcTime.month, tkr_time->RtcTime.days);
+    else if (!strncmp_P(text,PSTR("#TIME"),5)) sprintf_P(text, zero?PSTR("%02d:%02d%s")   :PSTR("%2d:%02d%s"), AmPmHour,         tkr_time->RtcTime.minute, sec);
+    else if (!strncmp_P(text,PSTR("#HHMM"),5)) sprintf_P(text, zero?PSTR("%02d:%02d")     :PSTR("%d:%02d"),    AmPmHour,         tkr_time->RtcTime.minute);
     else if (!strncmp_P(text,PSTR("#HH"),3))   sprintf_P(text, zero?PSTR("%02d")          :PSTR("%d"),         AmPmHour);
-    else if (!strncmp_P(text,PSTR("#MM"),3))   sprintf_P(text, zero?PSTR("%02d")          :PSTR("%d"),         pCONT_time->RtcTime.minute);
+    else if (!strncmp_P(text,PSTR("#MM"),3))   sprintf_P(text, zero?PSTR("%02d")          :PSTR("%d"),         tkr_time->RtcTime.minute);
   }
 
   // DEBUG_LINE_HERE;
