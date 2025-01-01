@@ -717,7 +717,10 @@ enum MODULE_SUBTYPE_IDS{ //ignores the "interface"
 #ifdef USE_MODULE_CONTROLLER_CUSTOM__DESK_SENSORS_ON_OLED
   #include "10_ConSpec/20_DeskSensorsOnOLED/mDeskSensorsOnOLED.h"
   #define pCONT_DeskSensorsOnOLED        static_cast<mDeskSensorsOnOLED*>(mTaskerManager::GetInstance()->GetModule(D_UNIQUE_MODULE_CONTROLLER_CUSTOM__DESK_SENSORS_ON_OLED_ID))
-  // Can the above be removed and instead lets get it via the tasker? pCONT->GetModule()
+#endif
+#ifdef USE_MODULE_CONTROLLER_CUSTOM__LIGHTNEO_MOTION_ALERTS
+  #include "10_ConSpec/21_LightNeo_MotionAlerts/mLightNeo_MotionAlerts.h"
+  #define tkrCC_motion_alerts        static_cast<mLightNeo_MotionAlerts*>(mTaskerManager::GetInstance()->GetModule(D_UNIQUE_MODULE__CONTROLLER_CUSTOM__LIGHTNEO_MOTION_ALERTS__ID))
 #endif
 #ifdef USE_MODULE_CONTROLLER_USERMOD_01
   #include "9_Controller/UserMod_01/mUserMod_01.h"

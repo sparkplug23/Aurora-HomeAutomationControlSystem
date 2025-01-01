@@ -28,7 +28,7 @@
 // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__07__ESP32_1CH_7SEGMENTCLOCK                 // ESP32 testing 3D printed 7 segment clock
 // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__08__ESP32_1CH_NOWEBUI                       // ESP32 - Single Bus - Single Segment - 100 rgb leds -- giveaway
 // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__09__ESP32_1CH_PLAYLISTS                     // Presets and Playlists
-#define DEVICE_TESTGROUP__LIGHTING_EFFECTS__10__ESP32_EFFECTS_SERIAL_RING               // Testing effects on 16 pixel ring, on desk, for serial timing
+// #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__10__ESP32_EFFECTS_SERIAL_RING               // Testing effects on 16 pixel ring, on desk, for serial timing
 // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__11__ESP32_EFFECTS_16SEGMENTS_ON_GRID        // Testing effects on 2D matrix on shelf
 // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__12__ESP32_32BIT_WRGB_TIME_OPTIMISE          // Developing ability to compile in either 32bit or rgbcct ColourObject for performance, desk ring
 // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__13__ESP32_32BIT_RGBCCT_TIME_OPTIMISE        // Developing ability to compile in either 32bit or rgbcct ColourObject for performance, desk ring

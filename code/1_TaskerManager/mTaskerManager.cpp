@@ -623,6 +623,9 @@ uint8_t mTaskerManager::Instance_Init()
   #ifdef USE_MODULE_CONTROLLER_CUSTOM__DESK_SENSORS_ON_OLED
   addTasker(new mDeskSensorsOnOLED());
   #endif
+  #ifdef USE_MODULE_CONTROLLER_CUSTOM__LIGHTNEO_MOTION_ALERTS
+  addTasker(new mLightNeo_MotionAlerts());
+  #endif
   #ifdef USE_MODULE_CONTROLLER_USERMOD_01
   addTasker(new mUserMod_01());
   #endif
