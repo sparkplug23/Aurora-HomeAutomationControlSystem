@@ -39,7 +39,7 @@
 // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__22__ESP32_4CH_MATRIX_PYTHON_MANUAL_ROWS        // Using python script for left,centre,right to convert non-equal rows into a ledmap for 2D effects
 
 //    ;;;;;;;;;;;; ESP32 ;;;;;;;;;;;;;;;;  -- Non digital devices
-// #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__30__ESP32_PWM_RGBCCT_5CH_RGBCCT             // Garage as lighting at night, long term tester
+#define DEVICE_TESTGROUP__LIGHTING_EFFECTS__30__ESP32_PWM_RGBCCT_5CH_RGBCCT             // Garage as lighting at night, long term tester
 // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__31__ESP32_PWM_RGBCCT_2x2CH_WHITE_CHANNELS   // Dual CCT white lights (Create hardware for esp32+PWM)
 // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__32__ESP32_PWM_RGBCCT_5x1CH_WHITE_CHANNELS   // FIVE single white channels (5 segments)
 
@@ -3723,7 +3723,10 @@ Left to right
 #endif // DEVICE_TESTGROUP__LIGHTING_EFFECTS__L1__ESP32_I2S_PARALLEL_4CH
 
 
-
+/**
+ * @brief Flashing a secondary, so there is still a working one to swap in
+ * 
+ */
 #ifdef DEVICE_TESTGROUP__LIGHTING_EFFECTS__30__ESP32_PWM_RGBCCT_5CH_RGBCCT 
   #ifndef DEVICENAME_CTR
   #define DEVICENAME_CTR          "testbed_default"
@@ -3811,6 +3814,10 @@ Left to right
   // #define USE_MODULE_NETWORK_WIFI
   // #define ENABLE_DEVFEATURE_MQTT_USING_WIFI
 
+  #define ENABLE_DEVFEATURE_JSON__ASYNCJSON_V6
+  #define USE_MODULE_NETWORK_WEBSERVER
+  #define ENABLE_WEBSERVER_LIGHTING_WEBUI  
+
 
   /***********************************
    * SECTION: Lighting Configs
@@ -3865,27 +3872,123 @@ Left to right
   // }
   // )=====";
 
+  
+  #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
+  // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
+
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
+  #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
+
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
+  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
+  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+
+
+  #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
+
+  #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+
+  
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  #define ColourBaseType RgbwwColor
+  #else
+  #define ColourBaseType uint32_t
+  #endif
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+  #else
+  #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+  #endif
+
+  // 
+
+
+
+        // "ColourOrder":"GRBWC",
+        // "BusType":"WS2805_RGBWW",
+
   #define USE_LIGHTING_TEMPLATE
-  #define ENABLE_DEVFEATURE_LIGHT__BUS_MANAGER_DEFAULT_FORCED_AS_PWM
+  
+  // DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  // R"=====(
+  // {
+  //   "BusConfig":[
+  //     {
+  //       "Pin":[5,18,19,21,22],
+  //       "ColourOrder":"RGBCW",
+  //       "BusType":"ANALOG_5CH",
+  //       "Start":0,
+  //       "Length":1
+  //     },
+  //     {
+  //       "Pin":27,
+  //       "ColourOrder":"GRB",
+  //       "BusType":"WS2812_RGB",
+  //       "Start":1,
+  //       "Length":20
+  //     }
+  //   ],    
+  //   "Segment0":{
+  //     "PixelRange": [
+  //       0,
+  //       1
+  //     ],
+  //     "ColourType":5,
+  //     "ColourPalette":0,
+  //     "SegColour0": {
+  //       "Hue": 25,
+  //       "Sat": 100,
+  //       "BrightnessRGB": 100,
+  //       "BrightnessCCT": 100,
+  //       "CCT_TempPercentage":100
+  //     },
+  //     "Effects": {
+  //       "Function":0,
+  //       "RateMs": 1000
+  //     },
+  //     "BrightnessRGB":100,
+  //     "BrightnessCCT":100
+  //   },
+  //   "Segment1":{
+  //     "PixelRange": [
+  //       1,
+  //       21
+  //     ],
+  //     "ColourType":5,
+  //     "ColourPalette":"Snowy 02",
+  //     "SegColour0": {
+  //       "Hue": 0,
+  //       "Sat": 100,
+  //       "BrightnessRGB": 100,
+  //       "BrightnessCCT": 100,
+  //       "CCT_TempPercentage":100
+  //     },
+  //     "Effects": {
+  //       "Function":"Spanned Palette",
+  //       "RateMs": 1000
+  //     },
+  //     "BrightnessRGB":5,
+  //     "BrightnessCCT":5
+  //   },
+  //   "BrightnessRGB":100,
+  //   "BrightnessCCT":100
+  // }
+  // )=====";
+
+  
   DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
   R"=====(
   {
     "BusConfig":[
       {
-        "Pin":[5,18,19,21,22],
-        "ColourOrder":"RGBCW",
-        "BusType":"ANALOG_5CH",
+        "Pin":27,
+        "ColourOrder":"GRB",
+        "BusType":"WS2812_RGB",
         "Start":0,
         "Length":1
-      },
-      {
-        "Pin":27,
-        "ColourOrder":"GRBWC",
-        "BusType":"WS2805_RGBWW",
-        "Start":1,
-        "Length":20
       }
-    ],    
+    ],   
     "Segment0":{
       "PixelRange": [
         0,
@@ -3894,27 +3997,6 @@ Left to right
       "ColourType":5,
       "ColourPalette":0,
       "SegColour0": {
-        "Hue": 25,
-        "Sat": 100,
-        "BrightnessRGB": 100,
-        "BrightnessCCT": 100,
-        "CCT_TempPercentage":100
-      },
-      "Effects": {
-        "Function":0,
-        "RateMs": 1000
-      },
-      "BrightnessRGB":100,
-      "BrightnessCCT":100
-    },
-    "Segment1":{
-      "PixelRange": [
-        1,
-        21
-      ],
-      "ColourType":5,
-      "ColourPalette":"Snowy 02",
-      "SegColour0": {
         "Hue": 0,
         "Sat": 100,
         "BrightnessRGB": 100,
@@ -3922,8 +4004,9 @@ Left to right
         "CCT_TempPercentage":100
       },
       "Effects": {
-        "Function":"Spanned Palette",
-        "RateMs": 1000
+        "Function":"Solid",
+        "RateMs": 1000,
+        "Speed":255
       },
       "BrightnessRGB":5,
       "BrightnessCCT":5

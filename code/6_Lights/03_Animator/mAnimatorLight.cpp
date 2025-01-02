@@ -3132,8 +3132,12 @@ RgbwwColor IRAM_ATTR mAnimatorLight::Segment::getPixelColorRgbww(int i) const
   // offset/phase
   i += offset;
   if (i >= stop) i -= length();
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  return tkr_anim->getPixelColor(i);
+  #else
   RgbwwColor rgbww = tkr_anim->getPixelColor(i);
   return RGBW32(rgbww.R, rgbww.G, rgbww.B, rgbww.WW);
+  #endif
 }
 uint32_t IRAM_ATTR mAnimatorLight::Segment::getPixelColor(int i) const
 {
@@ -3202,7 +3206,12 @@ uint32_t IRAM_ATTR mAnimatorLight::Segment::getPixelColor(int i) const
   i += offset;
   if (i >= stop) i -= length();
   
-  return tkr_anim->getPixelColor(i);;
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  RgbwwColor rgbww = tkr_anim->getPixelColor(i);
+  return RGBW32(rgbww.R, rgbww.G, rgbww.B, rgbww.WW);
+  #else
+  return tkr_anim->getPixelColor(i);
+  #endif
 }
 
 
@@ -4176,6 +4185,7 @@ void mAnimatorLight::Segment::UpdateBrightness()
 void IRAM_ATTR mAnimatorLight::setPixelColor(uint32_t i, ColourBaseType col) {
   i = getMappedPixelIndex(i);
   if (i >= _length) return;
+  Serial.printf("void IRAM_ATTR mAnimatorLight::setPixelColor(uint32_t i, %d,%d,%d)\n\r", col.R, col.G, col.B);
   pCONT_iLight->bus_manager->setPixelColor(i, col);
 }
 
@@ -5350,12 +5360,48 @@ mAnimatorLight::GetColourFromUnloadedPalette3(
 
 
 // Temporary fix
-void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(uint16_t indexPixel, RgbcctColor color, bool segment_brightness_needs_applied)
+/***
+ * The setters normally dont need a translation layer, but since the ColourObject in neopixelbus has some translations, care needs to be 
+ * taken that its not being changed without my knowledge.
+ */
+#ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+// void IRAM_ATTR mAnimatorLight::Segment::setPixelColor_RgbwwColor(uint16_t indexPixel, RgbwwColor color, bool segment_brightness_needs_applied)
+// {
+  
+//   #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+//   setPixelColor(indexPixel, color, segment_brightness_needs_applied);
+//   #else
+//   uint32_t col = RGBW32(color.R, color.G, color.B, color.WW);
+//   setPixelColor(indexPixel, col, segment_brightness_needs_applied);
+//   #endif  
+// }
+// void IRAM_ATTR mAnimatorLight::Segment::setPixelColor_RgbwwColor(uint16_t indexPixel, RgbwwColor color, bool segment_brightness_needs_applied)
+// {
+  
+//   #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+//   setPixelColor(indexPixel, color, segment_brightness_needs_applied);
+//   #else
+//   uint32_t col = RGBW32(color.R, color.G, color.B, color.W1);
+//   setPixelColor(indexPixel, col, segment_brightness_needs_applied);
+//   #endif
+
+  
+// }
+#else
+
+void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(uint16_t indexPixel, RgbwwColor color, bool segment_brightness_needs_applied)
 {
+  
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  setPixelColor(indexPixel, color, segment_brightness_needs_applied);
+  #else
   uint32_t col = RGBW32(color.R, color.G, color.B, color.W1);
   setPixelColor(indexPixel, col, segment_brightness_needs_applied);
-}
+  #endif
 
+  
+}
+#endif
 
 void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(uint16_t indexPixel, uint8_t red, uint8_t green, uint8_t blue, bool segment_brightness_needs_applied)
 {
@@ -5529,8 +5575,11 @@ void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(uint16_t indexPixel, uint8
 // }
 
 
-void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(int i, uint32_t col, bool flag_brightness_already_applied)
+void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(int i, ColourBaseType col, bool flag_brightness_already_applied)
 {
+
+  Serial.printf("mAnimatorLight::Segment::setPixelColor(int i, col %d,%d,%d\n\r", col.R, col.G, col.B);
+
   if (!isActive() || i < 0) return; // not active or invalid index
 #ifndef WLED_DISABLE_2D
   int vStrip = 0;
@@ -5690,7 +5739,7 @@ void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(int i, uint32_t col, bool 
   }
   i += start; // starting pixel in a group
 
-  uint32_t tmpCol = col;
+  ColourBaseType tmpCol = col;
   // set all the pixels in the group
   for (int j = 0; j < grouping; j++) {
     unsigned indexSet = i + ((reverse) ? -j : j);

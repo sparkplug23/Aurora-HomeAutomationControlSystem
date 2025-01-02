@@ -360,6 +360,8 @@ class PolyBus
   // Function to set pixel color based on color ordering
   static void setPixelColor(void* busPtr, uint8_t busType, uint16_t pix, RgbwwColor c, uint8_t co, uint16_t wwcw = 0)
   {
+    // Serial.println("rgbww function");
+    Serial.printf("rgbww function %d,%d,%d", c.R, c.G, c.B, c.WW, c.CW);
 
     // #ifdef ENABLE_DEVFEATURE_LIGHTING__TEMPORARY_DISABLE_CODE_FOR_SPEED_TESTING
     // DEBUG_TIME__START
@@ -406,17 +408,17 @@ class PolyBus
         );
     }
     #endif    
-    #ifdef ENABLE_DEVFEATURE__PIXEL_COLOUR_VALUE_IN_MULTIPIN_SHOW_LOGS // Debug pixel color value log
-    if (pix < 1) { // Just log for the first pixel
-        Serial.printf("setPixelColor[%d] R=%d, G=%d, B=%d, WW=%d, CW=%d\n\r", pix, 
-            colour_internal.R, 
-            colour_internal.G, 
-            colour_internal.B, 
-            colour_internal.WW, 
-            colour_internal.CW
+    // #ifdef ENABLE_DEVFEATURE__PIXEL_COLOUR_VALUE_IN_MULTIPIN_SHOW_LOGS // Debug pixel color value log
+    // if (pix < 1) { // Just log for the first pixel
+        Serial.printf("Polybus::setPixelColor[%d] R=%d, G=%d, B=%d, WW=%d, CW=%d\n\r", pix, 
+            col.R, 
+            col.G, 
+            col.B, 
+            col.WW, 
+            col.CW
         );
-    }
-    #endif
+    // }
+    // #endif
     
     switch (busType) {
       case BUSTYPE__NONE__ID: break;

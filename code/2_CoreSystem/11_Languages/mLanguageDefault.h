@@ -1405,6 +1405,7 @@
   #define D_LOG_SUBCOMMAND "SUB: " // Subcommand
   #define D_LOG_SUN_TRACKING "SUN: "
   #define D_LOG_SWITCHES "SWH: "
+  #define D_LOG_TELEMETRY "TEL: "
   #define D_LOG_TASKER "TSK: "
   #define D_LOG_TEST "TST: "
   #define D_LOG_TIME "TIM: "         // Time

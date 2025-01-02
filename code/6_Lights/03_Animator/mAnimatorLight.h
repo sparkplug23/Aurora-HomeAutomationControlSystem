@@ -2850,10 +2850,27 @@ typedef struct Segment
 
     // 1D strip
     [[gnu::hot]] uint16_t virtualLength(void) const;
-    [[gnu::hot]] void setPixelColor(int n, uint32_t c, bool flag_brightness_already_applied = false); // set relative pixel within segment with color    
+    [[gnu::hot]] void setPixelColor(int n, ColourBaseType c, bool flag_brightness_already_applied = false); // set relative pixel within segment with color    
+    
+    
+    #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+    inline void setPixelColor(unsigned n, RgbwwColor c, bool flag_brightness_already_applied = false) {
+      setPixelColor(int(n), c, flag_brightness_already_applied);
+    }
+
+    void setPixelColor(int n, byte r, byte g, byte b, byte w = 0) {
+      setPixelColor(n, RgbwwColor(r,g,b,w));
+    }
+
+    void setPixelColor(int n, CRGB c) {
+      setPixelColor(n, RgbwwColor(c.r, c.g, c.b));
+    }
+    #else
     inline void setPixelColor(unsigned n, uint32_t c, bool flag_brightness_already_applied = false)                    { setPixelColor(int(n), c, flag_brightness_already_applied); }
     void setPixelColor(int n, byte r, byte g, byte b, byte w = 0) { setPixelColor(n, RGBW32(r,g,b,w)); } // automatically inline
     void setPixelColor(int n, CRGB c)                             { setPixelColor(n, RGBW32(c.r,c.g,c.b,0)); } // automatically inline
+    #endif
+    
     void setPixelColor(float i, uint32_t c, bool aa = true);
     void setPixelColor(float i, uint8_t r, uint8_t g, uint8_t b, uint8_t w = 0, bool aa = true) { setPixelColor(i, RGBW32(r,g,b,w), aa); }
     void setPixelColor(float i, CRGB c, bool aa = true)                                         { setPixelColor(i, RGBW32(c.r,c.g,c.b,0), aa); }
@@ -2863,7 +2880,15 @@ typedef struct Segment
     [[gnu::hot]] uint32_t getPixelColor(int i) const;  
     [[gnu::hot]] RgbwwColor getPixelColorRgbww(int i) const;
     
+    // TMP FIX
+    #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+    // void setPixelColor_RgbwwColor(uint16_t indexPixel, RgbwwColor color, bool flag_brightness_already_applied = false); // TMP FIX
+    
+    #else
     void setPixelColor(uint16_t indexPixel, RgbcctColor color, bool flag_brightness_already_applied = false); // TMP FIX
+    #endif 
+
+
     void setPixelColor(uint16_t indexPixel, uint8_t red, uint8_t green, uint8_t blue, bool flag_brightness_already_applied = false);  
     // void setPixelColor(uint16_t indexPixel, uint32_t color, bool flag_brightness_already_applied = false);
     
@@ -3338,10 +3363,17 @@ inline void AnimationProcess_LinearBlend_Dynamic_BufferU32_FillSegment(const Ani
         // Blend the two colors
           RgbwwColor blendedRgbww = RgbwwColor::LinearBlend(startRgbww, desiredRgbww, blendFactor);
 
+          blendedRgbww = RgbwwColor(1,2,255,0,0);
+
+        Serial.printf("startRgbww RGBWW %d,%d,%d,%d,%d\n\r", startRgbww.R, startRgbww.G, startRgbww.B, startRgbww.WW, startRgbww.CW); 
+        Serial.printf("desiredRgbww RGBWW %d,%d,%d,%d,%d\n\r", desiredRgbww.R, desiredRgbww.G, desiredRgbww.B, desiredRgbww.WW, desiredRgbww.CW); 
+        
         // Set the blended color across the segment
         for (uint16_t pixel = 0; pixel < virtualLength(); pixel++) {
             setPixelColor(pixel, blendedRgbww);
         }
+        
+        // AddLog_Array_Block(3, PSTR("Solid Colour RGBWW"), SEGMENT.Data(), SEGMENT.DataLength(), 5, false);
         #endif
     } else {
         // Handle RGB/WRGB blending

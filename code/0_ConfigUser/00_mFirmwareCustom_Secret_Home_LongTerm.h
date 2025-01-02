@@ -116,7 +116,7 @@ DSToilet
   - consumerunit = 12 pzem, bme
 */
 // #define DEVICE_CONSUMERUNIT
-#define DEVICE_CONSUMERUNIT_25
+// #define DEVICE_CONSUMERUNIT_25
 
 /**
 LivingRoom

@@ -25,7 +25,26 @@
 int8_t mTelemetry::Tasker(uint8_t function, JsonParserObject obj)
 {
   
+
   switch(function){
+    /************
+     * PERIODIC SECTION * 
+    *******************/
+    case TASK_EVERY_SECOND:
+      if (serial_messages_remaining_to_send > 0) {
+        serial_messages_remaining_to_send--;
+        auto handle = mqtthandler_list[serial_messages_remaining_to_send];
+        uint8_t fSendPayload = CALL_MEMBER_FUNCTION(*this, handle->ConstructJSON_function)(handle->json_level, true);\
+        ALOG_INF(PSTR(D_LOG_TELEMETRY ">>>>>>>%d/%d%S<<<<<<<<\n\r%s"), 
+          mqtthandler_list.size()-serial_messages_remaining_to_send,
+          mqtthandler_list.size(),
+          mqtthandler_list[serial_messages_remaining_to_send]->postfix_topic,
+          JBI->GetBuffer());
+      }    
+    break;
+    case TASK_UPTIME_30_SECONDS:
+      serial_messages_remaining_to_send = mqtthandler_list.size();
+    break;
     /************
      * MQTT SECTION * 
     *******************/

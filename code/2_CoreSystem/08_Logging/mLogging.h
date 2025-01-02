@@ -651,8 +651,8 @@ void AddLog_Array(uint8_t loglevel, const char* name_ctr, T* arr, U arr_len)
     // Pass the formatted string to AddLog
     AddLog(loglevel, PSTR("%s"), logBuffer);
 }
-template<typename T, typename U>
-void AddLog_Array_Block(uint8_t loglevel, const char* name_ctr, T* arr, U arr_len, U arr_width, bool use_tabs)
+template<typename T, typename U, typename V>
+void AddLog_Array_Block(uint8_t loglevel, const char* name_ctr, T* arr, U arr_len, V arr_width, bool use_tabs)
 {
     // Create a buffer to store the log message
     char logBuffer[512];  // Adjust the size if needed

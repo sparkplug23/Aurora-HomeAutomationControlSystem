@@ -105,10 +105,16 @@ void mAnimatorLight::EffectAnim__Solid_Colour()
     RgbwwColor desiredColour = SEGMENT.GetPaletteColour_Rgbww();
     RgbwwColor startingColour = SEGMENT.getPixelColorRgbww(0);
 
+    // desiredColour = RgbwwColor(1,2,3,4,5);
+    // startingColour = RgbwwColor(6,7,8,9,10);
+
+    Serial.printf("Solid Colour --------------------------------------------------%d\n\r", desiredColour);
     // Set the desired and starting colors in the transition buffer
     SEGMENT.Set_DynamicBuffer_DesiredColour_RgbwwColor(0, desiredColour);
     SEGMENT.Set_DynamicBuffer_StartingColour_RgbwwColor(0, startingColour);
     #endif
+    // Serial.printf("Solid Colour RGBWW %d,%d,%d\n\r", desiredColour.R, desiredColour.G, desiredColour.B); 
+    AddLog_Array_Block(3, PSTR("Data()"), SEGMENT.Data(), SEGMENT.DataLength(), 5, false);
   } else {
     // Handle RGB/WRGB cases
     uint32_t desiredColour  = SEGMENT.GetPaletteColour_U32();
@@ -118,6 +124,7 @@ void mAnimatorLight::EffectAnim__Solid_Colour()
     SEGMENT.Set_DynamicBuffer_DesiredColour(0, desiredColour);
     SEGMENT.Set_DynamicBuffer_StartingColour(0, startingColour);
   }
+
 
   // Set up the animation function callback
   SetSegment_AnimFunctionCallback(SEGIDX, [this](const AnimationParam& param) {

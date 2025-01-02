@@ -373,7 +373,7 @@ void BusDigital::show() {
    */
   if (_data) 
   {
-    // ALOG_INF(PSTR("buffer method active %d %d %d\t %d %d %d"), _len, getNumberOfChannels(), _colorOrder, _data[0], _data[1], _data[2]);
+    ALOG_INF(PSTR("buffer method active %d %d %d\t %d %d %d"), _len, getNumberOfChannels(), _colorOrder, _data[0], _data[1], _data[2]);
     size_t channels = getNumberOfChannels();
     int16_t oldCCT = Bus::_cct; // temporarily save bus CCT
     for (size_t i=0; i<_len; i++) {
@@ -400,6 +400,7 @@ void BusDigital::show() {
       unsigned pix = i;
       if (_reversed) pix = _len - pix -1;
       pix += _skip;
+      Serial.printf("Setting pixel %d to %d %d %d %d\n", pix, c, co, (cctCW<<8) | cctWW);
       PolyBus::setPixelColor(_busPtr, _iType, pix, c, co, (cctCW<<8) | cctWW);
     }
     #if !defined(STATUSLED) || STATUSLED>=0
@@ -411,16 +412,23 @@ void BusDigital::show() {
   /**
    * @brief Method: Direct
    * Pixels are set directly on the bus, no buffer is used.
+   * This section sole purpose is to fix colour inaccuracies that may occur when using the buffer method.
+   * It reads what has already been set on the bus, but not yet transmitted. 
    */
   else 
   {
-    // ALOG_INF(PSTR("direct method active %d %d %d"), _len, getNumberOfChannels(), _colorOrder);
+    ALOG_INF(PSTR("direct method active %d %d %d"), _len, getNumberOfChannels(), _colorOrder);
     if (newBri < _bri) {
       unsigned hwLen = _len;
       if (_type == BUSTYPE_WS2812_1CH_X3) hwLen = NUM_ICS_WS2812_1CH_3X(_len); // only needs a third of "RGB" LEDs for NeoPixelBus
       for (unsigned i = 0; i < hwLen; i++) {
         // use 0 as color order, actual order does not matter here as we just update the channel values as-is
+        #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+        ColourBaseType c = PolyBus::getPixelColor(_busPtr, _iType, i, 0); // tmp fix for RGBWW
+        #else
         ColourBaseType c = restoreColorLossy(PolyBus::getPixelColor(_busPtr, _iType, i, 0), _bri);
+        #endif
+        ALOG_INF(PSTR("direct method active lossy %d %d %d\t %d %d %d"), i, c.R, c.G, c.B, c.WW, c.CW);
         #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
         // if (hasCCT()) Bus::calculateCCT(c, cctWW, cctCW); // this will unfortunately corrupt (segment) CCT data on every bus
         PolyBus::setPixelColor(_busPtr, _iType, i, c, 0);//, 0, (cctCW<<8) | cctWW); // repaint all pixels with new brightness
@@ -440,6 +448,8 @@ void BusDigital::show() {
    * actually be the "under palette" that is set to a lower brightness. 
    * 
    */
+
+  // PolyBus::setPixelColor(_busPtr, _iType, 0, RgbColor(255, 0, 0), 0);
 
 
 
@@ -487,6 +497,14 @@ void IRAM_ATTR BusDigital::setPixelColor(uint32_t pix, ColourBaseType c) {
   #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
   // Directly handle RgbwwColor
   unsigned co = _colorOrderMap.getPixelColorOrder(pix + _start, _colorOrder);
+  ALOG_INF(PSTR("BusDigital::setPixelColor %d %d %d %d %d"), pix, c.R, c.G, c.B, c.WW);
+  // c.R = 100;
+  // c.G = 101;
+  // c.B = 102;
+  // c.WW = 103;
+  // static_assert(std::is_same<ColourBaseType, RgbwwColor>::value,
+  //             "Error: ColourBaseType must be RgbwwColor when ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE is defined.");
+
   PolyBus::setPixelColor(_busPtr, _iType, pix, c, co);
   #else
   if (hasWhite()) c = autoWhiteCalc(c);
@@ -1343,6 +1361,7 @@ uint16_t BusManager::getTotalLength() {
 }
 
 void IRAM_ATTR BusManager::setPixelColor(uint32_t pix, ColourBaseType c) {
+  Serial.printf("BusManager::setPixelColor %d %d,%d,%d,%d,%d\n\r", pix, c.R, c.G, c.B, c.WW, c.CW);
   for (unsigned i = 0; i < numBusses; i++) {
     unsigned bstart = busses[i]->getStart();
     if (pix < bstart || pix >= bstart + busses[i]->getLength()) continue;
