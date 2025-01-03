@@ -135,7 +135,7 @@ enum EM_BUS_TYPE
   #define PIXELBUS_32_I1_4P NeoPixelBusLg<NeoRgbwFeature, NeoEsp32I2s1X8Sk6812Method, NeoGammaNullMethod>
   #define PIXELBUS_32_I0_4P NeoPixelBusLg<NeoRgbwFeature, NeoEsp32I2s0X16Sk6812Method, NeoGammaNullMethod>
   //RGBWW (WS2805)
-  // #define PIXELBUS_32_RN_5 NeoPixelBusLg<NeoRgbwwFeature, NeoEsp32I2s0Ws2805Method, NeoGammaNullMethod> // No RMT method
+  #define PIXELBUS_32_RN_5 NeoPixelBusLg<NeoRgbwwFeature, NeoEsp32I2s0Ws2805Method, NeoGammaNullMethod> // No RMT method
   #define PIXELBUS_32_I0_5 NeoPixelBusLg<NeoRgbwwFeature, NeoEsp32I2s0Ws2805Method, NeoGammaNullMethod>
   #define PIXELBUS_32_I1_5 NeoPixelBusLg<NeoRgbwwFeature, NeoEsp32I2s1Ws2805Method, NeoGammaNullMethod>
   #define PIXELBUS_32_I1_5P NeoPixelBusLg<NeoRgbwwFeature, NeoEsp32I2s1X8Ws2805Method, NeoGammaNullMethod>
@@ -234,7 +234,7 @@ class PolyBus
     #ifdef ARDUINO_ARCH_ESP32
       case BUSTYPE__32_RN_3__ID: busPtr = new PIXELBUS_32_RN_3(len, pins[0], (NeoBusChannel)channel); break;
       case BUSTYPE__32_RN_4__ID: busPtr = new PIXELBUS_32_RN_4(len, pins[0], (NeoBusChannel)channel); break;
-      // case BUSTYPE__32_RN_5__ID:  busPtr = new PIXELBUS_32_RN_5(len, pins[0], (NeoBusChannel)channel); break;
+      case BUSTYPE__32_RN_5__ID:  busPtr = new PIXELBUS_32_RN_5(len, pins[0]); break;
       case BUSTYPE__32_RN_400_3__ID: busPtr = new PIXELBUS_32_RN_400_3(len, pins[0], (NeoBusChannel)channel); break;     
       #ifndef NEOPIXEL_DISABLE_I2S0_PIXELBUS
       case BUSTYPE__32_I0_3__ID: busPtr = new PIXELBUS_32_I0_3(len, pins[0]); break;
@@ -282,7 +282,7 @@ class PolyBus
     #ifdef ARDUINO_ARCH_ESP32
       case BUSTYPE__32_RN_3__ID: (static_cast<PIXELBUS_32_RN_3*>(busPtr))->Show();   
       case BUSTYPE__32_RN_4__ID: (static_cast<PIXELBUS_32_RN_4*>(busPtr))->Show(); break;  
-      // case BUSTYPE__32_RN_5__ID: (static_cast<PIXELBUS_32_RN_5*>(busPtr))->Show(); break;
+      case BUSTYPE__32_RN_5__ID: (static_cast<PIXELBUS_32_RN_5*>(busPtr))->Show(); break;
       case BUSTYPE__32_RN_400_3__ID: (static_cast<PIXELBUS_32_RN_400_3*>(busPtr))->Show(); break;
       #ifndef NEOPIXEL_DISABLE_I2S0_PIXELBUS
       case BUSTYPE__32_I0_3__ID: (static_cast<PIXELBUS_32_I0_3*>(busPtr))->Show(); break;
@@ -329,7 +329,7 @@ class PolyBus
     #ifdef ARDUINO_ARCH_ESP32
       case BUSTYPE__32_RN_3__ID: return (static_cast<PIXELBUS_32_RN_3*>(busPtr))->CanShow(); break;
       case BUSTYPE__32_RN_4__ID: return (static_cast<PIXELBUS_32_RN_4*>(busPtr))->CanShow(); break;
-      // case BUSTYPE__32_RN_5__ID:  return (static_cast<PIXELBUS_32_RN_5*>(busPtr))->CanShow(); break;
+      case BUSTYPE__32_RN_5__ID:  return (static_cast<PIXELBUS_32_RN_5*>(busPtr))->CanShow(); break;
       case BUSTYPE__32_RN_400_3__ID: return (static_cast<PIXELBUS_32_RN_400_3*>(busPtr))->CanShow(); break;
       #ifndef NEOPIXEL_DISABLE_I2S0_PIXELBUS
       case BUSTYPE__32_I0_3__ID: return (static_cast<PIXELBUS_32_I0_3*>(busPtr))->CanShow(); break;
@@ -360,9 +360,12 @@ class PolyBus
   // Function to set pixel color based on color ordering
   static void setPixelColor(void* busPtr, uint8_t busType, uint16_t pix, RgbwwColor c, uint8_t co, uint16_t wwcw = 0)
   {
-    // Serial.println("rgbww function");
-    Serial.printf("rgbww function %d,%d,%d", c.R, c.G, c.B, c.WW, c.CW);
+    
+    #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+    Serial.printf("rgbww function %d,%d,%d\n\r", c.R, c.G, c.B, c.WW, c.CW); Serial.flush();
+    #endif
 
+  // DEBUG_LINE_HERE;
     // #ifdef ENABLE_DEVFEATURE_LIGHTING__TEMPORARY_DISABLE_CODE_FOR_SPEED_TESTING
     // DEBUG_TIME__START
     // uint32_t __debug_time_start__ = micros();
@@ -408,17 +411,13 @@ class PolyBus
         );
     }
     #endif    
-    // #ifdef ENABLE_DEVFEATURE__PIXEL_COLOUR_VALUE_IN_MULTIPIN_SHOW_LOGS // Debug pixel color value log
-    // if (pix < 1) { // Just log for the first pixel
+    #ifdef ENABLE_DEVFEATURE__PIXEL_COLOUR_VALUE_IN_MULTIPIN_SHOW_LOGS // Debug pixel color value log
+    if (pix < 1) { // Just log for the first pixel
         Serial.printf("Polybus::setPixelColor[%d] R=%d, G=%d, B=%d, WW=%d, CW=%d\n\r", pix, 
-            col.R, 
-            col.G, 
-            col.B, 
-            col.WW, 
-            col.CW
+            col.R,col.G,col.B,col.WW,col.CW
         );
-    // }
-    // #endif
+    }
+    #endif
     
     switch (busType) {
       case BUSTYPE__NONE__ID: break;
@@ -433,7 +432,7 @@ class PolyBus
     #ifdef ARDUINO_ARCH_ESP32
       case BUSTYPE__32_RN_3__ID:      (static_cast<PIXELBUS_32_RN_3*>(busPtr))->SetPixelColor(pix, RgbColor(col)); break;
       case BUSTYPE__32_RN_4__ID:      (static_cast<PIXELBUS_32_RN_4*>(busPtr))->SetPixelColor(pix, RgbwColor(col)); break;
-      // case BUSTYPE__32_RN_5__ID:   (static_cast<PIXELBUS_32_RN_5*>(busPtr))->SetPixelColor(pix, colour_hardware); break;
+      case BUSTYPE__32_RN_5__ID:   (static_cast<PIXELBUS_32_RN_5*>(busPtr))->SetPixelColor(pix, RgbwwColor(col)); break;
       case BUSTYPE__32_RN_400_3__ID:  (static_cast<PIXELBUS_32_RN_400_3*>(busPtr))->SetPixelColor(pix, RgbColor(col)); break;
       #ifndef NEOPIXEL_DISABLE_I2S0_PIXELBUS
       case BUSTYPE__32_I0_3__ID:      (static_cast<PIXELBUS_32_I0_3*>(busPtr))->SetPixelColor(pix, RgbColor(col)); break;
@@ -489,7 +488,7 @@ static RgbwwColor getPixelColor(void* busPtr, uint8_t busType, uint16_t pix, uin
     #ifdef ARDUINO_ARCH_ESP32
       case BUSTYPE__32_RN_3__ID: col = (static_cast<PIXELBUS_32_RN_3*>(busPtr))->GetPixelColor(pix); break;
       case BUSTYPE__32_RN_4__ID: col = (static_cast<PIXELBUS_32_RN_4*>(busPtr))->GetPixelColor(pix); break;
-      // case BUSTYPE__32_RN_5__ID:  col = (static_cast<PIXELBUS_32_RN_5*>(busPtr))->GetPixelColor(pix); break;
+      case BUSTYPE__32_RN_5__ID:  col = (static_cast<PIXELBUS_32_RN_5*>(busPtr))->GetPixelColor(pix); break;
       case BUSTYPE__32_RN_400_3__ID: col = (static_cast<PIXELBUS_32_RN_400_3*>(busPtr))->GetPixelColor(pix); break;
       #ifndef NEOPIXEL_DISABLE_I2S0_PIXELBUS
       case BUSTYPE__32_I0_3__ID: col = (static_cast<PIXELBUS_32_I0_3*>(busPtr))->GetPixelColor(pix); break;
@@ -510,6 +509,14 @@ static RgbwwColor getPixelColor(void* busPtr, uint8_t busType, uint16_t pix, uin
       case BUSTYPE__32_I1_5P__ID: col = (static_cast<PIXELBUS_32_I1_5P*>(busPtr))->GetPixelColor(pix); break;
       #endif
     #endif
+    }
+
+    // lower nibble contains RGB swap information
+    switch (co & COLOUR_ORDER_RGB_MASK) {
+      case 1: std::swap(col.R, col.G); break; // Swap Red and Green
+      case 2: std::swap(col.R, col.B); break; // Swap Red and Blue
+      case 3: std::swap(col.G, col.B); break; // Swap Green and Blue
+      default: break; // No swap
     }
 
     // upper nibble contains W swap information
@@ -620,7 +627,7 @@ static RgbwwColor getPixelColor(void* busPtr, uint8_t busType, uint16_t pix, uin
     #ifdef ARDUINO_ARCH_ESP32
       case BUSTYPE__32_RN_3__ID:      (static_cast<PIXELBUS_32_RN_3*>(busPtr))->SetPixelColor(pix, RgbColor(col)); break;
       case BUSTYPE__32_RN_4__ID:      (static_cast<PIXELBUS_32_RN_4*>(busPtr))->SetPixelColor(pix, col); break;
-      // case BUSTYPE__32_RN_5__ID:   (static_cast<PIXELBUS_32_RN_5*>(busPtr))->SetPixelColor(pix, colour_hardware); break;
+      case BUSTYPE__32_RN_5__ID:   (static_cast<PIXELBUS_32_RN_5*>(busPtr))->SetPixelColor(pix, colour_hardware); break;
       case BUSTYPE__32_RN_400_3__ID:  (static_cast<PIXELBUS_32_RN_400_3*>(busPtr))->SetPixelColor(pix, RgbColor(col)); break;
       #ifndef NEOPIXEL_DISABLE_I2S0_PIXELBUS
       case BUSTYPE__32_I0_3__ID:      (static_cast<PIXELBUS_32_I0_3*>(busPtr))->SetPixelColor(pix, RgbColor(col)); break;
@@ -755,7 +762,7 @@ static uint32_t getPixelColor(void* busPtr, uint8_t busType, uint16_t pix, uint8
     #ifdef ARDUINO_ARCH_ESP32
       case BUSTYPE__32_RN_3__ID: (static_cast<PIXELBUS_32_RN_3*>(busPtr))->SetLuminance(b);   
       case BUSTYPE__32_RN_4__ID: (static_cast<PIXELBUS_32_RN_4*>(busPtr))->SetLuminance(b); break;  
-      // case BUSTYPE__32_RN_5__ID: (static_cast<PIXELBUS_32_RN_5*>(busPtr))->SetLuminance(b); break;
+      case BUSTYPE__32_RN_5__ID: (static_cast<PIXELBUS_32_RN_5*>(busPtr))->SetLuminance(b); break;
       case BUSTYPE__32_RN_400_3__ID: (static_cast<PIXELBUS_32_RN_400_3*>(busPtr))->SetLuminance(b); break;
       #ifndef NEOPIXEL_DISABLE_I2S0_PIXELBUS
       case BUSTYPE__32_I0_3__ID: (static_cast<PIXELBUS_32_I0_3*>(busPtr))->SetLuminance(b); break;

@@ -3750,20 +3750,37 @@ Left to right
   /***********************************
    * SECTION: System Debug Options
   ************************************/    
+  ///////////////////////////////////////////// Enable Logs
   // #define DISABLE_SERIAL
   // #define DISABLE_SERIAL0_CORE
   // #define DISABLE_SERIAL_LOGGING
+  // #define ENABLE_DEBUG_MANUAL_DELAYS // permits blocking delays
   
-  // #define ENABLE_ADVANCED_DEBUGGING
-  // #define ENABLE_FEATURE_EVERY_SECOND_SPLASH_UPTIME
-  // #define ENABLE_FEATURE_DEBUG_TASKER_INTERFACE_LOOP_TIMES
-  // #define ENABLE_DEBUG_FEATURE__TASKER_INTERFACE_SPLASH_LONG_LOOPS_WITH_MS 50
-  // #define ENABLE_DEBUG_FUNCTION_NAMES
+  ///////////////////////////////////////////// System Logs
+//   #define ENABLE_ADVANCED_DEBUGGING
+//   #define ENABLE_FEATURE_EVERY_SECOND_SPLASH_UPTIME
+//   #define ENABLE_FEATURE_DEBUG_TASKER_INTERFACE_LOOP_TIMES
+//   #define ENABLE_DEBUG_FEATURE__TASKER_INTERFACE_SPLASH_LONG_LOOPS_WITH_MS 50
+//   #define ENABLE_DEBUG_FUNCTION_NAMES
+//   #define ENABLE_DEBUGFEATURE_WEBUI__SHOW_BUILD_DATETIME_IN_FOOTER
+//   #define SERIAL_LOG_LEVEL_DURING_BOOT 8
+//   #define ENABLE_DEBUG_LINE_HERE
+//   #define ENABLE_DEBUG_LINE_HERE2
+//   #define ENABLE_DEBUG_LINE_HERE3
+//   #define ENABLE_DEBUG_LINE_HERE_TRACE
+//   #define ENABLE_DEBUGFEATURE_TASKERMANAGER__ADVANCED_METRICS
+//   #define USE_DEBUG_PRINT
+//   #define ENABLE_DEBUGFEATURE_LOGS__FORCE_FLUSH_ON_TRANSMIT
 
-  // #define ENABLE_DEBUG_LINE_HERE_TRACE
-  // #define ENABLE_DEBUG_LINE_HERE
+  // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+//   #define ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
 
+// #define ENABLE_DEBUG_MANUAL_DELAYS
+
+  ///////////////////////////////////////////// Module Logs
+  // #define ENABLE_DEVFEATURE__PIXEL_COLOUR_VALUE_IN_MULTIPIN_SHOW_LOGS  
   // #define ENABLE_FREERAM_APPENDING_SERIAL
+  
 
   #define ENABLE_DEBUGFEATURE__OVERIDE_FASTBOOT_DISABLE
 
@@ -3888,6 +3905,11 @@ Left to right
   #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
 
   #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+
+
+  #define ENABLE_DEVFEATURE_LIGHT__PWM_DITHER_V2
+  
 
   
   #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
@@ -3899,6 +3921,16 @@ Left to right
   // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
   #else
   #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+  #endif
+
+  // #define RgbcctColor RgbwwColor 
+
+  #define ENABLE_FEATURE_CONVERT_RGBCCT_TO_RGBWW
+
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  #define RgbcctTOwwType RgbwwColor
+  #else
+  #define RgbcctTOwwType RgbcctColor
   #endif
 
   // 
@@ -3923,8 +3955,8 @@ Left to right
   //     },
   //     {
   //       "Pin":27,
-  //       "ColourOrder":"GRB",
-  //       "BusType":"WS2812_RGB",
+  //       "ColourOrder":"GRBWC",
+  //       "BusType":"WS2805_RGBWW",
   //       "Start":1,
   //       "Length":20
   //     }
@@ -3983,38 +4015,84 @@ Left to right
     "BusConfig":[
       {
         "Pin":27,
-        "ColourOrder":"GRB",
-        "BusType":"WS2812_RGB",
+        "ColourOrder":"GRBWC",
+        "BusType":"WS2805_RGBWW",
         "Start":0,
-        "Length":1
+        "Length":20
       }
-    ],   
+    ],    
     "Segment0":{
       "PixelRange": [
         0,
-        1
+        20
       ],
       "ColourType":5,
       "ColourPalette":0,
       "SegColour0": {
-        "Hue": 0,
+        "Hue": 25,
         "Sat": 100,
         "BrightnessRGB": 100,
         "BrightnessCCT": 100,
         "CCT_TempPercentage":100
       },
       "Effects": {
-        "Function":"Solid",
-        "RateMs": 1000,
-        "Speed":255
+        "Function":0,
+        "RateMs": 1000
       },
-      "BrightnessRGB":5,
-      "BrightnessCCT":5
+      "BrightnessRGB":100,
+      "BrightnessCCT":100
     },
     "BrightnessRGB":100,
     "BrightnessCCT":100
   }
   )=====";
+
+  
+  // DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  // R"=====(
+  // {
+  //   "BusConfig":[
+  //     {
+  //       "Pin":[5,18,19,21,22],
+  //       "ColourOrder":"RGBCW",
+  //       "BusType":"ANALOG_5CH",
+  //       "Start":0,
+  //       "Length":1
+  //     },
+  //     {
+  //       "Pin":27,
+  //       "ColourOrder":"GRBWC",
+  //       "BusType":"WS2805_RGBWW",
+  //       "Start":1,
+  //       "Length":20
+  //     }
+  //   ],   
+  //   "Segment0":{
+  //     "PixelRange": [
+  //       0,
+  //       21
+  //     ],
+  //     "ColourType":5,
+  //     "ColourPalette":0,
+  //     "SegColour0": {
+  //       "Hue": 0,
+  //       "Sat": 100,
+  //       "BrightnessRGB": 100,
+  //       "BrightnessCCT": 100,
+  //       "CCT_TempPercentage":100
+  //     },
+  //     "Effects": {
+  //       "Function":"Solid",
+  //       "RateMs": 1000,
+  //       "Speed":255
+  //     },
+  //     "BrightnessRGB":5,
+  //     "BrightnessCCT":5
+  //   },
+  //   "BrightnessRGB":100,
+  //   "BrightnessCCT":100
+  // }
+  // )=====";
 
 #endif
 

@@ -96,25 +96,37 @@ static const char PM_EFFECT_CONFIG__##[] PROGMEM =
 #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
 void mAnimatorLight::EffectAnim__Solid_Colour() 
 {
+
+  DEBUG_LINE_HERE;
+
   // Allocate buffer for two channels (desired and starting)    
   if (!SEGMENT.allocateData( SEGMENT.colour_width__used_in_effect_generate * 2) ){ DEBUG_LINE_HERE; return; } // Pixel_Width * Two_Channels
 
+  DEBUG_LINE_HERE;
   // Retrieve the desired color from the palette
   if (SEGMENT.colour_width__used_in_effect_generate == ColourType::COLOUR_TYPE__RGBWW__ID) {
     #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  DEBUG_LINE_HERE;
     RgbwwColor desiredColour = SEGMENT.GetPaletteColour_Rgbww();
+  DEBUG_LINE_HERE;
     RgbwwColor startingColour = SEGMENT.getPixelColorRgbww(0);
+  DEBUG_LINE_HERE;
 
+    #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
     // desiredColour = RgbwwColor(1,2,3,4,5);
     // startingColour = RgbwwColor(6,7,8,9,10);
-
     Serial.printf("Solid Colour --------------------------------------------------%d\n\r", desiredColour);
+    #endif
+    
     // Set the desired and starting colors in the transition buffer
     SEGMENT.Set_DynamicBuffer_DesiredColour_RgbwwColor(0, desiredColour);
     SEGMENT.Set_DynamicBuffer_StartingColour_RgbwwColor(0, startingColour);
     #endif
+
+    #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
     // Serial.printf("Solid Colour RGBWW %d,%d,%d\n\r", desiredColour.R, desiredColour.G, desiredColour.B); 
     AddLog_Array_Block(3, PSTR("Data()"), SEGMENT.Data(), SEGMENT.DataLength(), 5, false);
+    #endif
   } else {
     // Handle RGB/WRGB cases
     uint32_t desiredColour  = SEGMENT.GetPaletteColour_U32();
@@ -125,11 +137,11 @@ void mAnimatorLight::EffectAnim__Solid_Colour()
     SEGMENT.Set_DynamicBuffer_StartingColour(0, startingColour);
   }
 
-
   // Set up the animation function callback
   SetSegment_AnimFunctionCallback(SEGIDX, [this](const AnimationParam& param) {
     SEGMENT.AnimationProcess_LinearBlend_Dynamic_BufferU32_FillSegment(param);
   });
+  DEBUG_LINE_HERE;
 }
 static const char PM_EFFECT_CONFIG__SOLID_COLOUR[] PROGMEM = "Solid Colour@;!,!,!,!,!;pal=0,etp=3000";
 #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME

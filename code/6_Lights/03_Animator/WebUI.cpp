@@ -115,8 +115,8 @@ void mAnimatorLight::serializeSegment(JsonObject& root, mAnimatorLight::Segment&
     segcol[0] = seg.rgbcctcolors[i].R;
     segcol[1] = seg.rgbcctcolors[i].G;
     segcol[2] = seg.rgbcctcolors[i].B;
-    segcol[3] = seg.rgbcctcolors[i].W1; // white channels inside RgbcctColor is always stored as max value, so slider should reflect the global CCT brightness
-    segcol[4] = seg.rgbcctcolors[i].W2; // white channels inside RgbcctColor is always stored as max value, so slider should reflect the global CCT brightness
+    segcol[3] = seg.rgbcctcolors[i].WW; // white channels inside RgbcctColor is always stored as max value, so slider should reflect the global CCT brightness
+    segcol[4] = seg.rgbcctcolors[i].CW; // white channels inside RgbcctColor is always stored as max value, so slider should reflect the global CCT brightness
     char tmpcol[40];
     snprintf_P(tmpcol, sizeof(tmpcol), PSTR("[%u,%u,%u,%u,%u]"), segcol[0], segcol[1], segcol[2], segcol[3], segcol[3]);
     strcat(colstr, i<4 ? strcat(tmpcol, ",") : tmpcol);
@@ -2602,6 +2602,7 @@ bool mAnimatorLight::serveLiveLeds(AsyncWebServerRequest* request, uint32_t wsCl
   {
     #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE  
     RgbwwColor col = getPixelColor(i);
+    col.WW = 0; //ignore white channel
     uint32_t c = RGBW32(col.R, col.G, col.B, col.WW);
     #else
     uint32_t c = getPixelColor(i);

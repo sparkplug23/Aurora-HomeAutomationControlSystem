@@ -414,7 +414,7 @@ class mAnimatorLight :
     #endif
                 
 
-    IRAM_ATTR RgbcctColor ApplyBrightnesstoDesiredColourWithGamma(RgbcctColor full_range_colour, uint8_t brightness);
+    IRAM_ATTR RgbcctTOwwType ApplyBrightnesstoDesiredColourWithGamma(RgbcctTOwwType full_range_colour, uint8_t brightness);
     
     #ifdef USE_DEVFEATURE_ANIMATOR_INIT_CODE__SEGMENT_MATRIX_TESTER
     void Test_Config();
@@ -532,7 +532,7 @@ class mAnimatorLight :
 
 
     void fill(uint32_t c, bool apply_brightness = false);
-    void fill(RgbcctColor c, bool apply_brightness = false);
+    void fill(RgbcctTOwwType c, bool apply_brightness = false);
     void fill_ranged(uint32_t c, bool apply_brightness = false); 
 
     [[gnu::hot]] uint32_t color_wheel(uint8_t pos) const;
@@ -2255,7 +2255,7 @@ inline static uint32_t FadeU32(uint32_t colour32, uint8_t fade) {
     **********************************************************************************************************************************************************************
     ******************************************************************************************************************************************************************************/
 
-    RgbcctColor 
+    RgbcctTOwwType 
     #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
     IRAM_ATTR 
     #endif 
@@ -2269,7 +2269,7 @@ inline static uint32_t FadeU32(uint32_t colour32, uint8_t fade) {
       bool flag_request_is_for_full_visual_output = false
     );
 
-    RgbcctColor 
+    RgbcctTOwwType 
     #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
     IRAM_ATTR 
     #endif 
@@ -2444,13 +2444,13 @@ typedef struct Segment
      * @NOTE: Replaces WLED 3 colour options
      **/
     #define RGBCCTCOLOURS_SIZE 5
-    RgbcctColor rgbcctcolors[5] = {RgbcctColor(255,0,0,0,0), RgbcctColor(0,255,0,0,0), RgbcctColor(0,0,255,0,0), RgbcctColor(255,0,255,0,0), RgbcctColor(255,255,0,0,0)};
+    RgbcctTOwwType rgbcctcolors[5] = {RgbcctTOwwType(255,0,0,0,0), RgbcctTOwwType(0,255,0,0,0), RgbcctTOwwType(0,0,255,0,0), RgbcctTOwwType(255,0,255,0,0), RgbcctTOwwType(255,255,0,0,0)};
 
     void set_colors(uint8_t index, uint8_t r, uint8_t g, uint8_t b, uint8_t w )
     {
       uint8_t index_t = index<RGBCCTCOLOURS_SIZE?index:0;
       if(index>RGBCCTCOLOURS_SIZE){ Serial.println("ERROR"); }
-      rgbcctcolors[index_t] = RgbcctColor(r,g,b,w,w);
+      rgbcctcolors[index_t] = RgbcctTOwwType(r,g,b,w,w);
     }
 
     ANIMATION_FLAGS flags;
@@ -2802,7 +2802,7 @@ typedef struct Segment
 
 
     bool    setColor(uint8_t slot, uint32_t c); //returns true if changed
-    bool    setColor(uint8_t slot, RgbcctColor c); //returns true if changed
+    bool    setColor(uint8_t slot, RgbcctTOwwType c); //returns true if changed
     void    setCCT(uint16_t k);
     void    setOption(uint8_t n, bool val);
     void    setMode(uint8_t fx, bool loadDefaults = false);
@@ -2816,9 +2816,9 @@ typedef struct Segment
     static uint32_t color_add(RgbwwColor,RgbwwColor, bool fast=false);
     
     #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-    static uint32_t color_fade(RgbwwColor c1, uint8_t amount, bool video=false);
-    #else
+    static RgbwwColor color_fade(RgbwwColor c1, uint8_t amount, bool video=false);
     static uint32_t color_fade(uint32_t c1, uint8_t amount, bool video=false);
+    #else
     #endif
 
 
@@ -2855,14 +2855,17 @@ typedef struct Segment
     
     #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
     inline void setPixelColor(unsigned n, RgbwwColor c, bool flag_brightness_already_applied = false) {
+      Serial.println("WARNING: A");
       setPixelColor(int(n), c, flag_brightness_already_applied);
     }
 
     void setPixelColor(int n, byte r, byte g, byte b, byte w = 0) {
+      Serial.println("WARNING: B");
       setPixelColor(n, RgbwwColor(r,g,b,w));
     }
 
     void setPixelColor(int n, CRGB c) {
+      Serial.println("WARNING: C");
       setPixelColor(n, RgbwwColor(c.r, c.g, c.b));
     }
     #else
@@ -2911,7 +2914,7 @@ typedef struct Segment
 
 
 
-    RgbcctColor 
+    RgbcctTOwwType 
     #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
     IRAM_ATTR 
     #endif 
@@ -3353,6 +3356,10 @@ inline void AnimationProcess_LinearBlend_Dynamic_BufferU32_FillSegment(const Ani
     float progress = param.progress;
     uint8_t blendFactor = static_cast<uint8_t>(progress * 255);
 
+    #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+    Serial.println("AnimationProcess_LinearBlend_Dynamic_BufferU32_FillSegment"); Serial.flush();
+    #endif
+
     // Retrieve the first starting and desired colors
     if (colour_width__used_in_effect_generate == 5) {
         #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
@@ -3361,16 +3368,20 @@ inline void AnimationProcess_LinearBlend_Dynamic_BufferU32_FillSegment(const Ani
         RgbwwColor desiredRgbww = Get_DynamicBuffer_DesiredColour_RgbwwColor(0);
 
         // Blend the two colors
-          RgbwwColor blendedRgbww = RgbwwColor::LinearBlend(startRgbww, desiredRgbww, blendFactor);
-
-          blendedRgbww = RgbwwColor(1,2,255,0,0);
-
+        RgbwwColor blendedRgbww = RgbwwColor::LinearBlend(startRgbww, desiredRgbww, blendFactor);
+        
+        #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+        blendedRgbww = RgbwwColor(1,2,255,0,0);
         Serial.printf("startRgbww RGBWW %d,%d,%d,%d,%d\n\r", startRgbww.R, startRgbww.G, startRgbww.B, startRgbww.WW, startRgbww.CW); 
         Serial.printf("desiredRgbww RGBWW %d,%d,%d,%d,%d\n\r", desiredRgbww.R, desiredRgbww.G, desiredRgbww.B, desiredRgbww.WW, desiredRgbww.CW); 
-        
+        #endif
+
         // Set the blended color across the segment
-        for (uint16_t pixel = 0; pixel < virtualLength(); pixel++) {
-            setPixelColor(pixel, blendedRgbww);
+        for (int pixel = 0; pixel < virtualLength(); pixel++) {
+          #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+          Serial.printf("blendedRgbww RGBWW %d,%d,%d,%d,%d\n\r", blendedRgbww.R, blendedRgbww.G, blendedRgbww.B, blendedRgbww.WW, blendedRgbww.CW); 
+          #endif
+          setPixelColor(pixel, blendedRgbww);
         }
         
         // AddLog_Array_Block(3, PSTR("Solid Colour RGBWW"), SEGMENT.Data(), SEGMENT.DataLength(), 5, false);
@@ -3405,7 +3416,7 @@ inline void AnimationProcess_LinearBlend_Dynamic_BufferU32_FillSegment(const Ani
 
 
 
-  RgbcctColor ColourBlend(RgbcctColor color1, RgbcctColor color2, uint8_t blend);
+  RgbcctTOwwType ColourBlend(RgbcctTOwwType color1, RgbcctTOwwType color2, uint8_t blend);
 
   typedef void (*mode_ptr)(void); // pointer to mode function
 

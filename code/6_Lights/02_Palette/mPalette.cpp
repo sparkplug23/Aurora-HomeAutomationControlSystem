@@ -773,7 +773,7 @@ mPalette::PALETTE_ENCODING_DATA mPalette::findPaletteEncoding(uint16_t id)
  *********************************************************************************************************************************************************************************
  *********************************************************************************************************************************************************************************/
 
-RgbcctColor 
+RgbcctTOwwType 
 #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
 IRAM_ATTR 
 #endif 
@@ -2544,7 +2544,7 @@ uint8_t mPalette::GetColoursInPalette(uint16_t palette_id)
 
 #ifdef ENABLE_DEVFEATURE_LIGHTING__OCT24_TIMING
 
-RgbcctColor 
+RgbcctTOwwType 
 #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
 IRAM_ATTR 
 #endif 
@@ -2682,7 +2682,7 @@ Performance improvements:
     Eliminated redundant calculations, such as unnecessary recalculations of pixel_position_adjust.
     The gradient palette vector is now populated in a single pass, and boundary conditions are checked in an efficient loop.
 */
-RgbcctColor  
+RgbcctTOwwType  
 #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
 IRAM_ATTR 
 #endif 
@@ -2698,7 +2698,7 @@ mPalette::Get_Encoded_Palette_Colour(
   bool     flag_crgb_exact_colour,
   bool     flag_force_gradient
 ){
-  RgbcctColor colour;
+  RgbcctTOwwType colour;
   uint16_t pixel_position_adjust = _pixel_position;
 
   // Handling discrete sequence palettes (non-gradient)

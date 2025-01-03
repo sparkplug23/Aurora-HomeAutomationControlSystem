@@ -264,14 +264,14 @@ BusDigital::BusDigital(BusConfig &bc, uint8_t nr, const ColorOrderMap &com)
 , _colorOrderMap(com)
 {
 
-  if (!IS_BUSTYPE_DIGITAL(bc.type) || !bc.count)
+  if (!isDigital(bc.type) || !bc.count)
   {    
-    ALOG_ERR(PSTR("BusDigital"));
+    ALOG_ERR(PSTR("BusDigital type%d or count%d"), bc.type, bc.count);
     return;
   }
   _frequencykHz = 0U;
   _pins[0] = bc.pins[0];
-  if (IS_BUSTYPE_2PIN(bc.type)) 
+  if (is2Pin(bc.type)) 
   {
     _pins[1] = bc.pins[1];
     _frequencykHz = bc.frequency ? bc.frequency : 2000U; // 2MHz clock if undefined
@@ -279,7 +279,16 @@ BusDigital::BusDigital(BusConfig &bc, uint8_t nr, const ColorOrderMap &com)
 
 
   _iType = PolyBus::getI(bc.type, _pins, nr);
-  if (_iType == BUSTYPE__NONE__ID) return;
+  if (_iType == BUSTYPE__NONE__ID)
+  {
+    Serial.println("BusDigital::BusDigital A");
+    return;
+  }else{
+    Serial.println("BusDigital::BusDigital B");
+  }
+
+DEBUG_DELAY(2000);
+
   _hasRgb = hasRGB(bc.type);
   _hasWhite = hasWhite(bc.type);
   _hasCCT = hasCCT(bc.type);
@@ -358,8 +367,15 @@ uint8_t BusDigital::estimateCurrentAndLimitBri() {
 
 
 void BusDigital::show() {
+  
+  #ifdef ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
+  ALOG_INF(PSTR("*********************************************************BusDigital::show"));
+  #endif // ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
+
   _milliAmpsTotal = 0;
   if (!_valid) return;
+  
+      DEBUG_LINE_HERE
 
   uint8_t cctWW = 0, cctCW = 0;
   unsigned newBri = estimateCurrentAndLimitBri();  // will fill _milliAmpsTotal
@@ -417,7 +433,9 @@ void BusDigital::show() {
    */
   else 
   {
+    #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
     ALOG_INF(PSTR("direct method active %d %d %d"), _len, getNumberOfChannels(), _colorOrder);
+    #endif
     if (newBri < _bri) {
       unsigned hwLen = _len;
       if (_type == BUSTYPE_WS2812_1CH_X3) hwLen = NUM_ICS_WS2812_1CH_3X(_len); // only needs a third of "RGB" LEDs for NeoPixelBus
@@ -458,6 +476,8 @@ void BusDigital::show() {
   // this is done right after show, so this is only OK if LED updates are completed before show() returns
   // or async show has a separate buffer (ESP32 RMT and I2S are ok)
   if (newBri < _bri) PolyBus::setBrightness(_busPtr, _iType, _bri);
+  
+      DEBUG_LINE_HERE
 }
 
 
@@ -497,7 +517,9 @@ void IRAM_ATTR BusDigital::setPixelColor(uint32_t pix, ColourBaseType c) {
   #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
   // Directly handle RgbwwColor
   unsigned co = _colorOrderMap.getPixelColorOrder(pix + _start, _colorOrder);
-  ALOG_INF(PSTR("BusDigital::setPixelColor %d %d %d %d %d"), pix, c.R, c.G, c.B, c.WW);
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+  ALOG_INF(PSTR("BusDigital::setPixelColor[%d]= %d %d %d %d\n\r"), pix, c.R, c.G, c.B, c.WW);
+  #endif
   // c.R = 100;
   // c.G = 101;
   // c.B = 102;
@@ -604,7 +626,7 @@ ColourBaseType IRAM_ATTR BusDigital::getPixelColor(uint32_t pix) const {
 
 uint8_t BusDigital::getPins(uint8_t* pinArray) const
 {
-  uint8_t numPins = IS_BUSTYPE_2PIN(_type) ? 2 : 1;
+  uint8_t numPins = is2Pin(_type) ? 2 : 1;
   for (uint8_t i = 0; i < numPins; i++) 
   {
     pinArray[i] = _pins[i];
@@ -702,18 +724,97 @@ void BusPwm::deallocateLedc(byte pos, byte channels)
 #endif
 
 
-BusPwm::BusPwm(BusConfig &bc) : Bus(bc.type, bc.start, bc.autoWhite) 
+#ifdef ESP8266
+  // 1 MHz clock
+  #define CLOCK_FREQUENCY 1000000UL
+#else
+  // Use XTAL clock if possible to avoid timer frequency error when setting APB clock < 80 Mhz
+  // https://github.com/espressif/arduino-esp32/blob/2.0.2/cores/esp32/esp32-hal-ledc.c
+  #ifdef SOC_LEDC_SUPPORT_XTAL_CLOCK
+    #define CLOCK_FREQUENCY 40000000UL
+  #else
+    #define CLOCK_FREQUENCY 80000000UL
+  #endif
+#endif
+
+#ifdef ESP8266
+  #define MAX_BIT_WIDTH 10
+#else
+  #ifdef SOC_LEDC_TIMER_BIT_WIDE_NUM
+    // C6/H2/P4: 20 bit, S2/S3/C2/C3: 14 bit
+    #define MAX_BIT_WIDTH SOC_LEDC_TIMER_BIT_WIDE_NUM 
+  #else
+    // ESP32: 20 bit (but in reality we would never go beyond 16 bit as the frequency would be to low)
+    #define MAX_BIT_WIDTH 14
+  #endif
+#endif
+
+// BusPwm::BusPwm(BusConfig &bc) : Bus(bc.type, bc.start, bc.autoWhite) 
+// {
+
+//   ALOG_DBM(PSTR("BusPwm bc.type %d"), bc.type);
+
+//   _valid = false;
+//   if (!IS_BUSTYPE_PWM(bc.type)) return;
+//   uint8_t numPins = NUM_BUSTYPE_PWM_PINS(bc.type);
+
+//   ALOG_INF(PSTR("BusPwm::BusPwm numPins %d"), numPins);
+
+//   #ifdef ESP8266
+//   analogWriteRange(255);  //same range as one RGB channel
+//   analogWriteFreq(WLED_PWM_FREQ);
+//   #else
+//   _ledcStart = allocateLedc(numPins);
+//   if (_ledcStart == 255) { //no more free LEDC channels
+//     deallocatePins(); return;
+//   }
+//   #endif
+
+//   for (uint8_t i = 0; i < numPins; i++) 
+//   {
+//     uint8_t currentPin = bc.pins[i];
+//     _pins[i] = currentPin;
+//     ALOG_INF(PSTR("_pins[%d]=>%d"),i,_pins[i]);
+//     #ifdef ESP8266
+//     pinMode(_pins[i], OUTPUT);
+//     #else
+//     ledcSetup(_ledcStart + i, WLED_PWM_FREQ, 10); // Hi, the maximum frequency is 80000000 / 2resolution. At 1-bit resolution => 40MHz At 8-bits resolution => 312,5 kHz // 80MHz / 1024 = 78125 Hz
+//     ledcAttachPin(_pins[i], _ledcStart + i);
+//     #endif
+//   }
+//   _reversed = bc.reversed;
+//   _valid = true;
+// }
+
+BusPwm::BusPwm(BusConfig &bc)
+: Bus(bc.type, bc.start, bc.autoWhite, 1, bc.reversed, bc.refreshReq) // hijack Off refresh flag to indicate usage of dithering
 {
+  if (!isPWM(bc.type)) return;
+  unsigned numPins = numPWMPins(bc.type);
+  [[maybe_unused]] const bool dithering = _needsRefresh;
+  _frequency = bc.frequency ? bc.frequency : WLED_PWM_FREQ;
+  // duty cycle resolution (_depth) can be extracted from this formula: CLOCK_FREQUENCY > _frequency * 2^_depth
+  for (_depth = MAX_BIT_WIDTH; _depth > 8; _depth--) if (((CLOCK_FREQUENCY/_frequency) >> _depth) > 0) break;
 
-  ALOG_DBM(PSTR("BusPwm bc.type %d"), bc.type);
+  // managed_pin_type pins[numPins];
+  // for (unsigned i = 0; i < numPins; i++) pins[i] = {(int8_t)bc.pins[i], true};
+  // if (!PinManager::allocateMultiplePins(pins, numPins, PinOwner::BusPwm)) return;
 
-  _valid = false;
-  if (!IS_BUSTYPE_PWM(bc.type)) return;
-  uint8_t numPins = NUM_BUSTYPE_PWM_PINS(bc.type);
+// #ifdef ESP8266
+//   analogWriteRange((1<<_depth)-1);
+//   analogWriteFreq(_frequency);
+// #else
+//   // for 2 pin PWM CCT strip pinManager will make sure both LEDC channels are in the same speed group and sharing the same timer
+//   _ledcStart = PinManager::allocateLedc(numPins);
+//   if (_ledcStart == 255) { //no more free LEDC channels
+//     PinManager::deallocateMultiplePins(pins, numPins, PinOwner::BusPwm);
+//     return;
+//   }
+//   // if _needsRefresh is true (UI hack) we are using dithering (credit @dedehai & @zalatnaicsongor)
+//   if (dithering) _depth = 12; // fixed 8 bit depth PWM with 4 bit dithering (ESP8266 has no hardware to support dithering)
+// #endif
 
-  ALOG_INF(PSTR("BusPwm::BusPwm numPins %d"), numPins);
-
-  #ifdef ESP8266
+ #ifdef ESP8266
   analogWriteRange(255);  //same range as one RGB channel
   analogWriteFreq(WLED_PWM_FREQ);
   #else
@@ -721,8 +822,34 @@ BusPwm::BusPwm(BusConfig &bc) : Bus(bc.type, bc.start, bc.autoWhite)
   if (_ledcStart == 255) { //no more free LEDC channels
     deallocatePins(); return;
   }
+
+  
+  // if _needsRefresh is true (UI hack) we are using dithering (credit @dedehai & @zalatnaicsongor)
+  if (dithering) _depth = 12; // fixed 8 bit depth PWM with 4 bit dithering (ESP8266 has no hardware to support dithering)
+
   #endif
 
+
+
+
+/**
+ * @brief NEW METHOD TO ADD PINS
+ * 
+ */
+  // for (unsigned i = 0; i < numPins; i++) {
+  //   _pins[i] = bc.pins[i]; // store only after allocateMultiplePins() succeeded
+  //   #ifdef ESP8266
+  //   pinMode(_pins[i], OUTPUT);
+  //   #else
+  //   unsigned channel = _ledcStart + i;
+  //   ledcSetup(channel, _frequency, _depth - (dithering*4)); // with dithering _frequency doesn't really matter as resolution is 8 bit
+  //   ledcAttachPin(_pins[i], channel);
+  //   // LEDC timer reset credit @dedehai
+  //   uint8_t group = (channel / 8), timer = ((channel / 2) % 4); // same fromula as in ledcSetup()
+  //   ledc_timer_rst((ledc_mode_t)group, (ledc_timer_t)timer); // reset timer so all timers are almost in sync (for phase shift)
+  //   #endif
+  // }
+  // OLD METHOD THAT WORKS
   for (uint8_t i = 0; i < numPins; i++) 
   {
     uint8_t currentPin = bc.pins[i];
@@ -735,9 +862,17 @@ BusPwm::BusPwm(BusConfig &bc) : Bus(bc.type, bc.start, bc.autoWhite)
     ledcAttachPin(_pins[i], _ledcStart + i);
     #endif
   }
-  _reversed = bc.reversed;
+
+
+  _hasRgb = hasRGB(bc.type);
+  _hasWhite = hasWhite(bc.type);
+  _hasCCT = hasCCT(bc.type);
+  _data = _pwmdata; // avoid malloc() and use stack
   _valid = true;
+  DEBUG_PRINTF_P(PSTR("%successfully inited PWM strip with type %u, frequency %u, bit depth %u and pins %u,%u,%u,%u,%u\n"), _valid?"S":"Uns", bc.type, _frequency, _depth, _pins[0], _pins[1], _pins[2], _pins[3], _pins[4]);
 }
+
+
 
 
 // void BusPwm::setPixelColor(uint16_t pix, RgbcctColor c) 
@@ -911,69 +1046,84 @@ ColourBaseType BusPwm::getPixelColor(uint32_t pix) const {
 
 void BusPwm::show() {
   
+  #ifdef ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
+  ALOG_INF(PSTR("*********************************************************BusPwm::show"));
+  #endif // ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
+
+      DEBUG_LINE_HERE
   #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
 
 
-  // uint16_t r = mapvalue(output_colour.R, 0, 255, 0, 1023);
-  // uint16_t g = mapvalue(output_colour.G, 0, 255, 0, 1023);
-  // uint16_t b = mapvalue(output_colour.B, 0, 255, 0, 1023);
-  // uint16_t w1 = mapvalue(output_colour.WW, 0, 255, 0, 1023);
-  // uint16_t w2 = mapvalue(output_colour.CW, 0, 255, 0, 1023);
+  uint16_t r = mapvalue(_data[0], 0, 255, 0, 1023);
+  uint16_t g = mapvalue(_data[1], 0, 255, 0, 1023);
+  uint16_t b = mapvalue(_data[2], 0, 255, 0, 1023);
+  uint16_t w1 = mapvalue(_data[3], 0, 255, 0, 1023);
+  uint16_t w2 =  mapvalue(_data[4], 0, 255, 0, 1023);
   
+      DEBUG_LINE_HERE
   // #ifdef ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
   // output_colour.debug_print("output_colour");
   // #endif // ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
 
-  // uint16_t colour10bit[5] = {0};
-  // switch (_type) {
-  //   default:
-  //   case BUSTYPE_ANALOG_5CH: //RGB + warm white + cold white
-  //     colour10bit[4] = w2;
-  //     // NO BREAK
-  //   case BUSTYPE_ANALOG_4CH: //RGBW
-  //     colour10bit[3] = w1;
-  //     // NO BREAK
-  //   case BUSTYPE_ANALOG_3CH: //standard dumb RGB
-  //     colour10bit[0] = r; 
-  //     colour10bit[1] = g; 
-  //     colour10bit[2] = b;
-  //     break;
-  //   case BUSTYPE_ANALOG_2CH: //warm white + cold white
-  //     colour10bit[0] = w1;
-  //     colour10bit[1] = w2;
-  //     break;
-  //   case BUSTYPE_ANALOG_1CH: //one channel (white), relies on auto white calculation
-  //     colour10bit[0] = w1;
-  //     break;
-  // }
+  uint16_t colour10bit[5] = {0};
+  switch (_type) {
+    default:
+    case BUSTYPE_ANALOG_5CH: //RGB + warm white + cold white
+      colour10bit[4] = w2;
+      // NO BREAK
+    case BUSTYPE_ANALOG_4CH: //RGBW
+      colour10bit[3] = w1;
+      // NO BREAK
+    case BUSTYPE_ANALOG_3CH: //standard dumb RGB
+      colour10bit[0] = r; 
+      colour10bit[1] = g; 
+      colour10bit[2] = b;
+      break;
+    case BUSTYPE_ANALOG_2CH: //warm white + cold white
+      colour10bit[0] = w1;
+      colour10bit[1] = w2;
+      break;
+    case BUSTYPE_ANALOG_1CH: //one channel (white), relies on auto white calculation
+      colour10bit[0] = w1;
+      break;
+  }
   
-  // #ifdef ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
-  // ALOG_INF(PSTR("BusPwm::show [%d,%d,%d,%d,%d]"), colour10bit[0], colour10bit[1], colour10bit[2], colour10bit[3], colour10bit[4]);
-  // #endif // ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
+      DEBUG_LINE_HERE
+  #ifdef ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
+  ALOG_INF(PSTR("BusPwm::show [%d,%d,%d,%d,%d]"), colour10bit[0], colour10bit[1], colour10bit[2], colour10bit[3], colour10bit[4]);
+  #endif // ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
 
-  // /**
-  //  * @brief Final conversions
-  //  * ** Upscale to 10 bit
-  //  * ** Shrink into desired PWM range limits
-  //  * Here colour is just a PWM value, the actual colour information is above and should be inserted correctly
-  //  */
-  // uint16_t pwm_value;
-  // uint8_t numPins = NUM_BUSTYPE_PWM_PINS(_type);
-  // for(uint8_t ii=0;ii<numPins;ii++)
-  // {
-  //   colour10bit[ii] = colour10bit[ii] > 0 ? mapvalue(colour10bit[ii], 0, tkr_set->Settings.pwm_range, pCONT_iLight->pwm_min, pCONT_iLight->pwm_max) : 0; 
-  //   pwm_value = bitRead(tkr_set->runtime.pwm_inverted, ii) ? tkr_set->Settings.pwm_range - colour10bit[ii] : colour10bit[ii];
+  /**
+   * @brief Final conversions
+   * ** Upscale to 10 bit
+   * ** Shrink into desired PWM range limits
+   * Here colour is just a PWM value, the actual colour information is above and should be inserted correctly
+   */
+      DEBUG_LINE_HERE
+  uint16_t pwm_value;
+  uint8_t numPins = numPWMPins(_type);
 
-  //   #ifdef ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
-  //   ALOG_INF(PSTR("BusPwm[%d]::pwm_value[%d] %d"), pCONT_lAni->getCurrSegmentId(), ii, pwm_value);
-  //   #endif // ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
+#ifdef ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
+Serial.printf("numPins %d\n", numPins);
+#endif
 
-  //   #ifdef ESP8266
-  //   analogWrite(_pins[ii], pwm_value);
-  //   #else
-  //   ledcWrite(_ledcStart + ii, pwm_value);
-  //   #endif
-  // }
+  for(uint8_t ii=0;ii<numPins;ii++)
+  {
+    colour10bit[ii] = colour10bit[ii] > 0 ? mapvalue(colour10bit[ii], 0, tkr_set->Settings.pwm_range, pCONT_iLight->pwm_min, pCONT_iLight->pwm_max) : 0; 
+    pwm_value = bitRead(tkr_set->runtime.pwm_inverted, ii) ? tkr_set->Settings.pwm_range - colour10bit[ii] : colour10bit[ii];
+
+    #ifdef ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
+    ALOG_INF(PSTR("BusPwm[%d]::pwm_value[%d] %d"), tkr_anim->getCurrSegmentId(), ii, pwm_value);
+    #endif // ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
+
+      DEBUG_LINE_HERE
+    #ifdef ESP8266
+    analogWrite(_pins[ii], pwm_value);
+    #else
+    ledcWrite(_ledcStart + ii, pwm_value);
+    #endif
+      DEBUG_LINE_HERE
+  }
 
   #else
   if (!_valid) return;
@@ -1030,6 +1180,8 @@ void BusPwm::show() {
     #endif
   }
   #endif
+  
+      DEBUG_LINE_HERE
 }
 
 uint8_t BusPwm::getPins(uint8_t* pinArray) const {
@@ -1054,7 +1206,7 @@ std::vector<LEDType> BusPwm::getLEDTypes() {
 
 void BusPwm::deallocatePins() 
 {
-  uint8_t numPins = NUM_BUSTYPE_PWM_PINS(_type);
+  uint8_t numPins = numPWMPins(_type);
   for (uint8_t i = 0; i < numPins; i++) {
     #ifdef ESP8266
     digitalWrite(_pins[i], LOW); //turn off PWM interrupt
@@ -1254,6 +1406,48 @@ uint32_t BusManager::memUsage(unsigned maxChannels, unsigned maxCount, unsigned 
   return (maxChannels * maxCount * minBuses * multiplier);
 }
 
+// int BusManager::add(BusConfig &bc) 
+// {
+
+//   DEBUG_LINE_HERE;
+
+//   uint8_t bus_count = getNumBusses() - getNumVirtualBusses();
+//   if (bus_count >= WLED_MAX_BUSSES) 
+//   {
+//     Serial.printf("if (bus_count >= WLED_MAX_BUSSES) %d\n\r", bus_count);
+//     return -1;
+//   }
+
+//   DEBUG_LINE_HERE;
+//   if(
+//     bc.type >= BUSTYPE_NET_DDP_RGB && 
+//     bc.type < 96) 
+//   {
+//     ALOG_INF(PSTR("BusManager::add::Type BusNetwork"));
+//     busses[numBusses] = new BusNetwork(bc); // IP
+//   } 
+//   else if(IS_BUSTYPE_DIGITAL(bc.type)) 
+//   {
+//     ALOG_INF(PSTR("BusManager::add::Type BusDigital"));
+//     busses[numBusses] = new BusDigital(bc, numBusses, colorOrderMap); // Neopixel
+//   } 
+//   else if(bc.type == BUSTYPE_ONOFF) 
+//   {
+//     ALOG_INF(PSTR("BusManager::add::Type BUSTYPE_ONOFF"));
+//     busses[numBusses] = new BusOnOff(bc); // Relays
+//   } 
+//   else 
+//   {
+//     ALOG_INF(PSTR("BusManager::add::Type ELSE BusPwm"));
+//     busses[numBusses] = new BusPwm(bc); // H801
+//   }
+
+//   numBusses++;
+  
+//   return numBusses;
+
+// }
+
 int BusManager::add(BusConfig &bc) 
 {
 
@@ -1267,26 +1461,21 @@ int BusManager::add(BusConfig &bc)
   }
 
   DEBUG_LINE_HERE;
-  if(
-    bc.type >= BUSTYPE_NET_DDP_RGB && 
-    bc.type < 96) 
-  {
-    ALOG_DBM(PSTR("BusManager::add::Type BusNetwork"));
+  if (Bus::isVirtual(bc.type)) {
+    ALOG_INF(PSTR("BusManager::add::Type BusNetwork"));
     busses[numBusses] = new BusNetwork(bc); // IP
   } 
-  else if(IS_BUSTYPE_DIGITAL(bc.type)) 
-  {
-    ALOG_DBM(PSTR("BusManager::add::Type BusDigital"));
+   else if (Bus::isDigital(bc.type)) {
+    ALOG_INF(PSTR("BusManager::add::Type BusDigital"));
     busses[numBusses] = new BusDigital(bc, numBusses, colorOrderMap); // Neopixel
-  } 
-  else if(bc.type == BUSTYPE_ONOFF) 
-  {
-    ALOG_DBM(PSTR("BusManager::add::Type BUSTYPE_ONOFF"));
+   
+  } else if (Bus::isOnOff(bc.type)) {
+    ALOG_INF(PSTR("BusManager::add::Type BUSTYPE_ONOFF"));
     busses[numBusses] = new BusOnOff(bc); // Relays
   } 
   else 
   {
-    ALOG_DBM(PSTR("BusManager::add::Type ELSE"));
+    ALOG_INF(PSTR("BusManager::add::Type ELSE BusPwm"));
     busses[numBusses] = new BusPwm(bc); // H801
   }
 
@@ -1361,7 +1550,10 @@ uint16_t BusManager::getTotalLength() {
 }
 
 void IRAM_ATTR BusManager::setPixelColor(uint32_t pix, ColourBaseType c) {
+  
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
   Serial.printf("BusManager::setPixelColor %d %d,%d,%d,%d,%d\n\r", pix, c.R, c.G, c.B, c.WW, c.CW);
+  #endif
   for (unsigned i = 0; i < numBusses; i++) {
     unsigned bstart = busses[i]->getStart();
     if (pix < bstart || pix >= bstart + busses[i]->getLength()) continue;
@@ -1373,6 +1565,7 @@ ColourBaseType BusManager::getPixelColor(uint32_t pix) {
   for (unsigned i = 0; i < numBusses; i++) {
     unsigned bstart = busses[i]->getStart();
     if (!busses[i]->containsPixel(pix)) continue;
+    DEBUG_LINE_HERE;
     return busses[i]->getPixelColor(pix - bstart);
   }
   return 0;

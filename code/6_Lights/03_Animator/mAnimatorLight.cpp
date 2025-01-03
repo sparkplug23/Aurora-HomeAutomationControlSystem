@@ -278,6 +278,8 @@ void mAnimatorLight::EveryLoop()
       #endif
     #endif // ENABLE_FEATURE_LIGHTING__I2S_SINGLE_AND_PARALLEL_AUTO_DETECT
 
+    DEBUG_DELAY(1000);
+
   
     /*****************************************************************************
      * Create NPB methods
@@ -311,6 +313,8 @@ void mAnimatorLight::EveryLoop()
       pCONT_iLight->busConfigs[i] = nullptr;
     }
     
+    DEBUG_DELAY(1000);
+
     finalizeInit(); // also loads default ledmap if present
 
     uint8_t bri = 128; // temporary brightness value
@@ -539,6 +543,8 @@ void mAnimatorLight::EveryLoop()
       DEBUG_LIGHTING__SAVE_TIME_RECORDING(1, lighting_time_critical_logging.segment_effects); 
       #endif  
 
+      DEBUG_LINE_HERE
+
       #ifdef ENABLE_DEVFEATURE_LIGHTING__PLAYLISTS
       SubTask_Playlist();
       #endif
@@ -752,7 +758,7 @@ void mAnimatorLight::EverySecond_AutoOff()
 
 
 // Assumed should be integrated into RgbcctController
-IRAM_ATTR RgbcctColor mAnimatorLight::ApplyBrightnesstoDesiredColourWithGamma(RgbcctColor full_range_colour, uint8_t brightness)
+IRAM_ATTR RgbcctTOwwType mAnimatorLight::ApplyBrightnesstoDesiredColourWithGamma(RgbcctTOwwType full_range_colour, uint8_t brightness)
 {
     #ifdef ENABLE_GAMMA_BRIGHTNESS_ON_DESIRED_COLOUR_GENERATION
     // Apply gamma correction if enabled
@@ -1464,12 +1470,12 @@ void mAnimatorLight::SubTask_Effects()
   if (nowUp - _lastShow < MIN_SHOW_DELAY) return;
   bool doShow = false;
 
-      
+      DEBUG_LINE_HERE
   _isServicing = true;
   segment_current_index = 0;  
   for (segment &seg : segments) 
   {
-
+DEBUG_LINE_HERE
       
     // reset the segment runtime data if needed, called before isActive to ensure deleted segment's buffers are cleared
     seg.resetIfRequired();
@@ -1515,9 +1521,9 @@ void mAnimatorLight::SubTask_Effects()
         seg.effect_id = 0;
       }
       
-      
+      DEBUG_LINE_HERE
       (this->*effects.function[seg.effect_id])(); // Call Effect Function (passes and returns nothing)
-      
+      DEBUG_LINE_HERE
       
       DEBUG_LIGHTING__SAVE_TIME_RECORDING(2, lighting_time_critical_logging.effect_call); // Only last segment will be recorded
 
@@ -1544,7 +1550,7 @@ void mAnimatorLight::SubTask_Effects()
       { 
         StartSegmentAnimation_AsAnimUpdateMemberFunction(segment_current_index); // First run must be reset after StartAnimation is first called 
       }
-              
+            DEBUG_LINE_HERE  
       
       seg.call++; // Used as progress counter for animations eg rainbow across all hues
       // ALOG_INF(PSTR("seg=%d,call=%d"),seg_i, seg.call);
@@ -1558,10 +1564,10 @@ void mAnimatorLight::SubTask_Effects()
     if(seg.animator->IsAnimating())
     {
       DEBUG_PIN4_TOGGLE();
-
+DEBUG_LINE_HERE
       seg.animator->UpdateAnimations();
       doShow = true; // Animator updated, so trigger SHOW
-
+DEBUG_LINE_HERE
       SEGMENT.flags.animator_first_run = RESET_FLAG;     // CHANGE to function: reset here for all my methods
 
       
@@ -1573,7 +1579,7 @@ void mAnimatorLight::SubTask_Effects()
     } // IsAnimating
 
 
-      
+      DEBUG_LINE_HERE
     #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PERFORMANCE_METRICS_SAFE_IN_RELEASE_MODE
     if(doShow)
     {
@@ -1956,7 +1962,7 @@ void mAnimatorLight::fill(uint32_t c, bool apply_brightness)
   }
 }
 
-void mAnimatorLight::fill(RgbcctColor c, bool apply_brightness) 
+void mAnimatorLight::fill(RgbcctTOwwType c, bool apply_brightness) 
 {
   for(uint16_t i = 0; i < _virtualSegmentLength; i++) 
   {
@@ -2346,11 +2352,11 @@ void mAnimatorLight::FileSystem_JsonAppend_Save_Module()
  * @param color1 
  * @param color2 
  * @param blend 
- * @return RgbcctColor 
+ * @return RgbcctTOwwType 
  */
-RgbcctColor mAnimatorLight::ColourBlend(RgbcctColor color1, RgbcctColor color2, uint8_t blend) 
+RgbcctTOwwType mAnimatorLight::ColourBlend(RgbcctTOwwType color1, RgbcctTOwwType color2, uint8_t blend) 
 {
-  return RgbcctColor::LinearBlend(color1, color2, mSupport::mapfloat(blend, 0,255, 0.0f, 1.0f));
+  return RgbcctTOwwType::LinearBlend(color1, color2, mSupport::mapfloat(blend, 0,255, 0.0f, 1.0f));
 }
 
 uint32_t mAnimatorLight::ColourBlend(uint32_t color1, uint32_t color2, uint8_t blend) 
@@ -2580,7 +2586,7 @@ bool mAnimatorLight::Segment::setColor(uint8_t slot, uint32_t c) { //returns tru
   return true;
 }
 
-bool mAnimatorLight::Segment::setColor(uint8_t slot, RgbcctColor c) { //returns true if changed
+bool mAnimatorLight::Segment::setColor(uint8_t slot, RgbcctTOwwType c) { //returns true if changed
 
 
   rgbcctcolors[slot] = c;
@@ -2948,6 +2954,8 @@ uint16_t mAnimatorLight::Segment::virtualLength() const {
 // anti-aliased normalized version of setPixelColor()
 void mAnimatorLight::Segment::setPixelColor(float i, uint32_t col, bool aa)
 {
+
+  Serial.println(F("setPixelColor(float i, uint32_t col, bool aa)"));
 
   if (!isActive()) return; // not active
   int vStrip = int(i/10.0f); // hack to allow running on virtual strips (2D segment columns/rows)
@@ -4183,9 +4191,17 @@ void mAnimatorLight::Segment::UpdateBrightness()
 // #ifdef ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
 
 void IRAM_ATTR mAnimatorLight::setPixelColor(uint32_t i, ColourBaseType col) {
+  Serial.printf("AAAAAAAAAAvoid IRAM_ATTR mAnimatorLight::setPixelColor(uint32_t i, %d,%d,%d)\n\r", col.R, col.G, col.B);
   i = getMappedPixelIndex(i);
-  if (i >= _length) return;
+  if (i >= _length) {
+    Serial.printf("BBBBBBBBBBBvoid IRAM_ATTR mAnimatorLight::%d,%dsetPixelColor(uint32_t i, %d,%d,%d)\n\r", i ,_length,col.R, col.G, col.B);
+    
+    
+    
+    return;}
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
   Serial.printf("void IRAM_ATTR mAnimatorLight::setPixelColor(uint32_t i, %d,%d,%d)\n\r", col.R, col.G, col.B);
+  #endif
   pCONT_iLight->bus_manager->setPixelColor(i, col);
 }
 
@@ -4959,7 +4975,7 @@ bool mAnimatorLight::deserializeMap(uint8_t n) {
 
 
 
-RgbcctColor 
+RgbcctTOwwType 
 #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
 IRAM_ATTR 
 #endif 
@@ -5257,7 +5273,7 @@ uint8_t mAnimatorLight::Segment::GetPaletteDiscreteWidth()
  * @brief New method that gets any colour without preloading, and hence will be slower but allows getters to use this for multiple uses e.g. webui population
  * 
  */
-RgbcctColor 
+RgbcctTOwwType 
 #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
 IRAM_ATTR
 #endif 
@@ -5302,7 +5318,7 @@ mAnimatorLight::GetColourFromUnloadedPalette2(
 
 }
 
-RgbcctColor 
+RgbcctTOwwType 
 #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
 IRAM_ATTR
 #endif 
@@ -5574,12 +5590,15 @@ void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(uint16_t indexPixel, uint8
 
 // }
 
-
-void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(int i, ColourBaseType col, bool flag_brightness_already_applied)
+// ColourBaseType
+void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(int i, RgbwwColor col, bool flag_brightness_already_applied)
 {
 
-  Serial.printf("mAnimatorLight::Segment::setPixelColor(int i, col %d,%d,%d\n\r", col.R, col.G, col.B);
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+  Serial.printf("::Segment::setPixelColor(int i, RgbwwColor col %d,%d,%d\n\r", col.R, col.G, col.B);
+  #endif
 
+  DEBUG_LINE_HERE;
   if (!isActive() || i < 0) return; // not active or invalid index
 #ifndef WLED_DISABLE_2D
   int vStrip = 0;
@@ -5758,6 +5777,9 @@ void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(int i, ColourBaseType col,
 #ifndef WLED_DISABLE_MODE_BLEND
       // if (_modeBlend) tmpCol = color_blend16(tkr_anim->getPixelColor(indexSet), col, uint16_t(0xFFFFU - progress()));
 #endif
+      #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+      Serial.printf("::Segment::setPixelColor(int i, tmpCol %d,%d,%d\n\r", tmpCol.R, tmpCol.G, tmpCol.B);
+      #endif
       tkr_anim->setPixelColor(indexSet, tmpCol);
     }
   }
@@ -5888,8 +5910,13 @@ uint32_t mAnimatorLight::Segment::color_add(uint32_t c1, uint32_t c2, bool fast)
  * if using "video" method the resulting color will never become black unless it is already black
  */
 #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-uint32_t mAnimatorLight::Segment::color_fade(RgbwwColor c1, uint8_t amount, bool video)
+RgbwwColor mAnimatorLight::Segment::color_fade(RgbwwColor c1, uint8_t amount, bool video)
 {
+  
+  return c1;// tmp fix
+
+
+
   uint8_t r = c1.R;
   uint8_t g = c1.G;
   uint8_t b = c1.B;
@@ -5907,6 +5934,29 @@ uint32_t mAnimatorLight::Segment::color_fade(RgbwwColor c1, uint8_t amount, bool
     b = scale8(b, amount);
     w = scale8(w, amount);
     cw = scale8(cw, amount);
+  }
+  return RgbwwColor(r, g, b, w, cw);
+}
+uint32_t mAnimatorLight::Segment::color_fade(uint32_t c1, uint8_t amount, bool video)
+{
+  
+  return c1;// tmp fix
+
+
+  uint8_t r = R(c1);
+  uint8_t g = G(c1);
+  uint8_t b = B(c1);
+  uint8_t w = W(c1);
+  if (video) {
+    r = scale8_video(r, amount);
+    g = scale8_video(g, amount);
+    b = scale8_video(b, amount);
+    w = scale8_video(w, amount);
+  } else {
+    r = scale8(r, amount);
+    g = scale8(g, amount);
+    b = scale8(b, amount);
+    w = scale8(w, amount);
   }
   return RGBW32(r, g, b, w);
 }
@@ -6402,7 +6452,7 @@ uint8_t mAnimatorLight::ConstructJSON_Segments(uint8_t json_level, bool json_app
           JBI->Array_Start_P("Colour%d", rgb_i);
           for(uint8_t c_i=0;c_i<5;c_i++)
           {
-            JBI->Add(SEGMENT_I(seg_i).rgbcctcolors[rgb_i].raw[c_i]);
+            // JBI->Add(SEGMENT_I(seg_i).rgbcctcolors[rgb_i].raw[c_i]);
           }
           JBI->Array_End();
           JBI->Object_Start("ColourTemp");
@@ -6789,7 +6839,7 @@ uint8_t mAnimatorLight::ConstructJSON_Debug_Segments(uint8_t json_level, bool js
         JBI->Array_Start_P("Colour%d", rgb_i);
         for(uint8_t c_i=0;c_i<5;c_i++)
         {
-          JBI->Add(SEGMENT_I(seg_i).rgbcctcolors[rgb_i].raw[c_i]);
+          // JBI->Add(SEGMENT_I(seg_i).rgbcctcolors[rgb_i].raw[c_i]);
         }
         JBI->Array_End();
         JBI->Object_Start("ColourTemp");

@@ -114,11 +114,27 @@
  * @brief Changing this to function will allow the types above to be changed to ENUM
  * 
  */
-#define IS_BUSTYPE_DIGITAL(t)       ((t) & 0x10) //digital are 16-31 and 48-63
+// #define IS_BUSTYPE_DIGITAL(t) (((t) >= BUSTYPE_DIGITAL__MIN && (t) <= BUSTYPE_DIGITAL__MAX) || \
+//                                ((t) >= BUSTYPE_2PIN_MIN && (t) <= BUSTYPE_2PIN_MAX))
+
+// #define IS_BUSTYPE_2PIN(t)          ((t) > 47)
+
+// #define IS_BUSTYPE_DIGITAL(t)       ((t) & 0x10) //digital are 16-31 and 48-63
 // #define IS_BUSTYPE_DIGITAL(t)       ((t) > 0 && (t) < 46) //digital are 16-31 and 48-63
-#define IS_BUSTYPE_PWM(t)           ((t) > 40 && (t) < 46)
-#define NUM_BUSTYPE_PWM_PINS(t)     ((t) - 40) //for analog PWM 41-45 only
-#define IS_BUSTYPE_2PIN(t)          ((t) > 47)
+// #define IS_BUSTYPE_PWM(t)           ((t) > 40 && (t) < 46)
+// #define NUM_BUSTYPE_PWM_PINS(t)     ((t) - 40) //for analog PWM 41-45 only
+// #define IS_BUSTYPE_2PIN(t)          ((t) > 47)
+
+// Macro to check if a bus type is a digital type
+#define IS_BUSTYPE_DIGITAL(t) \
+  (((t) >= BUSTYPE_DIGITAL__MIN && (t) <= BUSTYPE_DIGITAL__MAX) || \
+   ((t) >= BUSTYPE_2PIN_MIN && (t) <= BUSTYPE_2PIN_MAX))
+
+// Macro to check if a bus type is a 2-pin type
+#define IS_BUSTYPE_2PIN(t) \
+  ((t) >= BUSTYPE_2PIN_MIN && (t) <= BUSTYPE_2PIN_MAX)
+
+
 
 //Color orders
 #define COL_ORDER_GRB             0           //GRB(w),defaut

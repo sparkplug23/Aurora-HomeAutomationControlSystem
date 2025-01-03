@@ -397,7 +397,7 @@ class mPalette
     PALETTE_ENCODING_DATA findPaletteEncoding(uint16_t id);
 
 
-    RgbcctColor 
+    RgbcctTOwwType 
     #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
     IRAM_ATTR 
     #endif 
@@ -472,7 +472,7 @@ class mPalette
 
 
 
-    RgbcctColor     
+    RgbcctTOwwType     
     #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
     IRAM_ATTR 
     #endif 
@@ -491,7 +491,7 @@ class mPalette
 
 
 
-    RgbcctColor 
+    RgbcctTOwwType 
     #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
     IRAM_ATTR 
     #endif 
