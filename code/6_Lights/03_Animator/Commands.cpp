@@ -94,7 +94,9 @@ void mAnimatorLight::subparse_JSONCommand(JsonParserObject obj, uint8_t segment_
   /**
    * @brief Exit if segment has not been created to stop errors
    **/
-  if(!segments.size()){ return; }
+  if(!segments.size()){ 
+    ALOG_ERR(PSTR("No segments created"));
+    return; }
 
 
   if (jtok = obj["PaletteMappingValues"]) { 
@@ -133,7 +135,7 @@ void mAnimatorLight::subparse_JSONCommand(JsonParserObject obj, uint8_t segment_
     if(jtok.isNum()){
       CommandSet_PaletteID(jtok.getInt(), segment_index);
     }
-    ALOG_COM( PSTR(D_LOG_LIGHT D_COMMAND_SVALUE_K(D_COLOUR_PALETTE)), GetPaletteNameByID(SEGMENT_I(segment_index).palette_id, buffer, sizeof(buffer)) );
+    ALOG_INF( PSTR(D_LOG_LIGHT D_COMMAND_SVALUE_K(D_COLOUR_PALETTE)), GetPaletteNameByID(SEGMENT_I(segment_index).palette_id, buffer, sizeof(buffer)) );
     data_buffer.isserviced++;
   }
 

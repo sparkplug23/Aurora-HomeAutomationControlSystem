@@ -204,6 +204,16 @@ enum LoggingLevels {
 #endif
 
 
+#if defined(ENABLE_DEBUG_PRINT_F)
+  #define DEBUG_PRINT_F(format, ...)    SERIAL_DEBUG.printf("DEBUG: ");\
+                                        SERIAL_DEBUG.printf(format, ##__VA_ARGS__);\
+                                        SERIAL_DEBUG.println();\
+                                        SERIAL_DEBUG.flush();
+#else
+  #define DEBUG_PRINT_F(format, ...)   //nothing, no code
+#endif
+
+
 #if defined(ENABLE_DEBUG_TIME__PRINT)
     // Macro to start time measurement, creates a local variable to store the start time
     #define DEBUG_TIME__START uint32_t __debug_time_start__ = micros();

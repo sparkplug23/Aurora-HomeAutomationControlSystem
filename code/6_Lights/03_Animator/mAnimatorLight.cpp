@@ -512,7 +512,7 @@ void mAnimatorLight::EveryLoop()
   // if (doSerializeConfig) serializeConfig();
 
   // Tmp fix to set brightness
-  // pCONT_iLight->bus_manager->setBrightness( pCONT_iLight->getBriRGB_Global() ); // fix re-initialised bus' brightness
+  pCONT_iLight->bus_manager->setBrightness( pCONT_iLight->getBriRGB_Global() ); // fix re-initialised bus' brightness
 
   if (doReboot && !doInitBusses) // if busses have to be inited & saved, wait until next iteration
     reset();
@@ -813,6 +813,8 @@ mAnimatorLight& mAnimatorLight::setCallback_ConstructJSONBody_Debug_Animations_P
  * 
  * Loading into segment, maybe it should be within the segment ??
  * 
+ Needs to become async safe, so requierd a lock on it
+ * 
  */
 void  
 #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
@@ -821,30 +823,62 @@ IRAM_ATTR
 mAnimatorLight::Segment::LoadPalette(uint8_t palette_id, mPaletteLoaded* _palette_container)
 {
 
+  #ifdef ENABLE_DEVFEATURE_LIGHTING__LOAD_PALETTE_ASYNC_LOCK
+  while(LoadPalette_AsyncLock){ delay(1); }
+  LoadPalette_AsyncLock = true; // take control of the lock
+  #endif
+
   uint8_t segment_index = 0;
 
+    DEBUG_PRINT_F("Palette ID: %d", palette_id);
+
+  DEBUG_LINE_HERE_TRACE
   // Pass pointer to memory location to load, so I can have additional palettes. If none passed, assume primary storage of segment
   // ALOG_WRN(PSTR("Should only happen once ============LoadPalette %d %d %d"), palette_id, segment_index, tkr_anim->segment_current_index);
 
   /**
    * @brief If none was passed, then assume its the default for that segment and load its container
    **/
-  if(_palette_container == nullptr)
-  {
-    if(palette_container == nullptr)
-    {
-      ALOG_ERR(PSTR("No palette container passed and no default container set"));
-      return;
-    }
-    _palette_container = palette_container;
-  }
+  
+    SERIAL_DEBUG.print("DEBUG: _palette_container address: ");
+    SERIAL_DEBUG.println((uintptr_t)_palette_container, HEX);
+    SERIAL_DEBUG.print("DEBUG: palette_container address: ");
+    SERIAL_DEBUG.println((uintptr_t)palette_container, HEX);
 
+
+  DEBUG_LINE_HERE_TRACE
+  SERIAL_DEBUG.printf("DEBUG: _palette_container address: %p\n", (void*)_palette_container);
+  DEBUG_LINE_HERE_TRACE
+    SERIAL_DEBUG.printf("DEBUG: palette_container address: %p\n", (void*)palette_container);
+  DEBUG_LINE_HERE_TRACE
+
+if (_palette_container == nullptr) {
+  DEBUG_LINE_HERE_TRACE
+  SERIAL_DEBUG.printf("DEBUG: _palette_container address: %p\n", (void*)_palette_container);
+  
+  if (palette_container == nullptr) {
+    DEBUG_LINE_HERE_TRACE
+    SERIAL_DEBUG.printf("DEBUG: palette_container address: %p\n", (void*)palette_container);
+    ALOG_ERR(PSTR("No palette container passed and no default container set"));
+    DEBUG_LINE_HERE_TRACE
+    return;
+  }
+  DEBUG_LINE_HERE_TRACE
+  _palette_container = palette_container;
+  DEBUG_LINE_HERE_TRACE
+}
+
+
+  DEBUG_LINE_HERE_TRACE
   palette_container->loaded_palette_id = palette_id;
 
   if(
     ((palette_id >= mPalette::PALETTELIST_STATIC_CRGBPALETTE16__RAINBOW_COLOUR__ID) && (palette_id < mPalette::PALETTELIST_STATIC_CRGBPALETTE16__LENGTH__ID))
   ){   
 
+    DEBUG_PRINT_F("Palette ID: %d", palette_id);
+
+  DEBUG_LINE_HERE_TRACE
   // DEBUG_LINE_HERE
     /**
      * @brief Moving out of mPalette since it includes references to PaletteContainer. May need moving back.
@@ -1163,6 +1197,10 @@ mAnimatorLight::Segment::LoadPalette(uint8_t palette_id, mPaletteLoaded* _palett
   }
 
   // DEBUG_LINE_HERE
+
+  #ifdef ENABLE_DEVFEATURE_LIGHTING__LOAD_PALETTE_ASYNC_LOCK
+  LoadPalette_AsyncLock = false; // release lock
+  #endif
   
 
 }
@@ -1470,6 +1508,8 @@ void mAnimatorLight::SubTask_Effects()
   if (nowUp - _lastShow < MIN_SHOW_DELAY) return;
   bool doShow = false;
 
+  DEBUG_DELAY(300);
+
       DEBUG_LINE_HERE
   _isServicing = true;
   segment_current_index = 0;  
@@ -1678,7 +1718,7 @@ void mAnimatorLight::AnimationProcess_LinearBlend_Dynamic_Buffer_BrtNotSet(const
         // updatedColor = RgbcctColor(0,255,0);
 
         // Set the pixel color
-        SEGMENT.setPixelColor(pixel, updatedColor, BRIGHTNESS_NOT_YET_SET);
+        SEGMENT.setPixelColor(pixel, updatedColor);//, BRIGHTNESS_NOT_YET_SET);
     }
     
     DEBUG_PIN6_SET(1);
@@ -1708,7 +1748,7 @@ void mAnimatorLight::AnimationProcess_SingleColour_LinearBlend_Between_RgbcctSeg
                 pixel++
   ){  
     // ALOG_INF(PSTR("SEGMENT.pixel =%d"), pixel);
-    SEGMENT.setPixelColor(pixel, updatedColor, SET_BRIGHTNESS);
+    SEGMENT.setPixelColor(pixel, updatedColor);//, SET_BRIGHTNESS);
   }
   
 }
@@ -1966,7 +2006,7 @@ void mAnimatorLight::fill(RgbcctTOwwType c, bool apply_brightness)
 {
   for(uint16_t i = 0; i < _virtualSegmentLength; i++) 
   {
-    SEGMENT.setPixelColor(i, c, apply_brightness);
+    SEGMENT.setPixelColor(i, c);//, apply_brightness);
   }
 }
 
@@ -3151,6 +3191,8 @@ uint32_t IRAM_ATTR mAnimatorLight::Segment::getPixelColor(int i) const
 {
   // if (!isActive()) return 0; // not active
 
+  Serial.println("Should not be here");
+
   #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
   if (is2D()) {
     const int vW = vWidth();   // segment width in logical pixels (can be 0 if segment is inactive)
@@ -3761,13 +3803,13 @@ void mAnimatorLight::Segment::blur(uint8_t blur_amount, bool smear) {
       if (carryover) curnew = color_add(curnew, carryover);
       uint32_t prev = color_add(lastnew, part);
       // optimization: only set pixel if color has changed
-      if (last != prev) setPixelColor(i - 1, prev);
-    } else setPixelColor(i, curnew); // first pixel
+      if (last != prev) setPixelColor((int)i - 1, prev);
+    } else setPixelColor((int)i, curnew); // first pixel
     lastnew = curnew;
     last = cur; // save original value for comparison on next iteration
     carryover = part;
   }
-  setPixelColor(vlength - 1, curnew);
+  setPixelColor((int)vlength - 1, curnew);
 }
 
 // /*
@@ -4191,10 +4233,10 @@ void mAnimatorLight::Segment::UpdateBrightness()
 // #ifdef ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
 
 void IRAM_ATTR mAnimatorLight::setPixelColor(uint32_t i, ColourBaseType col) {
-  Serial.printf("AAAAAAAAAAvoid IRAM_ATTR mAnimatorLight::setPixelColor(uint32_t i, %d,%d,%d)\n\r", col.R, col.G, col.B);
+  // Serial.printf("AAAAAAAAAAvoid IRAM_ATTR mAnimatorLight::setPixelColor(uint32_t i, %d,%d,%d)\n\r", col.R, col.G, col.B);
   i = getMappedPixelIndex(i);
   if (i >= _length) {
-    Serial.printf("BBBBBBBBBBBvoid IRAM_ATTR mAnimatorLight::%d,%dsetPixelColor(uint32_t i, %d,%d,%d)\n\r", i ,_length,col.R, col.G, col.B);
+    // Serial.printf("BBBBBBBBBBBvoid IRAM_ATTR mAnimatorLight::%d,%dsetPixelColor(uint32_t i, %d,%d,%d)\n\r", i ,_length,col.R, col.G, col.B);
     
     
     
@@ -4974,7 +5016,7 @@ bool mAnimatorLight::deserializeMap(uint8_t n) {
 
 
 
-
+// PHASE THIS OUT
 RgbcctTOwwType 
 #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
 IRAM_ATTR 
@@ -5405,24 +5447,36 @@ mAnimatorLight::GetColourFromUnloadedPalette3(
 // }
 #else
 
-void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(uint16_t indexPixel, RgbwwColor color, bool segment_brightness_needs_applied)
-{
+// void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(uint16_t indexPixel, RgbwwColor color)
+// {
   
-  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-  setPixelColor(indexPixel, color, segment_brightness_needs_applied);
-  #else
-  uint32_t col = RGBW32(color.R, color.G, color.B, color.W1);
-  setPixelColor(indexPixel, col, segment_brightness_needs_applied);
-  #endif
+//   #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+//   setPixelColor(indexPixel, color);
+//   #else
+//   uint32_t col = RGBW32(color.R, color.G, color.B, color.W1);
+//   setPixelColor(indexPixel, col);
+//   #endif
 
   
-}
+// }
+// void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(uint16_t indexPixel, uint32_t color)
+// {
+  
+//   #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+//   setPixelColor(indexPixel, color);
+//   #else
+//   uint32_t col = RGBW32(color.R, color.G, color.B, color.W1);
+//   setPixelColor(indexPixel, col);
+//   #endif
+
+  
+// }
 #endif
 
-void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(uint16_t indexPixel, uint8_t red, uint8_t green, uint8_t blue, bool segment_brightness_needs_applied)
-{
-  setPixelColor(indexPixel, red,green,blue, segment_brightness_needs_applied);
-}
+// void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(uint16_t indexPixel, uint8_t red, uint8_t green, uint8_t blue)
+// {
+//   setPixelColor(indexPixel, red,green,blue);
+// }
  
   
 // void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(uint16_t indexPixel, uint32_t color, bool segment_brightness_needs_applied)
@@ -5590,8 +5644,10 @@ void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(uint16_t indexPixel, uint8
 
 // }
 
+#ifndef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
 // ColourBaseType
-void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(int i, RgbwwColor col, bool flag_brightness_already_applied)
+void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(int i, uint32_t col)//, bool flag_brightness_already_applied)
 {
 
   #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
@@ -5758,7 +5814,7 @@ void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(int i, RgbwwColor col, boo
   }
   i += start; // starting pixel in a group
 
-  ColourBaseType tmpCol = col;
+  uint32_t tmpCol = col;
   // set all the pixels in the group
   for (int j = 0; j < grouping; j++) {
     unsigned indexSet = i + ((reverse) ? -j : j);
@@ -5785,7 +5841,205 @@ void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(int i, RgbwwColor col, boo
   }
 }
 
+#endif
 
+
+
+#ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(int i, RgbwwColor col)//, bool flag_brightness_already_applied)
+{
+
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+  Serial.printf("::Segment::setPixelColor(int i, RgbwwColor col %d,%d,%d\n\r", col.R, col.G, col.B);
+  #endif
+
+  DEBUG_LINE_HERE;
+  if (!isActive() || i < 0) return; // not active or invalid index
+#ifndef WLED_DISABLE_2D
+  int vStrip = 0;
+#endif
+  int vL = vLength();
+  // if the 1D effect is using virtual strips "i" will have virtual strip id stored in upper 16 bits
+  // in such case "i" will be > virtualLength()
+  if (i >= vL) {
+    // check if this is a virtual strip
+    #ifndef WLED_DISABLE_2D
+    vStrip = i>>16; // hack to allow running on virtual strips (2D segment columns/rows)
+    i &= 0xFFFF;    //truncate vstrip index
+    if (i >= vL) return;  // if pixel would still fall out of segment just exit
+    #else
+    return;
+    #endif
+  }
+
+  // // Apply brightness if needed
+  // if (!flag_brightness_already_applied) {
+  //   uint8_t brightness = scale8(_brightness_rgb, pCONT_iLight->getBriRGB_Global());
+  //   uint16_t scale = brightness + 1;  // Avoid division by zero and maintain full range
+  //   // Extract, scale, and repack in one step
+  //   col = RGBW32(
+  //     (R(col) * scale) >> 8,  // Red
+  //     (G(col) * scale) >> 8,  // Green
+  //     (B(col) * scale) >> 8,  // Blue
+  //     (W(col) * scale) >> 8   // White
+  //   );
+  // }
+
+
+#ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
+  if (is2D()) {
+    const int vW = vWidth();   // segment width in logical pixels (can be 0 if segment is inactive)
+    const int vH = vHeight();  // segment height in logical pixels (is always >= 1)
+    // pre-scale color for all pixels
+    col = color_fade(col, _segBri);
+    _colorScaled = true;
+    switch (map1D2D) {
+      case M12_Pixels:
+        // use all available pixels as a long strip
+        setPixelColorXY(i % vW, i / vW, col);
+        break;
+      case M12_pBar:
+        // expand 1D effect vertically or have it play on virtual strips
+        if (vStrip > 0) setPixelColorXY(vStrip - 1, vH - i - 1, col);
+        else for (int x = 0; x < vW; x++) setPixelColorXY(x, vH - i - 1, col);
+        break;
+      case M12_pArc:
+        // expand in circular fashion from center
+        if (i == 0)
+          setPixelColorXY(0, 0, col);
+        else {
+          float r = i;
+          float step = HALF_PI / (2.8284f * r + 4); // we only need (PI/4)/(r/sqrt(2)+1) steps
+          for (float rad = 0.0f; rad <= (HALF_PI/2)+step/2; rad += step) {
+            int x = roundf(sin_t(rad) * r);
+            int y = roundf(cos_t(rad) * r);
+            // exploit symmetry
+            setPixelColorXY(x, y, col);
+            setPixelColorXY(y, x, col);
+          }
+          // Bresenham’s Algorithm (may not fill every pixel)
+          //int d = 3 - (2*i);
+          //int y = i, x = 0;
+          //while (y >= x) {
+          //  setPixelColorXY(x, y, col);
+          //  setPixelColorXY(y, x, col);
+          //  x++;
+          //  if (d > 0) {
+          //    y--;
+          //    d += 4 * (x - y) + 10;
+          //  } else {
+          //    d += 4 * x + 6;
+          //  }
+          //}
+        }
+        break;
+      case M12_pCorner:
+        for (int x = 0; x <= i; x++) setPixelColorXY(x, i, col);
+        for (int y = 0; y <  i; y++) setPixelColorXY(i, y, col);
+        break;
+      case M12_sPinwheel: {
+        // i = angle --> 0 - 296  (Big), 0 - 192  (Medium), 0 - 72 (Small)
+        float centerX = roundf((vW-1) / 2.0f);
+        float centerY = roundf((vH-1) / 2.0f);
+        float angleRad = getPinwheelAngle(i, vW, vH); // angle in radians
+        float cosVal = cos_t(angleRad);
+        float sinVal = sin_t(angleRad);
+
+        // avoid re-painting the same pixel
+        int lastX = INT_MIN; // impossible position
+        int lastY = INT_MIN; // impossible position
+        // draw line at angle, starting at center and ending at the segment edge
+        // we use fixed point math for better speed. Starting distance is 0.5 for better rounding
+        // int_fast16_t and int_fast32_t types changed to int, minimum bits commented
+        int posx = (centerX + 0.5f * cosVal) * Fixed_Scale; // X starting position in fixed point 18 bit
+        int posy = (centerY + 0.5f * sinVal) * Fixed_Scale; // Y starting position in fixed point 18 bit
+        int inc_x = cosVal * Fixed_Scale; // X increment per step (fixed point) 10 bit
+        int inc_y = sinVal * Fixed_Scale; // Y increment per step (fixed point) 10 bit
+
+        int32_t maxX = vW * Fixed_Scale; // X edge in fixedpoint
+        int32_t maxY = vH * Fixed_Scale; // Y edge in fixedpoint
+
+        // Odd rays start further from center if prevRay started at center.
+        static int prevRay = INT_MIN; // previous ray number
+        if ((i % 2 == 1) && (i - 1 == prevRay || i + 1 == prevRay)) {
+          int jump = min(vW/3, vH/3); // can add 2 if using medium pinwheel
+          posx += inc_x * jump;
+          posy += inc_y * jump;
+        }
+        prevRay = i;
+
+        // draw ray until we hit any edge
+        while ((posx >= 0) && (posy >= 0) && (posx < maxX)  && (posy < maxY))  {
+          // scale down to integer (compiler will replace division with appropriate bitshift)
+          int x = posx / Fixed_Scale;
+          int y = posy / Fixed_Scale;
+          // set pixel
+          if (x != lastX || y != lastY) setPixelColorXY(x, y, col);  // only paint if pixel position is different
+          lastX = x;
+          lastY = y;
+          // advance to next position
+          posx += inc_x;
+          posy += inc_y;
+        }
+        break;
+      }
+    }
+    _colorScaled = false;
+    return;
+  } else if (Segment::maxHeight != 1 && (width() == 1 || height() == 1)) {
+    if (start < Segment::maxWidth*Segment::maxHeight) {
+      // we have a vertical or horizontal 1D segment (WARNING: virtual...() may be transposed)
+      int x = 0, y = 0;
+      if (vHeight() > 1) y = i;
+      if (vWidth()  > 1) x = i;
+      setPixelColorXY(x, y, col);
+      return;
+    }
+  }
+#endif
+
+  unsigned len = length();
+  // if color is unscaled
+  if (!_colorScaled) col = color_fade(col, _brightness_rgb);
+
+  // expand pixel (taking into account start, grouping, spacing [and offset])
+  i = i * groupLength();
+  if (reverse) { // is segment reversed?
+    if (mirror) { // is segment mirrored?
+      i = (len - 1) / 2 - i;  //only need to index half the pixels
+    } else {
+      i = (len - 1) - i;
+    }
+  }
+  i += start; // starting pixel in a group
+
+  RgbwwColor tmpCol = col;
+  // set all the pixels in the group
+  for (int j = 0; j < grouping; j++) {
+    unsigned indexSet = i + ((reverse) ? -j : j);
+    if (indexSet >= start && indexSet < stop) {
+      if (mirror) { //set the corresponding mirrored pixel
+        unsigned indexMir = stop - indexSet + start - 1;
+        indexMir += offset; // offset/phase
+        if (indexMir >= stop) indexMir -= len; // wrap
+#ifndef WLED_DISABLE_MODE_BLEND
+        // if (_modeBlend) tmpCol = color_blend16(tkr_anim->getPixelColor(indexMir), col, uint16_t(0xFFFFU - progress()));
+#endif
+        tkr_anim->setPixelColor(indexMir, tmpCol);
+      }
+      indexSet += offset; // offset/phase
+      if (indexSet >= stop) indexSet -= len; // wrap
+#ifndef WLED_DISABLE_MODE_BLEND
+      // if (_modeBlend) tmpCol = color_blend16(tkr_anim->getPixelColor(indexSet), col, uint16_t(0xFFFFU - progress()));
+#endif
+      #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+      Serial.printf("::Segment::setPixelColor(int i, tmpCol %d,%d,%d\n\r", tmpCol.R, tmpCol.G, tmpCol.B);
+      #endif
+      tkr_anim->setPixelColor(indexSet, tmpCol);
+    }
+  }
+}
+#endif // ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
 
 /*
  * color blend function
@@ -5961,8 +6215,41 @@ uint32_t mAnimatorLight::Segment::color_fade(uint32_t c1, uint8_t amount, bool v
   return RGBW32(r, g, b, w);
 }
 #else
+
+
+RgbwwColor mAnimatorLight::Segment::color_fade(RgbwwColor c1, uint8_t amount, bool video)
+{
+  
+  return c1;// tmp fix
+
+
+
+  uint8_t r = c1.R;
+  uint8_t g = c1.G;
+  uint8_t b = c1.B;
+  uint8_t w = c1.WW;
+  uint8_t cw = c1.CW;
+  if (video) {
+    r = scale8_video(r, amount);
+    g = scale8_video(g, amount);
+    b = scale8_video(b, amount);
+    w = scale8_video(w, amount);
+    cw = scale8_video(cw, amount);
+  } else {
+    r = scale8(r, amount);
+    g = scale8(g, amount);
+    b = scale8(b, amount);
+    w = scale8(w, amount);
+    cw = scale8(cw, amount);
+  }
+  return RgbwwColor(r, g, b, w, cw);
+}
 uint32_t mAnimatorLight::Segment::color_fade(uint32_t c1, uint8_t amount, bool video)
 {
+  
+  return c1;// tmp fix
+
+
   uint8_t r = R(c1);
   uint8_t g = G(c1);
   uint8_t b = B(c1);
@@ -5980,6 +6267,8 @@ uint32_t mAnimatorLight::Segment::color_fade(uint32_t c1, uint8_t amount, bool v
   }
   return RGBW32(r, g, b, w);
 }
+
+
 #endif
 
 

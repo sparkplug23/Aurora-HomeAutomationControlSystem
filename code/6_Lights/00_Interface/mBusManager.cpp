@@ -443,10 +443,10 @@ void BusDigital::show() {
         // use 0 as color order, actual order does not matter here as we just update the channel values as-is
         #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
         ColourBaseType c = PolyBus::getPixelColor(_busPtr, _iType, i, 0); // tmp fix for RGBWW
+        ALOG_INF(PSTR("direct method active lossy %d %d %d\t %d %d %d"), i, c.R, c.G, c.B, c.WW, c.CW);
         #else
         ColourBaseType c = restoreColorLossy(PolyBus::getPixelColor(_busPtr, _iType, i, 0), _bri);
         #endif
-        ALOG_INF(PSTR("direct method active lossy %d %d %d\t %d %d %d"), i, c.R, c.G, c.B, c.WW, c.CW);
         #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
         // if (hasCCT()) Bus::calculateCCT(c, cctWW, cctCW); // this will unfortunately corrupt (segment) CCT data on every bus
         PolyBus::setPixelColor(_busPtr, _iType, i, c, 0);//, 0, (cctCW<<8) | cctWW); // repaint all pixels with new brightness
@@ -582,7 +582,22 @@ void IRAM_ATTR BusDigital::setPixelColor(uint32_t pix, ColourBaseType c) {
 ColourBaseType IRAM_ATTR BusDigital::getPixelColor(uint32_t pix) const {
   
   #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-  return PolyBus::getPixelColor(_busPtr, _iType, pix, _colorOrderMap.getPixelColorOrder(pix + _start, _colorOrder));
+
+
+
+    const unsigned co = _colorOrderMap.getPixelColorOrder(pix+_start, _colorOrder);
+
+    
+  // PolyBus::setPixelColor(_busPtr, _iType, pix, RgbwwColor(1,2,3,4,5), co);
+
+
+    RgbwwColor c = PolyBus::getPixelColor(_busPtr, _iType, pix, co);
+
+#ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+ALOG_INF(PSTR("BusDigital::getPixelColor[%d]= %d %d %d %d\n\r"), pix, c.R, c.G, c.B, c.WW);
+#endif
+  return c;
+
   #else
   if (!_valid) return 0;
   /**

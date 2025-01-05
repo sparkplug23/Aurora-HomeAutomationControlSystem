@@ -477,3 +477,7 @@ Add sunelevation palette that is actually left on overnight, and is black when i
 
 #FI-131 
     Patterns for output, ie to allow ifan controls for speeds
+
+#FI-132 (04Jan25)
+    "Palette Shift" an option, for when palette spanning is happening, that an offset can be used so the start location of the palette
+    can be moved. Hence a "shift of 127 of 255" would mean the previous start of the palette would occur in the centre of the span, and the end would have wrapped around

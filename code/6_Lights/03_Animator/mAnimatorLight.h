@@ -2659,6 +2659,7 @@ typedef struct Segment
 
     mPaletteLoaded* palette_container = new mPaletteLoaded();
 
+    bool LoadPalette_AsyncLock = false;
     void LoadPalette(uint8_t palette_id, mPaletteLoaded* palette_container = nullptr);
 
     uint32_t tSaved_LastUpdated = millis();
@@ -2815,11 +2816,11 @@ typedef struct Segment
     static uint32_t color_add(uint32_t,uint32_t, bool fast=false);
     static uint32_t color_add(RgbwwColor,RgbwwColor, bool fast=false);
     
-    #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+    // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
     static RgbwwColor color_fade(RgbwwColor c1, uint8_t amount, bool video=false);
     static uint32_t color_fade(uint32_t c1, uint8_t amount, bool video=false);
-    #else
-    #endif
+    // #else
+    // #endif
 
 
     void setRandomColor(byte* rgb);
@@ -2850,33 +2851,29 @@ typedef struct Segment
 
     // 1D strip
     [[gnu::hot]] uint16_t virtualLength(void) const;
-    [[gnu::hot]] void setPixelColor(int n, ColourBaseType c, bool flag_brightness_already_applied = false); // set relative pixel within segment with color    
-    
     
     #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-    inline void setPixelColor(unsigned n, RgbwwColor c, bool flag_brightness_already_applied = false) {
-      Serial.println("WARNING: A");
-      setPixelColor(int(n), c, flag_brightness_already_applied);
-    }
-
-    void setPixelColor(int n, byte r, byte g, byte b, byte w = 0) {
-      Serial.println("WARNING: B");
-      setPixelColor(n, RgbwwColor(r,g,b,w));
-    }
-
-    void setPixelColor(int n, CRGB c) {
-      Serial.println("WARNING: C");
-      setPixelColor(n, RgbwwColor(c.r, c.g, c.b));
-    }
-    #else
-    inline void setPixelColor(unsigned n, uint32_t c, bool flag_brightness_already_applied = false)                    { setPixelColor(int(n), c, flag_brightness_already_applied); }
-    void setPixelColor(int n, byte r, byte g, byte b, byte w = 0) { setPixelColor(n, RGBW32(r,g,b,w)); } // automatically inline
-    void setPixelColor(int n, CRGB c)                             { setPixelColor(n, RGBW32(c.r,c.g,c.b,0)); } // automatically inline
-    #endif
-    
+    [[gnu::hot]] void setPixelColor(int n, RgbwwColor c);
+    void setPixelColor(int n, byte r, byte g, byte b, byte w = 0) {      setPixelColor(n, RgbwwColor(r,g,b,w));    }
+    void setPixelColor(int n, CRGB c) {            setPixelColor(n, RgbwwColor(c.r, c.g, c.b));    }
+    // Anti-aliasing functions
+    void setPixelColor(float i, uint32_t c, bool aa = true);
+    void setPixelColor(float i, uint8_t r, uint8_t g, uint8_t b, uint8_t w = 0, bool aa = true) { setPixelColor(i, RGBW32(r,g,b,w), aa); }
+    void setPixelColor(float i, CRGB c, bool aa = true)                                         { setPixelColor(i, RGBW32(c.r,c.g,c.b,0), aa); }    
+    #else    
+    [[gnu::hot]] void setPixelColor(int n, uint32_t c);
+    void setPixelColor(int n, RgbwwColor c){ setPixelColor(n, RGBW32(c.R, c.G, c.B, c.WW)); } 
+    void setPixelColor(unsigned n, uint32_t c){ setPixelColor((int)n, c); } // to keep compatibility with RGBWW
+    void setPixelColor(int n, byte r, byte g, byte b, byte w = 0) {      setPixelColor(n, RGBW32(r,g,b,w));    }
+    void setPixelColor(int n, CRGB c) {            setPixelColor(n, RGBW32(c.r, c.g, c.b,0));    }
+    // Anti-aliasing functions
     void setPixelColor(float i, uint32_t c, bool aa = true);
     void setPixelColor(float i, uint8_t r, uint8_t g, uint8_t b, uint8_t w = 0, bool aa = true) { setPixelColor(i, RGBW32(r,g,b,w), aa); }
     void setPixelColor(float i, CRGB c, bool aa = true)                                         { setPixelColor(i, RGBW32(c.r,c.g,c.b,0), aa); }
+    #endif
+    
+    
+    
     // uint32_t getPixelColor(int i);
     
     // RgbcctColor GetPixelColor(uint16_t indexPixel = 0);       
@@ -2888,11 +2885,11 @@ typedef struct Segment
     // void setPixelColor_RgbwwColor(uint16_t indexPixel, RgbwwColor color, bool flag_brightness_already_applied = false); // TMP FIX
     
     #else
-    void setPixelColor(uint16_t indexPixel, RgbcctColor color, bool flag_brightness_already_applied = false); // TMP FIX
+    // void setPixelColor(uint16_t indexPixel, RgbcctColor color); // TMP FIX
     #endif 
 
 
-    void setPixelColor(uint16_t indexPixel, uint8_t red, uint8_t green, uint8_t blue, bool flag_brightness_already_applied = false);  
+    // void setPixelColor(uint16_t indexPixel, uint8_t red, uint8_t green, uint8_t blue);  
     // void setPixelColor(uint16_t indexPixel, uint32_t color, bool flag_brightness_already_applied = false);
     
 
@@ -3367,14 +3364,20 @@ inline void AnimationProcess_LinearBlend_Dynamic_BufferU32_FillSegment(const Ani
         RgbwwColor startRgbww = Get_DynamicBuffer_StartingColour_RgbwwColor(0);
         RgbwwColor desiredRgbww = Get_DynamicBuffer_DesiredColour_RgbwwColor(0);
 
+        #ifdef ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
+        desiredRgbww.WW = 0; desiredRgbww.CW = 0;
+        #endif
+
         // Blend the two colors
         RgbwwColor blendedRgbww = RgbwwColor::LinearBlend(startRgbww, desiredRgbww, blendFactor);
+
+        // blendedRgbww = RgbwwColor(0,0,0,0,255);
         
-        #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
-        blendedRgbww = RgbwwColor(1,2,255,0,0);
-        Serial.printf("startRgbww RGBWW %d,%d,%d,%d,%d\n\r", startRgbww.R, startRgbww.G, startRgbww.B, startRgbww.WW, startRgbww.CW); 
-        Serial.printf("desiredRgbww RGBWW %d,%d,%d,%d,%d\n\r", desiredRgbww.R, desiredRgbww.G, desiredRgbww.B, desiredRgbww.WW, desiredRgbww.CW); 
-        #endif
+        // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+        // blendedRgbww = RgbwwColor(1,2,255,0,0);
+        Serial.printf("startRgbww RGBWW %d,%d,%d,%d,%d", startRgbww.R, startRgbww.G, startRgbww.B, startRgbww.WW, startRgbww.CW); 
+        Serial.printf("\t\tdesiredRgbww RGBWW %d,%d,%d,%d,%d\n\r", desiredRgbww.R, desiredRgbww.G, desiredRgbww.B, desiredRgbww.WW, desiredRgbww.CW); 
+        // #endif
 
         // Set the blended color across the segment
         for (int pixel = 0; pixel < virtualLength(); pixel++) {

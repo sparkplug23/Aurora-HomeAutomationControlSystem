@@ -214,16 +214,22 @@ void mAnimatorLight::EffectAnim__Static_Palette_Vintage()
     
   if(SEGMENT.effect_anim_section == 0)
   {
+    uint8_t variance = SEGMENT.intensity;
+    uint8_t r,g,b,w;
 
-    uint8_t brightness = SEGMENT.getBrightnessRGB_WithGlobalApplied(); // Prefetch to save time 
-
-    RgbcctColor colour = RgbcctColor();
+    uint32_t colour;
     for(uint16_t pixel = 0; pixel < SEGLEN; pixel++)
     {
-      colour = SEGMENT.GetPaletteColour(pixel, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE);
-      colour.Variance(SEGMENT.intensity);
+      colour = SEGMENT.GetPaletteColour_U32(pixel, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE);
+
+      // Using uint8_t, overflow will ensure it wraps around within limits
+      r = R(colour) + random(-variance, variance);
+      g = G(colour) + random(-variance, variance);
+      b = B(colour) + random(-variance, variance);
+      w = W(colour) + random(-variance, variance);
+
       // SetTransitionColourBuffer_DesiredColour(SEGMENT.Data(), SEGMENT.DataLength(), pixel, SEGMENT.colour_width__used_in_effect_generate, colour.WithBrightness(brightness) );
-      SEGMENT.Set_DynamicBuffer_DesiredColour(pixel, colour.getU32());
+      SEGMENT.Set_DynamicBuffer_DesiredColour(pixel, RGBW32(r,g,b,w));
     }
 
     SEGMENT.effect_anim_section = 1; // To stop redraw unless effect is reset
@@ -440,190 +446,31 @@ static const char PM_EFFECT_CONFIG__SHIMMERING_TWO_PALETTES[] PROGMEM = "Shimmer
 /**
  * @description:   : Base function for flickering
  * */
-// void mAnimatorLight::EffectAnim__Flicker_Base(bool use_multi, uint16_t flicker_palette_id )
-// {
-
-//   uint8_t pixels_in_palette = GetNumberOfColoursInPalette(SEGMENT.palette_id);
-
-//   RgbcctColor colour_pri;
-//   RgbcctColor colour_sec;
-//   RgbcctColor colour_out;
-
-//   if (use_multi)
-//   {
-//     uint16_t dataSize = (SEGLEN -1) * 3;
-//     if(!SEGMENT.allocateData(dataSize) ){ return; }
-//   }
-
-//   // max. flicker range controlled by intensity
-//   uint8_t valrange = SEGMENT.intensity;
-//   uint8_t rndval = valrange >> 1; // divide by 2
-
-//   #ifdef ENABLE__DEBUG_POINT__ANIMATION_EFFECTS
-//   ALOG_DBG(PSTR("step=%d"),    SEGMENT.step);
-//   ALOG_DBG(PSTR("valrange=%d"),valrange);
-//   ALOG_DBG(PSTR("rndval=%d"),  rndval);
-//   #endif
-
-//   uint8_t pixel_palette_counter = 0;
-
-//   // step (how much to move closer to target per frame) coarsely set by speed
-//   uint8_t speedFactor = 4;
-//   if (SEGMENT.speed > 252) { // epilepsy
-//     speedFactor = 1;
-//   } else 
-//   if (SEGMENT.speed > 99) { // regular candle (mode called every ~25 ms, so 4 frames to have a new target every 100ms)
-//     speedFactor = 2;
-//   } else 
-//   if (SEGMENT.speed > 49) { // slower fade
-//     speedFactor = 3;
-//   } //else 4 (slowest)
-
-//   uint16_t numCandles = (use_multi) ? SEGLEN : 1;
-//   #ifdef ENABLE__DEBUG_POINT__ANIMATION_EFFECTS
-//   ALOG_DBG(PSTR("numCandles=%d"), numCandles);
-//   #endif
-
-//   for (uint16_t i = 0; i < numCandles; i++)
-//   {
-//     #ifdef ENABLE__DEBUG_POINT__ANIMATION_EFFECTS
-//     ALOG_DBG(PSTR("i=%d|%d"),i,numCandles);
-//     #endif
-
-//     uint16_t d = 0; //data location
-
-//     uint8_t s        = SEGMENT.params_internal.aux0, 
-//             s_target = SEGMENT.params_internal.aux1, 
-//             fadeStep = SEGMENT.step;
-
-//     if (i > 0) {
-//       d = (i-1) *3;
-//       s = SEGMENT.data[d]; 
-//       s_target = SEGMENT.data[d+1]; 
-//       fadeStep = SEGMENT.data[d+2];
-//     }
-//     if (fadeStep == 0) { //init vals
-//       s = 128; s_target = 130 + random8(4); fadeStep = 1;
-//     }
-
-//     bool newTarget = false;
-//     if (s_target > s) { //fade up
-
-//       #ifdef ENABLE__DEBUG_POINT__ANIMATION_EFFECTS
-//       ALOG_DBG(PSTR("fade up s_target > s %d=%d"), s_target, s);
-//       #endif
-
-//       s = qadd8(s, fadeStep);
-//       if (s >= s_target) newTarget = true;
-//     } else {
-//       s = qsub8(s, fadeStep);
-//       if (s <= s_target) newTarget = true;
-          
-//       #ifdef ENABLE__DEBUG_POINT__ANIMATION_EFFECTS
-//       ALOG_DBG(PSTR("fade down=%d"),s);
-//       #endif
-
-//     }
-
-//     if (newTarget) {
-//       s_target = random8(rndval) + random8(rndval);
-//       if (s_target < (rndval >> 1)) s_target = (rndval >> 1) + random8(rndval);
-//       uint8_t offset = (255 - valrange) >> 1;
-//       s_target += offset;
-
-//       uint8_t dif = (s_target > s) ? s_target - s : s - s_target;
-    
-//       fadeStep = dif >> speedFactor;
-//       if (fadeStep == 0) fadeStep = 1;
-//     }
-
-//     // flicker_palette_id = mPalette::PALETTELIST_HTML_COLOUR__White__ID;
-
-//     /**
-//      * Apply colour to output: different per pixel
-//      **/
-//     if(i > 0) 
-//     {
-//       // colour_pri = SEGMENT.GetPaletteColour(pixel_palette_counter);    
-//       colour_pri = SEGMENT.GetPaletteColour(i, PALETTE_INDEX_SPANS_SEGLEN_ON, true, true);//, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_OFF, NO_ENCODED_VALUE);
-
-//       colour_sec = GetColourFromUnloadedPalette3(flicker_palette_id, i, true, true, true);
-
-
-
-
-//       colour_out = ColourBlend(colour_pri, colour_sec, s); // s = flicker level (i.e. brightness)
-
-//       // if(pixel_palette_counter++ >= pixels_in_palette-1)
-//       // {
-//       //   pixel_palette_counter = 0;
-//       // }
-
-//       SEGMENT.setPixelColor(i, colour_out);
-
-//       SEGMENT.data[d  ] = s; 
-//       SEGMENT.data[d+1] = s_target; 
-//       SEGMENT.data[d+2] = fadeStep;
-
-//     } 
-//     /**
-//      * Single mode, one colour applied across all leds??????????
-//      * */
-//     else
-//     {
-      
-//       for(uint16_t p = 0;
-//                  p < SEGLEN;
-//                  p++
-//       ){
-
-//         // colour_pri = SEGMENT.GetPaletteColour(pixel_palette_counter); 
-//         colour_pri = SEGMENT.GetPaletteColour(p, PALETTE_INDEX_SPANS_SEGLEN_ON, true, true);//, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_OFF, NO_ENCODED_VALUE);
-
-//         colour_sec = GetColourFromUnloadedPalette3(flicker_palette_id, p);
-
-//         colour_out = ColourBlend(colour_pri, colour_sec, s); // s = flicker level (i.e. brightness)
-
-//         // if(pixel_palette_counter++ >= pixels_in_palette-1)
-//         // {
-//         //   pixel_palette_counter = 0;
-//         // }
-
-//         SEGMENT.setPixelColor(p, colour_out);
-
-//       }
-
-//       SEGMENT.params_internal.aux0 = s; 
-//       SEGMENT.params_internal.aux1 = s_target; 
-//       SEGMENT.step = fadeStep;
-
-//     }
-//   }
-
-//   SetSegment_AnimFunctionCallback_WithoutAnimator(SEGIDX);  
-
-// }
 void mAnimatorLight::EffectAnim__Flicker_Base(bool use_multi, uint16_t flicker_palette_id)
 {
     uint8_t pixels_in_primary_palette = GetNumberOfColoursInPalette(SEGMENT.palette_id);
     uint8_t pixels_in_secondary_palette = GetNumberOfColoursInPalette(flicker_palette_id);
 
-    RgbcctColor colour_pri;
-    RgbcctColor colour_sec;
-    RgbcctColor colour_out;
+    ColourBaseType colour_pri;
+    ColourBaseType colour_sec;
+    ColourBaseType colour_out;
 
     bool single_secondary_color = (pixels_in_secondary_palette == 1);
 
     if (use_multi)
     {
-        uint16_t dataSize = (SEGLEN - 1) * 3;
-        if (!SEGMENT.allocateData(dataSize)) { return; }
+      uint16_t dataSize = (SEGLEN - 1) * 3;
+      if (!SEGMENT.allocateData(dataSize)) { return; }
     }
 
     // Load the single secondary color once if the palette contains only one color
     if (single_secondary_color)
     {
-        colour_sec = GetColourFromUnloadedPalette3(flicker_palette_id, 0, true, true, true);
+      #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+      colour_sec = GetColourFromUnloadedPalette3(flicker_palette_id, 0, true, true, true);
+      #else
+      colour_sec = GetColourFromUnloadedPalette3(flicker_palette_id, 0, true, true, true).getU32();
+      #endif
     }
 
     // max. flicker range controlled by intensity
@@ -641,13 +488,13 @@ void mAnimatorLight::EffectAnim__Flicker_Base(bool use_multi, uint16_t flicker_p
     // step (how much to move closer to target per frame) coarsely set by speed
     uint8_t speedFactor = 4;
     if (SEGMENT.speed > 252) { // epilepsy
-        speedFactor = 1;
+      speedFactor = 1;
     }
     else if (SEGMENT.speed > 99) { // regular candle
-        speedFactor = 2;
+      speedFactor = 2;
     }
     else if (SEGMENT.speed > 49) { // slower fade
-        speedFactor = 3;
+      speedFactor = 3;
     } // else slowest (speedFactor = 4)
 
     uint16_t numCandles = (use_multi) ? SEGLEN : 1;
@@ -669,34 +516,34 @@ void mAnimatorLight::EffectAnim__Flicker_Base(bool use_multi, uint16_t flicker_p
                 fadeStep = SEGMENT.step;
 
         if (i > 0) {
-            d = (i - 1) * 3;
-            s = SEGMENT.data[d];
-            s_target = SEGMENT.data[d + 1];
-            fadeStep = SEGMENT.data[d + 2];
+          d = (i - 1) * 3;
+          s = SEGMENT.data[d];
+          s_target = SEGMENT.data[d + 1];
+          fadeStep = SEGMENT.data[d + 2];
         }
         if (fadeStep == 0) { // init vals
-            s = 128; s_target = 130 + random8(4); fadeStep = 1;
+          s = 128; s_target = 130 + random8(4); fadeStep = 1;
         }
 
         bool newTarget = false;
         if (s_target > s) { // fade up
-            s = qadd8(s, fadeStep);
-            if (s >= s_target) newTarget = true;
+          s = qadd8(s, fadeStep);
+          if (s >= s_target) newTarget = true;
         }
         else { // fade down
-            s = qsub8(s, fadeStep);
-            if (s <= s_target) newTarget = true;
+          s = qsub8(s, fadeStep);
+          if (s <= s_target) newTarget = true;
         }
 
         if (newTarget) {
-            s_target = random8(rndval) + random8(rndval);
-            if (s_target < (rndval >> 1)) s_target = (rndval >> 1) + random8(rndval);
-            uint8_t offset = (255 - valrange) >> 1;
-            s_target += offset;
+          s_target = random8(rndval) + random8(rndval);
+          if (s_target < (rndval >> 1)) s_target = (rndval >> 1) + random8(rndval);
+          uint8_t offset = (255 - valrange) >> 1;
+          s_target += offset;
 
-            uint8_t dif = (s_target > s) ? s_target - s : s - s_target;
-            fadeStep = dif >> speedFactor;
-            if (fadeStep == 0) fadeStep = 1;
+          uint8_t dif = (s_target > s) ? s_target - s : s - s_target;
+          fadeStep = dif >> speedFactor;
+          if (fadeStep == 0) fadeStep = 1;
         }
 
         /**
@@ -704,50 +551,85 @@ void mAnimatorLight::EffectAnim__Flicker_Base(bool use_multi, uint16_t flicker_p
          **/
         if (i > 0) 
         {
-            // Get primary color
-            colour_pri = SEGMENT.GetPaletteColour(i, PALETTE_INDEX_SPANS_SEGLEN_ON, true, true);
+          // Get primary color
+          #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+          colour_pri = SEGMENT.GetPaletteColour(i, PALETTE_INDEX_SPANS_SEGLEN_ON, true, true)
+              #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_REPLACING_RGBCCT
+              .getU32()
+              #endif
+              ;
+          #else
+          colour_pri = SEGMENT.GetPaletteColour_U32(i, PALETTE_INDEX_SPANS_SEGLEN_ON, true, true); 
+          #endif
+
+          // If only one color in secondary palette, reuse it, otherwise get a new color for each pixel
+          #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+          if (!single_secondary_color) {
+              colour_sec = GetColourFromUnloadedPalette3(flicker_palette_id, i, true, true, true)
+              #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_REPLACING_RGBCCT
+              .getU32()
+              #endif
+              ;
+          }
+          #else
+          if (!single_secondary_color) {
+              colour_sec = GetColourFromUnloadedPalette3(flicker_palette_id, i, true, true, true).getU32();
+          }
+          #endif
+
+          // Blend primary and secondary color based on flicker intensity
+          colour_out = ColourBlend(colour_pri, colour_sec, s);
+
+          SEGMENT.setPixelColor(i, colour_out);
+
+          SEGMENT.data[d] = s;
+          SEGMENT.data[d + 1] = s_target;
+          SEGMENT.data[d + 2] = fadeStep;
+        }
+        else
+        {
+          for (uint16_t p = 0; p < SEGLEN; p++)
+          {
+            // Get primary color for each pixel
+            #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+            colour_pri = SEGMENT.GetPaletteColour(p, PALETTE_INDEX_SPANS_SEGLEN_ON, true, true)
+              #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_REPLACING_RGBCCT
+              .getU32()
+              #endif
+              ;
+            #else
+            colour_pri = SEGMENT.GetPaletteColour_U32(p, PALETTE_INDEX_SPANS_SEGLEN_ON, true, true);
+            #endif
 
             // If only one color in secondary palette, reuse it, otherwise get a new color for each pixel
+            #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
             if (!single_secondary_color) {
-                colour_sec = GetColourFromUnloadedPalette3(flicker_palette_id, i, true, true, true);
+              colour_sec = GetColourFromUnloadedPalette3(flicker_palette_id, p, true, true, true)
+              #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_REPLACING_RGBCCT
+              .getU32()
+              #endif
+              ;
             }
+            #else
+            if (!single_secondary_color) {
+              colour_sec = GetColourFromUnloadedPalette3(flicker_palette_id, p, true, true, true).getU32();
+            }
+            #endif
 
             // Blend primary and secondary color based on flicker intensity
             colour_out = ColourBlend(colour_pri, colour_sec, s);
 
-            SEGMENT.setPixelColor(i, colour_out);
+            SEGMENT.setPixelColor(p, colour_out);
+          }
 
-            SEGMENT.data[d] = s;
-            SEGMENT.data[d + 1] = s_target;
-            SEGMENT.data[d + 2] = fadeStep;
-        }
-        else
-        {
-            for (uint16_t p = 0; p < SEGLEN; p++)
-            {
-                // Get primary color for each pixel
-                colour_pri = SEGMENT.GetPaletteColour(p, PALETTE_INDEX_SPANS_SEGLEN_ON, true, true);
-
-                // If only one color in secondary palette, reuse it, otherwise get a new color for each pixel
-                if (!single_secondary_color) {
-                    colour_sec = GetColourFromUnloadedPalette3(flicker_palette_id, p, true, true, true);
-                }
-
-                // Blend primary and secondary color based on flicker intensity
-                colour_out = ColourBlend(colour_pri, colour_sec, s);
-
-                SEGMENT.setPixelColor(p, colour_out);
-            }
-
-            SEGMENT.params_internal.aux0 = s;
-            SEGMENT.params_internal.aux1 = s_target;
-            SEGMENT.step = fadeStep;
+          SEGMENT.params_internal.aux0 = s;
+          SEGMENT.params_internal.aux1 = s_target;
+          SEGMENT.step = fadeStep;
         }
     }
 
     SetSegment_AnimFunctionCallback_WithoutAnimator(SEGIDX);
 }
-
 #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
 
 
@@ -1374,7 +1256,7 @@ void mAnimatorLight::EffectAnim__Rotating_Palette()
 
         colour = SEGMENT.GetPaletteColour(pixel); //mPaletteI->GetColourFromPreloadedPalette (SEGMENT.palette_id, pixel);
                 
-        SEGMENT.setPixelColor(pixel, colour.WithBrightness(brightness), BRIGHTNESS_ALREADY_SET);
+        SEGMENT.setPixelColor(pixel, colour.WithBrightness(brightness));//, BRIGHTNESS_ALREADY_SET);
 
         #ifdef ENABLE_DEBUG_TRACE__ANIMATOR_UPDATE_DESIRED_COLOUR
         // ALOG_INF( PSTR("sIndexIO=%d %d,%d\t%d,pC %d, R%d"), SEGIDX, SEGMENT.start, SEGMENT.stop, pixel, GetNumberOfColoursInPalette(mPaletteI->static_palettes.ptr), colour.R );
@@ -1628,7 +1510,7 @@ void mAnimatorLight::EffectAnim__Rotating_Previous_Animation()
     */
     for(uint16_t pixel = 0; pixel < SEGLEN-jump_end_pixel; pixel++){ // 100-50
       colour = SEGMENT.getPixelColor(pixel+jump_end_pixel);
-      SEGMENT.setPixelColor(pixel, colour, BRIGHTNESS_ALREADY_SET);
+      SEGMENT.setPixelColor(pixel, colour);//, BRIGHTNESS_ALREADY_SET);
       // ALOG_INF(PSTR("Bp %d->%d"), pixel+jump_end_pixel, pixel);
     }
 
@@ -1639,7 +1521,7 @@ void mAnimatorLight::EffectAnim__Rotating_Previous_Animation()
      */
     for(uint16_t pixel = 0; pixel < colours_saved.size(); pixel++){ // 100-50
       colour = colours_saved[pixel];
-      SEGMENT.setPixelColor(pixel+(SEGLEN-jump_end_pixel), colour, BRIGHTNESS_ALREADY_SET);
+      SEGMENT.setPixelColor(pixel+(SEGLEN-jump_end_pixel), colour);//, BRIGHTNESS_ALREADY_SET);
       // ALOG_INF(PSTR("Cp %d->%d,  %d, %d/%d"),pixel, pixel+(SEGLEN-jump_end_pixel), pixel, pixel, jump_end_pixel);
     }
 

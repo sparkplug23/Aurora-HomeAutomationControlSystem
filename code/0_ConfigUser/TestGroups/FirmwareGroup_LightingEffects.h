@@ -39,11 +39,16 @@
 // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__22__ESP32_4CH_MATRIX_PYTHON_MANUAL_ROWS        // Using python script for left,centre,right to convert non-equal rows into a ledmap for 2D effects
 
 //    ;;;;;;;;;;;; ESP32 ;;;;;;;;;;;;;;;;  -- Non digital devices
-#define DEVICE_TESTGROUP__LIGHTING_EFFECTS__30__ESP32_PWM_RGBCCT_5CH_RGBCCT             // Garage as lighting at night, long term tester
+// #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__30__ESP32_PWM_RGBCCT_5CH_RGBCCT             // Garage as lighting at night, long term tester
 // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__31__ESP32_PWM_RGBCCT_2x2CH_WHITE_CHANNELS   // Dual CCT white lights (Create hardware for esp32+PWM)
 // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__32__ESP32_PWM_RGBCCT_5x1CH_WHITE_CHANNELS   // FIVE single white channels (5 segments)
 
         
+//    ;;;;;;;;;;;; PAIRED DEVICES ;;;;;;;;;;;;;;;;  -- Multiple devices that are being tested together, sharing a common build method with slight changes
+// #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SWITCHING__RGBWW_OR_U32__AS_BASE
+// #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SWITCHING__RGBWW_OR_U32__AS_RGBWW
+// #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SWITCHING__RGBWW_OR_U32__AS_WRGB
+
 
 //    ;;;;;;;;;;;; ESP8266 ;;;;;;;;;;;;;;;;
         // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__50__ESP82_1CH                               // ESP8266 - Single Bus - Single Segment - 100 rgb leds
@@ -56,6 +61,10 @@
 //        // Testing playlists for use at christmas eg outside tree, to replace sequencer with webui updating
 // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__41__ESP32_PARALLEL_4CH_DEV                  // desk/wall testbed (10 leds per channel) 
 // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__42__ESP32_PWM_RGBCCT_5CH_RGBWW_DEV          // Desk/under Testbed - do sun elevation white control
+
+// REDEFINED LIST HERE FOR GROUPING AND TESTING
+// #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__30__ESP32_PWM_RGBCCT_5CH_RGBCCT             // SERIAL || Under desk RGBCCT PWM, metal pole with 5ch RGBCCT
+// #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__12__ESP32_32BIT_WRGB_TIME_OPTIMISE          // SERIAL || Another always connected to desktop device, Along wall, metal pole U32 WRGB building (testing RGB and WRGB strips)
 
 
 // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__BASE
@@ -3897,14 +3906,14 @@ Left to right
   #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
 
   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
-  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
 
 
   #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
 
-  #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
   // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
 
 
@@ -3912,11 +3921,13 @@ Left to right
   
 
   
-  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-  #define ColourBaseType RgbwwColor
-  #else
-  #define ColourBaseType uint32_t
-  #endif
+#ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+struct RgbwwColor;  // Forward declaration
+typedef RgbwwColor ColourBaseType;
+#else
+typedef uint32_t ColourBaseType;
+#endif
+
   #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
   // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
   #else
@@ -3935,12 +3946,121 @@ Left to right
 
   // 
 
+  #define ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
+
 
 
         // "ColourOrder":"GRBWC",
         // "BusType":"WS2805_RGBWW",
 
   #define USE_LIGHTING_TEMPLATE
+  
+  DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  R"=====(
+  {
+    "BusConfig":[
+      {
+        "Pin":[5,18,19,21,22],
+        "ColourOrder":"RGBCW",
+        "BusType":"ANALOG_5CH",
+        "Start":0,
+        "Length":1
+      },
+      {
+        "Pin":27,
+        "ColourOrder":"GRBWC",
+        "BusType":"WS2805_RGBWW",
+        "Start":1,
+        "Length":20
+      }
+    ],    
+    "Segment0":{
+      "PixelRange": [
+        0,
+        1
+      ],
+      "ColourType":5,
+      "ColourPalette":0,
+      "SegColour0": {
+        "Hue": 25,
+        "Sat": 100,
+        "BrightnessRGB": 100,
+        "BrightnessCCT": 100,
+        "CCT_TempPercentage":100
+      },
+      "Effects": {
+        "Function":0,
+        "RateMs": 1000
+      },
+      "BrightnessRGB":100,
+      "BrightnessCCT":100
+    },
+    "Segment1":{
+      "PixelRange": [
+        1,
+        21
+      ],
+      "ColourType":5,
+      "ColourPalette":"Snowy 02",
+      "SegColour0": {
+        "Hue": 0,
+        "Sat": 100,
+        "BrightnessRGB": 100,
+        "BrightnessCCT": 100,
+        "CCT_TempPercentage":100
+      },
+      "Effects": {
+        "Function":"Spanned Palette",
+        "RateMs": 1000
+      },
+      "BrightnessRGB":5,
+      "BrightnessCCT":5
+    },
+    "BrightnessRGB":100,
+    "BrightnessCCT":100
+  }
+  )=====";
+
+  
+  // DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  // R"=====(
+  // {
+  //   "BusConfig":[
+  //     {
+  //       "Pin":27,
+  //       "ColourOrder":"GRBWC",
+  //       "BusType":"WS2805_RGBWW",
+  //       "Start":0,
+  //       "Length":20
+  //     }
+  //   ],    
+  //   "Segment0":{
+  //     "PixelRange": [
+  //       0,
+  //       20
+  //     ],
+  //     "ColourType":5,
+  //     "ColourPalette":0,
+  //     "SegColour0": {
+  //       "Hue": 0,
+  //       "Sat": 100,
+  //       "BrightnessRGB": 100,
+  //       "BrightnessCCT": 100,
+  //       "CCT_TempPercentage":100
+  //     },
+  //     "Effects": {
+  //       "Function":0,
+  //       "RateMs": 1000,
+  //       "Speed":255
+  //     },
+  //     "BrightnessRGB":100,
+  //     "BrightnessCCT":100
+  //   },
+  //   "BrightnessRGB":100,
+  //   "BrightnessCCT":100
+  // }
+  // )=====";
+
   
   // DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
   // R"=====(
@@ -3960,6 +4080,172 @@ Left to right
   //       "Start":1,
   //       "Length":20
   //     }
+  //   ],   
+  //   "Segment0":{
+  //     "PixelRange": [
+  //       0,
+  //       21
+  //     ],
+  //     "ColourType":5,
+  //     "ColourPalette":0,
+  //     "SegColour0": {
+  //       "Hue": 0,
+  //       "Sat": 100,
+  //       "BrightnessRGB": 100,
+  //       "BrightnessCCT": 100,
+  //       "CCT_TempPercentage":100
+  //     },
+  //     "Effects": {
+  //       "Function":"Solid",
+  //       "RateMs": 1000,
+  //       "Speed":255
+  //     },
+  //     "BrightnessRGB":5,
+  //     "BrightnessCCT":5
+  //   },
+  //   "BrightnessRGB":100,
+  //   "BrightnessCCT":100
+  // }
+  // )=====";
+
+#endif
+
+
+#ifdef DEVICE_TESTGROUP__LIGHTING_EFFECTS__12__ESP32_32BIT_WRGB_TIME_OPTIMISE 
+  #ifndef DEVICENAME_CTR
+  #define DEVICENAME_CTR          "testbed_default"
+  #endif
+  #ifndef DEVICENAME_FRIENDLY_CTR
+  #define DEVICENAME_FRIENDLY_CTR "TestBed ESP32 WEBUI Neopixel"
+  #endif
+  #ifndef DEVICENAME_DESCRIPTION_CTR
+  #define DEVICENAME_DESCRIPTION_CTR "TestBed ESP32 WEBUI Neopixel"
+  #endif
+  #define DEVICENAME_ROOMHINT_CTR "testgroup"
+  #define D_MQTTSERVER_IP_ADDRESS_COMMA_DELIMITED   "192.168.1.70"
+    #define MQTT_PORT     1883
+    
+  #define SETTINGS_HOLDER 1239
+
+  // #define USE_TEMPLATED_DEFAULT_OTA_RECOVERY_METHODS
+
+  // #define ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
+
+  /***********************************
+   * SECTION: System Debug Options
+  ************************************/    
+  ///////////////////////////////////////////// Enable Logs
+  // #define DISABLE_SERIAL
+  // #define DISABLE_SERIAL0_CORE
+  // #define DISABLE_SERIAL_LOGGING
+  // #define ENABLE_DEBUG_MANUAL_DELAYS // permits blocking delays
+  
+  ///////////////////////////////////////////// System Logs
+//   #define ENABLE_ADVANCED_DEBUGGING
+//   #define ENABLE_FEATURE_EVERY_SECOND_SPLASH_UPTIME
+//   #define ENABLE_FEATURE_DEBUG_TASKER_INTERFACE_LOOP_TIMES
+//   #define ENABLE_DEBUG_FEATURE__TASKER_INTERFACE_SPLASH_LONG_LOOPS_WITH_MS 50
+//   #define ENABLE_DEBUG_FUNCTION_NAMES
+//   #define ENABLE_DEBUGFEATURE_WEBUI__SHOW_BUILD_DATETIME_IN_FOOTER
+//   #define SERIAL_LOG_LEVEL_DURING_BOOT 8
+//   #define ENABLE_DEBUG_LINE_HERE
+//   #define ENABLE_DEBUG_LINE_HERE2
+//   #define ENABLE_DEBUG_LINE_HERE3
+//   #define ENABLE_DEBUG_LINE_HERE_TRACE
+//   #define ENABLE_DEBUGFEATURE_TASKERMANAGER__ADVANCED_METRICS
+//   #define USE_DEBUG_PRINT
+//   #define ENABLE_DEBUGFEATURE_LOGS__FORCE_FLUSH_ON_TRANSMIT
+
+  // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+//   #define ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
+
+// #define ENABLE_DEBUG_MANUAL_DELAYS
+
+  ///////////////////////////////////////////// Module Logs
+  // #define ENABLE_DEVFEATURE__PIXEL_COLOUR_VALUE_IN_MULTIPIN_SHOW_LOGS  
+  // #define ENABLE_FREERAM_APPENDING_SERIAL
+  
+
+  #define ENABLE_DEBUGFEATURE__OVERIDE_FASTBOOT_DISABLE
+
+  /***********************************
+   * SECTION: System Configs
+  ************************************/    
+
+  // #define USE_MODULE_CORE_FILESYSTEM
+  //   #define WLED_ENABLE_FS_EDITOR
+  //   #define ENABLE_FEATURE_PIXEL__AUTOMATION_PRESETS
+  //   #define ENABLE_FEATURE_FILESYSTEM__LOAD_MODULE_CONFIG_JSON_ON_BOOT
+  //   #define ENABLE_FEATURE_TEMPLATES__LOAD_DEFAULT_PROGMEM_TEMPLATES_OVERRIDE_FILESYSTEM
+
+  // Settings saving and loading
+  //   // #define ENABLE_DEVFEATURE_PERIODIC_SETTINGS_SAVING__EVERY_HOUR
+  //   #define ENABLE_DEVFEATURE_STORAGE_IS_LITTLEFS
+  //   #define ENABLE_FEATURE_SETTINGS_STORAGE__ENABLED_AS_FULL_USER_CONFIGURATION_REQUIRING_SETTINGS_HOLDER_CONTROL
+  //   #define ENABLE_DEVFEATURE_SETTINGS__INCLUDE_EXTRA_SETTINGS_IN_STRING_FORMAT_FOR_VISUAL_FILE_DEBUG
+  //   // #define ENABLE_FEATURE_SETTINGS_STORAGE__ENABLED_SAVING_BEFORE_OTA
+    
+  #define ENABLE_DEVFEATURE_STORAGE__SYSTEM_CONFIG__LOAD_WITH_TEMPLATES_OVERRIDE
+  #define ENABLE_DEVFEATURE_STORAGE__ANIMATION_PLAYLISTS
+
+  #define ENABLE_DEVFEATURE__SAVE_MODULE_DATA
+  #define ENABLE_DEVFEATURE__SAVE_CRITICAL_BOOT_DATA_FOR_DEBUG_BUT_ONLY_SPLASH_ON_BOOT_FOR_NOW__EG_SSID_MQTT_SERVER_IP_ADDRESS // until devices can reliably be used without compiling per device
+
+  #define ENABLE_DEVFEATURE_ADD_TIMESTAMP_ON_SAVE_FILES
+
+
+
+  /***********************************
+   * SECTION: Network Configs
+  ************************************/    
+
+  // #define ENABLE_FEATURE_BUILD__RELEASE_TO_OTHERS_WITHOUT_NETWORKING 
+
+  // #define ENABLE_DEVFEATURE_JSON__ASYNCJSON_V6
+  // #define USE_MODULE_NETWORK_WEBSERVER
+  // #define ENABLE_WEBSERVER_LIGHTING_WEBUI
+  
+
+  // // #define ENABLE_FEATURE_WEBSERVER__MQTT_PAYLOADS_ACCESSABLE_WITH_URL
+  // #define ENABLE_DEVFEATURE__MQTT_ENABLE_SENDING_LIMIT_MS 2
+  // // #define ENABLE_DEVFEATURE__MQTT_SHOW_SENDING_LIMIT_DEBUT_MESSAGES
+
+  // // #define DISABLE_NETWORK
+  // // #define DISABLE_NETWORK_WIFI
+  // #define USE_MODULE_NETWORK_WIFI
+  // #define ENABLE_DEVFEATURE_MQTT_USING_WIFI
+
+  #define ENABLE_DEVFEATURE_JSON__ASYNCJSON_V6
+  #define USE_MODULE_NETWORK_WEBSERVER
+  #define ENABLE_WEBSERVER_LIGHTING_WEBUI  
+
+
+  /***********************************
+   * SECTION: Lighting Configs
+  ************************************/    
+
+  #define USE_MODULE_TEMPLATE
+  DEFINE_PGM_CTR(MODULE_TEMPLATE) 
+  "{"
+    "\"" D_NAME         "\":\"" DEVICENAME_CTR "\","
+    "\"" D_FRIENDLYNAME "\":\"" DEVICENAME_FRIENDLY_CTR "\","
+    "\"" D_BASE     "\":\"" D_MODULE_NAME_USERMODULE_CTR "\","
+    "\"" D_ROOMHINT "\":\"" DEVICENAME_ROOMHINT_CTR "\""
+  "}";
+
+  // #define USE_LIGHTING_TEMPLATE
+  // #define ENABLE_DEVFEATURE_LIGHT__BUS_MANAGER_DEFAULT_FORCED_AS_PWM
+  // DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  // R"=====(
+  // {
+  //   "BusConfig":[
+  //     {
+  //       "Pin":[5,18,19,21,22],
+  //       "ColourOrder":"RGBCW",
+  //       "BusType":"ANALOG_5CH",
+  //       "Start":0,
+  //       "Length":1
+  //     }
   //   ],    
   //   "Segment0":{
   //     "PixelRange": [
@@ -3969,7 +4255,7 @@ Left to right
   //     "ColourType":5,
   //     "ColourPalette":0,
   //     "SegColour0": {
-  //       "Hue": 25,
+  //       "Hue": 180,
   //       "Sat": 100,
   //       "BrightnessRGB": 100,
   //       "BrightnessCCT": 100,
@@ -3982,13 +4268,127 @@ Left to right
   //     "BrightnessRGB":100,
   //     "BrightnessCCT":100
   //   },
-  //   "Segment1":{
+  //   "BrightnessRGB":100,
+  //   "BrightnessCCT":100
+  // }
+  // )=====";
+
+  
+  #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
+  // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
+
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
+  #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
+
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+
+
+  #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
+
+  // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+
+
+  #define ENABLE_DEVFEATURE_LIGHT__PWM_DITHER_V2
+  
+
+  
+#ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+struct RgbwwColor;  // Forward declaration
+typedef RgbwwColor ColourBaseType;
+#else
+typedef uint32_t ColourBaseType;
+#endif
+
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+  #else
+  // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+  #endif
+
+  // #define RgbcctColor RgbwwColor 
+
+  #define ENABLE_FEATURE_CONVERT_RGBCCT_TO_RGBWW
+
+
+#define ENABLE_FEATURE_LIGHTING__RGBWW_REPLACING_RGBCCT
+
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_REPLACING_RGBCCT
+  #define RgbcctTOwwType RgbwwColor
+  #else
+  #define RgbcctTOwwType RgbcctColor
+  #endif
+
+  // 
+
+  #define ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
+
+
+
+        // "ColourOrder":"GRBWC",
+        // "BusType":"WS2805_RGBWW",
+
+  #define USE_LIGHTING_TEMPLATE
+  
+  #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 4000
+
+  #define USE_LIGHTING_TEMPLATE
+  DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  R"=====(
+  {
+    "BusConfig":[
+      {
+        "Pin":2,
+        "ColourOrder":"GRBW",
+        "BusType":"SK6812_RGBW",
+        "Start":0,
+        "Length":143
+      }
+    ],
+    "Segment0": {
+      "PixelRange": [
+        0,
+        143
+      ],
+      "ColourPalette":"Snowy 02",
+      "Effects": {
+        "Function":"Sweep Random",
+        "Speed":127,
+        "Intensity":127,
+        "Grouping":1,
+        "RateMs": 20
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 0
+    },
+    "BrightnessRGB": 2,
+    "BrightnessCCT": 0
+  }
+  )=====";
+
+  
+  // DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  // R"=====(
+  // {
+  //   "BusConfig":[
+  //     {
+  //       "Pin":27,
+  //       "ColourOrder":"GRBWC",
+  //       "BusType":"WS2805_RGBWW",
+  //       "Start":0,
+  //       "Length":20
+  //     }
+  //   ],    
+  //   "Segment0":{
   //     "PixelRange": [
-  //       1,
-  //       21
+  //       0,
+  //       20
   //     ],
   //     "ColourType":5,
-  //     "ColourPalette":"Snowy 02",
+  //     "ColourPalette":0,
   //     "SegColour0": {
   //       "Hue": 0,
   //       "Sat": 100,
@@ -3997,55 +4397,17 @@ Left to right
   //       "CCT_TempPercentage":100
   //     },
   //     "Effects": {
-  //       "Function":"Spanned Palette",
-  //       "RateMs": 1000
+  //       "Function":0,
+  //       "RateMs": 1000,
+  //       "Speed":255
   //     },
-  //     "BrightnessRGB":5,
-  //     "BrightnessCCT":5
+  //     "BrightnessRGB":100,
+  //     "BrightnessCCT":100
   //   },
   //   "BrightnessRGB":100,
   //   "BrightnessCCT":100
   // }
   // )=====";
-
-  
-  DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
-  R"=====(
-  {
-    "BusConfig":[
-      {
-        "Pin":27,
-        "ColourOrder":"GRBWC",
-        "BusType":"WS2805_RGBWW",
-        "Start":0,
-        "Length":20
-      }
-    ],    
-    "Segment0":{
-      "PixelRange": [
-        0,
-        20
-      ],
-      "ColourType":5,
-      "ColourPalette":0,
-      "SegColour0": {
-        "Hue": 25,
-        "Sat": 100,
-        "BrightnessRGB": 100,
-        "BrightnessCCT": 100,
-        "CCT_TempPercentage":100
-      },
-      "Effects": {
-        "Function":0,
-        "RateMs": 1000
-      },
-      "BrightnessRGB":100,
-      "BrightnessCCT":100
-    },
-    "BrightnessRGB":100,
-    "BrightnessCCT":100
-  }
-  )=====";
 
   
   // DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
@@ -8357,6 +8719,444 @@ Left to right
 
 
 
+//--------------------------------[SWITCHING grouped devices below]-------------------------------------
+
+
+#ifdef DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SWITCHING__RGBWW_OR_U32__AS_BASE 
+
+
+  #ifndef DEVICENAME_CTR
+  #define DEVICENAME_CTR          "testbed_default"
+  #endif
+  #ifndef DEVICENAME_FRIENDLY_CTR
+  #define DEVICENAME_FRIENDLY_CTR "TestBed ESP32 WEBUI Neopixel"
+  #endif
+  #ifndef DEVICENAME_DESCRIPTION_CTR
+  #define DEVICENAME_DESCRIPTION_CTR "TestBed ESP32 WEBUI Neopixel"
+  #endif
+  #define DEVICENAME_ROOMHINT_CTR "testgroup"
+  #define D_MQTTSERVER_IP_ADDRESS_COMMA_DELIMITED   "192.168.1.70"
+    #define MQTT_PORT     1883
+    
+  #define SETTINGS_HOLDER 1239
+
+  // #define USE_TEMPLATED_DEFAULT_OTA_RECOVERY_METHODS
+
+  // #define ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
+
+  /***********************************
+   * SECTION: System Debug Options
+  ************************************/    
+  ///////////////////////////////////////////// Enable Logs
+  // #define DISABLE_SERIAL
+  // #define DISABLE_SERIAL0_CORE
+  // #define DISABLE_SERIAL_LOGGING
+  // #define ENABLE_DEBUG_MANUAL_DELAYS // permits blocking delays
+  
+  ///////////////////////////////////////////// System Logs
+  // #define ENABLE_ADVANCED_DEBUGGING
+  // #define ENABLE_FEATURE_EVERY_SECOND_SPLASH_UPTIME
+  // #define ENABLE_FEATURE_DEBUG_TASKER_INTERFACE_LOOP_TIMES
+  // #define ENABLE_DEBUG_FEATURE__TASKER_INTERFACE_SPLASH_LONG_LOOPS_WITH_MS 50
+  // #define ENABLE_DEBUG_FUNCTION_NAMES
+  // #define ENABLE_DEBUGFEATURE_WEBUI__SHOW_BUILD_DATETIME_IN_FOOTER
+  // #define SERIAL_LOG_LEVEL_DURING_BOOT 8
+  // #define ENABLE_DEBUG_LINE_HERE
+  // #define ENABLE_DEBUG_LINE_HERE2
+  // #define ENABLE_DEBUG_LINE_HERE3
+  // #define ENABLE_DEBUG_LINE_HERE_TRACE
+  // #define ENABLE_DEBUG_PRINT_F
+//   #define ENABLE_DEBUGFEATURE_TASKERMANAGER__ADVANCED_METRICS
+//   #define USE_DEBUG_PRINT
+//   #define ENABLE_DEBUGFEATURE_LOGS__FORCE_FLUSH_ON_TRANSMIT
+
+//   // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+//   #define ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
+
+// #define ENABLE_DEBUG_MANUAL_DELAYS
+
+  ///////////////////////////////////////////// Module Logs
+  // #define ENABLE_DEVFEATURE__PIXEL_COLOUR_VALUE_IN_MULTIPIN_SHOW_LOGS  
+  // #define ENABLE_FREERAM_APPENDING_SERIAL
+  
+
+  #define ENABLE_DEBUGFEATURE__OVERIDE_FASTBOOT_DISABLE
+
+  /***********************************
+   * SECTION: System Configs
+  ************************************/    
+
+  // #define USE_MODULE_CORE_FILESYSTEM
+  //   #define WLED_ENABLE_FS_EDITOR
+  //   #define ENABLE_FEATURE_PIXEL__AUTOMATION_PRESETS
+  //   #define ENABLE_FEATURE_FILESYSTEM__LOAD_MODULE_CONFIG_JSON_ON_BOOT
+  //   #define ENABLE_FEATURE_TEMPLATES__LOAD_DEFAULT_PROGMEM_TEMPLATES_OVERRIDE_FILESYSTEM
+
+  // Settings saving and loading
+  //   // #define ENABLE_DEVFEATURE_PERIODIC_SETTINGS_SAVING__EVERY_HOUR
+  //   #define ENABLE_DEVFEATURE_STORAGE_IS_LITTLEFS
+  //   #define ENABLE_FEATURE_SETTINGS_STORAGE__ENABLED_AS_FULL_USER_CONFIGURATION_REQUIRING_SETTINGS_HOLDER_CONTROL
+  //   #define ENABLE_DEVFEATURE_SETTINGS__INCLUDE_EXTRA_SETTINGS_IN_STRING_FORMAT_FOR_VISUAL_FILE_DEBUG
+  //   // #define ENABLE_FEATURE_SETTINGS_STORAGE__ENABLED_SAVING_BEFORE_OTA
+    
+  #define ENABLE_DEVFEATURE_STORAGE__SYSTEM_CONFIG__LOAD_WITH_TEMPLATES_OVERRIDE
+  #define ENABLE_DEVFEATURE_STORAGE__ANIMATION_PLAYLISTS
+
+  #define ENABLE_DEVFEATURE__SAVE_MODULE_DATA
+  #define ENABLE_DEVFEATURE__SAVE_CRITICAL_BOOT_DATA_FOR_DEBUG_BUT_ONLY_SPLASH_ON_BOOT_FOR_NOW__EG_SSID_MQTT_SERVER_IP_ADDRESS // until devices can reliably be used without compiling per device
+
+  #define ENABLE_DEVFEATURE_ADD_TIMESTAMP_ON_SAVE_FILES
+
+
+
+  /***********************************
+   * SECTION: Network Configs
+  ************************************/    
+
+  // #define ENABLE_FEATURE_BUILD__RELEASE_TO_OTHERS_WITHOUT_NETWORKING 
+
+  // #define ENABLE_DEVFEATURE_JSON__ASYNCJSON_V6
+  // #define USE_MODULE_NETWORK_WEBSERVER
+  // #define ENABLE_WEBSERVER_LIGHTING_WEBUI
+  
+
+  // // #define ENABLE_FEATURE_WEBSERVER__MQTT_PAYLOADS_ACCESSABLE_WITH_URL
+  // #define ENABLE_DEVFEATURE__MQTT_ENABLE_SENDING_LIMIT_MS 2
+  // // #define ENABLE_DEVFEATURE__MQTT_SHOW_SENDING_LIMIT_DEBUT_MESSAGES
+
+  // // #define DISABLE_NETWORK
+  // // #define DISABLE_NETWORK_WIFI
+  // #define USE_MODULE_NETWORK_WIFI
+  // #define ENABLE_DEVFEATURE_MQTT_USING_WIFI
+
+  #define ENABLE_DEVFEATURE_JSON__ASYNCJSON_V6
+  #define USE_MODULE_NETWORK_WEBSERVER
+  #define ENABLE_WEBSERVER_LIGHTING_WEBUI  
+
+
+  /***********************************
+   * SECTION: Lighting Configs
+  ************************************/    
+
+  #define USE_MODULE_TEMPLATE
+  DEFINE_PGM_CTR(MODULE_TEMPLATE) 
+  "{"
+    "\"" D_NAME         "\":\"" DEVICENAME_CTR "\","
+    "\"" D_FRIENDLYNAME "\":\"" DEVICENAME_FRIENDLY_CTR "\","
+    "\"" D_BASE     "\":\"" D_MODULE_NAME_USERMODULE_CTR "\","
+    "\"" D_ROOMHINT "\":\"" DEVICENAME_ROOMHINT_CTR "\""
+  "}";
+
+
+#endif
+#ifdef DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SWITCHING__RGBWW_OR_U32__AS_RGBWW 
+  
+  
+  #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
+  // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
+
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
+  #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
+
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+
+
+  #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
+
+  // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+
+
+  #define ENABLE_DEVFEATURE_LIGHT__PWM_DITHER_V2
+  
+
+  
+#ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+struct RgbwwColor;  // Forward declaration
+typedef RgbwwColor ColourBaseType;
+#else
+typedef uint32_t ColourBaseType;
+#endif
+
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+  #else
+  #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+  #endif
+
+  // #define RgbcctColor RgbwwColor 
+
+  #define ENABLE_FEATURE_CONVERT_RGBCCT_TO_RGBWW
+
+  #ifdef ENABLE_FEATURE_CONVERT_RGBCCT_TO_RGBWW
+  #define RgbcctTOwwType RgbwwColor
+  #else
+  #define RgbcctTOwwType RgbcctColor
+  #endif
+
+  // 
+
+  #define ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
+
+  // #define ENABLE_LIGHTING_TEMPLATE__PWM_OUTPUT_ONLY
+  #define ENABLE_LIGHTING_TEMPLATE__WS2805_OUTPUT_ONLY
+  // #define ENABLE_LIGHTING_TEMPLATE__DUAL_PWM_WS2805
+
+
+  #ifdef ENABLE_LIGHTING_TEMPLATE__PWM_OUTPUT_ONLY
+  DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  R"=====(
+  {
+    "BusConfig":[
+      {
+        "Pin":[5,18,19,21,22],
+        "ColourOrder":"RGBCW",
+        "BusType":"ANALOG_5CH",
+        "Start":0,
+        "Length":1
+      }
+    ],    
+    "Segment0":{
+      "PixelRange": [
+        0,
+        1
+      ],
+      "ColourType":5,
+      "ColourPalette":0,
+      "SegColour0": {
+        "Hue": 25,
+        "Sat": 100,
+        "BrightnessRGB": 100,
+        "BrightnessCCT": 100,
+        "CCT_TempPercentage":100
+      },
+      "Effects": {
+        "Function":0,
+        "RateMs": 1000
+      },
+      "BrightnessRGB":100,
+      "BrightnessCCT":100
+    },
+    "BrightnessRGB":100,
+    "BrightnessCCT":100
+  }
+  )=====";
+  #endif
+  #ifdef ENABLE_LIGHTING_TEMPLATE__WS2805_OUTPUT_ONLY
+  DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  R"=====(
+  {
+    "BusConfig":[
+      {
+        "Pin":27,
+        "ColourOrder":"GRBWC",
+        "BusType":"WS2805_RGBWW",
+        "Start":0,
+        "Length":20
+      }
+    ],    
+    "Segment0":{
+      "PixelRange": [
+        0,
+        20
+      ],
+      "ColourType":5,
+      "ColourPalette":"Snowy 02",
+      "SegColour0": {
+        "Hue": 0,
+        "Sat": 100,
+        "BrightnessRGB": 100,
+        "BrightnessCCT": 100,
+        "CCT_TempPercentage":100
+      },
+      "Effects": {
+        "Function":"Sweep Random",
+        "RateMs": 1000
+      },
+      "BrightnessRGB":5,
+      "BrightnessCCT":5
+    },
+    "BrightnessRGB":100,
+    "BrightnessCCT":100
+  }
+  )=====";
+  #endif
+  #ifdef ENABLE_LIGHTING_TEMPLATE__DUAL_PWM_WS2805
+  DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  R"=====(
+  {
+    "BusConfig":[
+      {
+        "Pin":[5,18,19,21,22],
+        "ColourOrder":"RGBCW",
+        "BusType":"ANALOG_5CH",
+        "Start":0,
+        "Length":1
+      },
+      {
+        "Pin":27,
+        "ColourOrder":"GRBWC",
+        "BusType":"WS2805_RGBWW",
+        "Start":1,
+        "Length":20
+      }
+    ],    
+    "Segment0":{
+      "PixelRange": [
+        0,
+        1
+      ],
+      "ColourType":5,
+      "ColourPalette":0,
+      "SegColour0": {
+        "Hue": 25,
+        "Sat": 100,
+        "BrightnessRGB": 100,
+        "BrightnessCCT": 100,
+        "CCT_TempPercentage":100
+      },
+      "Effects": {
+        "Function":0,
+        "RateMs": 1000
+      },
+      "BrightnessRGB":100,
+      "BrightnessCCT":100
+    },
+    "Segment1":{
+      "PixelRange": [
+        1,
+        21
+      ],
+      "ColourType":5,
+      "ColourPalette":"Rainbow Inverted",
+      "SegColour0": {
+        "Hue": 0,
+        "Sat": 100,
+        "BrightnessRGB": 100,
+        "BrightnessCCT": 100,
+        "CCT_TempPercentage":100
+      },
+      "Effects": {
+        "Function":"Spanned Palette",
+        "RateMs": 1000
+      },
+      "BrightnessRGB":5,
+      "BrightnessCCT":5
+    },
+    "BrightnessRGB":100,
+    "BrightnessCCT":100
+  }
+  )=====";
+  #endif
+
+
+#endif
+
+
+#ifdef DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SWITCHING__RGBWW_OR_U32__AS_WRGB 
+
+
+
+  
+  #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
+  // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
+
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
+  #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
+
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+
+
+  #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
+
+  // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+
+
+  #define ENABLE_DEVFEATURE_LIGHT__PWM_DITHER_V2
+  
+
+  
+#ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+struct RgbwwColor;  // Forward declaration
+typedef RgbwwColor ColourBaseType;
+#else
+typedef uint32_t ColourBaseType;
+#endif
+
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+  #else
+  // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+  #endif
+
+  // #define RgbcctColor RgbwwColor 
+
+  #define ENABLE_FEATURE_CONVERT_RGBCCT_TO_RGBWW
+
+
+#define ENABLE_FEATURE_LIGHTING__RGBWW_REPLACING_RGBCCT
+
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_REPLACING_RGBCCT
+  #define RgbcctTOwwType RgbwwColor
+  #else
+  #define RgbcctTOwwType RgbcctColor
+  #endif
+
+  // 
+
+  #define ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
+
+
+
+        // "ColourOrder":"GRBWC",
+        // "BusType":"WS2805_RGBWW",
+
+  #define USE_LIGHTING_TEMPLATE
+  
+  #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 4000
+
+  #define USE_LIGHTING_TEMPLATE
+  DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  R"=====(
+  {
+    "BusConfig":[
+      {
+        "Pin":2,
+        "ColourOrder":"GRBW",
+        "BusType":"SK6812_RGBW",
+        "Start":0,
+        "Length":144
+      }
+    ],
+    "Segment0": {
+      "PixelRange": [
+        0,
+        144
+      ],
+      "ColourPalette":"Snowy 02",
+      "Effects": {
+        "Function":"Sweep Random",
+        "Speed":127,
+        "Intensity":127,
+        "Grouping":1,
+        "RateMs": 20
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 0
+    },
+    "BrightnessRGB": 2,
+    "BrightnessCCT": 0
+  }
+  )=====";
+
+#endif
 
 
 

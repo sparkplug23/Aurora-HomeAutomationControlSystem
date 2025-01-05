@@ -2206,6 +2206,8 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
   int itemPerPage = 8;
   #endif
 
+  DEBUG_LINE_HERE_TRACE
+
   bool flag_request_is_for_full_visual_output = true;
 
   int palettesCount = mPaletteI->GetPaletteListLength(); //includes the dynamic!
@@ -2226,13 +2228,15 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
 
   uint8_t encoded_gradient = 0;
 
+  DEBUG_LINE_HERE_TRACE
   /**
    * @brief 
    * Start by sending the current palette loaded
    */
   for (int palette_id = start; palette_id < end; palette_id++) 
   {
-        
+       
+  DEBUG_LINE_HERE_TRACE 
     bool palette_display_as_banded_gradient = false;
 
     #ifdef ENABLE_DEBUGFEATURE_LIGHT__PALETTE_RELOAD_LOGGING
@@ -2240,10 +2244,14 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
     ALOG_INF(PSTR("p=%d|s%d|e%d"),palette_id,start,end);
     #endif
 
+  DEBUG_LINE_HERE_TRACE
+  
     SEGMENT.LoadPalette(palette_id); // Assume segment 1 exists, and use it to load all palettes. Effect should reset to active palette in main loop. Or here, have it then flip back. Though this may cause flickering midanimation. Animation may also need paused on esp32.
 
+  DEBUG_LINE_HERE_TRACE
     uint16_t colours_in_palette = GetNumberOfColoursInPalette(palette_id);
    
+  DEBUG_LINE_HERE_TRACE
     #ifdef ENABLE_DEBUGFEATURE_LIGHT__PALETTE_RELOAD_LOGGING
     ALOG_INF(PSTR("colours_in_palette[%d]=%d"),palette_id, colours_in_palette);
     #endif
@@ -2251,6 +2259,7 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
     JsonArray curPalette_obj = palettes.createNestedArray(String(palette_id));
     JsonObject curPalette_s_obj = palettes_style.createNestedObject(String(palette_id));
 
+  DEBUG_LINE_HERE_TRACE
     /**
      * @brief To reduce memory usage, the static gradients that are stored with less than 16 colours, shall be read directly
      **/
@@ -2259,6 +2268,7 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
       (palette_id < mPalette::PALETTELIST_STATIC_CRGBPALETTE16_GRADIENT_LENGTH__ID)
     ){ 
 
+  DEBUG_LINE_HERE_TRACE
       uint8_t adjusted_id = palette_id - mPalette::PALETTELIST_STATIC_CRGBPALETTE16_GRADIENT__SUNSET__ID;
 
       byte tcp[72];
@@ -2299,6 +2309,7 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
     else
     {
     
+  DEBUG_LINE_HERE_TRACE
       palette_display_as_banded_gradient = false;
 
       encoded_gradient = 0;
@@ -2310,10 +2321,13 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
       WDT_Reset();
       #endif
 
+  DEBUG_LINE_HERE_TRACE
       /** first check if the palette is one that uses the colour picker*/       
       // Handle RGBCCT color palettes
       if (palette_id >= mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID && palette_id < mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_LENGTH__ID) {
-          const char* color_id = nullptr;
+          
+  DEBUG_LINE_HERE_TRACE
+  const char* color_id = nullptr;
           switch (palette_id) {
               case mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID: color_id = "c1"; break;
               case mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_02__ID: color_id = "c2"; break;
@@ -2330,6 +2344,7 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
           const char* color_ids[] = {"c1", "c2", "c3", "c4", "c5"};
           int color_count = 0;
 
+  DEBUG_LINE_HERE_TRACE
           switch (palette_id) {
               case mPalette::PALETTELIST_SEGMENT__RGBCCT_CRGBPALETTE16_PALETTES__PAIRED_TWO_12__ID:
                   color_count = 2;
@@ -2368,6 +2383,8 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
           for (int i = 0; i < 4; ++i) {
               curPalette_obj.add("r");
           }
+          
+  DEBUG_LINE_HERE_TRACE
       }
 
       /**
@@ -2376,6 +2393,7 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
        */
       else
       {
+  DEBUG_LINE_HERE_TRACE
 
         #ifdef ENABLE_DEBUGFEATURE_LIGHT__PALETTE_RELOAD_LOGGING
         ALOG_DBM(PSTR(DEBUG_INSERT_PAGE_BREAK "palette_id=%d"),palette_id);
@@ -2399,6 +2417,7 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
 
             DEBUG_LINE_HERE_TRACE;
 
+  DEBUG_LINE_HERE_TRACE
             // Load temporary palette
             color = GetColourFromUnloadedPalette2(
                 palette_id,
@@ -2408,6 +2427,7 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
                 flag_request_is_for_full_visual_output
             );
 
+  DEBUG_LINE_HERE_TRACE
             #ifdef ENABLE_DEBUGFEATURE_LIGHT__PALETTE_RELOAD_LOGGING
             Serial.print("++++++++++++++++++++++++++++++++++++++++++++++encoded_gradient: ");
             Serial.println(encoded_gradient);
@@ -2716,6 +2736,7 @@ void mAnimatorLight::serveJson(AsyncWebServerRequest* request)
       serializeInfo(lDoc);     
     break;
     case JSON_PATH_PALETTES:
+      Serial.println("JSON_PATH_PALETTES"); Serial.flush();
       serializePalettes(lDoc, request->hasParam("page") ? request->getParam("page")->value().toInt() : 0); 
     break;
     case JSON_PATH_EFFECTS:
