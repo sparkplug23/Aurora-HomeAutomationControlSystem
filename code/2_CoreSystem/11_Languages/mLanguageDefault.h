@@ -157,6 +157,7 @@
 #define D_MODULE_CONTROLLERS__SENSOR_COLOUR_BAR__CTR "sensor_colourbar"
 #define D_MODULE_CONTROLLERS__RELAY_STATE_LEDSTRIP__CTR "relay_state_ledstrip"
 #define D_MODULE_CONTROLLER_CUSTOM__MAVLINK_FLYING_LEDS_CTR "mavlink_flying_leds"
+#define D_MODULE__CONTROLLER_CUSTOM__LIGHTNEO_MOTION_ALERTS__CTR "light_motion_alerts"
 
 
 /**
@@ -1404,6 +1405,7 @@
   #define D_LOG_SUBCOMMAND "SUB: " // Subcommand
   #define D_LOG_SUN_TRACKING "SUN: "
   #define D_LOG_SWITCHES "SWH: "
+  #define D_LOG_TELEMETRY "TEL: "
   #define D_LOG_TASKER "TSK: "
   #define D_LOG_TEST "TST: "
   #define D_LOG_TIME "TIM: "         // Time

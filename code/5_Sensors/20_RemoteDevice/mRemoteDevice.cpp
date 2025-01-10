@@ -240,7 +240,7 @@ uint8_t mRemoteDevice::ConstructJSON_Sensor(uint8_t json_level, bool json_append
   //     JBI->Add(D_ISVALID, pCONT_dht->sensor[dht_id].instant.isvalid);
   //     JBI->Add(D_ISCHANGED, pCONT_dht->sensor[dht_id].instant.ischanged);
   //     // json1["iserrored"] = pCONT->mhs->climate.ptr->iserrored;
-  //     // json1[D_SECS] = (int)abs(pCONT_time->uptime_seconds_nonreset-pCONT->mhs->climate.ptr->raw.captureupsecs);
+  //     // json1[D_SECS] = (int)abs(tkr_time->uptime_seconds_nonreset-pCONT->mhs->climate.ptr->raw.captureupsecs);
   //     // json1["heatindex"] = pCONT->mhs->climate.ptr->raw.heatIndex; // DONT KNOW WHAT THEY ARE
   //     // json1["dewpoint"] = pCONT->mhs->climate.ptr->raw.dewPoint;
   //   JBI->Object_End();

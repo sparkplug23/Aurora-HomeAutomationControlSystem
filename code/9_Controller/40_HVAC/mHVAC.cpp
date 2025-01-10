@@ -924,17 +924,17 @@ void mHVAC::parse_JSONCommand(JsonParserObject obj)
 
       if(device_id_found>=0)
       {      
-        if(device_id_found > ARRAY_SIZE(pCONT_set->Settings.device_name_buffer.class_id))
+        if(device_id_found > ARRAY_SIZE(tkr_set->Settings.device_name_buffer.class_id))
         {
-        AddLog(LOG_LEVEL_ERROR, PSTR(D_LOG_RELAYS "device_id_found>pCONT_set->Settings.device_name_buffer.class_id = %d,%d"),device_id_found,ARRAY_SIZE(pCONT_set->Settings.device_name_buffer.class_id) );
+        AddLog(LOG_LEVEL_ERROR, PSTR(D_LOG_RELAYS "device_id_found>tkr_set->Settings.device_name_buffer.class_id = %d,%d"),device_id_found,ARRAY_SIZE(tkr_set->Settings.device_name_buffer.class_id) );
         }
 
         if(index < HEATING_DEVICE_MAX)
         {
-          AddLog(LOG_LEVEL_ERROR, PSTR("pCONT_set->Settings.device_name_buffer.class_id[device_id_found] = %d,%d"),device_id_found,pCONT_set->Settings.device_name_buffer.class_id[device_id_found]);
+          AddLog(LOG_LEVEL_ERROR, PSTR("tkr_set->Settings.device_name_buffer.class_id[device_id_found] = %d,%d"),device_id_found,tkr_set->Settings.device_name_buffer.class_id[device_id_found]);
         
-          rt.zone[index].sensor.module_id = pCONT_set->Settings.device_name_buffer.class_id[device_id_found];
-          rt.zone[index].sensor.index = pCONT_set->Settings.device_name_buffer.device_id[device_id_found];
+          rt.zone[index].sensor.module_id = tkr_set->Settings.device_name_buffer.class_id[device_id_found];
+          rt.zone[index].sensor.index = tkr_set->Settings.device_name_buffer.device_id[device_id_found];
         }
         ALOG_DBG(PSTR(D_LOG_RELAYS "module_id,index = %d,%d"),rt.zone[index].sensor.module_id,rt.zone[index].sensor.index);
 
@@ -1313,11 +1313,11 @@ uint8_t mHVAC::ConstructJSON_ProgramTemps(uint8_t json_level, bool json_appendin
         // JBI->Add(D_ISRUNNING, program_temps[zone_id].schedule.fRunning);     
         // char time_ctr[20]; memset(time_ctr,'\0',sizeof(time_ctr));
         // sprintf(time_ctr, "%02d:%02d:%02d",(int)program_temps[zone_id].schedule.ontime.hour,(int)program_temps[zone_id].schedule.ontime.minute,(int)program_temps[zone_id].schedule.ontime.second);
-        // scheduleobj[D_ONTIME] = time_ctr;//pCONT_time->getFormattedTime();
+        // scheduleobj[D_ONTIME] = time_ctr;//tkr_time->getFormattedTime();
         // char time_ctr2[20];
         // memset(time_ctr2,'\0',sizeof(time_ctr2));
         // sprintf(time_ctr2, "%02d:%02d:%02d",(int)program_temps[zone_id].schedule.offtime.hour,(int)program_temps[zone_id].schedule.offtime.minute,(int)program_temps[zone_id].schedule.offtime.second);
-        // scheduleobj[D_OFFTIME] = time_ctr2;//pCONT_time->getFormattedTime();   
+        // scheduleobj[D_OFFTIME] = time_ctr2;//tkr_time->getFormattedTime();   
       JBI->Object_End();  
     JBI->Object_End();
   }

@@ -61,16 +61,16 @@
 
   //   //   //   activeprograms[device_id].temps.state = ACTIVEP_SCHEDULED;
 
-  //   //   //   //uint8_t fTimeReached = pCONT_time->CheckBetween_Week_DateTimes(&schedule.ontime,&schedule.offtime);
+  //   //   //   //uint8_t fTimeReached = tkr_time->CheckBetween_Week_DateTimes(&schedule.ontime,&schedule.offtime);
 
-  //   //   //   uint8_t fTimeReached = pCONT_time->CheckDateTimeWeekIsNow(&schedule.ontime);
+  //   //   //   uint8_t fTimeReached = tkr_time->CheckDateTimeWeekIsNow(&schedule.ontime);
 
-  //   //   //   schedule.untilontime = pCONT_time->GetDifferenceInDateTimes(&pCONT_time->RtcTime,&schedule.ontime);
+  //   //   //   schedule.untilontime = tkr_time->GetDifferenceInDateTimes(&tkr_time->RtcTime,&schedule.ontime);
 
   //   //   //   ALOG_DBG(PSTR(D_LOG_HEATING D_HVAC_PROGRAM_TEMP "CheckBetween_Week_DateTimes [%d]"),fTimeReached);
 
   //   //   //   // uint8_t hours, minutes, seconds;
-  //   //   //   // pCONT_time->DateTimeWeek2HHMMSS(&schedule.untilontime,&hours,&minutes,&seconds);
+  //   //   //   // tkr_time->DateTimeWeek2HHMMSS(&schedule.untilontime,&hours,&minutes,&seconds);
   //   //   //   // if is reached AND NOT run yet
   //   //   //   if(fTimeReached&&(!schedule.fHasRun)){
   //   //   //     schedule.fHasRun = 1;

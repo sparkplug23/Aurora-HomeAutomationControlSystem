@@ -85,7 +85,7 @@ void mSDLoggerIMURadiationPattern::UpdateInternalRTCTimeWithGPSTime()
   if(pCONT_sdcard->sdcard_status.isopened==0)
   {
 
-    pCONT_time->SetUTCTime(
+    tkr_time->SetUTCTime(
       pCONT_gps->gps_result_stored.dateTime.year,
       pCONT_gps->gps_result_stored.dateTime.month,
       pCONT_gps->gps_result_stored.dateTime.day,
@@ -242,7 +242,7 @@ void mSDLoggerIMURadiationPattern::SubTask_UpdateOLED()
       float heading;
       float roll;
       float pitch;
-  pCONT_set->Settings.display.mode = EM_DISPLAY_MODE_LOG_STATIC_ID;
+  tkr_set->Settings.display.mode = EM_DISPLAY_MODE_LOG_STATIC_ID;
 
   /**
    * Row 1
@@ -644,8 +644,8 @@ void mSDLoggerIMURadiationPattern::parse_JSONCommand(JsonParserObject obj)
 //   //   }
 
 
-//   //   pCONT_time->PrintDateTime(ontime);
-//   //   pCONT_time->PrintDateTime(offtime);
+//   //   tkr_time->PrintDateTime(ontime);
+//   //   tkr_time->PrintDateTime(offtime);
 
 
 //   // }

@@ -89,11 +89,11 @@ uint8_t mHVAC::ConstructJSON_ProgramTemps(uint8_t json_level){
         // JBI->Add(D_ISRUNNING, program_temps[zone_id].schedule.fRunning);     
         // char time_ctr[20]; memset(time_ctr,'\0',sizeof(time_ctr));
         // sprintf(time_ctr, "%02d:%02d:%02d",(int)program_temps[zone_id].schedule.ontime.hour,(int)program_temps[zone_id].schedule.ontime.minute,(int)program_temps[zone_id].schedule.ontime.second);
-        // scheduleobj[D_ONTIME] = time_ctr;//pCONT_time->getFormattedTime();
+        // scheduleobj[D_ONTIME] = time_ctr;//tkr_time->getFormattedTime();
         // char time_ctr2[20];
         // memset(time_ctr2,'\0',sizeof(time_ctr2));
         // sprintf(time_ctr2, "%02d:%02d:%02d",(int)program_temps[zone_id].schedule.offtime.hour,(int)program_temps[zone_id].schedule.offtime.minute,(int)program_temps[zone_id].schedule.offtime.second);
-        // scheduleobj[D_OFFTIME] = time_ctr2;//pCONT_time->getFormattedTime();   
+        // scheduleobj[D_OFFTIME] = time_ctr2;//tkr_time->getFormattedTime();   
       JBI->Object_End();  
     JBI->Object_End();
   }

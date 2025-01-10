@@ -1529,7 +1529,7 @@ void mSIM800L::ModemUpdate_GPS()
 
         #ifdef ENABLE_DEVFEATURE__TIME_UPDATE_WITH_GPS_TIME
         uint16_t minimum_update_seconds = 0; //always
-        pCONT_time->SystemTime_Update(gps.year, gps.month, gps.day, gps.hour, gps.minute, gps.second, minimum_update_seconds);
+        tkr_time->SystemTime_Update(gps.year, gps.month, gps.day, gps.hour, gps.minute, gps.second, minimum_update_seconds);
         #endif
       
       }else{
@@ -2399,8 +2399,8 @@ uint8_t mSIM800L::ConstructJSON_State(uint8_t json_level, bool json_appending){
 
   JBI->Start();
 
-    JBI->Add("uptime", pCONT_time->uptime_seconds_nonreset);
-    JBI->Add("rtcseconds", pCONT_time->RtcTime.second);
+    JBI->Add("uptime", tkr_time->uptime_seconds_nonreset);
+    JBI->Add("rtcseconds", tkr_time->RtcTime.second);
     JBI->Object_Start("GPRS");
         JBI->Add("ConSec", gprs.connected_seconds);
         JBI->Add("rss_dbm", gprs.signal_quality_rssi_dbm);

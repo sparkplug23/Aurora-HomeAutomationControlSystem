@@ -94,7 +94,7 @@ void mAnimatorLight::serializeSegment(JsonObject& root, mAnimatorLight::Segment&
 
   if (segmentBounds && seg.name != nullptr) root["n"] = reinterpret_cast<const char *>(seg.name); //not good practice, but decreases required JSON buffer
 
-  root["cct"] = seg.palette_id < 5 ? seg.rgbcctcolors[seg.palette_id].getCCT() : 255;
+  root["cct"] = seg.palette_id < 5 ? seg.segcol[seg.palette_id].getCCT() : 255;
   
   root[F("set")] = 0;//seg.set;    // unknown, phase into newer WLED UI
 
@@ -103,7 +103,7 @@ void mAnimatorLight::serializeSegment(JsonObject& root, mAnimatorLight::Segment&
   /**
    * @brief Changing from WLED
    * 
-   * My RGBW values, stored in RGBCCTColor, are stored as 0-255 values with their maximum value. 
+   * My RGBW values, stored in RgbwwColor, are stored as 0-255 values with their maximum value. 
    * - Since white will always be 255 in single white mode, or changes when CCT is used, this value does not represent the actual white value and should be control the slider.
    * Instead, the white (brightness) needs to be controlled by the segment white brightness, and independant of the rgbcct value
    * 
@@ -112,11 +112,11 @@ void mAnimatorLight::serializeSegment(JsonObject& root, mAnimatorLight::Segment&
   for (size_t i = 0; i < 5; i++)
   {
     byte segcol[4]; 
-    segcol[0] = seg.rgbcctcolors[i].R;
-    segcol[1] = seg.rgbcctcolors[i].G;
-    segcol[2] = seg.rgbcctcolors[i].B;
-    segcol[3] = seg.rgbcctcolors[i].W1; // white channels inside RgbcctColor is always stored as max value, so slider should reflect the global CCT brightness
-    segcol[4] = seg.rgbcctcolors[i].W2; // white channels inside RgbcctColor is always stored as max value, so slider should reflect the global CCT brightness
+    segcol[0] = seg.segcol[i].colour.R;
+    segcol[1] = seg.segcol[i].colour.G;
+    segcol[2] = seg.segcol[i].colour.B;
+    segcol[3] = seg.segcol[i].colour.WW; // white channels inside RgbwwColor is always stored as max value, so slider should reflect the global CCT brightness
+    segcol[4] = seg.segcol[i].colour.CW; // white channels inside RgbwwColor is always stored as max value, so slider should reflect the global CCT brightness
     char tmpcol[40];
     snprintf_P(tmpcol, sizeof(tmpcol), PSTR("[%u,%u,%u,%u,%u]"), segcol[0], segcol[1], segcol[2], segcol[3], segcol[3]);
     strcat(colstr, i<4 ? strcat(tmpcol, ",") : tmpcol);
@@ -220,7 +220,7 @@ void mAnimatorLight::serializeState(JsonObject root, bool forPreset, bool includ
 void mAnimatorLight::serializeInfo(JsonObject root)
 {
   
-  pCONT_lAni->force_update(); // New data in, so we should update
+  tkr_anim->force_update(); // New data in, so we should update
 
   root[F("ver")] = "versionString";
   root[F("vid")] = PROJECT_VERSION;
@@ -1421,6 +1421,8 @@ bool mAnimatorLight::deserializeSegment(JsonObject elem, byte it, byte presetId)
   //   ALOG_INF(PSTR("getVal(elem[\"pal\"], &pal)"));
 
 
+  ALOG_HGL(PSTR("elem[\"pal\"].is<const char*>() %d"), elem["pal"].is<const char*>());
+
   if(elem["pal"].is<const char*>())
   {
 
@@ -1428,7 +1430,7 @@ bool mAnimatorLight::deserializeSegment(JsonObject elem, byte it, byte presetId)
 
     int16_t tmp_id = -1;
     if((tmp_id=GetPaletteIDbyName((char*)palName))>=0){
-      ALOG_DBG(PSTR("tmp_id=%d"),tmp_id);
+      ALOG_INF(PSTR("tmp_id=%d"),tmp_id);
       CommandSet_PaletteID(tmp_id, id);
     }
 
@@ -1647,7 +1649,7 @@ void mAnimatorLight::getSettingsJS(byte subPage, char* dest)
       k[0] = 'S'; sappend('v',k,staticSubnet[i]);
     }
 
-    sappends('s',SET_F("CM"),pCONT_set->Settings.system_name.device);
+    sappends('s',SET_F("CM"),tkr_set->Settings.system_name.device);
     sappend('i',SET_F("AB"),apBehavior);
     sappends('s',SET_F("AS"),apSSID);
     sappend('c',SET_F("AH"),apHide);
@@ -2204,10 +2206,12 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
   int itemPerPage = 8;
   #endif
 
+  DEBUG_LINE_HERE_TRACE
+
   bool flag_request_is_for_full_visual_output = true;
 
   int palettesCount = mPaletteI->GetPaletteListLength(); //includes the dynamic!
-  int customPalettes = pCONT_lAni->customPalettes.size();
+  int customPalettes = tkr_anim->customPalettes.size();
 
   // ALOG_HGL(PSTR("palettesCount=%d"), palettesCount); 
 
@@ -2224,13 +2228,15 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
 
   uint8_t encoded_gradient = 0;
 
+  DEBUG_LINE_HERE_TRACE
   /**
    * @brief 
    * Start by sending the current palette loaded
    */
   for (int palette_id = start; palette_id < end; palette_id++) 
   {
-        
+       
+  DEBUG_LINE_HERE_TRACE 
     bool palette_display_as_banded_gradient = false;
 
     #ifdef ENABLE_DEBUGFEATURE_LIGHT__PALETTE_RELOAD_LOGGING
@@ -2238,10 +2244,16 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
     ALOG_INF(PSTR("p=%d|s%d|e%d"),palette_id,start,end);
     #endif
 
-    SEGMENT.LoadPalette(palette_id); // Assume segment 1 exists, and use it to load all palettes. Effect should reset to active palette in main loop. Or here, have it then flip back. Though this may cause flickering midanimation. Animation may also need paused on esp32.
+  DEBUG_LINE_HERE_TRACE
 
+  #ifndef ENABLE_DEVFEATURE_LIGHTING__CRITICAL_DISABLE_LOAD_PALETTE  
+  SEGMENT.LoadPalette(palette_id); // Assume segment 1 exists, and use it to load all palettes. Effect should reset to active palette in main loop. Or here, have it then flip back. Though this may cause flickering midanimation. Animation may also need paused on esp32.
+  #endif
+
+  DEBUG_LINE_HERE_TRACE
     uint16_t colours_in_palette = GetNumberOfColoursInPalette(palette_id);
    
+  DEBUG_LINE_HERE_TRACE
     #ifdef ENABLE_DEBUGFEATURE_LIGHT__PALETTE_RELOAD_LOGGING
     ALOG_INF(PSTR("colours_in_palette[%d]=%d"),palette_id, colours_in_palette);
     #endif
@@ -2249,6 +2261,7 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
     JsonArray curPalette_obj = palettes.createNestedArray(String(palette_id));
     JsonObject curPalette_s_obj = palettes_style.createNestedObject(String(palette_id));
 
+  DEBUG_LINE_HERE_TRACE
     /**
      * @brief To reduce memory usage, the static gradients that are stored with less than 16 colours, shall be read directly
      **/
@@ -2257,6 +2270,7 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
       (palette_id < mPalette::PALETTELIST_STATIC_CRGBPALETTE16_GRADIENT_LENGTH__ID)
     ){ 
 
+  DEBUG_LINE_HERE_TRACE
       uint8_t adjusted_id = palette_id - mPalette::PALETTELIST_STATIC_CRGBPALETTE16_GRADIENT__SUNSET__ID;
 
       byte tcp[72];
@@ -2297,21 +2311,25 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
     else
     {
     
+  DEBUG_LINE_HERE_TRACE
       palette_display_as_banded_gradient = false;
 
       encoded_gradient = 0;
       
-      RgbcctColor color;
+      RgbcctTOwwType color;
 
 
       #ifdef ENABLE_FEATURE_WATCHDOG_TIMER
       WDT_Reset();
       #endif
 
+  DEBUG_LINE_HERE_TRACE
       /** first check if the palette is one that uses the colour picker*/       
       // Handle RGBCCT color palettes
       if (palette_id >= mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID && palette_id < mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_LENGTH__ID) {
-          const char* color_id = nullptr;
+          
+  DEBUG_LINE_HERE_TRACE
+  const char* color_id = nullptr;
           switch (palette_id) {
               case mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID: color_id = "c1"; break;
               case mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_02__ID: color_id = "c2"; break;
@@ -2328,6 +2346,7 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
           const char* color_ids[] = {"c1", "c2", "c3", "c4", "c5"};
           int color_count = 0;
 
+  DEBUG_LINE_HERE_TRACE
           switch (palette_id) {
               case mPalette::PALETTELIST_SEGMENT__RGBCCT_CRGBPALETTE16_PALETTES__PAIRED_TWO_12__ID:
                   color_count = 2;
@@ -2366,6 +2385,8 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
           for (int i = 0; i < 4; ++i) {
               curPalette_obj.add("r");
           }
+          
+  DEBUG_LINE_HERE_TRACE
       }
 
       /**
@@ -2374,6 +2395,7 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
        */
       else
       {
+  DEBUG_LINE_HERE_TRACE
 
         #ifdef ENABLE_DEBUGFEATURE_LIGHT__PALETTE_RELOAD_LOGGING
         ALOG_DBM(PSTR(DEBUG_INSERT_PAGE_BREAK "palette_id=%d"),palette_id);
@@ -2397,8 +2419,9 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
 
             DEBUG_LINE_HERE_TRACE;
 
+  DEBUG_LINE_HERE_TRACE
             // Load temporary palette
-            color = GetColourFromUnloadedPalette2(
+            color = GetColourFromUnloadedPalette3(
                 palette_id,
                 j,
                 PALETTE_SPAN_OFF, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, // "PALETTE_DISCRETE_ON" should be the only thing to get the basic colors, without gradients
@@ -2406,6 +2429,7 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
                 flag_request_is_for_full_visual_output
             );
 
+  DEBUG_LINE_HERE_TRACE
             #ifdef ENABLE_DEBUGFEATURE_LIGHT__PALETTE_RELOAD_LOGGING
             Serial.print("++++++++++++++++++++++++++++++++++++++++++++++encoded_gradient: ");
             Serial.println(encoded_gradient);
@@ -2442,9 +2466,9 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
             }
 
             // Add the RGB color components
-            colors.add(color.red);
-            colors.add(color.green);
-            colors.add(color.blue);
+            colors.add(color.R);
+            colors.add(color.G);
+            colors.add(color.B);
 
             #ifdef ENABLE_DEBUGFEATURE_LIGHT__PALETTE_RELOAD_LOGGING
             ALOG_DBM(PSTR("j=%d,encoded_gradient=%d,rgb=%d,%d,%d"), j, encoded_gradient, color.red, color.green, color.blue);
@@ -2598,7 +2622,13 @@ bool mAnimatorLight::serveLiveLeds(AsyncWebServerRequest* request, uint32_t wsCl
 
   for (size_t i=0; i < used; i += n)
   {
+    #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE  
+    RgbwwColor col = getPixelColor(i);
+    col.WW = 0; //ignore white channel
+    uint32_t c = RGBW32(col.R, col.G, col.B, col.WW);
+    #else
     uint32_t c = getPixelColor(i);
+    #endif
 
     // if(i==0)
       // ALOG_INF(PSTR("%d c %d,%d,%d,%d"), i, R(c), G(c), B(c), W(c));
@@ -2708,6 +2738,7 @@ void mAnimatorLight::serveJson(AsyncWebServerRequest* request)
       serializeInfo(lDoc);     
     break;
     case JSON_PATH_PALETTES:
+      Serial.println("JSON_PATH_PALETTES"); Serial.flush();
       serializePalettes(lDoc, request->hasParam("page") ? request->getParam("page")->value().toInt() : 0); 
     break;
     case JSON_PATH_EFFECTS:
@@ -2725,7 +2756,7 @@ void mAnimatorLight::serveJson(AsyncWebServerRequest* request)
       JsonObject info = lDoc.createNestedObject("info");
       serializeInfo(info);
 
-      pCONT_lAni->force_update(); // New data in, so we should update
+      tkr_anim->force_update(); // New data in, so we should update
 
       if (subJson != JSON_PATH_STATE_INFO)
       {
@@ -2900,7 +2931,7 @@ bool  mAnimatorLight::captivePortal(AsyncWebServerRequest *request)
   if (!request->hasHeader("Host")) return false;
   hostH = request->getHeader("Host")->value();
 
-  if (!isIp(hostH) && hostH.indexOf("wled.me") < 0 && hostH.indexOf(pCONT_set->Settings.system_name.device) < 0) {
+  if (!isIp(hostH) && hostH.indexOf("wled.me") < 0 && hostH.indexOf(tkr_set->Settings.system_name.device) < 0) {
     DEBUG_PRINTLN("Captive portal");
     AsyncWebServerResponse *response = request->beginResponse(302);
     response->addHeader(F("Location"), F("http://4.3.2.1"));

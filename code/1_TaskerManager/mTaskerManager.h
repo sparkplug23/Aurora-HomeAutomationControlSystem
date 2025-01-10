@@ -234,7 +234,7 @@ enum MODULE_SUBTYPE_IDS{ //ignores the "interface"
  **/
 #ifdef USE_MODULE_CORE_SETTINGS
   #include "2_CoreSystem/01_Settings/mSettings.h"
-  #define   pCONT_set                               static_cast<mSettings*>(mTaskerManager::GetInstance()->GetModule(D_UNIQUE_MODULE_CORE_SETTINGS_ID))
+  #define   tkr_set                               static_cast<mSettings*>(mTaskerManager::GetInstance()->GetModule(D_UNIQUE_MODULE_CORE_SETTINGS_ID))
 #endif 
 #ifdef USE_MODULE_CORE_FILESYSTEM
   #include "2_CoreSystem/03_FileSystem/mFileSystem.h"
@@ -250,7 +250,7 @@ enum MODULE_SUBTYPE_IDS{ //ignores the "interface"
 #endif 
 #ifdef USE_MODULE_CORE_TIME
   #include "2_CoreSystem/07_Time/mTime.h"
-  #define   pCONT_time                              static_cast<mTime*>(mTaskerManager::GetInstance()->GetModule(D_UNIQUE_MODULE_CORE_TIME_ID))
+  #define   tkr_time                              static_cast<mTime*>(mTaskerManager::GetInstance()->GetModule(D_UNIQUE_MODULE_CORE_TIME_ID))
 #endif 
 #ifdef USE_MODULE_CORE_LOGGING
   #include "2_CoreSystem/08_Logging/mLogging.h"
@@ -537,7 +537,12 @@ enum MODULE_SUBTYPE_IDS{ //ignores the "interface"
 #endif
 #ifdef USE_MODULE_LIGHTS_ANIMATOR
   #include "6_Lights/03_Animator/mAnimatorLight.h"
-  #define pCONT_lAni                            static_cast<mAnimatorLight*>(mTaskerManager::GetInstance()->GetModule(D_UNIQUE_MODULE_LIGHTS_ANIMATOR_ID))
+  #define tkr_lAni                            static_cast<mAnimatorLight*>(mTaskerManager::GetInstance()->GetModule(D_UNIQUE_MODULE_LIGHTS_ANIMATOR_ID))
+  #ifdef ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
+  #define tkr_anim tkr_extern_lAni // using a more direct access method, with a local pointer in the class header
+  #else
+  #define tkr_anim tkr_lAni // pointer to the instance of the mAnimatorLight class
+  #endif
 #endif
 /**
  * @brief Energy
@@ -712,7 +717,10 @@ enum MODULE_SUBTYPE_IDS{ //ignores the "interface"
 #ifdef USE_MODULE_CONTROLLER_CUSTOM__DESK_SENSORS_ON_OLED
   #include "10_ConSpec/20_DeskSensorsOnOLED/mDeskSensorsOnOLED.h"
   #define pCONT_DeskSensorsOnOLED        static_cast<mDeskSensorsOnOLED*>(mTaskerManager::GetInstance()->GetModule(D_UNIQUE_MODULE_CONTROLLER_CUSTOM__DESK_SENSORS_ON_OLED_ID))
-  // Can the above be removed and instead lets get it via the tasker? pCONT->GetModule()
+#endif
+#ifdef USE_MODULE_CONTROLLER_CUSTOM__LIGHTNEO_MOTION_ALERTS
+  #include "10_ConSpec/21_LightNeo_MotionAlerts/mLightNeo_MotionAlerts.h"
+  #define tkrCC_motion_alerts        static_cast<mLightNeo_MotionAlerts*>(mTaskerManager::GetInstance()->GetModule(D_UNIQUE_MODULE__CONTROLLER_CUSTOM__LIGHTNEO_MOTION_ALERTS__ID))
 #endif
 #ifdef USE_MODULE_CONTROLLER_USERMOD_01
   #include "9_Controller/UserMod_01/mUserMod_01.h"

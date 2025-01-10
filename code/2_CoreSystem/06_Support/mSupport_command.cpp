@@ -21,8 +21,8 @@ void mSupport::parse_JSONCommand(JsonParserObject obj)
     char buffer[100];
     // const char* name = jtok.getStr();  //["loglevel"];
     ALOG_INF(PSTR(D_LOG_MQTT D_PARSING_MATCHED "\"loglevel\":\"%s\""), jtok.getStr());
-    pCONT_set->Settings.logging.serial_level = pCONT_log->GetLogLevelIDbyName(jtok.getStr());
-    ALOG_INF(PSTR(D_LOG_MQTT D_PARSING_MATCHED "\"loglevel\":\"%S\""), pCONT_log->GetLogLevelNamebyID(pCONT_set->Settings.logging.serial_level));
+    tkr_set->Settings.logging.serial_level = pCONT_log->GetLogLevelIDbyName(jtok.getStr());
+    ALOG_INF(PSTR(D_LOG_MQTT D_PARSING_MATCHED "\"loglevel\":\"%S\""), pCONT_log->GetLogLevelNamebyID(tkr_set->Settings.logging.serial_level));
     // Add save log here
     data_buffer.isserviced++;
   }
@@ -31,8 +31,8 @@ void mSupport::parse_JSONCommand(JsonParserObject obj)
     char buffer[100];
     // const char* name = jtok.getStr();  //["loglevel"];
     ALOG_INF(PSTR(D_LOG_MQTT D_PARSING_MATCHED "\"loglevel\":\"%s\""), jtok.getStr());
-    pCONT_set->Settings.logging.mqtt_level = pCONT_log->GetLogLevelIDbyName(jtok.getStr());
-    ALOG_INF(PSTR(D_LOG_MQTT D_PARSING_MATCHED "\"loglevel\":\"%S\""), pCONT_log->GetLogLevelNamebyID(pCONT_set->Settings.logging.mqtt_level));
+    tkr_set->Settings.logging.mqtt_level = pCONT_log->GetLogLevelIDbyName(jtok.getStr());
+    ALOG_INF(PSTR(D_LOG_MQTT D_PARSING_MATCHED "\"loglevel\":\"%S\""), pCONT_log->GetLogLevelNamebyID(tkr_set->Settings.logging.mqtt_level));
     // Add save log here
     data_buffer.isserviced++;
   }

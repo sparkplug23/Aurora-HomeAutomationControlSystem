@@ -251,7 +251,7 @@ With latest version, all longer term shared debug features should be added here 
   // #define ENABLE_DEVFEATURE__PIXEL_COLOUR_ORDER_IN_MULTIPIN_SHOW_LOGS
 
   
-    #define ENABLE_DEBUG_FEATURE_SEGMENT_PRINT_MESSAGES // WLED _DEBUG
+    // #define ENABLE_DEBUG_FEATURE_SEGMENT_PRINT_MESSAGES // WLED _DEBUG
 
   /**
    * @brief Send extra mqtt messages for debugging the palette

@@ -406,13 +406,13 @@
 //   {
 //     user_input.selected.effects_id = (user_input.selected.effects_id == 0) ? sizeof(effects_options_ids)-1: user_input.selected.effects_id-1;
 //     flashersettings.function = effects_options_ids[user_input.selected.effects_id];
-//     ALOG_INF(PSTR("BUTTON\n\r \"E-\" L[%d] \t\"%s\""), user_input.selected.effects_id, pCONT_lAni->GetFlasherFunctionNamebyID(flashersettings.function, buffer, sizeof(buffer)));
+//     ALOG_INF(PSTR("BUTTON\n\r \"E-\" L[%d] \t\"%s\""), user_input.selected.effects_id, tkr_anim->GetFlasherFunctionNamebyID(flashersettings.function, buffer, sizeof(buffer)));
 //   }else
 //   if(pCONT_rules->event_triggered.device_id == USER_INPUT_BUTTON_3_RIGHT)
 //   {
 //     user_input.selected.effects_id = (user_input.selected.effects_id == (sizeof(effects_options_ids)-1)) ? 0: user_input.selected.effects_id+1;
 //     flashersettings.function = effects_options_ids[user_input.selected.effects_id];
-//     ALOG_INF(PSTR("BUTTON\n\r \"E+\" L[%d] \t\"%s\""), user_input.selected.effects_id, pCONT_lAni->GetFlasherFunctionNamebyID(flashersettings.function, buffer, sizeof(buffer)));
+//     ALOG_INF(PSTR("BUTTON\n\r \"E+\" L[%d] \t\"%s\""), user_input.selected.effects_id, tkr_anim->GetFlasherFunctionNamebyID(flashersettings.function, buffer, sizeof(buffer)));
 //   }
 
 //   /**
@@ -445,12 +445,12 @@
 //    * */
 //   pCONT_iLight->animation.flags.fForceUpdate = true;
 //   pCONT_iLight->animation_override.time_ms = 500; // Instant
-//   pCONT_set->settings_save_decounter_seconds_delayed_save = 10; // delay the saving until the lights have updated
+//   tkr_set->settings_save_decounter_seconds_delayed_save = 10; // delay the saving until the lights have updated
 
 
 
   
-//   // pCONT_set->SettingsSave(2);
+//   // tkr_set->SettingsSave(2);
 
 // }
 
@@ -486,7 +486,7 @@
 //     case EFFECTS_FUNCTION_STATIC_PALETTE_ID:
 //       pCONT_iLight->animation.time_ms = 2000;
 //       pCONT_iLight->animation.cycle_time__rate_ms = 10000;
-//       pCONT_lAni->SetLEDOutAmountByPercentage(100);
+//       tkr_anim->SetLEDOutAmountByPercentage(100);
 //     break;
 //     case EFFECTS_FUNCTION_SEQUENTIAL_ID:
 //       /**
@@ -504,17 +504,17 @@
 //           pCONT_iLight->animation.cycle_time__rate_ms = map(intensity_options_ids[user_input.selected.intensity_id], 0,100, 201,10000);
 //         break;
 //       }
-//       pCONT_lAni->SetLEDOutAmountByPercentage(100);
+//       tkr_anim->SetLEDOutAmountByPercentage(100);
 //     break;
 //     case EFFECTS_FUNCTION_SLOW_GLOW_ID:
 //       pCONT_iLight->animation.time_ms = map(intensity_options_ids[user_input.selected.intensity_id], 0,100, 19,20000);
 //       pCONT_iLight->animation.cycle_time__rate_ms = map(intensity_options_ids[user_input.selected.intensity_id], 0,100, 20,30000);
-//       pCONT_lAni->SetLEDOutAmountByPercentage(map(intensity_options_ids[user_input.selected.intensity_id], 0,100, 1,35));
+//       tkr_anim->SetLEDOutAmountByPercentage(map(intensity_options_ids[user_input.selected.intensity_id], 0,100, 1,35));
 //     break;
 //     case EFFECTS_FUNCTION_STEPPING_PALETTE_ID:
 //       pCONT_iLight->animation.time_ms = map(intensity_options_ids[user_input.selected.intensity_id], 0,100, 23,9000);
 //       pCONT_iLight->animation.cycle_time__rate_ms = map(intensity_options_ids[user_input.selected.intensity_id], 0,100, 25,10000);
-//       pCONT_lAni->SetLEDOutAmountByPercentage(100);
+//       tkr_anim->SetLEDOutAmountByPercentage(100);
 //     break;
 //   }
 
@@ -528,9 +528,9 @@
 
 //     user_input.selected.palette_id,     mPaletteI->GetPaletteNameByID(pCONT_iLight->animation.palette_id, buffer, sizeof(buffer)),
 //     user_input.selected.brightness_id,  map(pCONT_iLight->getBriRGB_Global(), 0,255, 0,100),
-//     user_input.selected.effects_id,     pCONT_lAni->GetFlasherFunctionNamebyID(flashersettings.function, buffer2, sizeof(buffer2)),
+//     user_input.selected.effects_id,     tkr_anim->GetFlasherFunctionNamebyID(flashersettings.function, buffer2, sizeof(buffer2)),
 //     user_input.selected.intensity_id, intensity_options_ids[user_input.selected.intensity_id], pCONT_iLight->animation.time_ms, pCONT_iLight->animation.cycle_time__rate_ms,
-//     pCONT_lAni->strip_size_requiring_update
+//     tkr_anim->strip_size_requiring_update
 
 //   );
 
@@ -542,10 +542,10 @@
 //   pCONT_iLight->animation.time_ms = pCONT_iLight->animation.cycle_time__rate_ms*0.90;
 // }
   
-//   // pCONT_set->Settings.animation_settings.xmas_controller_params[0] = user_input.selected.palette_id;
-//   // pCONT_set->Settings.animation_settings.xmas_controller_params[1] = user_input.selected.brightness_id;
-//   // pCONT_set->Settings.animation_settings.xmas_controller_params[2] = user_input.selected.effects_id;
-//   // pCONT_set->Settings.animation_settings.xmas_controller_params[3] = user_input.selected.intensity_id;
+//   // tkr_set->Settings.animation_settings.xmas_controller_params[0] = user_input.selected.palette_id;
+//   // tkr_set->Settings.animation_settings.xmas_controller_params[1] = user_input.selected.brightness_id;
+//   // tkr_set->Settings.animation_settings.xmas_controller_params[2] = user_input.selected.effects_id;
+//   // tkr_set->Settings.animation_settings.xmas_controller_params[3] = user_input.selected.intensity_id;
   
 //   /**
 //    * check we are in range, or shift back into range

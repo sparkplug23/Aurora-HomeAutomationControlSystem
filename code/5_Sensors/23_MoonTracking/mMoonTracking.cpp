@@ -562,15 +562,15 @@ int8_t mMoonTracking::Tasker(uint8_t function, JsonParserObject obj)
 	break;
     case TASK_EVERY_SECOND:{
 
-		// uint32_t local_time = pCONT_time->Rtc.local_time;
-		// double latitude = pCONT_set->Settings.sensors.latitude;
-		// double longitude = pCONT_set->Settings.sensors.longitude;
+		// uint32_t local_time = tkr_time->Rtc.local_time;
+		// double latitude = tkr_set->Settings.sensors.latitude;
+		// double longitude = tkr_set->Settings.sensors.longitude;
 
 		// Serial.println("Latitude: " + String(latitude));
 		// Serial.println("Longitude: " + String(longitude));
 		// Serial.println("Raw Local Time (Unix): " + String(local_time));
 
-		// time_t local_time2 = pCONT_time->Rtc.local_time;
+		// time_t local_time2 = tkr_time->Rtc.local_time;
 		// Serial.printf("Formatted Local Time: %s\n\r", ctime(&local_time2));
 
 		// // Now, let's break down the date and time being used
@@ -593,7 +593,7 @@ int8_t mMoonTracking::Tasker(uint8_t function, JsonParserObject obj)
     // time_t utc_time = 1725283200; // This corresponds to Mon Sep 2 2024 12:00:00 UTC
     // CalculateSolarTimes2(latitude, longitude, utc_time);
 
-    time_t utc_time = pCONT_time->LocalTime(); // This corresponds to Mon Sep 2 2024 12:00:00 UTC
+    time_t utc_time = tkr_time->LocalTime(); // This corresponds to Mon Sep 2 2024 12:00:00 UTC
 	// CalculateSolarTimes3(latitude, longitude, utc_time, 0.0, true);
 	CalculateSolarTimes4(latitude, longitude, utc_time, 0.0, true);
 
@@ -652,18 +652,18 @@ void mMoonTracking::Init()
 void mMoonTracking::Update_Solar_Tracking_Data()
 {
 
-	// if(!pCONT_time->RtcTime.isvalid)
+	// if(!tkr_time->RtcTime.isvalid)
 	// {
 	// 	return; // Cant compute, invalid data
 	// }
 
 	float altitude = 0;
-	float lat = pCONT_set->Settings.sensors.latitude;
-	float lon = pCONT_set->Settings.sensors.longitude;
+	float lat = tkr_set->Settings.sensors.latitude;
+	float lon = tkr_set->Settings.sensors.longitude;
 
 	double elevation_tmp = 0;
 
-	SolarAzEl(pCONT_time->Rtc.utc_time, lat, lon, 0, &solar_position.azimuth, &elevation_tmp);
+	SolarAzEl(tkr_time->Rtc.utc_time, lat, lon, 0, &solar_position.azimuth, &elevation_tmp);
 
 	/**
 	 * Get direction of change ie sunrise or sunset
@@ -680,7 +680,7 @@ void mMoonTracking::Update_Solar_Tracking_Data()
 	/**
 	 * @brief Can only be set when the time has been set first
 	 **/
-	if(pCONT_time->RtcTime.valid)
+	if(tkr_time->RtcTime.valid)
 	{
 		solar_position.isvalid = true;
 	}else{
@@ -767,7 +767,7 @@ void mMoonTracking::SolarAzEl(time_t utc_time_point, double Lat, double Lon, dou
 	double delta = asin(zequat / r)*(180 / M_PI);
 	
 	// Get UTC representation of time / C++ Specific
-	time_t utc_time = (time_t)pCONT_time->Rtc.utc_time;
+	time_t utc_time = (time_t)tkr_time->Rtc.utc_time;
 	tm *ptm = gmtime(&utc_time); 
         
 	double UTH = (double)ptm->tm_hour + (double)ptm->tm_min / 60 + (double)ptm->tm_sec / 3600;
@@ -834,9 +834,9 @@ double mMoonTracking::julian_day(time_t utc_time_point)
 	/**
 	 * Method B
 	 * */
-	//   uint32_t Year = pCONT_time->RtcTime.year;             // Year ex:2020
-	//   uint32_t Month = pCONT_time->RtcTime.month;            // 1..12
-	//   uint32_t Day = pCONT_time->RtcTime.Wday;     // 1..31
+	//   uint32_t Year = tkr_time->RtcTime.year;             // Year ex:2020
+	//   uint32_t Month = tkr_time->RtcTime.month;            // 1..12
+	//   uint32_t Day = tkr_time->RtcTime.Wday;     // 1..31
 	//   uint32_t Julian;                          // Julian day number
 
 	//   if (Month <= 2) {

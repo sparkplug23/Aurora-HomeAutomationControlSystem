@@ -118,7 +118,7 @@ DEBUG_LINE_HERE2
     memcpy_P(buffer,MODULE_TEMPLATE,sizeof(MODULE_TEMPLATE));
     
 DEBUG_LINE_HERE2
-    pCONT_set->runtime.template_loading.status.module = mSettings::TemplateSource::HEADER_TEMPLATE;
+    tkr_set->runtime.template_loading.status.module = mSettings::TemplateSource::HEADER_TEMPLATE;
 
     #ifdef ENABLE_DEBUG_MODULE_HARDWAREPINS_SUBSECTION_TEMPLATES
     #ifdef ENABLE_LOG_LEVEL_INFO

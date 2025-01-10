@@ -397,7 +397,7 @@ class mPalette
     PALETTE_ENCODING_DATA findPaletteEncoding(uint16_t id);
 
 
-    RgbcctColor 
+    RgbcctTOwwType 
     #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
     IRAM_ATTR 
     #endif 
@@ -412,9 +412,20 @@ class mPalette
       bool flag_request_is_for_full_visual_output = false
     );
   
+    [[gnu::hot]] uint32_t GetColourFromPreloadedPaletteBuffer_2025(
+      uint16_t palette_id = 0,
+      uint8_t* palette_elements = nullptr,
+      uint16_t desired_index_from_palette = 0,
+      uint8_t* encoded_index = nullptr,
+      uint8_t     flag_spanned_segment = true, // true(default):"desired_index_from_palette is exact pixel index", false:"desired_index_from_palette is scaled between 0 to 255, where (127/155 would be the center pixel)"
+      uint8_t     flag_wrap_hard_edge = true,        // true(default):"hard edge for wrapping wround, so last to first pixel (wrap) is blended", false: "hard edge, palette resets without blend on last/first pixels"
+      uint8_t     flag_crgb_exact_colour = false,
+      bool flag_request_is_for_full_visual_output = false
+    );
+  
 
 #ifndef ENABLE_DEVFEATURE_LIGHTING__OCT24_TIMING
-    RgbcctColor Get_Encoded_StaticPalette_Colour(
+    RgbwwColor Get_Encoded_StaticPalette_Colour(
       uint16_t palette_id = 0,
       uint8_t* palette_elements = nullptr,
       uint16_t desired_index_from_palette = 0,
@@ -425,7 +436,7 @@ class mPalette
       bool     flag_forced_gradient = false
     );
 
-    RgbcctColor SubGet_Encoded_CustomPalette_Colour(
+    RgbwwColor SubGet_Encoded_CustomPalette_Colour(
       uint16_t palette_id = 0,
       uint8_t* palette_elements = nullptr,
       uint16_t desired_index_from_palette = 0,
@@ -438,7 +449,7 @@ class mPalette
 
     
     // Dynamic palettes should do any calculations, then rely on the other methods to get colours
-    RgbcctColor Get_Encoded_DynamicPalette_Colour(
+    RgbwwColor Get_Encoded_DynamicPalette_Colour(
       uint16_t palette_id = 0,
       uint8_t* palette_elements = nullptr,
       uint16_t desired_index_from_palette = 0,
@@ -461,7 +472,7 @@ class mPalette
 
 
 
-    RgbcctColor     
+    RgbcctTOwwType     
     #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
     IRAM_ATTR 
     #endif 
@@ -480,7 +491,7 @@ class mPalette
 
 
 
-    RgbcctColor 
+    RgbcctTOwwType 
     #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
     IRAM_ATTR 
     #endif 

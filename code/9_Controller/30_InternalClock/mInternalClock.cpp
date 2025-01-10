@@ -146,7 +146,7 @@ uint8_t mInternalClock::GetFanspeed(void)
       011x = 2
       101x = 3 (ifan02) or 100x = 3 (ifan03)
     */
-    uint8_t fanspeed = (uint8_t)( pCONT_set->power &0xF) >> 1;
+    uint8_t fanspeed = (uint8_t)( tkr_set->power &0xF) >> 1;
     if (fanspeed) { fanspeed = (fanspeed >> 1) +1; }  // 0, 1, 2, 3
     return fanspeed;
   }
@@ -284,7 +284,7 @@ bool mInternalClock::SerialInput(void)
 
 void mInternalClock::init(void)
 {
-  if(pCONT_set->my_module_type == MODULE_INTERNAL_CLOCK03_ID){
+  if(tkr_set->my_module_type == MODULE_INTERNAL_CLOCK03_ID){
   //   SetSerial(9600, TS_SERIAL_8N1);
     settings.fEnableModule = true;
   }
@@ -301,10 +301,10 @@ void mInternalClock::SpeedRefresh(void)
     }
   // }
 
-  // if (ifan_restart_flag && (4 == pCONT_time->uptime_seconds_nonreset) && (INTERNAL_CLOCK02 == my_module_type)) {  // Microcontroller needs 3 seconds before accepting commands
+  // if (ifan_restart_flag && (4 == tkr_time->uptime_seconds_nonreset) && (INTERNAL_CLOCK02 == my_module_type)) {  // Microcontroller needs 3 seconds before accepting commands
   //   ifan_restart_flag = false;
   //   SetDevicePower(1, SRC_RETRY);      // Sync with default power on state microcontroller being Light ON and Fan OFF
-  //   SetDevicePower(pCONT_set->power, SRC_RETRY);  // Set required power on state
+  //   SetDevicePower(tkr_set->power, SRC_RETRY);  // Set required power on state
   // }
 }
 

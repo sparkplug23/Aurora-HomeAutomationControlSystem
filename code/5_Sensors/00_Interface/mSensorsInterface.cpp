@@ -133,9 +133,9 @@ void mSensorsInterface::EveryLoop()
  * In InterfaceSensors, the type of applied map can be selected to be added to unified method directly
  * 
  * @param temperature 
- * @return RgbcctColor 
+ * @return RgbwwColor 
  */
-RgbcctColor mSensorsInterface::GetColourValueUsingMaps_ForUnifiedSensor(float temperature) // flag_unified_sensor_colour_heatmap_type
+RgbwwColor mSensorsInterface::GetColourValueUsingMaps_ForUnifiedSensor(float temperature) // flag_unified_sensor_colour_heatmap_type
 {
 
   if(flag_unified_sensor_colour_heatmap_type==1) //adjusted
@@ -290,7 +290,7 @@ uint8_t mSensorsInterface::ConstructJSON_Sensor(uint8_t json_level, bool json_ap
         uint8_t sensors_available = pmod->GetSensorCount();
         // ALOG_INF( PSTR("GetSensorCount =%d\t%s"), sensors_available, pmod->GetModuleFriendlyName());
 
-        uint16_t unified_sensor_reporting_invalid_reading_timeout_seconds = pCONT_set->Settings.unified_interface_reporting_invalid_reading_timeout_seconds;
+        uint16_t unified_sensor_reporting_invalid_reading_timeout_seconds = tkr_set->Settings.unified_interface_reporting_invalid_reading_timeout_seconds;
         // ALOG_WRN(PSTR("reading_timeout_seconds %d"), unified_sensor_reporting_invalid_reading_timeout_seconds);
                   
         if(sensors_available) 
@@ -307,9 +307,9 @@ uint8_t mSensorsInterface::ConstructJSON_Sensor(uint8_t json_level, bool json_ap
                               
               if(val.timestamp)
               {
-                if(pCONT_time->RtcTime.valid) // Only enable timestamp checks when time is valid
+                if(tkr_time->RtcTime.valid) // Only enable timestamp checks when time is valid
                 {
-                  uint32_t sensor_elapsed_time = pCONT_time->UtcTime() - val.timestamp;
+                  uint32_t sensor_elapsed_time = tkr_time->UtcTime() - val.timestamp;
                   if(sensor_elapsed_time) // If positive and NOT val.timestamp set to 0 as skipped
                   {
                     if(sensor_elapsed_time > unified_sensor_reporting_invalid_reading_timeout_seconds)
@@ -1296,7 +1296,7 @@ float mSensorsInterface::ConvertTemp(float c)
 
 char mSensorsInterface::TempUnit(void)
 {
-  return (pCONT_set->Settings.flag_system.temperature_conversion) ? 'F' : 'C';
+  return (tkr_set->Settings.flag_system.temperature_conversion) ? 'F' : 'C';
 }
 
 
@@ -1340,8 +1340,8 @@ uint8_t mSensorsInterface::ConstructJSON_Motion_Event(uint8_t json_level, bool j
     uint16_t state_id = pCONT_rules->event_triggered.value.data[0];  
 
     JBI->Add(D_LOCATION, DLI->GetDeviceName_WithModuleUniqueID( pCONT_motion->GetModuleUniqueID(), device_id, buffer, sizeof(buffer))); 
-    JBI->Add("Time", pCONT_time->GetTimeStr(pCONT_time->Rtc.local_time).c_str());
-    JBI->Add("UTCTime", pCONT_time->Rtc.local_time);
+    JBI->Add("Time", tkr_time->GetTimeStr(tkr_time->Rtc.local_time).c_str());
+    JBI->Add("UTCTime", tkr_time->Rtc.local_time);
     JBI->Add(D_EVENT, state_id ? "detected": "over");
     JBI->Add("Sensor", pCONT_motion->GetModuleName());
 
@@ -1519,7 +1519,7 @@ uint8_t mSensorsInterface::ConstructJSON_Motion_Event(uint8_t json_level, bool j
 //       if(pir_detect[sensor_id].state)
 //       {
 //         pir_detect[sensor_id].tDetectTime = millis(); 
-//         pir_detect[sensor_id].detected_time = pCONT_time->LocalTime();
+//         pir_detect[sensor_id].detected_time = tkr_time->LocalTime();
 //         pir_detect[sensor_id].isactive = true;
 
 //         // #ifdef ENABLE_LOG_LEVEL_DEBUG
@@ -1536,7 +1536,7 @@ uint8_t mSensorsInterface::ConstructJSON_Motion_Event(uint8_t json_level, bool j
 //       else
 //       {
 //         pir_detect[sensor_id].tEndedTime = millis();
-//         pir_detect[sensor_id].detected_time = pCONT_time->LocalTime();
+//         pir_detect[sensor_id].detected_time = tkr_time->LocalTime();
 //         pir_detect[sensor_id].isactive = false;
 
 //         // #ifdef USE_MODULE_CORE_RULES

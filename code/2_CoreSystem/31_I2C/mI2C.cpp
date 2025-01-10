@@ -110,8 +110,8 @@ void mI2C::Pre_Init()
  * 
  */
 
-  pCONT_set->runtime.i2c_enabled = ( pCONT_pins->PinUsed(GPIO_I2C_SCL_ID) && pCONT_pins->PinUsed(GPIO_I2C_SDA_ID));
-  if (pCONT_set->runtime.i2c_enabled)
+  tkr_set->runtime.i2c_enabled = ( pCONT_pins->PinUsed(GPIO_I2C_SCL_ID) && pCONT_pins->PinUsed(GPIO_I2C_SDA_ID));
+  if (tkr_set->runtime.i2c_enabled)
   { 
     if(wire == nullptr)
     {
@@ -504,7 +504,7 @@ bool mI2C::I2cEnabled(uint32_t i2c_index)
 
 // Serial.println("I2cEnabled"); Serial.flush();
 // delay(3000);
-bool val = (pCONT_set->runtime.i2c_enabled && bitRead(pCONT_set->Settings.i2c_drivers[i2c_index / 32], i2c_index % 32));
+bool val = (tkr_set->runtime.i2c_enabled && bitRead(tkr_set->Settings.i2c_drivers[i2c_index / 32], i2c_index % 32));
 
 
 return true; // force all working for now until i2cdrivers are configured

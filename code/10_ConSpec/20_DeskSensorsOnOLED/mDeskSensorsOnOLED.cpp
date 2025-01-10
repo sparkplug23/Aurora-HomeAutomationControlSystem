@@ -143,12 +143,12 @@ void mDeskSensorsOnOLED::SubTask_UpdateOLED()
 void mDeskSensorsOnOLED::SubTask_UpdateOLED_Page1()
 {
 
-  pCONT_set->Settings.display.mode = EM_DISPLAY_MODE_LOG_STATIC_ID;
+  tkr_set->Settings.display.mode = EM_DISPLAY_MODE_LOG_STATIC_ID;
   char buffer[100] = {0};
   char buffer_f[100] = {0};
   char buffer_n[100] = {0};
   
-  snprintf(buffer, sizeof(buffer), "%s", pCONT_time->GetTime().c_str() );
+  snprintf(buffer, sizeof(buffer), "%s", tkr_time->GetTime().c_str() );
 
   int sensor_id=0;
   float sensor_data = -1;
@@ -261,14 +261,14 @@ void mDeskSensorsOnOLED::SubTask_UpdateOLED_Page1()
 void mDeskSensorsOnOLED::SubTask_UpdateOLED_Page2()
 {
 
-  pCONT_set->Settings.display.mode = EM_DISPLAY_MODE_LOG_STATIC_ID;
+  tkr_set->Settings.display.mode = EM_DISPLAY_MODE_LOG_STATIC_ID;
   char buffer[100] = {0};
   char buffer_f[100] = {0};
   char buffer_n[100] = {0};
   float sensor_data = -1;
   int8_t line = -1;
   
-  snprintf(buffer, sizeof(buffer), "%s", pCONT_time->GetTime().c_str() );
+  snprintf(buffer, sizeof(buffer), "%s", tkr_time->GetTime().c_str() );
    
   uint8_t sensors_available = 4;
 

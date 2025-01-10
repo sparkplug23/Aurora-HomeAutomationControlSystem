@@ -182,7 +182,7 @@ void mWebServer::serveMessage(AsyncWebServerRequest* request, uint16_t code, con
 // void mWebServer::StartWebserver(int type, IPAddress ipweb)
 // {
 //   // Ensure valid refresh values
-//   // if(!pCONT_set->Settings.web_refresh){ pCONT_set->Settings.web_refresh = HTTP_REFRESH_TIME; }
+//   // if(!tkr_set->Settings.web_refresh){ tkr_set->Settings.web_refresh = HTTP_REFRESH_TIME; }
 
 //   ALOG_INF(PSTR(D_LOG_DEBUG "StartWebserver"));
   
@@ -210,10 +210,10 @@ void mWebServer::serveMessage(AsyncWebServerRequest* request, uint16_t code, con
 //   }
 //   if(webserver_state != type){
 //     #ifdef ENABLE_LOG_LEVEL_INFO
-//     ALOG_INF(PSTR(D_LOG_HTTP D_WEBSERVER " %s%s " D_IPADDRESS " %s"), pCONT_set->my_hostname, 1 ? ".local" : "", ipweb.toString().c_str());
+//     ALOG_INF(PSTR(D_LOG_HTTP D_WEBSERVER " %s%s " D_IPADDRESS " %s"), tkr_set->my_hostname, 1 ? ".local" : "", ipweb.toString().c_str());
     
 //     #endif// ENABLE_LOG_LEVEL_INFO
-//     // pCONT_set->rules_flag.http_init = 1;
+//     // tkr_set->rules_flag.http_init = 1;
 //   }
 //   if(type){ webserver_state = type; }
 // }
@@ -579,7 +579,7 @@ void mWebServer::WebSend_Response(AsyncWebServerRequest *request, int code, uint
 //   ALOG_INF(PSTR(D_LOG_DEBUG "mWebServer::WifiManagerBegin"));
 
 //   // setup AP
-//   if (!pCONT_set->global_state.wifi_down) {
+//   if (!tkr_set->global_state.wifi_down) {
 //     WiFi.mode(WIFI_AP_STA);
 //     #ifdef ENABLE_LOG_LEVEL_INFO
 //     ALOG_INF(PSTR(D_LOG_WIFI D_WIFIMANAGER_SET_ACCESSPOINT_AND_STATION));
@@ -597,7 +597,7 @@ void mWebServer::WebSend_Response(AsyncWebServerRequest *request, int code, uint
 
 //   int channel = WIFI_SOFT_AP_CHANNEL;
 //   if ((channel < 1) || (channel > 13)) { channel = 1; }
-//   WiFi.softAP(pCONT_set->my_hostname, nullptr, channel);
+//   WiFi.softAP(tkr_set->my_hostname, nullptr, channel);
 
 //   delay(500); // Without delay I've seen the IP address blank
 //   /* Setup the DNS server redirecting all the domains to the apIP */
@@ -617,8 +617,8 @@ void mWebServer::WebSend_Response(AsyncWebServerRequest *request, int code, uint
 
 // bool mWebServer::WebAuthenticate(void)
 // {
-//   // if (pCONT_set->Settings.web_password[0] != 0 && HTTP_MANAGER_RESET_ONLY != webserver_state) {
-//   //   // return server->authenticate(WEB_USERNAME, pCONT_set->Settings.web_password);
+//   // if (tkr_set->Settings.web_password[0] != 0 && HTTP_MANAGER_RESET_ONLY != webserver_state) {
+//   //   // return server->authenticate(WEB_USERNAME, tkr_set->Settings.web_password);
 //   // } else {
 //     return true;
 //   // }
@@ -702,14 +702,14 @@ bool mWebServer::HttpCheckPriviledgedAccess()
 // //   }
 // // */
 
-// //   pCONT_set->Settings.web_color[i][0] = (color >> 16) & 0xFF;  // Red
-// //   pCONT_set->Settings.web_color[i][1] = (color >> 8) & 0xFF;   // Green
-// //   pCONT_set->Settings.web_color[i][2] = color & 0xFF;          // Blue
+// //   tkr_set->Settings.web_color[i][0] = (color >> 16) & 0xFF;  // Red
+// //   tkr_set->Settings.web_color[i][1] = (color >> 8) & 0xFF;   // Green
+// //   tkr_set->Settings.web_color[i][2] = color & 0xFF;          // Blue
 // // }
 
 // // uint32_t mWebServer::WebColor(uint8_t i)
 // // {
-// //   return (pCONT_set->Settings.web_color[i][0] << 16) | (pCONT_set->Settings.web_color[i][1] << 8) | pCONT_set->Settings.web_color[i][2];
+// //   return (tkr_set->Settings.web_color[i][0] << 16) | (tkr_set->Settings.web_color[i][1] << 8) | tkr_set->Settings.web_color[i][2];
 // // }
 
 // uint32_t mWebServer::WebColor(uint8_t r, uint8_t g, uint8_t b){
@@ -768,21 +768,21 @@ bool mWebServer::HttpCheckPriviledgedAccess()
 //   // ALOG_DBG(PSTR(D_LOG_HTTP D_COMMAND));
 
 //   // uint8_t valid = 1;
-//   // if (pCONT_set->Settings.web_password[0] != 0) {
-//   //   char tmp1[sizeof(pCONT_set->Settings.web_password)];
+//   // if (tkr_set->Settings.web_password[0] != 0) {
+//   //   char tmp1[sizeof(tkr_set->Settings.web_password)];
 //   //   WebGetArg(request,"user", tmp1, sizeof(tmp1));
-//   //   char tmp2[sizeof(pCONT_set->Settings.web_password)];
+//   //   char tmp2[sizeof(tkr_set->Settings.web_password)];
 //   //   WebGetArg(request,"password", tmp2, sizeof(tmp2));
-//   //   if (!(!strcmp(tmp1, WEB_USERNAME) && !strcmp(tmp2, pCONT_set->Settings.web_password))) { valid = 0; }
+//   //   if (!(!strcmp(tmp1, WEB_USERNAME) && !strcmp(tmp2, tkr_set->Settings.web_password))) { valid = 0; }
 //   // }
 
 //   // WSContentBegin(request, 200, CT_JSON);
 //   // if (valid) {
-//   //   uint8_t curridx = pCONT_set->web_log_index;
+//   //   uint8_t curridx = tkr_set->web_log_index;
 //   //   String svalue = request->arg("cmnd");
 //   //   if (svalue.length() && (svalue.length() < INPUT_BUFFER_SIZE)) {
 //   //     ExecuteWebCommand((char*)svalue.c_str(), SRC_WEBCOMMAND);
-//   //     if (pCONT_set->web_log_index != curridx) {
+//   //     if (tkr_set->web_log_index != curridx) {
 //   //       uint8_t counter = curridx;
 //   //       WSBufferAppend_P(response, PSTR("{"));
 //   //       bool cflg = false;
@@ -804,7 +804,7 @@ bool mWebServer::HttpCheckPriviledgedAccess()
 //   //         }
 //   //         counter++;
 //   //         if (!counter) counter++;  // Skip 0 as it is not allowed
-//   //       } while (counter != pCONT_set->web_log_index);
+//   //       } while (counter != tkr_set->web_log_index);
 //   //       WSBufferAppend_P(response, PSTR("}"));
 //   //     } else {
 //   //       WSBufferAppend_P(response, PSTR("{\"" D_RSLT_WARNING "\":\"" D_ENABLE_WEBLOG_FOR_RESPONSE "\"}"));
@@ -1002,7 +1002,7 @@ bool mWebServer::HttpCheckPriviledgedAccess()
 
 // //   // char parm_lc[10];
 // //   // if (obj[pCONT_sup->LowerCase(parm_lc, D_WEBCOLOR)].isNull()) {
-// //   //   for (uint8_t i = 0; i < pCONT_set->COL_LAST; i++) {
+// //   //   for (uint8_t i = 0; i < tkr_set->COL_LAST; i++) {
 // //   //     const char* color = obj[parm_lc][i];
 // //   //     if (color != nullptr) {
 // //   //       WebHexCode(i, color);
@@ -1021,58 +1021,58 @@ bool mWebServer::HttpCheckPriviledgedAccess()
 // //   char command[CMDSZ];
 // //   bool serviced = true;
 
-// // //   int command_code = pCONT_sup->GetCommandCode(command, sizeof(command), pCONT_set->XdrvMailbox.topic, kWebCommands);
+// // //   int command_code = pCONT_sup->GetCommandCode(command, sizeof(command), tkr_set->XdrvMailbox.topic, kWebCommands);
 // // //   if (-1 == command_code) {
 // // //     serviced = false;  // Unknown command
 // // //   }
 // // //   if (CMND_WEBSERVER == command_code) {
-// // //     if ((pCONT_set->XdrvMailbox.payload >= 0) && (pCONT_set->XdrvMailbox.payload <= 2)) { pCONT_set->Settings.webserver = pCONT_set->XdrvMailbox.payload; }
-// // //     if (pCONT_set->Settings.webserver) {
+// // //     if ((tkr_set->XdrvMailbox.payload >= 0) && (tkr_set->XdrvMailbox.payload <= 2)) { tkr_set->Settings.webserver = tkr_set->XdrvMailbox.payload; }
+// // //     if (tkr_set->Settings.webserver) {
 // // //       pCONT_sup->Response_P(PSTR("{\"" D_WEBSERVER "\":\"" D_ACTIVE_FOR " %s " D_ON_DEVICE " %s " D_WITH_IP_ADDRESS " %s\"}"),
-// // //         (2 == pCONT_set->Settings.webserver) ? D_ADMIN : D_USER, pCONT_set->my_hostname, WiFi.localIP().toString().c_str());
+// // //         (2 == tkr_set->Settings.webserver) ? D_ADMIN : D_USER, tkr_set->my_hostname, WiFi.localIP().toString().c_str());
 // // //     } else {
 // // //       pCONT_sup->Response_P(S_JSON_COMMAND_SVALUE, command, pCONT_sup->GetStateText(0));
 // // //     }
 // // //   }
 // // //   else if (CMND_WEBPASSWORD == command_code) {
-// // //     if ((pCONT_set->XdrvMailbox.data_len > 0) && (pCONT_set->XdrvMailbox.data_len < sizeof(pCONT_set->Settings.web_password))) {
-// // //       strlcpy(pCONT_set->Settings.web_password, (SC_CLEAR == pCONT_sup->Shortcut(pCONT_set->XdrvMailbox.data)) ? "" : (SC_DEFAULT == pCONT_sup->Shortcut(pCONT_set->XdrvMailbox.data)) ? WEB_PASSWORD : pCONT_set->XdrvMailbox.data, sizeof(pCONT_set->Settings.web_password));
-// // //       pCONT_sup->Response_P(S_JSON_COMMAND_SVALUE, command, pCONT_set->Settings.web_password);
+// // //     if ((tkr_set->XdrvMailbox.data_len > 0) && (tkr_set->XdrvMailbox.data_len < sizeof(tkr_set->Settings.web_password))) {
+// // //       strlcpy(tkr_set->Settings.web_password, (SC_CLEAR == pCONT_sup->Shortcut(tkr_set->XdrvMailbox.data)) ? "" : (SC_DEFAULT == pCONT_sup->Shortcut(tkr_set->XdrvMailbox.data)) ? WEB_PASSWORD : tkr_set->XdrvMailbox.data, sizeof(tkr_set->Settings.web_password));
+// // //       pCONT_sup->Response_P(S_JSON_COMMAND_SVALUE, command, tkr_set->Settings.web_password);
 // // //     } else {
 // // //       pCONT_sup->Response_P(S_JSON_COMMAND_ASTERIX, command);
 // // //     }
 // // //   }
 // // //   else if (CMND_WEBLOG == command_code) {
-// // //     if ((pCONT_set->XdrvMailbox.payload >= LOG_LEVEL_NONE) && (pCONT_set->XdrvMailbox.payload <= LOG_LEVEL_ALL)) { pCONT_set->Settings.logging.web_level = pCONT_set->XdrvMailbox.payload; }
-// // //     pCONT_sup->Response_P(S_JSON_COMMAND_NVALUE, command, pCONT_set->Settings.logging.web_level);
+// // //     if ((tkr_set->XdrvMailbox.payload >= LOG_LEVEL_NONE) && (tkr_set->XdrvMailbox.payload <= LOG_LEVEL_ALL)) { tkr_set->Settings.logging.web_level = tkr_set->XdrvMailbox.payload; }
+// // //     pCONT_sup->Response_P(S_JSON_COMMAND_NVALUE, command, tkr_set->Settings.logging.web_level);
 // // //   }
 // // //   else if (CMND_WEBREFRESH == command_code) {
-// // //     if ((pCONT_set->XdrvMailbox.payload > 999) && (pCONT_set->XdrvMailbox.payload <= 10000)) { pCONT_set->Settings.web_refresh = pCONT_set->XdrvMailbox.payload; }
-// // //     pCONT_sup->Response_P(S_JSON_COMMAND_NVALUE, command, pCONT_set->Settings.web_refresh);
+// // //     if ((tkr_set->XdrvMailbox.payload > 999) && (tkr_set->XdrvMailbox.payload <= 10000)) { tkr_set->Settings.web_refresh = tkr_set->XdrvMailbox.payload; }
+// // //     pCONT_sup->Response_P(S_JSON_COMMAND_NVALUE, command, tkr_set->Settings.web_refresh);
 // // //   }
 // // //   else if (CMND_WEBSEND == command_code) {
-// // //     if (pCONT_set->XdrvMailbox.data_len > 0) {
-// // //       uint8_t result = WebSend(request, pCONT_set->XdrvMailbox.data);
+// // //     if (tkr_set->XdrvMailbox.data_len > 0) {
+// // //       uint8_t result = WebSend(request, tkr_set->XdrvMailbox.data);
 // // //       char stemp1[20];
 // // //       pCONT_sup->Response_P(S_JSON_COMMAND_SVALUE, command, pCONT_sup->GetTextIndexed_P(stemp1, sizeof(stemp1), result, kWebSendStatus));
 // // //     }
 // // //   }
 // // //   else if (CMND_WEBCOLOR == command_code) {
-// // //     if (pCONT_set->XdrvMailbox.data_len > 0) {
-// // //       if (strstr(pCONT_set->XdrvMailbox.data, "{") == nullptr) {  // If no JSON it must be parameter
-// // //         if ((pCONT_set->XdrvMailbox.data_len > 3) && (pCONT_set->XdrvMailbox.index > 0) && (pCONT_set->XdrvMailbox.index <= pCONT_set->COL_LAST)) {
-// // //           pCONT_sup->WebHexCode(pCONT_set->XdrvMailbox.index -1, pCONT_set->XdrvMailbox.data);
+// // //     if (tkr_set->XdrvMailbox.data_len > 0) {
+// // //       if (strstr(tkr_set->XdrvMailbox.data, "{") == nullptr) {  // If no JSON it must be parameter
+// // //         if ((tkr_set->XdrvMailbox.data_len > 3) && (tkr_set->XdrvMailbox.index > 0) && (tkr_set->XdrvMailbox.index <= tkr_set->COL_LAST)) {
+// // //           pCONT_sup->WebHexCode(tkr_set->XdrvMailbox.index -1, tkr_set->XdrvMailbox.data);
 // // //         }
-// // //         else if (0 == pCONT_set->XdrvMailbox.payload) {
-// // //           pCONT_set->SettingsDefaultWebColor();
+// // //         else if (0 == tkr_set->XdrvMailbox.payload) {
+// // //           tkr_set->SettingsDefaultWebColor();
 // // //         }
 // // //       }
 // // //       else {
-// // //         JsonWebColor(pCONT_set->XdrvMailbox.data);
+// // //         JsonWebColor(tkr_set->XdrvMailbox.data);
 // // //       }
 // // //     }
 // // //     pCONT_sup->Response_P(PSTR("{\"" D_WEBCOLOR "\":["));
-// // //     for (uint8_t i = 0; i < pCONT_set->COL_LAST; i++) {
+// // //     for (uint8_t i = 0; i < tkr_set->COL_LAST; i++) {
 // // //       if (i) { pCONT_sup->ResponseAppend_P(PSTR(",")); }
 // // //       pCONT_sup->ResponseAppend_P(PSTR("\"#%06x\""), WebColor(i));
 // // //     }
@@ -1081,10 +1081,10 @@ bool mWebServer::HttpCheckPriviledgedAccess()
 // // // #ifdef USE_EMULATION
 // // //   else if (CMND_EMULATION == command_code) {
 // // //     if ((XdrvMailbox.payload >= EMUL_NONE) && (XdrvMailbox.payload < EMUL_MAX)) {
-// // //       pCONT_set->Settings.flag_power.emulation = XdrvMailbox.payload;
+// // //       tkr_set->Settings.flag_power.emulation = XdrvMailbox.payload;
 // // //       restart_flag = 2;
 // // //     }
-// // //     Response_P(S_JSON_COMMAND_NVALUE, command, pCONT_set->Settings.flag_power.emulation);
+// // //     Response_P(S_JSON_COMMAND_NVALUE, command, tkr_set->Settings.flag_power.emulation);
 // // //   }
 // // // #endif  // USE_EMULATION
 // // //   else serviced = false;  // Unknown command
@@ -1761,7 +1761,7 @@ bool  mWebServer::captivePortal(AsyncWebServerRequest *request)
   if (!request->hasHeader("Host")) return false;
   hostH = request->getHeader("Host")->value();
 
-  if (!isIp(hostH) && hostH.indexOf("wled.me") < 0 && hostH.indexOf(pCONT_set->Settings.system_name.device) < 0) {
+  if (!isIp(hostH) && hostH.indexOf("wled.me") < 0 && hostH.indexOf(tkr_set->Settings.system_name.device) < 0) {
     DEBUG_PRINTLN("Captive portal");
     AsyncWebServerResponse *response = request->beginResponse(302);
     response->addHeader(F("Location"), F("http://4.3.2.1"));
@@ -1782,7 +1782,7 @@ void mWebServer::setStaticContentCacheHeaders(AsyncWebServerResponse *response)
   #else
   response->addHeader(F("Cache-Control"),"no-store,max-age=0"); // prevent caching if debug build
   #endif
-  snprintf_P(tmp, sizeof(tmp), PSTR("%d-%02x"), PROJECT_VERSION, false);// pCONT_lAni->cacheInvalidate);
+  snprintf_P(tmp, sizeof(tmp), PSTR("%d-%02x"), PROJECT_VERSION, false);// tkr_anim->cacheInvalidate);
   response->addHeader(F("ETag"), tmp);
 }
 

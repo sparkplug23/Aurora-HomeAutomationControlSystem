@@ -344,11 +344,11 @@ uint32_t WcSetup(int32_t fsiz) {
 
   sensor_t * wc_s = esp_camera_sensor_get();
 
-  wc_s->set_vflip(wc_s, pCONT_set->Settings.webcam_config.flip);
-  wc_s->set_hmirror(wc_s, pCONT_set->Settings.webcam_config.mirror);
-  wc_s->set_brightness(wc_s, pCONT_set->Settings.webcam_config.brightness -2);  // up the brightness just a bit
-  wc_s->set_saturation(wc_s, pCONT_set->Settings.webcam_config.saturation -2);  // lower the saturation
-  wc_s->set_contrast(wc_s, pCONT_set->Settings.webcam_config.contrast -2);      // keep contrast
+  wc_s->set_vflip(wc_s, tkr_set->Settings.webcam_config.flip);
+  wc_s->set_hmirror(wc_s, tkr_set->Settings.webcam_config.mirror);
+  wc_s->set_brightness(wc_s, tkr_set->Settings.webcam_config.brightness -2);  // up the brightness just a bit
+  wc_s->set_saturation(wc_s, tkr_set->Settings.webcam_config.saturation -2);  // lower the saturation
+  wc_s->set_contrast(wc_s, tkr_set->Settings.webcam_config.contrast -2);      // keep contrast
 
   // drop down frame size for higher initial frame rate
   wc_s->set_framesize(wc_s, (framesize_t)fsiz);
@@ -760,7 +760,7 @@ uint32_t WcSetup(int32_t fsiz) {
 
 //   ALOG_DBM( PSTR(D_LOG_HTTP "Capture image"));
 
-//   if (pCONT_set->Settings.webcam_config.stream) {
+//   if (tkr_set->Settings.webcam_config.stream) {
 //     if (!Wc.CamServer) {
 //       WcStreamControl();
 //     }
@@ -899,7 +899,7 @@ uint32_t mCameraOV2640::WcSetStreamserver(uint32_t flag) {
 ALOG_TST(PSTR("mCameraOV2640::WcSetStreamserver"));
 
 
-if (pCONT_set->global_state.network_down) { return 0; }
+if (tkr_set->global_state.network_down) { return 0; }
 
   Wc.stream_active = 0;
 
@@ -926,8 +926,8 @@ if (pCONT_set->global_state.network_down) { return 0; }
 }
 
 void mCameraOV2640::WcStreamControl() {
-  WcSetStreamserver(pCONT_set->Settings.webcam_config.stream);
-  WcSetup(pCONT_set->Settings.webcam_config.resolution);
+  WcSetStreamserver(tkr_set->Settings.webcam_config.stream);
+  WcSetup(tkr_set->Settings.webcam_config.resolution);
 }
 
 // /*********************************************************************************************/
@@ -946,7 +946,7 @@ ALOG_TST(PSTR("if (Wc.CamServer) "));
 #endif
 
 #ifdef ENABLE_RTSPSERVER
-    if (pCONT_set->Settings.webcam_config.rtsp && !TasmotaGlobal.global_state.wifi_down && Wc.up) {
+    if (tkr_set->Settings.webcam_config.rtsp && !TasmotaGlobal.global_state.wifi_down && Wc.up) {
       if (!Wc.rtsp_start) {
         Wc.rtspp = new WiFiServer(8554);
         Wc.rtspp->begin();
@@ -994,7 +994,7 @@ ALOG_TST(PSTR("if (Wc.CamServer) "));
 // }
 
 void mCameraOV2640::WcShowStream(void) {
-  if (pCONT_set->Settings.webcam_config.stream) {
+  if (tkr_set->Settings.webcam_config.stream) {
 //    if (!Wc.CamServer || !Wc.up) {
     if (!Wc.CamServer) {
       WcStreamControl();
@@ -1028,14 +1028,14 @@ void mCameraOV2640::init(void)
 void mCameraOV2640::Pre_Init(){
   
 // void WcInit(void) {
-  // if (!pCONT_set->Settings.webcam_config.data) {
-    pCONT_set->Settings.webcam_config.stream = 1;
-    pCONT_set->Settings.webcam_config.resolution = FRAMESIZE_QVGA;
-    pCONT_set->Settings.webcam_config.flip = 0;
-    pCONT_set->Settings.webcam_config.mirror = 0;
-    pCONT_set->Settings.webcam_config.saturation = 0;  // -2
-    pCONT_set->Settings.webcam_config.brightness = 3;  // 1
-    pCONT_set->Settings.webcam_config.contrast = 2;    // 0
+  // if (!tkr_set->Settings.webcam_config.data) {
+    tkr_set->Settings.webcam_config.stream = 1;
+    tkr_set->Settings.webcam_config.resolution = FRAMESIZE_QVGA;
+    tkr_set->Settings.webcam_config.flip = 0;
+    tkr_set->Settings.webcam_config.mirror = 0;
+    tkr_set->Settings.webcam_config.saturation = 0;  // -2
+    tkr_set->Settings.webcam_config.brightness = 3;  // 1
+    tkr_set->Settings.webcam_config.contrast = 2;    // 0
   // }
 // }
 
@@ -1101,7 +1101,7 @@ void mCameraOV2640::MQTTHandler_Init(){
   ptr->tSavedLastSent = 0;
   ptr->flags.PeriodicEnabled = true;
   ptr->flags.SendNow = true;
-  ptr->tRateSecs = SEC_IN_HOUR;//pCONT_set->pCONT_mqtt->dt.configperiod_secs; 
+  ptr->tRateSecs = SEC_IN_HOUR;//tkr_set->pCONT_mqtt->dt.configperiod_secs; 
   ptr->topic_type = MQTT_TOPIC_TYPE_TELEPERIOD_ID;
   ptr->json_level = JSON_LEVEL_DETAILED;
   ptr->postfix_topic = PM_MQTT_HANDLER_POSTFIX_TOPIC_SETTINGS_CTR;
@@ -1122,7 +1122,7 @@ void mCameraOV2640::MQTTHandler_Init(){
 //   ptr->tSavedLastSent = 0;
 //   ptr->flags.PeriodicEnabled = true;
 //   ptr->flags.SendNow = true;
-//   ptr->tRateSecs = pCONT_set->pCONT_mqtt->dt.ifchanged_secs; 
+//   ptr->tRateSecs = tkr_set->pCONT_mqtt->dt.ifchanged_secs; 
 //   ptr->topic_type = MQTT_TOPIC_TYPE_TELEPERIOD_ID;
 //   ptr->json_level = JSON_LEVEL_DETAILED;
 //   ptr->postfix_topic = PM_MQTT_HANDLER_POSTFIX_TOPIC_DEBUG_CTR;
@@ -1144,9 +1144,9 @@ void mCameraOV2640::MQTTHandler_RefreshAll(){
 void mCameraOV2640::MQTTHandler_Rate(){
 
   mqtthandler_settings.tRateSecs = pCONT_mqtt->dt.teleperiod_secs;
-  // // mqtthandler_animation_teleperiod.tRateSecs = pCONT_set->pCONT_mqtt->dt.teleperiod_secs;
-  // // mqtthandler_ambilight_teleperiod.tRateSecs = pCONT_set->pCONT_mqtt->dt.teleperiod_secs;
-//   mqtthandler_scene_teleperiod.tRateSecs = pCONT_set->pCONT_mqtt->dt.teleperiod_secs;
+  // // mqtthandler_animation_teleperiod.tRateSecs = tkr_set->pCONT_mqtt->dt.teleperiod_secs;
+  // // mqtthandler_ambilight_teleperiod.tRateSecs = tkr_set->pCONT_mqtt->dt.teleperiod_secs;
+//   mqtthandler_scene_teleperiod.tRateSecs = tkr_set->pCONT_mqtt->dt.teleperiod_secs;
   
 } //end "MQTTHandler_Rate"
 
@@ -1789,7 +1789,7 @@ int8_t mCameraOV2640::Tasker(uint8_t function, JsonParserObject obj){
       // setup_cam();
     break;
     case TASK_EVERY_MINUTE:
-      if(!settings.caminit && (pCONT_time->uptime_seconds_nonreset>60)){
+      if(!settings.caminit && (tkr_time->uptime_seconds_nonreset>60)){
         setup_cam();
       }
     break;

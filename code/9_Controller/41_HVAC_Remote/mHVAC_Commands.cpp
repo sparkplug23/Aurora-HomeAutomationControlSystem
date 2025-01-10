@@ -156,17 +156,17 @@ void mHVAC::parse_JSONCommand(JsonParserObject obj)
 
       if(device_id_found>=0)
       {      
-        if(device_id_found > ARRAY_SIZE(pCONT_set->Settings.device_name_buffer.class_id))
+        if(device_id_found > ARRAY_SIZE(tkr_set->Settings.device_name_buffer.class_id))
         {
-        AddLog(LOG_LEVEL_ERROR, PSTR(D_LOG_RELAYS "device_id_found>pCONT_set->Settings.device_name_buffer.class_id = %d,%d"),device_id_found,ARRAY_SIZE(pCONT_set->Settings.device_name_buffer.class_id) );
+        AddLog(LOG_LEVEL_ERROR, PSTR(D_LOG_RELAYS "device_id_found>tkr_set->Settings.device_name_buffer.class_id = %d,%d"),device_id_found,ARRAY_SIZE(tkr_set->Settings.device_name_buffer.class_id) );
         }
 
         if(index < HEATING_DEVICE_MAX)
         {
-          AddLog(LOG_LEVEL_ERROR, PSTR("pCONT_set->Settings.device_name_buffer.class_id[device_id_found] = %d,%d"),device_id_found,pCONT_set->Settings.device_name_buffer.class_id[device_id_found]);
+          AddLog(LOG_LEVEL_ERROR, PSTR("tkr_set->Settings.device_name_buffer.class_id[device_id_found] = %d,%d"),device_id_found,tkr_set->Settings.device_name_buffer.class_id[device_id_found]);
         
-          zone[index].sensor.module_id = pCONT_set->Settings.device_name_buffer.class_id[device_id_found];
-          zone[index].sensor.index = pCONT_set->Settings.device_name_buffer.device_id[device_id_found];
+          zone[index].sensor.module_id = tkr_set->Settings.device_name_buffer.class_id[device_id_found];
+          zone[index].sensor.index = tkr_set->Settings.device_name_buffer.device_id[device_id_found];
         }
         ALOG_DBG(PSTR(D_LOG_RELAYS "module_id,index = %d,%d"),zone[index].sensor.module_id,zone[index].sensor.index);
 

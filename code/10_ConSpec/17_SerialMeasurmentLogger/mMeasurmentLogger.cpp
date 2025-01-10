@@ -242,7 +242,7 @@
 //   char line_ctr[15] = {0};
 //   char buffer[15] = {0};
 
-//   pCONT_set->Settings.display.mode = EM_DISPLAY_MODE_LOG_STATIC_ID;
+//   tkr_set->Settings.display.mode = EM_DISPLAY_MODE_LOG_STATIC_ID;
 
 //   /**
 //    * pic32 adc values 

@@ -259,10 +259,10 @@ void mInterfaceLight::Template_Load()
 void mInterfaceLight::Init(void)
 {
   
-  pCONT_set->Settings.pwm_range = PWM_RANGE;
-  // pCONT_set->Settings.light_settings.light_fade = 1;
-  // pCONT_set->Settings.light_settings.light_speed = 5*2;
-  pCONT_set->runtime.power = 1;
+  tkr_set->Settings.pwm_range = PWM_RANGE;
+  // tkr_set->Settings.light_settings.light_fade = 1;
+  // tkr_set->Settings.light_settings.light_speed = 5*2;
+  tkr_set->runtime.power = 1;
 
   auto_off_settings.time_decounter_secs = 0;
 
@@ -370,7 +370,7 @@ void mInterfaceLight::Save_Module()
   JBI->Start();
 
   #ifdef ENABLE_DEVFEATURE_ADD_TIMESTAMP_ON_SAVE_FILES
-    JBI->Add(PM_UTC_TIME, pCONT_time->GetDateAndTime(DT_UTC).c_str() );
+    JBI->Add(PM_UTC_TIME, tkr_time->GetDateAndTime(DT_UTC).c_str() );
   #endif // ENABLE_DEVFEATURE_ADD_TIMESTAMP_ON_SAVE_FILES
 
   
@@ -557,14 +557,14 @@ uint8_t mInterfaceLight::change10to8(uint16_t v) {
 void mInterfaceLight::LightCalcPWMRange(void) {
   uint16_t _pwm_min=0, _pwm_max=1023;
 
-  _pwm_min = change8to10(0);//DimmerToBri(pCONT_set->Settings.dimmer_hw_min));   // default 0
-  _pwm_max = change8to10(255);//DimmerToBri(pCONT_set->Settings.dimmer_hw_max));   // default 100
-  // if (pCONT_set->Settings.light_correction) {
+  _pwm_min = change8to10(0);//DimmerToBri(tkr_set->Settings.dimmer_hw_min));   // default 0
+  _pwm_max = change8to10(255);//DimmerToBri(tkr_set->Settings.dimmer_hw_max));   // default 100
+  // if (tkr_set->Settings.light_correction) {
     _pwm_min = ledGamma10_10(_pwm_min);       // apply gamma correction
     _pwm_max = ledGamma10_10(_pwm_max);       // 0..1023
   // }
-  _pwm_min = _pwm_min > 0 ? mapvalue(_pwm_min, 1, 1023, 1, pCONT_set->Settings.pwm_range) : 0;  // adapt range but keep zero and non-zero values
-  _pwm_max = mapvalue(_pwm_max, 1, 1023,  1, pCONT_set->Settings.pwm_range);  // _pwm_max cannot be zero
+  _pwm_min = _pwm_min > 0 ? mapvalue(_pwm_min, 1, 1023, 1, tkr_set->Settings.pwm_range) : 0;  // adapt range but keep zero and non-zero values
+  _pwm_max = mapvalue(_pwm_max, 1, 1023,  1, tkr_set->Settings.pwm_range);  // _pwm_max cannot be zero
 
     pwm_min = _pwm_min;
     pwm_max = _pwm_max;
@@ -618,7 +618,7 @@ uint8_t mInterfaceLight::ledGamma(uint8_t v) {
 // Just apply basic Gamma to each channel
 void mInterfaceLight::calcGammaMultiChannels(uint16_t cur_col_10[5]) {
   // Apply gamma correction for 8 and 10 bits resolutions, if needed
-  // if (pCONT_set->Settings.light_settings.light_correction) {
+  // if (tkr_set->Settings.light_settings.light_correction) {
     for (uint32_t i = 0; i < 5; i++) {
       cur_col_10[i] = ledGamma10_10(cur_col_10[i]);
     }
@@ -638,19 +638,19 @@ void mInterfaceLight::calcGammaBulbs(uint16_t cur_col_10[5]) {
 
 // #ifdef ESP8266
 //     if (
-//       // (MODULE_PHILIPS__ID == pCONT_set->my_module_type) || 
-//       (pCONT_set->Settings.flag4.pwm_ct_mode)) {   // channel 1 is the color tone, mapped to cold channel (0..255)
+//       // (MODULE_PHILIPS__ID == tkr_set->my_module_type) || 
+//       (tkr_set->Settings.flag4.pwm_ct_mode)) {   // channel 1 is the color tone, mapped to cold channel (0..255)
 //       // Xiaomi Philips bulbs follow a different scheme:
 //       cur_col_10[cw1] = getCT10bits();
 //       // channel 0=intensity, channel1=temperature
-//       if (pCONT_set->Settings.light_settings.light_correction) { // gamma correction
+//       if (tkr_set->Settings.light_settings.light_correction) { // gamma correction
 //         cur_col_10[cw0] = ledGamma10_10(white_bri10_1023);    // 10 bits gamma correction
 //       } else {
 //         cur_col_10[cw0] = white_bri10_1023;  // no gamma, extend to 10 bits
 //       }
 //     } else
 // #endif  // ESP8266
-//     if (pCONT_set->Settings.light_settings.light_correction) {
+//     if (tkr_set->Settings.light_settings.light_correction) {
 //       // if sum of both channels is > 255, then channels are probably uncorrelated
 //       if (white_bri10 <= 1031) {      // take a margin of 8 above 1023 to account for rounding errors
 //         // we calculate the gamma corrected sum of CW + WW
@@ -665,7 +665,7 @@ void mInterfaceLight::calcGammaBulbs(uint16_t cur_col_10[5]) {
 //     }
 //   }
 
-//   if (pCONT_set->Settings.light_settings.light_correction) {
+//   if (tkr_set->Settings.light_settings.light_correction) {
 //     // then apply gamma correction to RGB channels
 //     if (LST_RGB <= subtype) {
 //       for (uint32_t i = 0; i < 3; i++) {
@@ -680,12 +680,12 @@ void mInterfaceLight::calcGammaBulbs(uint16_t cur_col_10[5]) {
 }
 
 bool mInterfaceLight::isChannelGammaCorrected(uint32_t channel) {
-  // if (!pCONT_set->Settings.light_settings.light_correction) { return false; }   // Gamma correction not activated
-  // if (channel >= pCONT_lAni->subtype) { return false; }     // Out of range
+  // if (!tkr_set->Settings.light_settings.light_correction) { return false; }   // Gamma correction not activated
+  // if (channel >= tkr_anim->subtype) { return false; }     // Out of range
 #ifdef ESP8266
 //   if (
-//     // (MODULE_PHILIPS__ID == pCONT_set->my_module_type) || 
-//   (pCONT_set->Settings.flag4.pwm_ct_mode)) {
+//     // (MODULE_PHILIPS__ID == tkr_set->my_module_type) || 
+//   (tkr_set->Settings.flag4.pwm_ct_mode)) {
 //     if ((LST_COLDWARM == subtype) && (1 == channel)) { return false; }   // PMW reserved for CT
 //     if ((LST_RGBCW == subtype) && (4 == channel)) { return false; }   // PMW reserved for CT
 //   }
@@ -917,6 +917,24 @@ void mInterfaceLight::parseJSONObject__BusConfig(JsonParserObject obj)
   );
 
 
+  #ifdef ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+
+  DEBUG_LINE_HERE;
+  busConfigs[bus_index] = new BusConfig(
+    bus_type, 
+    pins, 
+    start, 
+    length,
+    ColourOrder,
+    reversed, 
+    0, // skip 
+    RGBW_MODE_MANUAL_ONLY, // autowhite
+    0, // clock
+    true // double buffer
+  );    
+
+  #else
+
   DEBUG_LINE_HERE;
   busConfigs[bus_index] = new BusConfig(
     bus_type, 
@@ -929,8 +947,10 @@ void mInterfaceLight::parseJSONObject__BusConfig(JsonParserObject obj)
     RGBW_MODE_MANUAL_ONLY
   );    
   
+  #endif
+
   DEBUG_LINE_HERE;
-  pCONT_lAni->doInitBusses = true; // adds checks
+  tkr_anim->doInitBusses = true; // adds checks
 
   ALOG_DBG( PSTR("mInterfaceLight::parseJSONObject__BusConfig Finished"));
   DEBUG_LINE_HERE;
@@ -1173,7 +1193,7 @@ void mInterfaceLight::CommandSet_LightPowerState(uint8_t state)
     pSEGMENT_I(0).intensity = 255;    
     pSEGMENT_I(0).single_animation_override.time_ms =  pSEGMENT_I(0).single_animation_override_turning_off.time_ms; // slow turn on
     ALOG_INF(PSTR("Setting override for off %d"), pSEGMENT_I(0).single_animation_override.time_ms);
-    pCONT_lAni->force_update();
+    tkr_anim->force_update();
     pSEGMENT_I(0).effect_anim_section = 0; // for effects that are only generated once, we need to trigger it again to make the brightness dim down
     CommandSet_Brt_255(0);    
   }
@@ -1184,7 +1204,7 @@ void mInterfaceLight::CommandSet_LightPowerState(uint8_t state)
     // CommandSet_Animation_Transition_Time_Ms(1000);
 
     pSEGMENT_I(0).single_animation_override.time_ms = 1000; // slow turn on
-    pCONT_lAni->force_update();
+    tkr_anim->force_update();
 
 
     // CommandSet_Animation_Transition_Rate_Ms(1000);
@@ -1209,23 +1229,23 @@ void mInterfaceLight::CommandSet_LightPowerState(uint8_t state)
 
 void mInterfaceLight::CommandSet_Brt_255(uint8_t brt_new){
     
-  // pCONT_lAni->SEGMENT_I(0).rgbcct_controller->setBrightness255(brt_new);
+  // tkr_anim->SEGMENT_I(0).rgbcct_controller->setBrightness255(brt_new);
 
-  // if(!pCONT_lAni->segments.size()){ return; } // Global does not rely on segments, and will be called before segments are created
+  // if(!tkr_anim->segments.size()){ return; } // Global does not rely on segments, and will be called before segments are created
 
-  pCONT_lAni->force_update();
+  tkr_anim->force_update();
   
   
- if(pCONT_lAni->segments.size())
+ if(tkr_anim->segments.size())
   {
-    pCONT_lAni->SEGMENT_I(0).effect_anim_section = 0; // for effects that are only generated once, we need to trigger it again to make the brightness dim down
+    tkr_anim->SEGMENT_I(0).effect_anim_section = 0; // for effects that are only generated once, we need to trigger it again to make the brightness dim down
   }
    setBriRGB_Global(brt_new);
   // probably needs to check if they are linked here, or internally
   setBriCT_Global(brt_new);
 
   // #ifdef ENABLE_LOG_LEVEL_COMMANDS
-  // ALOG_INF(PSTR(D_LOG_LIGHT D_COMMAND_NVALUE_K(D_BRIGHTNESS)), pCONT_lAni->SEGMENT_I(0).rgbcct_controller->getBrightness255());
+  // ALOG_INF(PSTR(D_LOG_LIGHT D_COMMAND_NVALUE_K(D_BRIGHTNESS)), tkr_anim->SEGMENT_I(0).rgbcct_controller->getBrightness255());
   // #endif // ENABLE_LOG_LEVEL_COMMANDS
 }
 
@@ -1237,14 +1257,14 @@ void mInterfaceLight::CommandSet_Brt_255(uint8_t brt_new){
 
 void mInterfaceLight::CommandSet_Global_BrtRGB_255(uint8_t bri, uint8_t segment_index)
 {
-  // if(!pCONT_lAni->segments.size()){ return; } // Global does not rely on segments, and will be called before segments are created
+  // if(!tkr_anim->segments.size()){ return; } // Global does not rely on segments, and will be called before segments are created
 
   // SEGMENT_I(segment_index).rgbcct_controller->setBrightnessRGB255(bri);
- pCONT_lAni->force_update();
+ tkr_anim->force_update();
  
- if(pCONT_lAni->segments.size())
+ if(tkr_anim->segments.size())
   {
-    pCONT_lAni->SEGMENT_I(0).effect_anim_section = 0; // for effects that are only generated once, we need to trigger it again to make the brightness dim down
+    tkr_anim->SEGMENT_I(0).effect_anim_section = 0; // for effects that are only generated once, we need to trigger it again to make the brightness dim down
   }
 
   _briRGB_Global = bri;
@@ -1262,12 +1282,12 @@ void mInterfaceLight::CommandSet_Global_BrtRGB_255(uint8_t bri, uint8_t segment_
 
 void mInterfaceLight::CommandSet_Global_BrtCCT_255(uint8_t bri, uint8_t segment_index) 
 {
-  // if(!pCONT_lAni->segments.size()){ return; }
-  pCONT_lAni->force_update();
+  // if(!tkr_anim->segments.size()){ return; }
+  tkr_anim->force_update();
   
- if(pCONT_lAni->segments.size())
+ if(tkr_anim->segments.size())
   {
-    pCONT_lAni->SEGMENT_I(0).effect_anim_section = 0; // for effects that are only generated once, we need to trigger it again to make the brightness dim down
+    tkr_anim->SEGMENT_I(0).effect_anim_section = 0; // for effects that are only generated once, we need to trigger it again to make the brightness dim down
   }
 
   setBriCT_Global(bri);
@@ -1295,11 +1315,11 @@ uint8_t mInterfaceLight::ConstructJSON_Settings(uint8_t json_level, bool json_ap
   
   JBI->Start();
 
-  // JBI->Add_P(PM_TYPE, pCONT_set->Settings.light_settings.type);
+  // JBI->Add_P(PM_TYPE, tkr_set->Settings.light_settings.type);
 
   // // JBI->Add_P(PM_PIXELS_UPDATE_PERCENTAGE, animation.transition.pixels_to_update_as_percentage);
   // #ifdef USE_MODULE_LIGHTS_ANIMATOR
-  // JBI->Add_P(PM_PIXELS_UPDATE_NUMBER, pCONT_lAni->SEGMENT_I(0).transition.pixels_to_update_as_number);
+  // JBI->Add_P(PM_PIXELS_UPDATE_NUMBER, tkr_anim->SEGMENT_I(0).transition.pixels_to_update_as_number);
   // #endif // USE_MODULE_LIGHTS_ANIMATOR
 
   return JBI->End();
@@ -1357,11 +1377,11 @@ uint8_t mInterfaceLight::ConstructJSON_Debug_Module_Config(uint8_t json_level, b
     // JBI->Object_End();
     JBI->Object_Start("type");
     
-    JBI->Add("R", pCONT_lAni->SEGMENT_I(0).hardware_element_colour_order.r); 
-    JBI->Add("G", pCONT_lAni->SEGMENT_I(0).hardware_element_colour_order.g); 
-    JBI->Add("B", pCONT_lAni->SEGMENT_I(0).hardware_element_colour_order.b); 
-    JBI->Add("WW", pCONT_lAni->SEGMENT_I(0).hardware_element_colour_order.w); 
-    JBI->Add("WC", pCONT_lAni->SEGMENT_I(0).hardware_element_colour_order.c); 
+    JBI->Add("R", tkr_anim->SEGMENT_I(0).hardware_element_colour_order.r); 
+    JBI->Add("G", tkr_anim->SEGMENT_I(0).hardware_element_colour_order.g); 
+    JBI->Add("B", tkr_anim->SEGMENT_I(0).hardware_element_colour_order.b); 
+    JBI->Add("WW", tkr_anim->SEGMENT_I(0).hardware_element_colour_order.w); 
+    JBI->Add("WC", tkr_anim->SEGMENT_I(0).hardware_element_colour_order.c); 
 
 
     JBI->Object_End();
@@ -1371,10 +1391,10 @@ uint8_t mInterfaceLight::ConstructJSON_Debug_Module_Config(uint8_t json_level, b
   JBI->Object_End();
 
 
-  if(pCONT_lAni->SEGMENT_I(0).palette_id == mPalette::PALETTELIST_VARIABLE_GENERIC_01__ID)
+  if(tkr_anim->SEGMENT_I(0).palette_id == mPalette::PALETTELIST_VARIABLE_GENERIC_01__ID)
   {
 
-    JBI->Array_AddArray("encoded", pCONT_set->Settings.animation_settings.palette_encoded_users_colour_map, ARRAY_SIZE(pCONT_set->Settings.animation_settings.palette_encoded_users_colour_map));
+    JBI->Array_AddArray("encoded", tkr_set->Settings.animation_settings.palette_encoded_users_colour_map, ARRAY_SIZE(tkr_set->Settings.animation_settings.palette_encoded_users_colour_map));
 
   }
 

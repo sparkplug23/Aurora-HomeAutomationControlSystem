@@ -284,18 +284,18 @@ mAnimatorLight::Segment::setPixelColorXY(int x, int y, uint32_t col)
       #endif
 
       // Caution, should now call the stirp one (not the segment, needs renamed to be clear!!!)
-      pCONT_lAni->setPixelColorXY(start + xX, startY + yY, tmpCol);
+      tkr_anim->setPixelColorXY(start + xX, startY + yY, tmpCol);
 
       if (mirror) { //set the corresponding horizontally mirrored pixel
-        if (transpose) pCONT_lAni->setPixelColorXY(start + xX, startY + height() - yY - 1, tmpCol); // Caution, should now call the stirp one (not the segment, needs renamed to be clear!!!)
-        else           pCONT_lAni->setPixelColorXY(start + width() - xX - 1, startY + yY, tmpCol);// Caution, should now call the stirp one (not the segment, needs renamed to be clear!!!)
+        if (transpose) tkr_anim->setPixelColorXY(start + xX, startY + height() - yY - 1, tmpCol); // Caution, should now call the stirp one (not the segment, needs renamed to be clear!!!)
+        else           tkr_anim->setPixelColorXY(start + width() - xX - 1, startY + yY, tmpCol);// Caution, should now call the stirp one (not the segment, needs renamed to be clear!!!)
       }
       if (mirror_y) { //set the corresponding vertically mirrored pixel
-        if (transpose) pCONT_lAni->setPixelColorXY(start + width() - xX - 1, startY + yY, tmpCol);// Caution, should now call the stirp one (not the segment, needs renamed to be clear!!!)
-        else           pCONT_lAni->setPixelColorXY(start + xX, startY + height() - yY - 1, tmpCol);// Caution, should now call the stirp one (not the segment, needs renamed to be clear!!!)
+        if (transpose) tkr_anim->setPixelColorXY(start + width() - xX - 1, startY + yY, tmpCol);// Caution, should now call the stirp one (not the segment, needs renamed to be clear!!!)
+        else           tkr_anim->setPixelColorXY(start + xX, startY + height() - yY - 1, tmpCol);// Caution, should now call the stirp one (not the segment, needs renamed to be clear!!!)
       }
       if (mirror_y && mirror) { //set the corresponding vertically AND horizontally mirrored pixel
-        pCONT_lAni->setPixelColorXY(width() - xX - 1, height() - yY - 1, tmpCol);// Caution, should now call the stirp one (not the segment, needs renamed to be clear!!!)
+        tkr_anim->setPixelColorXY(width() - xX - 1, height() - yY - 1, tmpCol);// Caution, should now call the stirp one (not the segment, needs renamed to be clear!!!)
       }
       
   // DEBUG_LINE_HERE;
@@ -307,6 +307,8 @@ mAnimatorLight::Segment::setPixelColorXY(int x, int y, uint32_t col)
   DEBUG_LINE_HERE;
 }
 
+
+#ifdef USE_AA_PIXELS
 // anti-aliased version of setPixelColorXY()
 void mAnimatorLight::Segment::setPixelColorXY(float x, float y, uint32_t col, bool aa)
 {
@@ -359,6 +361,7 @@ DEBUG_LINE_HERE;
   }
   DEBUG_LINE_HERE;
 }
+#endif
 
 // returns RGBW values of pixel
 uint32_t mAnimatorLight::Segment::getPixelColorXY(uint16_t x, uint16_t y) 
@@ -392,7 +395,7 @@ uint32_t mAnimatorLight::Segment::getPixelColorXY(uint16_t x, uint16_t y)
   
   DEBUG_LINE_HERE3
   // Caution, should now call the stirp one (not the segment, needs renamed to be clear!!!)
-  return pCONT_lAni->getPixelColorXY(start + x, startY + y);
+  return tkr_anim->getPixelColorXY(start + x, startY + y);
   // DEBUG_LINE_HERE;
 }
 
@@ -763,7 +766,7 @@ void mAnimatorLight::Segment::drawCharacter_UsingGradientPalletes(
         }
       }
 
-      RgbcctColor bgCol  = pCONT_lAni->GetColourFromUnloadedPalette2(
+      RgbcctColor bgCol  = tkr_anim->GetColourFromUnloadedPalette3(
         backgroundPaletteId, _pixel_position,
         PALETTE_INDEX_SPANS_SEGLEN_ON,  // Scale across the segment length
         PALETTE_WRAP_ON,

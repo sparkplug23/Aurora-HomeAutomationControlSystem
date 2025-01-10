@@ -53,7 +53,7 @@
 
 
 //       JBI->Add("ih",
-//         pCONT_time->ConvertShortTime_HHMMSS(&pir_detect[sensor_id].detected_time, buffer, sizeof(buffer)));
+//         tkr_time->ConvertShortTime_HHMMSS(&pir_detect[sensor_id].detected_time, buffer, sizeof(buffer)));
       
 //       //detected_rtc_ctr);
 //       JBI->Add("fc",colour_ctr);    

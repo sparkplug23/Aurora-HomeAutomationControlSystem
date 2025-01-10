@@ -112,12 +112,12 @@ void mPrinter3D::EverySecond()
 void mPrinter3D::SubTask_UpdateOLED()
 {
   
-  pCONT_set->Settings.display.mode = EM_DISPLAY_MODE_LOG_STATIC_ID;
+  tkr_set->Settings.display.mode = EM_DISPLAY_MODE_LOG_STATIC_ID;
   char buffer[100] = {0};
   char buffer_f[100] = {0};
   char buffer_n[100] = {0};
   
-  snprintf(buffer, sizeof(buffer), "%s", pCONT_time->RtcTime.hhmmss_ctr);
+  snprintf(buffer, sizeof(buffer), "%s", tkr_time->RtcTime.hhmmss_ctr);
   pCONT_iDisp->LogBuffer_AddRow(buffer, 3);
 
   // #ifdef USE_MODULE_DISPLAYS_OLED_SSD1306

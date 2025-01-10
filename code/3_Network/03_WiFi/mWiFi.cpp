@@ -33,18 +33,18 @@ int8_t mWiFi::Tasker(uint8_t function, JsonParserObject obj){
     break;
     case TASK_EVERY_SECOND:{
       
-      AddLog(loglevel_with_connection_status, PSTR(D_LOG_WIFI "network_wifi=%d"), pCONT_set->Settings.flag_network.network_wifi);
+      AddLog(loglevel_with_connection_status, PSTR(D_LOG_WIFI "network_wifi=%d"), tkr_set->Settings.flag_network.network_wifi);
 
       #ifndef ENABLE_DEVFEATURE_WIFI_CONNECTION_VERSION2_2025
-      if (pCONT_set->Settings.flag_network.network_wifi) 
+      if (tkr_set->Settings.flag_network.network_wifi) 
       {
-        WifiCheck(pCONT_set->runtime.wifi_state_flag);
-        pCONT_set->runtime.wifi_state_flag = WIFI_RESTART;
+        WifiCheck(tkr_set->runtime.wifi_state_flag);
+        tkr_set->runtime.wifi_state_flag = WIFI_RESTART;
       }
 
       #ifdef ENABLE_LOG_LEVEL_INFO
-      AddLog(loglevel_with_connection_status, PSTR(D_LOG_WIFI "sta_ssid[%d]=%s"),pCONT_set->Settings.sta_active, pCONT_set->SettingsText(SET_STASSID1 + pCONT_set->Settings.sta_active) );
-      AddLog(loglevel_with_connection_status, PSTR(D_LOG_WIFI "sta_pwd[%d]=%s"), pCONT_set->Settings.sta_active, pCONT_set->SettingsText(SET_STAPWD1 + pCONT_set->Settings.sta_active) );
+      AddLog(loglevel_with_connection_status, PSTR(D_LOG_WIFI "sta_ssid[%d]=%s"),tkr_set->Settings.sta_active, tkr_set->SettingsText(SET_STASSID1 + tkr_set->Settings.sta_active) );
+      AddLog(loglevel_with_connection_status, PSTR(D_LOG_WIFI "sta_pwd[%d]=%s"), tkr_set->Settings.sta_active, tkr_set->SettingsText(SET_STAPWD1 + tkr_set->Settings.sta_active) );
       #endif
       #endif // ENABLE_DEVFEATURE_WIFI_CONNECTION_VERSION2_2025
 
@@ -53,10 +53,10 @@ int8_t mWiFi::Tasker(uint8_t function, JsonParserObject obj){
     case TASK_EVERY_MINUTE:
     
 // #ifdef ENABLE_DEVFEATURE__WIFI_BLOCK_BAD_CODE_TEST
-//       if (pCONT_set->Settings.flag_network.network_wifi) 
+//       if (tkr_set->Settings.flag_network.network_wifi) 
 //       {
-//         WifiCheck(pCONT_set->wifi_state_flag);
-//         pCONT_set->wifi_state_flag = WIFI_RESTART;
+//         WifiCheck(tkr_set->wifi_state_flag);
+//         tkr_set->wifi_state_flag = WIFI_RESTART;
 //       }
 // #endif // ENABLE_DEVFEATURE__WIFI_BLOCK_BAD_CODE_TEST
 
@@ -90,13 +90,13 @@ int8_t mWiFi::Tasker(uint8_t function, JsonParserObject obj){
 
           pCONT_mqtt->brokers.back()->SetReConnectBackoffTime(MQTT_RETRY_SECS);
           
-          // char client_name[100]; snprintf_P(client_name, sizeof(client_name), PSTR("%s-%s"), pCONT_set->Settings.system_name.device, WiFi.macAddress().c_str()); 
+          // char client_name[100]; snprintf_P(client_name, sizeof(client_name), PSTR("%s-%s"), tkr_set->Settings.system_name.device, WiFi.macAddress().c_str()); 
           
           uint8_t mac[6];           WiFi.macAddress(mac);
-          char client_name[100]; snprintf_P(client_name, sizeof(client_name), PSTR("%s-%02X:%02X:%02X"), pCONT_set->Settings.system_name.device, mac[3], mac[4], mac[5]); 
+          char client_name[100]; snprintf_P(client_name, sizeof(client_name), PSTR("%s-%02X:%02X:%02X"), tkr_set->Settings.system_name.device, mac[3], mac[4], mac[5]); 
           pCONT_mqtt->brokers.back()->SetClientName(client_name);
 
-          pCONT_mqtt->brokers.back()->SetTopicPrefix(pCONT_set->Settings.system_name.device);
+          pCONT_mqtt->brokers.back()->SetTopicPrefix(tkr_set->Settings.system_name.device);
 
         #endif // USE_MODULE_NETWORK_MQTT
       #endif // ENABLE_DEVFEATURE_MQTT_USING_CELLULAR
@@ -250,7 +250,7 @@ void mWiFi::WifiConfig(uint8_t type)
     
 //  DEBUG_LINE_HERE;
 //  #ifndef ESP8266
-//       pCONT_set->restart_flag = 2; //restarts device, make this a user flag
+//       tkr_set->restart_flag = 2; //restarts device, make this a user flag
 //       #endif
     }
     else if (WIFI_SERIAL == connection.config_type) {
@@ -317,15 +317,15 @@ void mWiFi::WifiBegin(uint8_t flag, uint8_t channel)
     default:
     case 0:  // AP1
     case 1:  // AP2
-      pCONT_set->Settings.sta_active = flag;
+      tkr_set->Settings.sta_active = flag;
     break;
     case 2:  // Toggle
-      pCONT_set->Settings.sta_active ^= 1;
+      tkr_set->Settings.sta_active ^= 1;
     break;
   }        // 3: Current AP
 
-  if (!strlen(pCONT_set->SettingsText(SET_STASSID1 + pCONT_set->Settings.sta_active))) {
-    pCONT_set->Settings.sta_active ^= 1;  // Skip empty SSID
+  if (!strlen(tkr_set->SettingsText(SET_STASSID1 + tkr_set->Settings.sta_active))) {
+    tkr_set->Settings.sta_active ^= 1;  // Skip empty SSID
   }
 
 
@@ -333,30 +333,30 @@ void mWiFi::WifiBegin(uint8_t flag, uint8_t channel)
 
 
   // Set static IP  // Set static IP
-  // if (pCONT_set->Settings.ip_address[0]) {
+  // if (tkr_set->Settings.ip_address[0]) {
   //   AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_WIFI "Settings.ip_address=%s"),"true");
-  //   WiFi.config(pCONT_set->Settings.ip_address[0], 
-  //               pCONT_set->Settings.ip_address[1], 
-  //               pCONT_set->Settings.ip_address[2], 
-  //               pCONT_set->Settings.ip_address[3]
+  //   WiFi.config(tkr_set->Settings.ip_address[0], 
+  //               tkr_set->Settings.ip_address[1], 
+  //               tkr_set->Settings.ip_address[2], 
+  //               tkr_set->Settings.ip_address[3]
   //               );  // Set static IP
   // }else{
   //   AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_WIFI "Settings.ip_address=%s"),"false");
   // }
   
   #ifdef ESP8266
-    WiFi.hostname(pCONT_set->runtime.my_hostname);   // ESP8266 needs this here (after WiFi.mode)
+    WiFi.hostname(tkr_set->runtime.my_hostname);   // ESP8266 needs this here (after WiFi.mode)
   #endif
   
     #ifdef ENABLE_LOG_LEVEL_INFO
-    AddLog(loglevel_with_connection_status, PSTR(D_LOG_WIFI "sta_ssid[%d]=%s"), pCONT_set->Settings.sta_active, pCONT_set->SettingsText(SET_STASSID1 + pCONT_set->Settings.sta_active));
-    AddLog(loglevel_with_connection_status, PSTR(D_LOG_WIFI "sta_pwd[%d]=%s"), pCONT_set->Settings.sta_active, pCONT_set->SettingsText(SET_STAPWD1 + pCONT_set->Settings.sta_active));
+    AddLog(loglevel_with_connection_status, PSTR(D_LOG_WIFI "sta_ssid[%d]=%s"), tkr_set->Settings.sta_active, tkr_set->SettingsText(SET_STASSID1 + tkr_set->Settings.sta_active));
+    AddLog(loglevel_with_connection_status, PSTR(D_LOG_WIFI "sta_pwd[%d]=%s"), tkr_set->Settings.sta_active, tkr_set->SettingsText(SET_STAPWD1 + tkr_set->Settings.sta_active));
     #endif// ENABLE_LOG_LEVEL_INFO
 
   if (channel) {
     WiFi.begin(
-      pCONT_set->SettingsText(SET_STASSID1 + pCONT_set->Settings.sta_active), 
-      pCONT_set->SettingsText(SET_STAPWD1 + pCONT_set->Settings.sta_active), 
+      tkr_set->SettingsText(SET_STASSID1 + tkr_set->Settings.sta_active), 
+      tkr_set->SettingsText(SET_STAPWD1 + tkr_set->Settings.sta_active), 
       channel, 
       connection.bssid
     );
@@ -368,17 +368,17 @@ void mWiFi::WifiBegin(uint8_t flag, uint8_t channel)
   
   } else {
     
-    WiFi.begin(pCONT_set->SettingsText(SET_STASSID1 + pCONT_set->Settings.sta_active), pCONT_set->SettingsText(SET_STAPWD1 + pCONT_set->Settings.sta_active));
+    WiFi.begin(tkr_set->SettingsText(SET_STASSID1 + tkr_set->Settings.sta_active), tkr_set->SettingsText(SET_STAPWD1 + tkr_set->Settings.sta_active));
   }
   
   #ifdef ESP8266
     #ifdef ENABLE_LOG_LEVEL_INFO
   ALOG_INF(PSTR(D_LOG_WIFI D_CONNECTING_TO_AP "%d \"%s\" \"%s\" " D_IN_MODE " 11%c " D_AS " %s"),
-    pCONT_set->Settings.sta_active +1, 
-    pCONT_set->SettingsText(SET_STASSID1 + pCONT_set->Settings.sta_active), 
-    pCONT_set->SettingsText(SET_STAPWD1 + pCONT_set->Settings.sta_active), 
+    tkr_set->Settings.sta_active +1, 
+    tkr_set->SettingsText(SET_STASSID1 + tkr_set->Settings.sta_active), 
+    tkr_set->SettingsText(SET_STAPWD1 + tkr_set->Settings.sta_active), 
     kWifiPhyMode[WiFi.getPhyMode() & 0x3], 
-    pCONT_set->runtime.my_hostname);
+    tkr_set->runtime.my_hostname);
     #endif// ENABLE_LOG_LEVEL_INFO
   #endif
 
@@ -525,8 +525,8 @@ if(WiFi.scanComplete() == WIFI_SCAN_RUNNING){
         for (j = 0; j < MAX_SSIDS; j++) {
           // DEBUG_LINE_HERE;
 
-          // if (ssid_scan == pCONT_set->Settings.sta_ssid[j]) {  // SSID match
-          if (ssid_scan == pCONT_set->SettingsText(SET_STASSID1 + j)) {  // SSID match
+          // if (ssid_scan == tkr_set->Settings.sta_ssid[j]) {  // SSID match
+          if (ssid_scan == tkr_set->SettingsText(SET_STASSID1 + j)) {  // SSID match
 
 
 
@@ -540,9 +540,9 @@ if(WiFi.scanComplete() == WIFI_SCAN_RUNNING){
             ALOG_TST(PSTR("rssi_scan > best_network_db"));
     #endif// ENABLE_LOG_LEVEL_INFO
                #ifdef ESP8266
-                if (sec_scan == ENC_TYPE_NONE || pCONT_set->SettingsText(SET_STAPWD1 + j)) {  // Check for passphrase if not open wlan
+                if (sec_scan == ENC_TYPE_NONE || tkr_set->SettingsText(SET_STAPWD1 + j)) {  // Check for passphrase if not open wlan
                #else
-                if (pCONT_set->SettingsText(SET_STAPWD1 + j)) {  // Check for passphrase if not open wlan               
+                if (tkr_set->SettingsText(SET_STAPWD1 + j)) {  // Check for passphrase if not open wlan               
                #endif
                 best_network_db = (int8_t)rssi_scan;
                 channel = chan_scan;
@@ -561,7 +561,7 @@ if(WiFi.scanComplete() == WIFI_SCAN_RUNNING){
             break;
           }else{
           
-            // ALOG_TST(PSTR("ssid_scan[\"%s\"] != pCONT_set->Settings.sta_ssid[%d] \"%s\""),ssid_scan,j,pCONT_set->Settings.sta_ssid[j]);
+            // ALOG_TST(PSTR("ssid_scan[\"%s\"] != tkr_set->Settings.sta_ssid[%d] \"%s\""),ssid_scan,j,tkr_set->Settings.sta_ssid[j]);
 
           }
         }
@@ -633,10 +633,10 @@ bool mWiFi::WifiHostByName(const char* aHostname, IPAddress& aResult) {
 #endif
 #endif // USE_IPV6
 
-  pCONT_set->Settings.dns_timeout = 1000;
+  tkr_set->Settings.dns_timeout = 1000;
 
   uint32_t dns_start = millis();
-  bool success = WiFi.hostByName(aHostname, aResult);//, pCONT_set->Settings.dns_timeout);
+  bool success = WiFi.hostByName(aHostname, aResult);//, tkr_set->Settings.dns_timeout);
   uint32_t dns_end = millis();
   if (success) {
     // Host name resolved
@@ -693,25 +693,25 @@ void mWiFi::WifiSetState(uint8_t state)
     #endif// ENABLE_LOG_LEVEL_INFO
   }
 
-  if (state == pCONT_set->runtime.global_state.wifi_down) {
+  if (state == tkr_set->runtime.global_state.wifi_down) {
     DEBUG_LINE_HERE;
     if (state) {
-      // pCONT_set->rules_flag.wifi_connected = 1;
+      // tkr_set->rules_flag.wifi_connected = 1;
       connection.link_count++;
-      connection.downtime += pCONT_time->UpTime() - connection.last_event;
+      connection.downtime += tkr_time->UpTime() - connection.last_event;
     } else {
-      // pCONT_set->rules_flag.wifi_disconnected = 1;
-      connection.last_event = pCONT_time->UpTime();
+      // tkr_set->rules_flag.wifi_disconnected = 1;
+      connection.last_event = tkr_time->UpTime();
     }DEBUG_LINE_HERE
 
   }
-  // if(pCONT_time==NULL){
-  //    ALOG_DBM( "pCONT_time==NULL");
+  // if(tkr_time==NULL){
+  //    ALOG_DBM( "tkr_time==NULL");
   // }
-  pCONT_set->runtime.global_state.wifi_down = state ^1;
-  if (!pCONT_set->runtime.global_state.wifi_down) {
+  tkr_set->runtime.global_state.wifi_down = state ^1;
+  if (!tkr_set->runtime.global_state.wifi_down) {
     // DEBUG_LINE_HERE;
-    pCONT_set->runtime.global_state.network_down = 0;
+    tkr_set->runtime.global_state.network_down = 0;
   }
 
   // ALOG_INF(PSTR(D_LOG_DEBUG "%s"),"WifiSetState end");
@@ -810,14 +810,14 @@ void mWiFi::WifiCheckIp(void)
       ALOG_INF(S_LOG_WIFI, PSTR(D_CONNECTED));
     #endif// ENABLE_LOG_LEVEL_INFO
       // ALOG_INF(PSTR(D_LOG_WIFI "Set IP addresses"));
-      pCONT_set->Settings.ip_address[1] = (uint32_t)WiFi.gatewayIP();
-      pCONT_set->Settings.ip_address[2] = (uint32_t)WiFi.subnetMask();
-      pCONT_set->Settings.ip_address[3] = (uint32_t)WiFi.dnsIP();
+      tkr_set->Settings.ip_address[1] = (uint32_t)WiFi.gatewayIP();
+      tkr_set->Settings.ip_address[2] = (uint32_t)WiFi.subnetMask();
+      tkr_set->Settings.ip_address[3] = (uint32_t)WiFi.dnsIP();
       
       // Save current AP parameters for quick reconnect
-      pCONT_set->Settings.wifi_channel = WiFi.channel();
+      tkr_set->Settings.wifi_channel = WiFi.channel();
       uint8_t *bssid = WiFi.BSSID();
-      memcpy((void*) &pCONT_set->Settings.wifi_bssid, (void*) bssid, sizeof(pCONT_set->Settings.wifi_bssid));
+      memcpy((void*) &tkr_set->Settings.wifi_bssid, (void*) bssid, sizeof(tkr_set->Settings.wifi_bssid));
     }
 
     connection.status = WL_CONNECTED;    //assert status to be connected
@@ -832,7 +832,7 @@ void mWiFi::WifiCheckIp(void)
     #endif// ENABLE_LOG_LEVEL_INFO
 
     WifiSetState(0);DEBUG_LINE_HERE
-    uint8_t wifi_config_tool = pCONT_set->Settings.sta_config;
+    uint8_t wifi_config_tool = tkr_set->Settings.sta_config;
     connection.status = WiFi.status();
     switch (connection.status) {
       case WL_CONNECTED:
@@ -848,23 +848,23 @@ void mWiFi::WifiCheckIp(void)
         ALOG_INF(PSTR(D_LOG_WIFI D_CONNECT_FAILED_AP_NOT_REACHED));
         #endif // ENABLE_LOG_LEVEL_INFO
         
-        pCONT_set->Settings.wifi_channel = 0;  // Disable stored AP
+        tkr_set->Settings.wifi_channel = 0;  // Disable stored AP
 
-        if (WIFI_WAIT == pCONT_set->Settings.sta_config) {
+        if (WIFI_WAIT == tkr_set->Settings.sta_config) {
     #ifdef ENABLE_LOG_LEVEL_INFO
-          ALOG_INF(PSTR(D_LOG_WIFI "1%s"),"WIFI_WAIT == pCONT_set->Settings.sta_config");
+          ALOG_INF(PSTR(D_LOG_WIFI "1%s"),"WIFI_WAIT == tkr_set->Settings.sta_config");
     #endif// ENABLE_LOG_LEVEL_INFO
           connection.retry = connection.retry_init;
         } else {
           if (connection.retry > (connection.retry_init / 2)) {
     #ifdef ENABLE_LOG_LEVEL_INFO
-            ALOG_INF(PSTR(D_LOG_WIFI "2%s"),"ELSE WIFI_WAIT == pCONT_set->Settings.sta_config retry>");
+            ALOG_INF(PSTR(D_LOG_WIFI "2%s"),"ELSE WIFI_WAIT == tkr_set->Settings.sta_config retry>");
     #endif// ENABLE_LOG_LEVEL_INFO
             connection.retry = connection.retry_init / 2;
           }
           else if (connection.retry) {
     #ifdef ENABLE_LOG_LEVEL_INFO
-            ALOG_INF(PSTR(D_LOG_WIFI "3%s"),"ELSE WIFI_WAIT == pCONT_set->Settings.sta_config retry else");
+            ALOG_INF(PSTR(D_LOG_WIFI "3%s"),"ELSE WIFI_WAIT == tkr_set->Settings.sta_config retry else");
     #endif// ENABLE_LOG_LEVEL_INFO
             connection.retry = 0;
           }else{
@@ -880,7 +880,7 @@ void mWiFi::WifiCheckIp(void)
     #ifdef ENABLE_LOG_LEVEL_INFO
         ALOG_INF(PSTR(D_LOG_WIFI D_CONNECT_FAILED_WRONG_PASSWORD));
     #endif// ENABLE_LOG_LEVEL_INFO
-        pCONT_set->Settings.wifi_channel = 0;  // Disable stored AP
+        tkr_set->Settings.wifi_channel = 0;  // Disable stored AP
         if (connection.retry > (connection.retry_init / 2)) {
           connection.retry = connection.retry_init / 2;
         }
@@ -899,10 +899,10 @@ void mWiFi::WifiCheckIp(void)
           #ifdef ENABLE_LOG_LEVEL_INFO
           ALOG_INF(PSTR(D_LOG_WIFI D_CONNECT_FAILED_AP_TIMEOUT));
           #endif// ENABLE_LOG_LEVEL_INFO
-          pCONT_set->Settings.wifi_channel = 0;  // Disable stored AP
+          tkr_set->Settings.wifi_channel = 0;  // Disable stored AP
         } else {
-          if (('\0' == pCONT_set->SettingsText(SET_STASSID1)) && ('\0' == pCONT_set->SettingsText(SET_STASSID2))) {
-          pCONT_set->Settings.wifi_channel = 0;  // Disable stored AP
+          if (('\0' == tkr_set->SettingsText(SET_STASSID1)) && ('\0' == tkr_set->SettingsText(SET_STASSID2))) {
+          tkr_set->Settings.wifi_channel = 0;  // Disable stored AP
             wifi_config_tool = WIFI_CONFIG_NO_SSID; // SHOULD BE WIFI_MANAGER   // Skip empty SSIDs and start Wifi config tool
             connection.retry = 0;
     #ifdef ENABLE_LOG_LEVEL_INFO
@@ -927,7 +927,7 @@ void mWiFi::WifiCheckIp(void)
       
       ALOG_INF(PSTR(D_LOG_WIFI "connection retry %d"), connection.retry_init - connection.retry);
 
-      if (pCONT_set->Settings.flag_network.use_wifi_scan) 
+      if (tkr_set->Settings.flag_network.use_wifi_scan) 
       {
         if (connection.retry_init == connection.retry) 
         {
@@ -942,11 +942,11 @@ void mWiFi::WifiCheckIp(void)
         if (connection.retry_init == connection.retry) 
         {
           
-          WifiBegin(WIFIBEGIN_FLAG_TOGGLE_SSIDS_ID, pCONT_set->Settings.wifi_channel);        // Select alternate SSID
+          WifiBegin(WIFIBEGIN_FLAG_TOGGLE_SSIDS_ID, tkr_set->Settings.wifi_channel);        // Select alternate SSID
           ALOG_INF(PSTR(D_LOG_WIFI D_ATTEMPTING_CONNECTION "Select default SSID"));
           
         }
-        if ((pCONT_set->Settings.sta_config != WIFI_WAIT) && ((connection.retry_init / 2) == connection.retry)) 
+        if ((tkr_set->Settings.sta_config != WIFI_WAIT) && ((connection.retry_init / 2) == connection.retry)) 
         {
 
           WifiBegin(WIFIBEGIN_FLAG_TOGGLE_SSIDS_ID, 0);        // Select alternate SSID
@@ -1034,14 +1034,14 @@ void mWiFi::WifiCheck(uint8_t param)
     //       // If we reach ZERO, then retry connection on default
     //       if (!connection.config_counter) {
     //         if (strlen(WiFi.SSID().c_str())) {
-    //           strlcpy(pCONT_set->Settings.sta_ssid[0], WiFi.SSID().c_str(), sizeof(pCONT_set->Settings.sta_ssid[0]));
+    //           strlcpy(tkr_set->Settings.sta_ssid[0], WiFi.SSID().c_str(), sizeof(tkr_set->Settings.sta_ssid[0]));
     //         }
     //         if (strlen(WiFi.psk().c_str())) {
-    //           strlcpy(pCONT_set->Settings.sta_pwd[0], WiFi.psk().c_str(), sizeof(pCONT_set->Settings.sta_pwd[0]));
+    //           strlcpy(tkr_set->Settings.sta_pwd[0], WiFi.psk().c_str(), sizeof(tkr_set->Settings.sta_pwd[0]));
     //         }
-    //         pCONT_set->Settings.sta_active = 0;
+    //         tkr_set->Settings.sta_active = 0;
     // #ifdef ENABLE_LOG_LEVEL_INFO
-    //         ALOG_INF(PSTR(D_LOG_WIFI D_SSID "Retrying original config \"%s\""), pCONT_set->Settings.sta_ssid[0]);
+    //         ALOG_INF(PSTR(D_LOG_WIFI D_SSID "Retrying original config \"%s\""), tkr_set->Settings.sta_ssid[0]);
     // #endif// ENABLE_LOG_LEVEL_INFO
     //       }
 
@@ -1049,7 +1049,7 @@ void mWiFi::WifiCheck(uint8_t param)
         // Delayed by the above code by 5 seconds
         if (!connection.config_counter) 
         {
-          // pCONT_set->restart_flag = 2;
+          // tkr_set->restart_flag = 2;
     #ifdef ENABLE_LOG_LEVEL_INFO
           ALOG_INF(PSTR(D_LOG_WIFI "WifiCheck " "restart_flag = 2"));
     #endif// ENABLE_LOG_LEVEL_INFO
@@ -1080,10 +1080,10 @@ void mWiFi::WifiCheck(uint8_t param)
 // #ifdef ENABLE_FORCED_SKIP_AP_ON_IPUNSET
 //       //skip to next AP
 //       if(strcmp(WiFi.localIP().toString().c_str(),"(IP unset)")==0){
-//         AddLog(LOG_LEVEL_WARN, PSTR("Forcing new AP %s"),pCONT_set->Settings.sta_active+1);
+//         AddLog(LOG_LEVEL_WARN, PSTR("Forcing new AP %s"),tkr_set->Settings.sta_active+1);
 //   //cant toggle, needs to shift between 3
-//   if ('\0' == pCONT_set->Settings.sta_ssid[pCONT_set->Settings.sta_active][0]) { 
-//     if(pCONT_set->Settings.sta_active++>2){ pCONT_set->Settings.sta_active = WIFIBEGIN_FLAG_SSID0_ID; } 
+//   if ('\0' == tkr_set->Settings.sta_ssid[tkr_set->Settings.sta_active][0]) { 
+//     if(tkr_set->Settings.sta_active++>2){ tkr_set->Settings.sta_active = WIFIBEGIN_FLAG_SSID0_ID; } 
 //   }  // Skip empty SSID
 //       }
 // #endif //ENABLE_FORCED_SKIP_AP_ON_IPUNSET
@@ -1098,8 +1098,8 @@ void mWiFi::WifiCheck(uint8_t param)
         
       //   pCONT->Tasker_Interface(TASK_WIFI_CONNECTED);
 
-      //   //if (pCONT_set->Settings.flag_network.use_wifi_rescan) {
-      //     if (!(pCONT_time->UpTime() % (60 * WIFI_RESCAN_MINUTES))) {
+      //   //if (tkr_set->Settings.flag_network.use_wifi_rescan) {
+      //     if (!(tkr_time->UpTime() % (60 * WIFI_RESCAN_MINUTES))) {
       //       connection.scan_state = 2;
       //       // AddLog(LOG_LEVEL_DEBUG,PSTR(D_LOG_WIFI "%s"),"WIFI_RESCAN_MINUTES occurred connection.scan_state = 2");
       //     }
@@ -1110,7 +1110,7 @@ void mWiFi::WifiCheck(uint8_t param)
     //       if (WifiCheckIPAddrStatus()) {
     // #else
 
-          // bool is_connected = pCONT_time->UpTime()>20;//(WL_CONNECTED == WiFi.status()) && (static_cast<uint32_t>(WiFi.localIP()) != 0) && !connection.config_type;
+          // bool is_connected = tkr_time->UpTime()>20;//(WL_CONNECTED == WiFi.status()) && (static_cast<uint32_t>(WiFi.localIP()) != 0) && !connection.config_type;
 
           bool is_connected = (WL_CONNECTED == WiFi.status()) && (static_cast<uint32_t>(WiFi.localIP()) != 0) && !connection.config_type;
 
@@ -1127,16 +1127,16 @@ void mWiFi::WifiCheck(uint8_t param)
 
             WifiSetState(1);
             
-            if (pCONT_set->Settings.flag_network.use_wifi_rescan) {  // SetOption57 - Scan wifi network every 44 minutes for configured AP's
-              if (!(pCONT_time->UpTime() % (60 * WIFI_RESCAN_MINUTES))) {
+            if (tkr_set->Settings.flag_network.use_wifi_rescan) {  // SetOption57 - Scan wifi network every 44 minutes for configured AP's
+              if (!(tkr_time->UpTime() % (60 * WIFI_RESCAN_MINUTES))) {
                 connection.scan_state = 2;
               }
             }
             
             
             // #ifdef USE_MODULE_NETWORK_WEBSERVER
-            //   if (pCONT_set->Settings.webserver) {
-            //     pCONT_web->StartWebserver(pCONT_set->Settings.webserver, WiFi.localIP());
+            //   if (tkr_set->Settings.webserver) {
+            //     pCONT_web->StartWebserver(tkr_set->Settings.webserver, WiFi.localIP());
             //   } else {
             //     pCONT_web->StopWebserver();
             //   }
@@ -1168,7 +1168,7 @@ void mWiFi::WifiCheck(uint8_t param)
 int mWiFi::WifiState(void)
 {
   int state = -1;
-  if (!pCONT_set->runtime.global_state.wifi_down) { state = WIFI_RESTART; }
+  if (!tkr_set->runtime.global_state.wifi_down) { state = WIFI_RESTART; }
   if (connection.config_type) { state = connection.config_type; }
   return state;
 }
@@ -1466,10 +1466,10 @@ void mWiFi::StartMdns(void) {
     MDNS.end(); 
       DEBUG_LINE_HERE;
     // Begin with devicename
-    Mdns.begun = (uint8_t)MDNS.begin(pCONT_set->Settings.system_name.device);
+    Mdns.begun = (uint8_t)MDNS.begin(tkr_set->Settings.system_name.device);
     
       DEBUG_LINE_HERE;
-    ALOG_INF( PSTR(D_LOG_MDNS "%s" " with %s"), (Mdns.begun) ? PSTR(D_INITIALIZED) : PSTR(D_FAILED), pCONT_set->Settings.system_name.device);
+    ALOG_INF( PSTR(D_LOG_MDNS "%s" " with %s"), (Mdns.begun) ? PSTR(D_INITIALIZED) : PSTR(D_FAILED), tkr_set->Settings.system_name.device);
 
     #ifdef ESP32
     // Add service to MDNS-SD

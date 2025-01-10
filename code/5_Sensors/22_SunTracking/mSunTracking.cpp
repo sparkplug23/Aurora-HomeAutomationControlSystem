@@ -42,8 +42,8 @@ int8_t mSunTracking::Tasker(uint8_t function, JsonParserObject obj)
             double latitude = LATITUDE;
             double longitude = LONGITUDE;
 
-            time_t current_time = pCONT_time->UtcTime();  // Get current time (UTC)
-            time_t start_of_day = pCONT_time->GetStartOfDayUTC(current_time);
+            time_t current_time = tkr_time->UtcTime();  // Get current time (UTC)
+            time_t start_of_day = tkr_time->GetStartOfDayUTC(current_time);
 
             std::cout << "Current time: " << CTimeFormat(current_time).c_str();
             std::cout << "Start of the day (midnight): " << CTimeFormat(start_of_day).c_str();
@@ -83,7 +83,7 @@ int8_t mSunTracking::Tasker(uint8_t function, JsonParserObject obj)
     break;   
     case TASK_EVERY_MIDNIGHT:
         // Takes 144ms
-        CalculateMaxMinElevationForDay(LATITUDE, LONGITUDE, pCONT_time->GetUTCTime(), ALTITUDE_ABOVE_SEALEVEL); //will only need to run once a day
+        CalculateMaxMinElevationForDay(LATITUDE, LONGITUDE, tkr_time->GetUTCTime(), ALTITUDE_ABOVE_SEALEVEL); //will only need to run once a day
     break;
     /************
      * COMMANDS SECTION * 
@@ -155,14 +155,14 @@ void mSunTracking::BootMessage()
 void mSunTracking::Update_Solar_Tracking_Data()
 {
 
-	if(!pCONT_time->RtcTime.valid){
+	if(!tkr_time->RtcTime.valid){
 		return; // Cant compute, invalid data
 	}
 
 	float altitude = ALTITUDE_ABOVE_SEALEVEL;
-	float latitude = pCONT_set->Settings.sensors.latitude;
-	float longitude = pCONT_set->Settings.sensors.longitude;
-    time_t utc_time  = pCONT_time->UtcTime();
+	float latitude = tkr_set->Settings.sensors.latitude;
+	float longitude = tkr_set->Settings.sensors.longitude;
+    time_t utc_time  = tkr_time->UtcTime();
     
     // ALOG_INF(PSTR("utc_time %d"), utc_time);
 
@@ -180,8 +180,8 @@ void mSunTracking::Update_Solar_Tracking_Data()
     // Get today's solar event times
     // ALOG_HGL(PSTR("TODAY"));
     // Get the start of today (midnight UTC)
-    time_t start_of_today_utc = pCONT_time->GetStartOfDayUTC(utc_time);
-    calc.today = CalculateSolarEventTimes_Day(latitude, longitude, start_of_today_utc, altitude, pCONT_time->IsDst());
+    time_t start_of_today_utc = tkr_time->GetStartOfDayUTC(utc_time);
+    calc.today = CalculateSolarEventTimes_Day(latitude, longitude, start_of_today_utc, altitude, tkr_time->IsDst());
     // Update is_sun_rising based on the current time
     calc.is_sun_rising = IsSunRising(utc_time);
     #endif // USE_MODULE_SENSORS_SUN_TRACKING__SOLAR_TIMES_TODAY
@@ -193,14 +193,14 @@ void mSunTracking::Update_Solar_Tracking_Data()
     calc.air_mass = CalculateAirMass();
     calc.shadow_length = CalculateShadowLength();
     calc.solar_time_based_on_longitude = CalculateSolarTime(longitude, utc_time);
-    calc.declination_angle = CalculateDeclinationAngle( pCONT_time->RtcTime.day_of_year );
+    calc.declination_angle = CalculateDeclinationAngle( tkr_time->RtcTime.day_of_year );
     calc.incidence_angle = CalculateSolarIncidenceAngle(0,0);
-    calc.day_length = CalculateDayLength(latitude, pCONT_time->RtcTime.day_of_year);  
+    calc.day_length = CalculateDayLength(latitude, tkr_time->RtcTime.day_of_year);  
     // Get tomorrow's solar event times (utc_time + 86400 seconds for 24 hours)
     // ALOG_HGL(PSTR("TOMORROW"));
     // Get the start of tomorrow by adding 24 hours (86400 seconds)
     time_t start_of_tomorrow_utc = start_of_today_utc + 86400;
-    // calc.tomorrow = CalculateSolarEventTimes_Day(latitude, longitude, start_of_tomorrow_utc, altitude, pCONT_time->IsDst());
+    // calc.tomorrow = CalculateSolarEventTimes_Day(latitude, longitude, start_of_tomorrow_utc, altitude, tkr_time->IsDst());
     #endif // USE_MODULE_SENSORS_SUN_TRACKING__ADVANCED
 
     calc.isvalid = true;
@@ -1067,11 +1067,11 @@ uint8_t mSunTracking::ConstructJSON_Sensor(uint8_t json_method, bool json_append
         JBI->Object_End();
         #endif // ENABLE_MQTT_REPORTING__SUN_TRACKING__SECONDS_UNTIL
         JBI->Object_Start(PM__TIME_UNTIL);
-            JBI->Add(PM__DAWN, pCONT_time->formatTimeUntil(CalculateTimeUntilEvent(current_time, static_cast<time_t>(calc.today.dawn))).c_str());
-            JBI->Add(PM__SUNRISE, pCONT_time->formatTimeUntil(CalculateTimeUntilEvent(current_time, static_cast<time_t>(calc.today.sunrise))).c_str());
-            JBI->Add(PM__SOLAR_NOON, pCONT_time->formatTimeUntil(CalculateTimeUntilEvent(current_time, static_cast<time_t>(calc.today.solar_noon))).c_str());
-            JBI->Add(PM__SUNSET, pCONT_time->formatTimeUntil(CalculateTimeUntilEvent(current_time, static_cast<time_t>(calc.today.sunset))).c_str());
-            JBI->Add(PM__DUSK, pCONT_time->formatTimeUntil(CalculateTimeUntilEvent(current_time, static_cast<time_t>(calc.today.dusk))).c_str());
+            JBI->Add(PM__DAWN, tkr_time->formatTimeUntil(CalculateTimeUntilEvent(current_time, static_cast<time_t>(calc.today.dawn))).c_str());
+            JBI->Add(PM__SUNRISE, tkr_time->formatTimeUntil(CalculateTimeUntilEvent(current_time, static_cast<time_t>(calc.today.sunrise))).c_str());
+            JBI->Add(PM__SOLAR_NOON, tkr_time->formatTimeUntil(CalculateTimeUntilEvent(current_time, static_cast<time_t>(calc.today.solar_noon))).c_str());
+            JBI->Add(PM__SUNSET, tkr_time->formatTimeUntil(CalculateTimeUntilEvent(current_time, static_cast<time_t>(calc.today.sunset))).c_str());
+            JBI->Add(PM__DUSK, tkr_time->formatTimeUntil(CalculateTimeUntilEvent(current_time, static_cast<time_t>(calc.today.dusk))).c_str());
         JBI->Object_End();
     JBI->Object_End();
     #endif // defined(USE_MODULE_SENSORS_SUN_TRACKING__SOLAR_TIMES_TODAY) || defined(USE_MODULE_SENSORS_SUN_TRACKING__SOLAR_TIMES_FULL)
@@ -1095,18 +1095,18 @@ uint8_t mSunTracking::ConstructJSON_Sensor(uint8_t json_method, bool json_append
         JBI->Object_End();
         #endif // ENABLE_MQTT_REPORTING__SUN_TRACKING__SECONDS_UNTIL
         JBI->Object_Start(PM__TIME_UNTIL);
-            JBI->Add(PM__DAWN, pCONT_time->formatTimeUntil(CalculateTimeUntilEvent(current_time, static_cast<time_t>(calc.tomorrow.dawn))).c_str());
-            JBI->Add(PM__SUNRISE, pCONT_time->formatTimeUntil(CalculateTimeUntilEvent(current_time, static_cast<time_t>(calc.tomorrow.sunrise))).c_str());
-            JBI->Add(PM__SOLAR_NOON, pCONT_time->formatTimeUntil(CalculateTimeUntilEvent(current_time, static_cast<time_t>(calc.tomorrow.solar_noon))).c_str());
-            JBI->Add(PM__SUNSET, pCONT_time->formatTimeUntil(CalculateTimeUntilEvent(current_time, static_cast<time_t>(calc.tomorrow.sunset))).c_str());
-            JBI->Add(PM__DUSK, pCONT_time->formatTimeUntil(CalculateTimeUntilEvent(current_time, static_cast<time_t>(calc.tomorrow.dusk))).c_str());
+            JBI->Add(PM__DAWN, tkr_time->formatTimeUntil(CalculateTimeUntilEvent(current_time, static_cast<time_t>(calc.tomorrow.dawn))).c_str());
+            JBI->Add(PM__SUNRISE, tkr_time->formatTimeUntil(CalculateTimeUntilEvent(current_time, static_cast<time_t>(calc.tomorrow.sunrise))).c_str());
+            JBI->Add(PM__SOLAR_NOON, tkr_time->formatTimeUntil(CalculateTimeUntilEvent(current_time, static_cast<time_t>(calc.tomorrow.solar_noon))).c_str());
+            JBI->Add(PM__SUNSET, tkr_time->formatTimeUntil(CalculateTimeUntilEvent(current_time, static_cast<time_t>(calc.tomorrow.sunset))).c_str());
+            JBI->Add(PM__DUSK, tkr_time->formatTimeUntil(CalculateTimeUntilEvent(current_time, static_cast<time_t>(calc.tomorrow.dusk))).c_str());
         JBI->Object_End();
     JBI->Object_End();
     #endif // USE_MODULE_SENSORS_SUN_TRACKING__SOLAR_TIMES_FULL
 
     #ifdef USE_MODULE_SENSORS_SUN_TRACKING__SOLAR_TIMES_FULL
     JBI->Object_Start(PM__NEXT);
-        time_t utc_time = pCONT_time->UtcTime();   
+        time_t utc_time = tkr_time->UtcTime();   
         JBI->Add(PM__DAWN, FormatTime(GetNext_Dawn(utc_time, calc.today, calc.tomorrow)).c_str());
         JBI->Add(PM__SUNRISE, FormatTime(GetNext_Sunrise(utc_time, calc.today, calc.tomorrow)).c_str());
         JBI->Add(PM__SOLAR_NOON, FormatTime(GetNext_SolarNoon(utc_time, calc.today, calc.tomorrow)).c_str());

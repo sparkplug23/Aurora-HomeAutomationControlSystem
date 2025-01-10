@@ -168,7 +168,7 @@
 //       011x = 2
 //       100x = 3 (ifan03)
 //     */
-//     uint8_t fanspeed = (uint8_t)( pCONT_set->power &0xF) >> 1;
+//     uint8_t fanspeed = (uint8_t)( tkr_set->power &0xF) >> 1;
 //     if (fanspeed) { fanspeed = (fanspeed >> 1) +1; }  // 0, 1, 2, 3
 //     return fanspeed;
 //   }

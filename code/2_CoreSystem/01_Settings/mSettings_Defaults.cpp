@@ -97,9 +97,9 @@ void mSettings::SystemSettings_DefaultBody(void)
    ******* Module/Template/GPIO ***********************************************************************
    *********************************************************************************************/
 
-  snprintf(pCONT_set->Settings.system_name.device,sizeof(pCONT_set->Settings.system_name.device),"%s","fallback");
-  snprintf(pCONT_set->Settings.system_name.friendly,sizeof(pCONT_set->Settings.system_name.friendly),"%s","fallback");
-  snprintf(pCONT_set->Settings.room_hint,sizeof(pCONT_set->Settings.room_hint),"%s","none_set");
+  snprintf(tkr_set->Settings.system_name.device,sizeof(tkr_set->Settings.system_name.device),"%s","fallback");
+  snprintf(tkr_set->Settings.system_name.friendly,sizeof(tkr_set->Settings.system_name.friendly),"%s","fallback");
+  snprintf(tkr_set->Settings.room_hint,sizeof(tkr_set->Settings.room_hint),"%s","none_set");
   
   Settings.module = MODULE;
   Settings.last_module = MODULE;
@@ -190,7 +190,7 @@ void mSettings::SystemSettings_DefaultBody(void)
 
   Settings.flag_network.mdns_enabled = 1;
   runtime.mdns_delayed_start = 60;
-  sprintf(runtime.my_hostname,"%s",pCONT_set->Settings.system_name.device);
+  sprintf(runtime.my_hostname,"%s",tkr_set->Settings.system_name.device);
 
   /*********************************************************************************************
    ******* Networking: WebServer ********************************************************************

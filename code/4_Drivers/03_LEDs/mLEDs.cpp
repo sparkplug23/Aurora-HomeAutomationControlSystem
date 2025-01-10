@@ -353,10 +353,10 @@ void mLEDs::Config_StatusEffect()
   DEBUG_LINE;
   uint8_t blinkinterval = 1;
   
-  if (pCONT_set->runtime.global_state.data) {                              // Any problem
-    if (pCONT_set->runtime.global_state.mqtt_down) { blinkinterval = 7; }  // MQTT problem so blink every 2 seconds (slowest)
-    if (pCONT_set->runtime.global_state.wifi_down) { blinkinterval = 3; }  // Wifi problem so blink every second (slow)
-    pCONT_set->runtime.blinks = 201;                                       // Allow only a single blink in case the problem is solved
+  if (tkr_set->runtime.global_state.data) {                              // Any problem
+    if (tkr_set->runtime.global_state.mqtt_down) { blinkinterval = 7; }  // MQTT problem so blink every 2 seconds (slowest)
+    if (tkr_set->runtime.global_state.wifi_down) { blinkinterval = 3; }  // Wifi problem so blink every second (slow)
+    tkr_set->runtime.blinks = 201;                                       // Allow only a single blink in case the problem is solved
   }
   
 

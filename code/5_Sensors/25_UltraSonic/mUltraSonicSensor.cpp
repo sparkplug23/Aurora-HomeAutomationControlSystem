@@ -235,7 +235,7 @@ float mUltraSonicSensor::GetSpeedOfSoundInMetres()
       #ifdef USE_MODULE_SENSORS_DS18X
       int tempsensorid = -1;
       float ambient_temperature;
-      if((tempsensorid=pCONT_set->GetDeviceIDbyName("SpeedOfSound_Ambient",0,(int8_t) /*EM_MODULE_SENSORS_DB18S20_ID*/ pCONT_db18->GetModuleUniqueID()))>=0){
+      if((tempsensorid=tkr_set->GetDeviceIDbyName("SpeedOfSound_Ambient",0,(int8_t) /*EM_MODULE_SENSORS_DB18S20_ID*/ pCONT_db18->GetModuleUniqueID()))>=0){
           if(pCONT_db18->sensor[tempsensorid].reading.isvalid){
           ambient_temperature = pCONT_db18->sensor[tempsensorid].reading.val;
           
@@ -497,7 +497,7 @@ void mUltraSonicSensor::MQQTSendObjectDetected(void)
       
     JBI->Start();
       JBI->Add("location", DLI->GetDeviceName_WithModuleUniqueID( GetModuleUniqueID(), 0, buffer, sizeof(buffer)));
-      JBI->Add("time", pCONT_time->RtcTime.hhmmss_ctr);
+      JBI->Add("time", tkr_time->RtcTime.hhmmss_ctr);
     JBI->End();
 
     if(motion_detect.isactive){
@@ -669,7 +669,7 @@ void mUltraSonicSensor::SubTask_DetectMotion(){
         if(motion_detect.state){ 
           motion_detect.isactive = true;
           // motion_detect.wasactive = false; //toggle as "previous state"
-          memcpy(motion_detect.detected_rtc_ctr,pCONT_time->RtcTime.hhmmss_ctr,sizeof(pCONT_time->RtcTime.hhmmss_ctr));
+          memcpy(motion_detect.detected_rtc_ctr,tkr_time->RtcTime.hhmmss_ctr,sizeof(tkr_time->RtcTime.hhmmss_ctr));
         }else{
           motion_detect.isactive = false;
           // motion_detect.wasactive = true; //toggle as "previous state"
@@ -719,7 +719,7 @@ uint8_t mUltraSonicSensor::ConstructJSON_Settings(uint8_t json_level){
 
   JBI->Start();  
 
-    // // root["json_teleperiod_level"] = pCONT_set->Get_Json_Level_Name();
+    // // root["json_teleperiod_level"] = tkr_set->Get_Json_Level_Name();
 
   return JBI->End();
 
@@ -794,7 +794,7 @@ uint8_t mUltraSonicSensor::ConstructJSON_SensorsAveraged(uint8_t json_level){
   // DynamicJsonDocument doc(200);
   // JsonObject root = doc.to<JsonObject>();
 
-  // // root["json_teleperiod_level"] = "test";//pCONT_set->Get_Json_Level_Name();
+  // // root["json_teleperiod_level"] = "test";//tkr_set->Get_Json_Level_Name();
 
   // data_buffer.payload.len = measureJson(root)+1;
   // serializeJson(doc,data_buffer.payload.ctr);

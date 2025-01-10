@@ -85,7 +85,7 @@ void mSensorColourBar::Pre_Init(void){
 
 void mSensorColourBar::Init(void){
 
-  // module_state.devices = pCONT_set->runtime.devices_present; //phase out
+  // module_state.devices = tkr_set->runtime.devices_present; //phase out
 
   // module_state.devices = MAX_RELAYS;
 

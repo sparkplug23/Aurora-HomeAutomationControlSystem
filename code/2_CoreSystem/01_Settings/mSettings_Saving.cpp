@@ -173,7 +173,7 @@ void mSettings::SettingsLoad(void)
   
   // Configure hostname 
   memset(runtime.my_hostname,0,sizeof(runtime.my_hostname));
-  sprintf(runtime.my_hostname,PSTR("%s"),pCONT_set->Settings.system_name.device);
+  sprintf(runtime.my_hostname,PSTR("%s"),tkr_set->Settings.system_name.device);
 
 }
 
@@ -200,7 +200,7 @@ void mSettings::SettingsWrite(const void *pSettings, unsigned nSettingsLen)
 {
 
   #ifdef ENABLE_FEATURE_SETTINGS__ADD_LOCAL_TIME_AS_ASCII_FOR_SAVE_TIME_DEBUGGING
-  snprintf(Settings.local_time_ascii_debug, sizeof(Settings.local_time_ascii_debug), pCONT_time->GetDateAndTime(DT_LOCAL).c_str() );
+  snprintf(Settings.local_time_ascii_debug, sizeof(Settings.local_time_ascii_debug), tkr_time->GetDateAndTime(DT_LOCAL).c_str() );
   #endif
 
   #ifdef ENABLE_DEVFEATURE_SETTINGS__TFS
@@ -252,8 +252,8 @@ void mSettings::SettingsSave(uint8_t rotate)
     }
 
     Settings.save_flag++;
-    if (pCONT_time->Rtc.utc_time > START_VALID_UTC_TIME) {
-      Settings.cfg_timestamp = pCONT_time->Rtc.utc_time;
+    if (tkr_time->Rtc.utc_time > START_VALID_UTC_TIME) {
+      Settings.cfg_timestamp = tkr_time->Rtc.utc_time;
     } else {
       Settings.cfg_timestamp++;
     }

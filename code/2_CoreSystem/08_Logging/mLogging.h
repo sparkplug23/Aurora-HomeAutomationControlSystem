@@ -204,6 +204,16 @@ enum LoggingLevels {
 #endif
 
 
+#if defined(ENABLE_DEBUG_PRINT_F)
+  #define DEBUG_PRINT_F(format, ...)    SERIAL_DEBUG.printf("DEBUG: ");\
+                                        SERIAL_DEBUG.printf(format, ##__VA_ARGS__);\
+                                        SERIAL_DEBUG.println();\
+                                        SERIAL_DEBUG.flush();
+#else
+  #define DEBUG_PRINT_F(format, ...)   //nothing, no code
+#endif
+
+
 #if defined(ENABLE_DEBUG_TIME__PRINT)
     // Macro to start time measurement, creates a local variable to store the start time
     #define DEBUG_TIME__START uint32_t __debug_time_start__ = micros();
@@ -237,6 +247,23 @@ enum LoggingLevels {
 #endif
 
 
+#define ENABLE_DEBUG_PRINT_U32
+#if defined(ENABLE_DEBUG_PRINT_U32)
+    // Macro to print a 32-bit number and its individual bytes
+    #define DEBUG_PRINT_U32(message, number) \
+        SERIAL_DEBUG.printf("%s %lu: \t%d,%d,%d,%d\n\r", \
+                            message, \
+                            static_cast<uint32_t>(number), \
+                            static_cast<uint8_t>((number) >> 24), /* 4th byte (MSB) */ \
+                            static_cast<uint8_t>((number) >> 16), /* 3rd byte */ \
+                            static_cast<uint8_t>((number) >> 8),  /* 2nd byte */ \
+                            static_cast<uint8_t>((number) & 0xFF)); /* 1st byte (LSB) */ \
+        SERIAL_DEBUG.flush();
+#else
+    #define DEBUG_PRINT_U32(message, number)  // No operation if debug is disabled
+#endif
+
+
 
 // Added indexing, as nested debug points need different saved start points. 
 #ifdef ENABLE_DEBUGFEATURE_LIGHTING__TIME_CRITICAL_RECORDING
@@ -244,8 +271,8 @@ enum LoggingLevels {
     #define DEBUG_LIGHTING__START_TIME_RECORDING(X) lighting_time_critical_logging.start_value[X] = micros();
     #define DEBUG_LIGHTING__SAVE_TIME_RECORDING(X, Y)  Y = micros() - lighting_time_critical_logging.start_value[X];
 
-    #define DEBUG_LIGHTING__START_TIME_RECORDING_TASK(X) pCONT_lAni->lighting_time_critical_logging.start_value[X] = micros();
-    #define DEBUG_LIGHTING__SAVE_TIME_RECORDING_TASK(X, Y)  pCONT_lAni->Y = micros() - pCONT_lAni->lighting_time_critical_logging.start_value[X];
+    #define DEBUG_LIGHTING__START_TIME_RECORDING_TASK(X) tkr_anim->lighting_time_critical_logging.start_value[X] = micros();
+    #define DEBUG_LIGHTING__SAVE_TIME_RECORDING_TASK(X, Y)  tkr_anim->Y = micros() - tkr_anim->lighting_time_critical_logging.start_value[X];
 
 
 
@@ -531,13 +558,13 @@ void AddLog_NoTime(uint8_t loglevel, PGM_P formatP, ...);
 // {
 
 //   // if(
-//   //   (loglevel>pCONT_set->Settings.logging.serial_level)&&
-//   //   (loglevel>pCONT_set->Settings.logging.web_level)
+//   //   (loglevel>tkr_set->Settings.logging.serial_level)&&
+//   //   (loglevel>tkr_set->Settings.logging.web_level)
 //   //   ){
 //   //   return;
 //   // }  
 
-//   // if(loglevel>pCONT_set->Settings.logging.serial_level){
+//   // if(loglevel>tkr_set->Settings.logging.serial_level){
 //   //   return;
 //   // }
   
@@ -634,8 +661,8 @@ void AddLog_Array(uint8_t loglevel, const char* name_ctr, T* arr, U arr_len)
     // Pass the formatted string to AddLog
     AddLog(loglevel, PSTR("%s"), logBuffer);
 }
-template<typename T, typename U>
-void AddLog_Array_Block(uint8_t loglevel, const char* name_ctr, T* arr, U arr_len, U arr_width, bool use_tabs)
+template<typename T, typename U, typename V>
+void AddLog_Array_Block(uint8_t loglevel, const char* name_ctr, T* arr, U arr_len, V arr_width, bool use_tabs)
 {
     // Create a buffer to store the log message
     char logBuffer[512];  // Adjust the size if needed

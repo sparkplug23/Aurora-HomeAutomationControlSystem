@@ -95,12 +95,12 @@ void mBuzzer::BuzzerSet(uint32_t state) {
     state = !state;
   }
 
-  if (pCONT_set->Settings.flag_drivers.buzzer_freq_mode) {     // SetOption111 - Enable frequency output mode for buzzer
+  if (tkr_set->Settings.flag_drivers.buzzer_freq_mode) {     // SetOption111 - Enable frequency output mode for buzzer
     static uint8_t last_state = 0;
     if (last_state != state) {
       // Set 50% duty cycle for frequency output
       // Set 0% (or 100% for inverted PWM) duty cycle which turns off frequency output either way
-      analogWrite(Buzzer.pin, (state) ? pCONT_set->Settings.pwm_range / 2 : 0);  // set duty cycle for frequency output
+      analogWrite(Buzzer.pin, (state) ? tkr_set->Settings.pwm_range / 2 : 0);  // set duty cycle for frequency output
       last_state = state;
     }
   } else {
@@ -142,17 +142,17 @@ void mBuzzer::BuzzerBeep(uint32_t count, uint32_t on, uint32_t off, uint32_t tun
   Buzzer.count = count * 2;                  // Start buzzer
 
   ALOG_DBG(PSTR("BUZ: Count %d(%d), Time %d/%d, Tune 0x%08X(0x%08X), Size %d, Mode %d"),
-    count, Buzzer.count, on, off, tune, Buzzer.tune, Buzzer.tune_size, pCONT_set->Settings.flag_drivers.buzzer_freq_mode);
+    count, Buzzer.count, on, off, tune, Buzzer.tune, Buzzer.tune_size, tkr_set->Settings.flag_drivers.buzzer_freq_mode);
 
   Buzzer.enable = (Buzzer.count > 0);
   if (Buzzer.enable) {
-    // if (pCONT_set->Settings.sleep > PWM_MAX_SLEEP) {
-    //   pCONT_set->runtime_var.sleep = PWM_MAX_SLEEP;   // Set a maxumum value of 10 milliseconds to ensure that buzzer periods are a bit more accurate
+    // if (tkr_set->Settings.sleep > PWM_MAX_SLEEP) {
+    //   tkr_set->runtime_var.sleep = PWM_MAX_SLEEP;   // Set a maxumum value of 10 milliseconds to ensure that buzzer periods are a bit more accurate
     // } else {
-    //   pCONT_set->runtime_var.sleep = pCONT_set->Settings.sleep;  // Or keep the current sleep if it's lower than 10
+    //   tkr_set->runtime_var.sleep = tkr_set->Settings.sleep;  // Or keep the current sleep if it's lower than 10
     // }
   } else {
-    // pCONT_set->runtime_var.sleep = pCONT_set->Settings.sleep;    // Restore original sleep
+    // tkr_set->runtime_var.sleep = tkr_set->Settings.sleep;    // Restore original sleep
     BuzzerSet(0);
   }
 }
@@ -172,7 +172,7 @@ void mBuzzer::BuzzerBeep(uint32_t count) {
 
 
 void mBuzzer::BuzzerEnabledBeep(uint32_t count, uint32_t duration) {
-  // if (pCONT_set->Settings.flag_drivers.buzzer_enable) {        // SetOption67 - Enable buzzer when available
+  // if (tkr_set->Settings.flag_drivers.buzzer_enable) {        // SetOption67 - Enable buzzer when available
     BuzzerBeep(count, duration, 1, 0, 0);
   // }
 }

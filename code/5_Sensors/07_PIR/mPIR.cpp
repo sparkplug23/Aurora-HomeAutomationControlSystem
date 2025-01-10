@@ -169,7 +169,7 @@ void mPIR::ReadSensor()
         {
           // Sensor is active
           pir_detect[sensor_id].tDetectTime = millis();
-          pir_detect[sensor_id].detected_time = pCONT_time->LocalTime();
+          pir_detect[sensor_id].detected_time = tkr_time->LocalTime();
           pir_detect[sensor_id].isactive = true;
 
           // Log or trigger events for active state
@@ -181,7 +181,7 @@ void mPIR::ReadSensor()
         {
           // Sensor is inactive
           pir_detect[sensor_id].tEndedTime = millis();
-          pir_detect[sensor_id].detected_time = pCONT_time->LocalTime();
+          pir_detect[sensor_id].detected_time = tkr_time->LocalTime();
           pir_detect[sensor_id].isactive = false;
 
           // Log or trigger events for inactive state
@@ -253,8 +253,8 @@ uint8_t mPIR::ConstructJSON_Sensor(uint8_t json_level, bool json_appending){
         pir_detect[sensor_id].ischanged = false;
 
         JBI->Add(D_LOCATION, DLI->GetDeviceName_WithModuleUniqueID( GetModuleUniqueID(), sensor_id, buffer, sizeof(buffer))); 
-        JBI->Add(PM_TIME, pCONT_time->GetTimeStr(pCONT_time->Rtc.local_time).c_str());
-        JBI->Add(PM_UTC_TIME, pCONT_time->Rtc.local_time);
+        JBI->Add(PM_TIME, tkr_time->GetTimeStr(tkr_time->Rtc.local_time).c_str());
+        JBI->Add(PM_UTC_TIME, tkr_time->Rtc.local_time);
         JBI->Add(D_EVENT, pir_detect[sensor_id].isactive ? "detected": "over");
 
       }

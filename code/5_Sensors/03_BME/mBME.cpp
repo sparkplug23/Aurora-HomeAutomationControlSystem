@@ -196,7 +196,7 @@ void mBME::BmpRead(void)
         break;
     }
     bmp_sensors[bmp_idx].ischangedtLast = millis();
-    bmp_sensors[bmp_idx].utc_measured_timestamp = pCONT_time->UtcTime();
+    bmp_sensors[bmp_idx].utc_measured_timestamp = tkr_time->UtcTime();
   }
 }
 
@@ -590,7 +590,7 @@ uint8_t mBME::ConstructJSON_Sensor(uint8_t json_level, bool json_appending){
           JBI->Add_P(PM_GAS, bmp_sensors[sensor_id].bmp_gas_resistance);
         }
         JBI->Add_P(PM_UTC_TIME, bmp_sensors[sensor_id].utc_measured_timestamp);
-        uint32_t sensor_elapsed_time = pCONT_time->UtcTime() - bmp_sensors[sensor_id].utc_measured_timestamp;
+        uint32_t sensor_elapsed_time = tkr_time->UtcTime() - bmp_sensors[sensor_id].utc_measured_timestamp;
         JBI->Add_P(PM_AGE, sensor_elapsed_time);
       JBI->Object_End();
     }

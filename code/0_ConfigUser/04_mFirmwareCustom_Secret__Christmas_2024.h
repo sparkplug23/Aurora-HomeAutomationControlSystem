@@ -32,6 +32,19 @@
 // #define DEVICE_CHRISTMAS24__FINAL__SNOW_TREE_SILVER
 // #define DEVICE_XMAS_LIVINGROOM_TREE_WATER_LEVEL_2024
 
+
+// tg_lgt_10_effects_ring/set
+
+
+// xmas24__final__16x_sidedoor_tree/set
+// {
+//   "Preset": {
+//     "Load": 97
+//   },
+//   "BrightnessRGB":100
+// }
+
+
 // new method that lets me use the ini to override prepend the naming and make a desk/tester for serial
 // add an ifdef inside the main code, that adds the "tb_" before the mqtt, otherwise it comepiles the same
 // the USE_DEBUGFEATURE_DEVICE_CLONE_TESTBED to set it happening. 

@@ -17,10 +17,10 @@
 
 
 //   #ifdef USE_MODULE_LIGHTS_USER_INPUT_BASIC_BUTTONS
-//   user_input.selected.palette_id = pCONT_set->Settings.animation_settings.xmas_controller_params[0];
-//   user_input.selected.brightness_id =  pCONT_set->Settings.animation_settings.xmas_controller_params[1];
-//   user_input.selected.effects_id =  pCONT_set->Settings.animation_settings.xmas_controller_params[2];
-//   user_input.selected.intensity_id = pCONT_set->Settings.animation_settings.xmas_controller_params[3];
+//   user_input.selected.palette_id = tkr_set->Settings.animation_settings.xmas_controller_params[0];
+//   user_input.selected.brightness_id =  tkr_set->Settings.animation_settings.xmas_controller_params[1];
+//   user_input.selected.effects_id =  tkr_set->Settings.animation_settings.xmas_controller_params[2];
+//   user_input.selected.intensity_id = tkr_set->Settings.animation_settings.xmas_controller_params[3];
 //   PhysicalController_Convert_IDs_to_Internal_Parameters();
 //   #endif
 
@@ -178,7 +178,7 @@
 //       011x = 2
 //       100x = 3 (ifan03)
 //     */
-//     uint8_t fanspeed = (uint8_t)( pCONT_set->power &0xF) >> 1;
+//     uint8_t fanspeed = (uint8_t)( tkr_set->power &0xF) >> 1;
 //     if (fanspeed) { fanspeed = (fanspeed >> 1) +1; }  // 0, 1, 2, 3
 //     return fanspeed;
 //   }

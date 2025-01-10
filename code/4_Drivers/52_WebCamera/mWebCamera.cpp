@@ -1585,22 +1585,22 @@ void mWebCamera::Init(void)
   // }
   // if (pCONT_pins->PinUsed(GPIO_RF_433MHZ_RX_ID)) 
   // {
-  //   if (pCONT_set->Settings.rf_duplicate_time < 10) {
-  //     pCONT_set->Settings.rf_duplicate_time = RF_TIME_AVOID_DUPLICATE;
+  //   if (tkr_set->Settings.rf_duplicate_time < 10) {
+  //     tkr_set->Settings.rf_duplicate_time = RF_TIME_AVOID_DUPLICATE;
   //   }
   //   pinMode( pCONT_pins->GetPin(GPIO_RF_433MHZ_RX_ID), INPUT);
 
   //   mySwitch = new RCSwitch();
 
   //   mySwitch->enableReceive(pCONT_pins->GetPin(GPIO_RF_433MHZ_RX_ID));
-  //   // if (!pCONT_set->Settings.rf_protocol_mask) {
-  //     // pCONT_set->Settings.rf_protocol_mask = (1ULL << mySwitch->getNumProtos()) -1;
+  //   // if (!tkr_set->Settings.rf_protocol_mask) {
+  //     // tkr_set->Settings.rf_protocol_mask = (1ULL << mySwitch->getNumProtos()) -1;
   //     // Correctly only permits protocol 1 through
-  //     pCONT_set->Settings.rf_protocol_mask = (1ULL << 1) -1; //only want number 2?
+  //     tkr_set->Settings.rf_protocol_mask = (1ULL << 1) -1; //only want number 2?
   //   // }
 
   //   #ifndef ENABLE_DEVFETURE_DISABLE_EXTENDED_FEATURES_START
-  //   mySwitch->setReceiveProtocolMask(pCONT_set->Settings.rf_protocol_mask);
+  //   mySwitch->setReceiveProtocolMask(tkr_set->Settings.rf_protocol_mask);
   //   #endif // ENABLE_DEVFETURE_DISABLE_EXTENDED_FEATURES_START
 
 

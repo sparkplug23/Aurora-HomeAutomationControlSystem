@@ -162,7 +162,7 @@ void mGPS_SD_Logger::SubTask_UpdateOLED_Detailed_GPS()
   char line_ctr[15] = {0};
   char buffer[15] = {0};
 
-  pCONT_set->Settings.display.mode = EM_DISPLAY_MODE_LOG_STATIC_ID;
+  tkr_set->Settings.display.mode = EM_DISPLAY_MODE_LOG_STATIC_ID;
 
   #ifdef USE_MODULE_DISPLAYS_OLED_SSD1306
 

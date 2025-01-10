@@ -30,6 +30,8 @@ class mTelemetry :
     mTelemetry(){};    
     int8_t Tasker(uint8_t function, JsonParserObject obj = 0);
     void WebPage_Root_AddHandlers();
+
+    uint8_t serial_messages_remaining_to_send = 0;
     
     static constexpr const char* PM_MODULE_CORE_TELEMETRY_CTR = D_MODULE_CORE_TELEMETRY_CTR;
     PGM_P GetModuleName(){ return PM_MODULE_CORE_TELEMETRY_CTR; }

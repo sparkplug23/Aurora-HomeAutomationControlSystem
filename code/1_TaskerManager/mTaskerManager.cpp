@@ -49,11 +49,11 @@ int8_t mTaskerManager::Tasker_Interface(uint16_t task)
     #ifdef ENABLE_ADVANCED_DEBUGGING
     #ifdef ENABLE_DEBUG_FUNCTION_NAMES
       #ifdef ENABLE_FEATURE_DEBUG_POINT_TASKER_INFO_AFTER_UPSECONDS
-      if(pCONT_time->uptime_seconds_nonreset>ENABLE_FEATURE_DEBUG_POINT_TASKER_INFO_AFTER_UPSECONDS)
+      if(tkr_time->uptime_seconds_nonreset>ENABLE_FEATURE_DEBUG_POINT_TASKER_INFO_AFTER_UPSECONDS)
       {
       #endif
       #ifdef ENABLE_DEBUG_SHOW_ADVANCED_LOGS_FOR_STARTUP_UPSECONDS
-      if(pCONT_time->uptime_seconds_nonreset<ENABLE_DEBUG_SHOW_ADVANCED_LOGS_FOR_STARTUP_UPSECONDS)
+      if(tkr_time->uptime_seconds_nonreset<ENABLE_DEBUG_SHOW_ADVANCED_LOGS_FOR_STARTUP_UPSECONDS)
       {
       #endif
         AddLog(LOG_LEVEL_ERROR,PSTR(D_LOG_CLASSLIST "TIS %d\t%S \t%S \t%d"), mod->GetModuleUniqueID(), mod->GetModuleName(), GetTaskName(task), millis() );
@@ -197,12 +197,12 @@ int8_t mTaskerManager::Tasker_Interface(uint16_t task)
    * Debug: Boot progress
    *****************************************************************************************************************/ 
   #ifdef ENABLE_DEVFEATURE_SHOW_BOOT_PROGRESS_ON_SERIAL
-  if(!pCONT_set->flag_boot_complete){
+  if(!tkr_set->flag_boot_complete){
     char buffer_taskname[50];
     if(task != last_function){
       uint8_t boot_percentage = map(task,0,TASK_ON_BOOT_COMPLETE,0,100);
       //5% = 1 bar, 20 bars total [B                   ]
-      //if(pCONT_set->Settings.logging.serial_level >= LOG_LEVEL_INFO){
+      //if(tkr_set->Settings.logging.serial_level >= LOG_LEVEL_INFO){
       #ifndef DISABLE_SERIAL_LOGGING
       DEBUG_PRINTF("[");
       for(uint8_t percent=0;percent<100;percent+=5){  
@@ -221,7 +221,7 @@ int8_t mTaskerManager::Tasker_Interface(uint16_t task)
   #endif // ENABLE_DEVFEATURE_SHOW_BOOT_PROGRESS_ON_SERIAL
 
 
-  if(task == TASK_ON_BOOT_COMPLETE){ pCONT_set->runtime.flag_boot_complete = true; }
+  if(task == TASK_ON_BOOT_COMPLETE){ tkr_set->runtime.flag_boot_complete = true; }
   
   #ifdef ENABLE_ADVANCED_DEBUGGING
     AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_CLASSLIST D_FUNCTION_TASKER_INTERFACE " FINISHED"));
@@ -622,6 +622,9 @@ uint8_t mTaskerManager::Instance_Init()
   #endif
   #ifdef USE_MODULE_CONTROLLER_CUSTOM__DESK_SENSORS_ON_OLED
   addTasker(new mDeskSensorsOnOLED());
+  #endif
+  #ifdef USE_MODULE_CONTROLLER_CUSTOM__LIGHTNEO_MOTION_ALERTS
+  addTasker(new mLightNeo_MotionAlerts());
   #endif
   #ifdef USE_MODULE_CONTROLLER_USERMOD_01
   addTasker(new mUserMod_01());

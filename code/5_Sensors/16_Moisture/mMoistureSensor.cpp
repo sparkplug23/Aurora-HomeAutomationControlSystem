@@ -67,7 +67,7 @@ void mMoistureSensor::MQTTSendMoistureSensorIfChanged(){
   JsonObject root = doc.to<JsonObject>();
 
   // root["location"] = "MOTIONALERT_PAYLOAD_CTR";
-  // root["time"] = pCONT_time->RtcTime.hhmmss_ctr;
+  // root["time"] = tkr_time->RtcTime.hhmmss_ctr;
 
   root["digital"] = digitalRead(MOISTURE_DIGITAL_PIN);
   root["analog"] = analogRead(MOISTURE_ANALOG_PIN);

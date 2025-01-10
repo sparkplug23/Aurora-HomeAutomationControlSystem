@@ -2031,7 +2031,7 @@ void mNextionPanel::EverySecond_SendScreenInfo(){
 
   char rtc_ctr[40]; memset(rtc_ctr,'\0',sizeof(rtc_ctr));
   sprintf(rtc_ctr, "%02d:%02d:%02d\n\r",
-  pCONT_time->RtcTime.hour,pCONT_time->RtcTime.minute,pCONT_time->RtcTime.second);
+  tkr_time->RtcTime.hour,tkr_time->RtcTime.minute,tkr_time->RtcTime.second);
 
   SetAttribute_Txt(settings.page,1,rtc_ctr);
   
@@ -2355,7 +2355,7 @@ void mNextionPanel::webHandleFirmware(AsyncWebServerRequest *request)
 
   // ALOG_INF(PSTR(D_LOG_NEXTION "HTTP: Sending /firmware page to client connected from: %s"), webServer->client().remoteIP().toString());
   String httpHeader = FPSTR(HTTP_HEAD_START);
-  httpHeader.replace("{v}", "HASPone " + String(pCONT_set->Settings.system_name.friendly) + " Firmware updates");
+  httpHeader.replace("{v}", "HASPone " + String(tkr_set->Settings.system_name.friendly) + " Firmware updates");
   
   data += httpHeader;
   data += FPSTR(HTTP_SCRIPT3);
@@ -2364,7 +2364,7 @@ void mNextionPanel::webHandleFirmware(AsyncWebServerRequest *request)
   data += FPSTR(HTTP_HEAD_END3);
 
   data += F("<h1>");
-  data += String(pCONT_set->Settings.system_name.friendly);
+  data += String(tkr_set->Settings.system_name.friendly);
   data += F("</h1>");
   data += F("<hr><h1>");
   data += F("Nextion Firmware Update</h1>");
@@ -2436,7 +2436,7 @@ void mNextionPanel::webHandleLcdUpload(AsyncWebServerRequest *request, String fi
     String data2 = "";
     ALOG_INF(PSTR(D_LOG_NEXTION "LCDOTA: FAILED, no filesize sent."));
     String httpHeader = FPSTR(HTTP_HEAD_START);
-    httpHeader.replace("{v}", String(pCONT_set->Settings.system_name.friendly) + " LCD update error");
+    httpHeader.replace("{v}", String(tkr_set->Settings.system_name.friendly) + " LCD update error");
 
     data2 += httpHeader;
     data2 += FPSTR(HTTP_SCRIPT3);
@@ -2446,7 +2446,7 @@ void mNextionPanel::webHandleLcdUpload(AsyncWebServerRequest *request, String fi
     data2 += FPSTR(HTTP_HEAD_END3);
 
     data2 += (F("<h1>"));
-    data2 += String(pCONT_set->Settings.system_name.friendly);
+    data2 += String(tkr_set->Settings.system_name.friendly);
     data2 += (F(" LCD update FAILED</h1>"));
     data2 += (F("No update file size reported. You must use a modern browser with Javascript enabled."));
     
@@ -2679,7 +2679,7 @@ void mNextionPanel::webHandleLcdDownload(AsyncWebServerRequest *request)
 
 
   String httpHeader = FPSTR(HTTP_HEAD_START);
-  httpHeader.replace("{v}", String(pCONT_set->Settings.system_name.friendly) + " LCD Firmware updates");
+  httpHeader.replace("{v}", String(tkr_set->Settings.system_name.friendly) + " LCD Firmware updates");
 
   data += httpHeader;
   data += FPSTR(HTTP_SCRIPT3);
@@ -2688,7 +2688,7 @@ void mNextionPanel::webHandleLcdDownload(AsyncWebServerRequest *request)
   data += FPSTR(HTTP_HEAD_END3);
   
   data += F("<h1>");
-  data += pCONT_set->Settings.system_name.friendly;
+  data += tkr_set->Settings.system_name.friendly;
   data += F(" LCD Update</h1>");
   
   data += F("<br/>Updating LCD firmware using HTTP from: ");
@@ -2712,7 +2712,7 @@ void mNextionPanel::webHandleLcdUpdateSuccess(AsyncWebServerRequest *request)
   String data = String();
 
   String httpHeader = FPSTR(HTTP_HEAD_START);
-  httpHeader.replace("{v}", String(pCONT_set->Settings.system_name.friendly) + " LCD firmware update success");
+  httpHeader.replace("{v}", String(tkr_set->Settings.system_name.friendly) + " LCD firmware update success");
 
   data += httpHeader;
   data += FPSTR(HTTP_SCRIPT3);
@@ -2722,7 +2722,7 @@ void mNextionPanel::webHandleLcdUpdateSuccess(AsyncWebServerRequest *request)
   data += FPSTR(HTTP_HEAD_END3);
   
   data += F("<h1>");
-  data += pCONT_set->Settings.system_name.friendly;
+  data += tkr_set->Settings.system_name.friendly;
   data += F(" LCD Update</h1>");
   
   data += FPSTR(HTTP_END3);  
@@ -2740,7 +2740,7 @@ void mNextionPanel::webHandleLcdUpdateFailure(AsyncWebServerRequest *request)
   String data = String();
 
   String httpHeader = FPSTR(HTTP_HEAD_START);
-  httpHeader.replace("{v}", String(pCONT_set->Settings.system_name.friendly) + " LCD firmware update success");
+  httpHeader.replace("{v}", String(tkr_set->Settings.system_name.friendly) + " LCD firmware update success");
 
   data += httpHeader;
   data += FPSTR(HTTP_SCRIPT3);
@@ -2750,7 +2750,7 @@ void mNextionPanel::webHandleLcdUpdateFailure(AsyncWebServerRequest *request)
   data += FPSTR(HTTP_HEAD_END3);
   
   data += F("<h1>");
-  data += pCONT_set->Settings.system_name.friendly;
+  data += tkr_set->Settings.system_name.friendly;
   data += F(" LCD Update</h1>");
   
   data += F("<br/>Updating LCD firmware using HTTP from: ");
@@ -2938,7 +2938,7 @@ void mNextionPanel::WebPage_LCD_Update_TFT(AsyncWebServerRequest *request)
   String data = String();
 
   String httpHeader = FPSTR(HTTP_HEAD_START);
-  httpHeader.replace("{v}", String(pCONT_set->Settings.system_name.friendly) + " Firmware updates");
+  httpHeader.replace("{v}", String(tkr_set->Settings.system_name.friendly) + " Firmware updates");
   // webServer->setContentLength(CONTENT_LENGTH_UNKNOWN);
   // webServer->send(200, "text/html", httpHeader);
   
@@ -2949,7 +2949,7 @@ void mNextionPanel::WebPage_LCD_Update_TFT(AsyncWebServerRequest *request)
   data += FPSTR(HTTP_HEAD_END3);
 
   data += F("<h1>");
-  data += pCONT_set->Settings.system_name.friendly;
+  data += tkr_set->Settings.system_name.friendly;
   data += F(" Nextion Firmware Update</h1>");  
 
   /**
@@ -2999,7 +2999,7 @@ void mNextionPanel::webHandleTftFileSize(AsyncWebServerRequest *request)
   // ALOG_INF(PSTR(D_LOG_NEXTION DEBUG_INSERT_PAGE_BREAK  "HTTP: Sending /tftFileSize page to client connected from: %s"), webServer->client().remoteIP().toString());
 
   String httpHeader = FPSTR(HTTP_HEAD_START);
-  httpHeader.replace("{v}", String(pCONT_set->Settings.system_name.friendly) + " TFT Filesize");
+  httpHeader.replace("{v}", String(tkr_set->Settings.system_name.friendly) + " TFT Filesize");
   httpHeader += FPSTR(HTTP_END3);
 
   request->send(200, "text/html", httpHeader);
@@ -3020,7 +3020,7 @@ void mNextionPanel::webHandleRoot(AsyncWebServerRequest* request)
   String conv = String();
 
   String httpHeader = FPSTR(HTTP_HEAD_START);
-  httpHeader.replace("{v}", pCONT_set->Settings.system_name.friendly);
+  httpHeader.replace("{v}", tkr_set->Settings.system_name.friendly);
   conv += httpHeader;
   conv += FPSTR(HTTP_SCRIPT3);
   conv += FPSTR(HTTP_STYLE3);

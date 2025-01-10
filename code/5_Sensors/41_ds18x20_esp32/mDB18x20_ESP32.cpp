@@ -302,7 +302,7 @@ void mDB18x20_ESP32::EverySecond(void)
     return; 
   }
 
-  if (pCONT_time->uptime_seconds_nonreset & 1) 
+  if (tkr_time->uptime_seconds_nonreset & 1) 
   {
     Ds18x20Convert();     // Start Conversion, takes up to one second
   } else {
@@ -313,7 +313,7 @@ void mDB18x20_ESP32::EverySecond(void)
         sensor_vector[i].reading.ischanged = (t != sensor_vector[i].reading.val)?true:false;
         sensor_vector[i].reading.isvalid   = D_SENSOR_VALID_TIMEOUT_SECS;
         sensor_vector[i].reading.val = t;
-        sensor_vector[i].utc_measured_timestamp = pCONT_time->UtcTime();
+        sensor_vector[i].utc_measured_timestamp = tkr_time->UtcTime();
         ALOG_DBG(PSTR(D_LOG_DSB "Read i%02d a%03d Alias%02d =-> %d"), i, sensor_vector[i].address[7], sensor_vector[i].device_name_index, (int)t);
       } else {
         if (sensor_vector[i].reading.isvalid) { sensor_vector[i].reading.isvalid--; }

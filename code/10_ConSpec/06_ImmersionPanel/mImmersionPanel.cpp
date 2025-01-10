@@ -137,15 +137,15 @@ void mImmersionPanel::EverySecond()
 
 
 
-  // if(pCONT_time->uptime_seconds_nonreset<60)
+  // if(tkr_time->uptime_seconds_nonreset<60)
   // {
   //   pCONT_led->CommandSet_LED_Power(1,0);
   // }else
-  // if(pCONT_time->uptime_seconds_nonreset<120)
+  // if(tkr_time->uptime_seconds_nonreset<120)
   // {
   //   pCONT_led->CommandSet_LED_Power(1,1);
   // }else
-  // if(pCONT_time->uptime_seconds_nonreset<180)
+  // if(tkr_time->uptime_seconds_nonreset<180)
   // {
   //   pCONT_led->CommandSet_LED_Power(1,2);
   // }else
@@ -200,7 +200,7 @@ void mImmersionPanel::SubTask_UpdateOLED()
   char line_ctr[15] = {0};
   char buffer[15] = {0};
 
-  pCONT_set->Settings.display.mode = EM_DISPLAY_MODE_LOG_STATIC_ID;
+  tkr_set->Settings.display.mode = EM_DISPLAY_MODE_LOG_STATIC_ID;
 
   /**
    * Row 1
@@ -247,7 +247,7 @@ void mImmersionPanel::SubTask_UpdateOLED()
    * 1234567890
    * T HH:MM:SS
    * */
-  snprintf(buffer, sizeof(buffer), "%s",pCONT_time->RtcTime.hhmmss_ctr);
+  snprintf(buffer, sizeof(buffer), "%s",tkr_time->RtcTime.hhmmss_ctr);
   pCONT_iDisp->LogBuffer_AddRow(buffer, 3);
 
   #endif // USE_MODULE_DISPLAYS_OLED_SSD1306

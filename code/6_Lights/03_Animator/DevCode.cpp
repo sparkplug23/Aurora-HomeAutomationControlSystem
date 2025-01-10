@@ -244,22 +244,22 @@ void mAnimatorLight::parsesub_json_object_notification_shortcut(JsonParserObject
 
     if(segments.size()>0){
       ALOG_DBG(PSTR("parsestart Segment Range [%d,%d] "), segments[0].start, segments[0].stop);
-      segments[0].rgbcctcolors[0].debug_print("Segment 0 colour");
+      segments[0].segcol[0].debug_print("Segment 0 colour");
     }
 
     if(segments.size()>1){
       ALOG_DBG(PSTR("Segment Range [%d,%d] "), segments[1].start, segments[1].stop);
-      segments[1].rgbcctcolors[0].debug_print("Segment 1 colour");
+      segments[1].segcol[0].debug_print("Segment 1 colour");
     }
 
     if(segments.size()>2){
       ALOG_DBG(PSTR("Segment Range [%d,%d] "), segments[2].start, segments[2].stop);
-      segments[2].rgbcctcolors[0].debug_print("Segment 2 colour");
+      segments[2].segcol[0].debug_print("Segment 2 colour");
     }
 
     if(segments.size()>3){
       ALOG_DBG(PSTR("Segment Range [%d,%d] "), segments[3].start, segments[3].stop);
-      segments[3].rgbcctcolors[0].debug_print("Segment 3 colour");
+      segments[3].segcol[0].debug_print("Segment 3 colour");
     }
 
   // JsonParserArray arrobj = jtok;
@@ -271,7 +271,7 @@ void mAnimatorLight::parsesub_json_object_notification_shortcut(JsonParserObject
   
   
 
-    ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_HUE)), SEGMENT_I(0).rgbcctcolors[0].getHue360());
+    ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_HUE)), SEGMENT_I(0).segcol[0].getHue360());
 
 
 
@@ -305,9 +305,9 @@ void mAnimatorLight::parsesub_json_object_notification_shortcut(JsonParserObject
     if(segment_index > segments.size()-1)
     { 
       ALOG_HGL(PSTR("Creating new segment %d|%d"), segment_index, segments.size());
-      segments[0].rgbcctcolors[0].debug_print(">>>>>>>>>>>>>>>>>>pre segment Segment 0 colour");
+      segments[0].segcol[0].debug_print(">>>>>>>>>>>>>>>>>>pre segment Segment 0 colour");
       Segment_AppendNew(data[1],data[2], segment_index+1);
-      segments[0].rgbcctcolors[0].debug_print("<<<<<<<<<<<<<<<<<<post segment Segment 0 colour");
+      segments[0].segcol[0].debug_print("<<<<<<<<<<<<<<<<<<post segment Segment 0 colour");
     }
 
 
@@ -356,44 +356,44 @@ void mAnimatorLight::parsesub_json_object_notification_shortcut(JsonParserObject
     /**
      * @brief To fix error with lack of proper config on new colour, in this case, clear it prior to setting
      **/
-    // SEGMENT_I(segment_index).rgbcctcolors[0].setChannelsRaw(0,0,0,0,0);
-    segments[0].rgbcctcolors[0].debug_print("pre colour Segment 0 colour");
-    SEGMENT_I(segment_index).rgbcctcolors[0].setChannelsRaw(data[0],data[1],data[2],data[3],data[4]);
-    segments[0].rgbcctcolors[0].debug_print("post colour Segment 0 colour");
+    // SEGMENT_I(segment_index).segcol[0].setChannelsRaw(0,0,0,0,0);
+    segments[0].segcol[0].debug_print("pre colour Segment 0 colour");
+    SEGMENT_I(segment_index).segcol[0].setChannelsRaw(data[0],data[1],data[2],data[3],data[4]);
+    segments[0].segcol[0].debug_print("post colour Segment 0 colour");
 
     // CommandSet_SegColour_RgbcctColour_Hue_360                (data[0],                0, segment_index);
-    // ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_HUE)), SEGMENT_I(segment_index).rgbcctcolors[0].getHue360());
+    // ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_HUE)), SEGMENT_I(segment_index).segcol[0].getHue360());
     // CommandSet_SegColour_RgbcctColour_Sat_255      (mapvalue (data[1], 0,100, 0,255), 0, segment_index);
     // CommandSet_SegColour_RgbcctColour_BrightnessRGB(mapvalue (data[2], 0,100, 0,255), 0, segment_index);
-    // ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_BRIGHTNESS_RGB)), SEGMENT_I(segment_index).rgbcctcolors[0].getBrightnessRGB());
+    // ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_BRIGHTNESS_RGB)), SEGMENT_I(segment_index).segcol[0].getBrightnessRGB());
   }
 
   
 
-    // Serial.println(SEGMENT_I(segment_index).rgbcctcolors[0].raw[0]);
-    // Serial.println(SEGMENT_I(segment_index).rgbcctcolors[0].raw[1]);
-    // Serial.println(SEGMENT_I(segment_index).rgbcctcolors[0].raw[2]);
-    // Serial.println(SEGMENT_I(segment_index).rgbcctcolors[0].raw[3]);
-    // Serial.println(SEGMENT_I(segment_index).rgbcctcolors[0].raw[4]);
+    // Serial.println(SEGMENT_I(segment_index).segcol[0].raw[0]);
+    // Serial.println(SEGMENT_I(segment_index).segcol[0].raw[1]);
+    // Serial.println(SEGMENT_I(segment_index).segcol[0].raw[2]);
+    // Serial.println(SEGMENT_I(segment_index).segcol[0].raw[3]);
+    // Serial.println(SEGMENT_I(segment_index).segcol[0].raw[4]);
 
     if(segments.size()>0){
       ALOG_DBG(PSTR("parse end Segment Range [%d,%d] "), segments[0].start, segments[0].stop);
-      segments[0].rgbcctcolors[0].debug_print("Segment 0 colour");
+      segments[0].segcol[0].debug_print("Segment 0 colour");
     }
 
     if(segments.size()>1){
       ALOG_DBG(PSTR("Segment Range [%d,%d] "), segments[1].start, segments[1].stop);
-      segments[1].rgbcctcolors[0].debug_print("Segment 1 colour");
+      segments[1].segcol[0].debug_print("Segment 1 colour");
     }
 
     if(segments.size()>2){
       ALOG_DBG(PSTR("Segment Range [%d,%d] "), segments[2].start, segments[2].stop);
-      segments[2].rgbcctcolors[0].debug_print("Segment 2 colour");
+      segments[2].segcol[0].debug_print("Segment 2 colour");
     }
 
     if(segments.size()>3){
       ALOG_DBG(PSTR("Segment Range [%d,%d] "), segments[3].start, segments[3].stop);
-      segments[3].rgbcctcolors[0].debug_print("Segment 3 colour");
+      segments[3].segcol[0].debug_print("Segment 3 colour");
     }
 
 }

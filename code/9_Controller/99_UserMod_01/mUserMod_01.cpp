@@ -64,10 +64,10 @@ int8_t mUserMod_01::Tasker(uint8_t function, JsonParserObject obj){
 
 void mUserMod_01::Init(void)
 {
- analogWriteRange(pCONT_set->Settings.pwm_range);      // Default is 1023 (Arduino.h)
-  analogWriteFreq(pCONT_set->Settings.pwm_frequency);   // Default is 1000 (core_esp8266_wiring_pwm.c)
+ analogWriteRange(tkr_set->Settings.pwm_range);      // Default is 1023 (Arduino.h)
+  analogWriteFreq(tkr_set->Settings.pwm_frequency);   // Default is 1000 (core_esp8266_wiring_pwm.c)
 
-  // analogWriteFreqRange(0, pCONT_set->Settings.pwm_frequency, pCONT_set->Settings.pwm_range);
+  // analogWriteFreqRange(0, tkr_set->Settings.pwm_frequency, tkr_set->Settings.pwm_range);
   pinMode(22, OUTPUT);
   pinMode(2, OUTPUT);
   analogWrite(22, pic32.adc_low);

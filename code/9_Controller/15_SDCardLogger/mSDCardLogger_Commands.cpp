@@ -106,8 +106,8 @@
 //   //   }
 
 
-//   //   pCONT_time->PrintDateTime(ontime);
-//   //   pCONT_time->PrintDateTime(offtime);
+//   //   tkr_time->PrintDateTime(ontime);
+//   //   tkr_time->PrintDateTime(offtime);
 
 
 //   // }
