@@ -693,7 +693,7 @@ uint8_t mSwitches::ConstructJSON_Sensor(uint8_t json_level, bool json_appending)
 
 
 #ifndef ENABLE_DEVFEATURE_SWITCHES__V2
-void mSwitches::SwitchInit(void)
+void mSwitches::Pre_Init(void)
 {
 
   ALOG_HGL( PSTR("D_LOG_STARTUP" "Switches Init") );
@@ -799,6 +799,7 @@ void mSwitches::SwitchInit(void)
 
 
 
+void mSwitches::Init(void) {}
 
 // /*********************************************************************************************/
 

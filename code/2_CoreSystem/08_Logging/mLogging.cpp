@@ -525,6 +525,18 @@ void mLogging::AddLogAddLog(uint8_t loglevel)
 //   if (!global_state.wifi_down && (loglevel <= syslog_level)) { Syslog(); }
 }
 
+// Static wrapper
+void mLogging::AddLog_Static(uint8_t loglevel, PGM_P formatP, ...) {
+  va_list args;
+  va_start(args, formatP);
+
+  // Use the global AddLog function, assuming it has a `va_list` version
+  ::AddLog(loglevel, formatP, args);
+
+  va_end(args);
+}
+
+
 void mLogging::AddLog(uint8_t loglevel, const char *formatP)
 {
   // snprintf_P(log_data, sizeof(log_data), formatP);

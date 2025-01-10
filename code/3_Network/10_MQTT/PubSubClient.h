@@ -23,7 +23,8 @@
 
 // MQTT_MAX_PACKET_SIZE : Maximum packet size
 #ifndef MQTT_MAX_PACKET_SIZE
-#define MQTT_MAX_PACKET_SIZE 1500
+// #error " we should not be here"
+#define MQTT_MAX_PACKET_SIZE 2000//1500
 #endif
 
 // MQTT_KEEPALIVE : keepAlive interval in Seconds

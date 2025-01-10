@@ -795,6 +795,10 @@ public:
 
     void handleTelnet();
 
+    static void AddLog_Static(uint8_t loglevel, PGM_P formatP, ...);
+
+
+
     enum DEBUG_OUTPUT_IDS{
       DEBUG_OUTPUT_HARDWARE_ID=0,
       DEBUG_OUTPUT_SOFTWARE_ID
@@ -827,6 +831,8 @@ public:
     void AddLogBuffer(uint8_t loglevel, uint8_t *buffer, int count);
     void AddLogSerial(uint8_t loglevel);
     void AddLogMissed(char *sensor, uint8_t misses);
+
+
 
     
 /****

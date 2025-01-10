@@ -4502,7 +4502,7 @@
         "Function":"Static Palette",
         "Speed":127,
         "Intensity":127,
-        "Grouping":20,
+        "Grouping":1,
         "RateMs": 25
       },
       "BrightnessRGB": 100,

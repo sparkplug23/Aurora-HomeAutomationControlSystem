@@ -1031,12 +1031,28 @@ if (jtok = obj["MQTTPixelArrays"]) {
  * "TimeOff":"HHMM" as hh and mm of the day
  * 
  */
-  #if FIRMWARE_VERSION_MAX(0, 240)
+  if(jtok = obj["Preset"].getObject()["Load"]){ // Range 0-100
+  //   SEGMENT_I(segment_index).setBrightnessCCT( map(jtok.getInt(), 0,100, 0,255) );
+  //   ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_BRIGHTNESS_RGB)), SEGMENT_I(segment_index).getBrightnessCCT());
+  //   data_buffer.isserviced++;
+  // }
+    uint8_t ps = jtok.getInt();//presetCycCurr;
+    // if (root["win"].isNull() && getVal(root["ps"], &ps, 0, 0) && ps > 0 && ps < 251 && ps != currentPreset) {
+      // b) preset ID only or preset that does not change state (use embedded cycling limits if they exist in getVal())
+      // presetCycCurr = ps;
+      #ifdef ENABLE_DEVFEATURE_LIGHTING__PLAYLISTS
+      unloadPlaylist();          // applying a preset unloads the playlist
+      #endif
+      applyPreset(ps, CALL_MODE_DIRECT_CHANGE); // async load from file system (only preset ID was specified)
+      // return stateResponse;
+    // }
+
+  }
+
   if(jtok = obj["TimeOnSecs"]){
     SEGMENT_I(segment_index).auto_timeoff.Start(jtok.getInt());
     ALOG_INF(PSTR("auto_timeoff %d"), SEGMENT_I(segment_index).auto_timeoff.Value());
   }
-  #endif
 
 
   /**

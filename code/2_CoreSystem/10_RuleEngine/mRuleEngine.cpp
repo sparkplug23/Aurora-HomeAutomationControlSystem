@@ -375,7 +375,7 @@ void mRuleEngine::Tasker_Rules_Interface(uint16_t function_input){
         if(rules[rule_index].trigger.module_id == event_triggered.module_id)
         {
                
-          ALOG_INF(PSTR(D_LOG_RULES "MATCHED trigger.module_id[%d] : Rule %d Triggered"), rules[rule_index].trigger.module_id);
+          ALOG_INF(PSTR(D_LOG_RULES "MATCHED trigger.module_id[%d] : Rule %d Triggered"), rules[rule_index].trigger.module_id, rule_index);
 
           // Populate any jsoncommands to be executed, this takes precident over "State" controls
           if(rules[rule_index].command.json_commands_dlist_id>0)
@@ -398,19 +398,20 @@ void mRuleEngine::Tasker_Rules_Interface(uint16_t function_input){
           else // Execute normal state/value method if no jsoncommand was used
           {
             
+            #ifdef ENABLE_LOG_LEVEL_ERROR
+                    ALOG_TST(PSTR("Execute Tasker_Interface(func=%d,module=%d,SourceIsRule=%d)"),
+                  rules[rule_index].command.function_id, // function the previous trigger is linked to
+                  rules[rule_index].command.module_id, //target module
+                  true  // runnig a rule, so don't call this loop back into this function
+                    );
+            #endif // ENABLE_LOG_LEVEL_INFO
+            
             pCONT->Tasker_Interface(
               rules[rule_index].command.function_id
               // , // function the previous trigger is linked to
               // rules[rule_index].command.module_id //target module
             );
 
-            // #ifdef ENABLE_LOG_LEVEL_ERROR
-            //         ALOG_TST(PSTR("Execute Tasker_Interface(func=%d,module=%d,SourceIsRule=%d)"),
-            //       rules[rule_index].command.function_id, // function the previous trigger is linked to
-            //       rules[rule_index].command.module_id, //target module
-            //       true  // runnig a rule, so don't call this loop back into this function
-            //         );
-            // #endif // ENABLE_LOG_LEVEL_INFO
 
           }
 
@@ -571,10 +572,10 @@ void mRuleEngine::parsesub_Rule_Part(JsonParserObject jobj, mEvent::EVENT_PART* 
         event->device_id = jtok.getInt();
         data_buffer.isserviced++;
       }
-      #ifdef ENABLE_LOG_LEVEL_DEBUG
+      // #ifdef ENABLE_LOG_LEVEL_DEBUG
       ALOG_INF(PSTR("JTOK FOUND Trigger Module DeviceName = %d"),event->device_id);
       // ALOG_DBG(PSTR(D_LOG_LIGHT D_COMMAND_SVALUE_K(D_COLOUR_PALETTE)), GetPaletteNameByID(animation.palette_id, buffer, sizeof(buffer)));
-      #endif // ENABLE_LOG_LEVEL_DEBUG
+      // #endif // ENABLE_LOG_LEVEL_DEBUG
     
     }//end trigger
 
@@ -597,10 +598,10 @@ void mRuleEngine::parsesub_Rule_Part(JsonParserObject jobj, mEvent::EVENT_PART* 
 
       // Use state here to also set encoding, as it will know what the value is eg float = 4 bytes
 
-      #ifdef ENABLE_LOG_LEVEL_DEBUG
+      // #ifdef ENABLE_LOG_LEVEL_DEBUG
       ALOG_INF(PSTR("JTOK FOUND Trigger Module State = %d"),event->value.data[0]);
       // ALOG_DBG(PSTR(D_LOG_LIGHT D_COMMAND_SVALUE_K(D_COLOUR_PALETTE)), GetPaletteNameByID(animation.palette_id, buffer, sizeof(buffer)));
-      #endif // ENABLE_LOG_LEVEL_DEBUG
+      // #endif // ENABLE_LOG_LEVEL_DEBUG
     
     }//end trigger
     if(jtok = jobj["Value"]){
@@ -621,18 +622,18 @@ void mRuleEngine::parsesub_Rule_Part(JsonParserObject jobj, mEvent::EVENT_PART* 
 
       // Use state here to also set encoding, as it will know what the value is eg float = 4 bytes
 
-      #ifdef ENABLE_LOG_LEVEL_DEBUG
+      // #ifdef ENABLE_LOG_LEVEL_DEBUG
       ALOG_INF(PSTR("JTOK FOUND Trigger Module State = %d"),event->value.data[0]);
       // ALOG_DBG(PSTR(D_LOG_LIGHT D_COMMAND_SVALUE_K(D_COLOUR_PALETTE)), GetPaletteNameByID(animation.palette_id, buffer, sizeof(buffer)));
-      #endif // ENABLE_LOG_LEVEL_DEBUG
+      // #endif // ENABLE_LOG_LEVEL_DEBUG
     
     }//end trigger
 
     if(jtok = jobj["JsonCommands"]){
 
-    #ifdef ENABLE_LOG_LEVEL_INFO
+    // #ifdef ENABLE_LOG_LEVEL_INFO
       ALOG_INF(PSTR("JTOK FOUND Trigger Module JsonCommands = %s"), jtok.getStr());
-    #endif //  ENABLE_LOG_LEVEL_INFO
+    // #endif //  ENABLE_LOG_LEVEL_INFO
 
 
       // if(jsonbuffer.data != nullptr){
@@ -1119,6 +1120,7 @@ void mRuleEngine::MQTTHandler_Init()
   ptr->json_level = JSON_LEVEL_DETAILED;
   ptr->postfix_topic = PM_MQTT_HANDLER_POSTFIX_TOPIC_SETTINGS_CTR;
   ptr->ConstructJSON_function = &mRuleEngine::ConstructJSON_Settings;
+  mqtthandler_list.push_back(ptr);
 
   ptr = &mqtthandler_state_ifchanged;
   ptr->tSavedLastSent = 0;
@@ -1129,6 +1131,7 @@ void mRuleEngine::MQTTHandler_Init()
   ptr->json_level = JSON_LEVEL_IFCHANGED;
   ptr->postfix_topic = PM_MQTT_HANDLER_POSTFIX_TOPIC_STATE_CTR;
   ptr->ConstructJSON_function = &mRuleEngine::ConstructJSON_State;
+  mqtthandler_list.push_back(ptr);
 
 } 
 

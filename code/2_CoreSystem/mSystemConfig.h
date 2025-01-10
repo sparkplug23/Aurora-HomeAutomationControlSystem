@@ -76,9 +76,12 @@ enum FIRMWARE_VERSION_BRANCH_TYPE_IDS{
   ((FIRMWARE_VERSION_MAJOR > (major)) || \
    (FIRMWARE_VERSION_MAJOR == (major) && FIRMWARE_VERSION_MINOR >= (minor)))
 
-#define FIRMWARE_VERSION_MAX(major, minor) \
-  ((FIRMWARE_VERSION_MAJOR < (major)) || \
-   (FIRMWARE_VERSION_MAJOR == (major) && FIRMWARE_VERSION_MINOR <= (minor)))
+// #define FIRMWARE_VERSION_MAX(major, minor) \
+//   ((FIRMWARE_VERSION_MAJOR < (major)) || \
+//    (FIRMWARE_VERSION_MAJOR == (major) && FIRMWARE_VERSION_MINOR <= (minor)))
+#define FIRMWARE_VERSION_MAX(major, minor) true
+  // ((FIRMWARE_VERSION_MAJOR < (major)) || \
+  //  (FIRMWARE_VERSION_MAJOR == (major) && FIRMWARE_VERSION_MINOR <= (minor)))
 
 
 

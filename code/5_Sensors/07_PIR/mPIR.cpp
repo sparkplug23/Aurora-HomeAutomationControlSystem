@@ -1,3 +1,18 @@
+/**
+ * @file mPIR.cpp
+ * @author your name (you@domain.com)
+ * @brief 
+ * @version 0.1
+ * @date 2025-01-01
+ * 
+ * @description The PIR module, works directly with the PIR sensors, and reports motion events.
+ * This module will report the event, but will also immediately send the event to the rule engine to be processed, which
+ * will then trigger any rules, but also make sure that the "interface" is called to report the new unified motion event structure.
+ * 
+ * @copyright Copyright (c) 2025
+ * 
+ */
+
 #include "mPIR.h" 
 
 #ifdef USE_MODULE_SENSORS_PIR 
@@ -24,7 +39,7 @@ int8_t mPIR::Tasker(uint8_t function, JsonParserObject obj){
   if(module_state.mode != ModuleStatus::Running){ return FUNCTION_RESULT_MODULE_DISABLED_ID; }
 
   switch(function){
-    case TASK_EVERY_50_MSECOND: // Removes need of backoff in this module
+    case TASK_EVERY_50_MSECOND:
       ReadSensor();
     break;
     /************
@@ -158,9 +173,9 @@ void mPIR::ReadSensor()
           pir_detect[sensor_id].isactive = true;
 
           // Log or trigger events for active state
-          AddLog(LOG_LEVEL_DEBUG, PSTR(D_LOG_PIR "%d (Active)"), sensor_id);
+          AddLog(LOG_LEVEL_INFO, PSTR(D_LOG_PIR "%d (Active)"), sensor_id);
           pCONT_rules->New_Event(GetModuleUniqueID(), sensor_id, isActive);
-          pCONT->Tasker_Interface(TASK_EVENT_MOTION_STARTED_ID);
+          pCONT->Tasker_Interface(TASK_EVENT_MOTION_STARTED_ID);               // This tied this submodule, directly into the interface, and will send the response immediately (with the rule populated)
         } 
         else 
         {
@@ -170,9 +185,9 @@ void mPIR::ReadSensor()
           pir_detect[sensor_id].isactive = false;
 
           // Log or trigger events for inactive state
-          AddLog(LOG_LEVEL_DEBUG, PSTR(D_LOG_PIR "%d (Inactive)"), sensor_id);
+          AddLog(LOG_LEVEL_INFO, PSTR(D_LOG_PIR "%d (Inactive)"), sensor_id);
           pCONT_rules->New_Event(GetModuleUniqueID(), sensor_id, isActive);
-          pCONT->Tasker_Interface(TASK_EVENT_MOTION_ENDED_ID);
+          pCONT->Tasker_Interface(TASK_EVENT_MOTION_ENDED_ID);                // This tied this submodule, directly into the interface, and will send the response immediately (with the rule populated)
         }
 
         // Update device name and event information
@@ -196,8 +211,8 @@ void mPIR::ReadSensor()
 void mPIR::parse_JSONCommand(JsonParserObject obj)
 {
 
-
 }
+
 
 /******************************************************************************************************************
  * ConstructJson
@@ -206,7 +221,7 @@ void mPIR::parse_JSONCommand(JsonParserObject obj)
 uint8_t mPIR::ConstructJSON_Settings(uint8_t json_level, bool json_appending){
 
   JBI->Start();
-    JBI->Add(D_CHANNELCOUNT, 0);
+    JBI->Add(D_DEVICES, module_state.devices);
   return JBI->End();
 
 }
@@ -238,8 +253,8 @@ uint8_t mPIR::ConstructJSON_Sensor(uint8_t json_level, bool json_appending){
         pir_detect[sensor_id].ischanged = false;
 
         JBI->Add(D_LOCATION, DLI->GetDeviceName_WithModuleUniqueID( GetModuleUniqueID(), sensor_id, buffer, sizeof(buffer))); 
-        JBI->Add("Time", tkr_time->GetTimeStr(tkr_time->Rtc.local_time).c_str());
-        JBI->Add("UTCTime", tkr_time->Rtc.local_time);
+        JBI->Add(PM_TIME, tkr_time->GetTimeStr(tkr_time->Rtc.local_time).c_str());
+        JBI->Add(PM_UTC_TIME, tkr_time->Rtc.local_time);
         JBI->Add(D_EVENT, pir_detect[sensor_id].isactive ? "detected": "over");
 
       }

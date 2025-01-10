@@ -10,6 +10,8 @@
 
 #include "2_CoreSystem/mGlobalMacros.h"
 
+
+
 // Void Arg Functions
 #define CALL_MEMBER_FUNCTION(object,ptrToMember)  ((object).*(ptrToMember))
 
