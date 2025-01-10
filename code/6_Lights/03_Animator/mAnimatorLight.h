@@ -3551,8 +3551,7 @@ inline void AnimationProcess_LinearBlend_Dynamic_BufferU32_FillSegment(const Ani
   
   [[gnu::hot]] ColourBaseType getPixelColor(uint32_t i) const;
   void     setPixelColor(uint32_t n, ColourBaseType c);
-  // using public variables to reduce code size increase du
-  e to inline function getSegment() (with bounds checking) and color transitions
+  // using public variables to reduce code size increase due to inline function getSegment() (with bounds checking) and color transitions
   uint32_t _colors_t_PHASE_OUT[3]; // color used for effect (includes transition)
   uint16_t _virtualSegmentLength;
 
