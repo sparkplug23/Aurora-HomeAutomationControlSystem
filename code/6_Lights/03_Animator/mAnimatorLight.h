@@ -3616,27 +3616,6 @@ inline void AnimationProcess_LinearBlend_Dynamic_BufferU32_FillSegment(const Ani
 
     void setupEffectData(void); // add default effects to the list; defined in FX.cpp
 
-    // outsmart the compiler :) by correctly overloading
-    // inline void setPixelColor(int n, uint8_t r, uint8_t g, uint8_t b, uint8_t w = 0) { 
-    //   Serial.println(__LINE__);
-    //   setPixelColor(n, RGBW32(r,g,b,w)); }
-    // inline void setPixelColor(int n, CRGB c) { 
-      
-    //   Serial.println(__LINE__);
-    //   setPixelColor(n, c.red, c.green, c.blue); }
-
-    // inline void setPixelColorXY(int x, int y, uint32_t c)   { setPixelColor(y * Segment::maxWidth + x, c); }
-    // inline void setPixelColorXY(int x, int y, byte r, byte g, byte b, byte w = 0) { setPixelColorXY(x, y, RGBW32(r,g,b,w)); }
-    // inline void setPixelColorXY(int x, int y, CRGB c)       { setPixelColorXY(x, y, RGBW32(c.r,c.g,c.b,0)); }
-
-    // inline void setPixelColorXY(int x, int y, uint32_t c)   { 
-    //   Serial.println(__LINE__);setPixelColor(y * Segment::maxWidth + x, c); }
-    // inline void setPixelColorXY(int x, int y, byte r, byte g, byte b, byte w = 0) {
-    //   Serial.println(__LINE__); setPixelColorXY(x, y, RGBW32(r,g,b,w)); }
-    // inline void setPixelColorXY(int x, int y, CRGB c)       {
-    //   Serial.println(__LINE__); setPixelColorXY(x, y, RGBW32(c.r,c.g,c.b,0)); }
-
-
     inline void setShowCallback(show_callback cb) { _callback = cb; }
     inline void appendSegment(const Segment &seg = Segment()) {
 
