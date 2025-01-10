@@ -365,7 +365,8 @@ class PolyBus
     // c.WW = c.CW = 0; // Clear WW and CW for now;
 
     #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
-    Serial.printf("rgbww function bt%d %d,%d,%d\n\r", busType,c.R, c.G, c.B, c.WW, c.CW); Serial.flush();
+    if(pix==0)
+      Serial.printf("    rgbww set bt%d               = %d,%d,%d,%d,%d\n\r", busType, c.R, c.G, c.B, c.WW, c.CW); Serial.flush();
     #endif
 
   // DEBUG_LINE_HERE;
@@ -384,21 +385,26 @@ class PolyBus
     // Reorder RGB channels based on the provided color order
     switch (co & COLOUR_ORDER_RGB_MASK) {
       default: break;                                      // Default: GRB
-      case 1:  col.G = c.R; col.R = c.G; break;            // RGB
-      case 2:  col.G = c.B; col.B = c.G; break;            // BRG
-      case 3:  col.G = c.R; col.R = c.B; c.B = c.G; break; // RBG
-      case 4:  col.G = c.B; col.R = c.G; c.B = c.R; break; // BGR
-      case 5:  col.R = c.B; col.B = c.R; break;            // GBR
+      case 1:  std::swap(col.R, col.G); break;            // RGB
+      case 2:  std::swap(col.R, col.B); break;            // BRG
+      case 3:  std::swap(col.G, col.B); break;            // RBG
+      case 4:  std::swap(col.R, col.B); std::swap(col.G, col.R); break; // BGR
+      case 5:  std::swap(col.R, col.B); break;            // GBR
     }
 
     // // Handle White channel reordering (upper nibble)
     // switch (co >> COLOUR_ORDER_WHITE_MASK) {
-    //   case 1: col.CW = col.WW; col.WW = 0; break; // Only CW used
-    //   case 2: col.WW = col.CW; col.CW = 0; break; // Only WW used
-    //   case 3: col.WW = 0; col.CW = 0; break;      // Disable both whites
-    //   case 4: std::swap(col.WW, col.CW); break;   // Swap WW and CW
-    //   default: break; // No swap
+    //   case 1: col.CW = col.WW; col.WW = 0; break;         // Only CW used
+    //   case 2: col.WW = col.CW; col.CW = 0; break;         // Only WW used
+    //   case 3: col.WW = 0; col.CW = 0; break;              // Disable both whites
+    //   case 4: std::swap(col.WW, col.CW); break;           // Swap WW and CW
+    //   default: break;                                     // No swap
     // }
+
+    #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+    // if(pix==0)
+      Serial.printf("    rgbww setw bt%d              = %d,%d,%d,%d,%d\n\r", busType, col.R, col.G, col.B, col.WW, col.CW); Serial.flush();
+    #endif
     
 // Log the resulting white channels
 #ifdef ENABLE_DEVFEATURE__PIXEL_COLOUR_ORDER_IN_MULTIPIN_SHOW_LOGS
@@ -459,20 +465,23 @@ Serial.printf("After white channel processing: WW=%d, CW=%d\n", col.WW, col.CW);
       {
       
 
+    #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
       
-      // Serial.printf("%d SetPixelColor[%d] R=%d, G=%d, B=%d, WW=%d, CW=%d\n\r", busType,pix, 
-      //       col.R,col.G,col.B,col.WW,col.CW
-      //   );
-      
+      Serial.printf("%d SetPixelColor[%d] R=%d, G=%d, B=%d, WW=%d, CW=%d\n\r", busType,pix, 
+            col.R,col.G,col.B,col.WW,col.CW
+        );
+      #endif
       // (static_cast<PIXELBUS_32_I0_5*>(busPtr))->SetLuminance(255); 
       
       (static_cast<PIXELBUS_32_I0_5*>(busPtr))->SetPixelColor(pix, col); 
       
-      // RgbwwColor col2 = (static_cast<PIXELBUS_32_I0_5*>(busPtr))->GetPixelColor(pix); 
+    #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+      RgbwwColor col2 = (static_cast<PIXELBUS_32_I0_5*>(busPtr))->GetPixelColor(pix); 
       
-      // Serial.printf("%d GetPixelColor[%d] R=%d, G=%d, B=%d, WW=%d, CW=%d\n\r", busType,pix, 
-      //       col2.R,col2.G,col2.B,col2.WW,col2.CW
-      //   );
+      Serial.printf("%d GetPixelColor[%d] R=%d, G=%d, B=%d, WW=%d, CW=%d\n\r", busType,pix, 
+            col2.R,col2.G,col2.B,col2.WW,col2.CW
+        );
+        #endif
       
       }
       break;
@@ -484,7 +493,7 @@ Serial.printf("After white channel processing: WW=%d, CW=%d\n", col.WW, col.CW);
       #ifndef NEOPIXEL_DISABLE_I2S1_PIXELBUS
       case BUSTYPE__32_I1_3__ID: (static_cast<PIXELBUS_32_I1_3*>(busPtr))->SetPixelColor(pix, RgbColor(col)); break;
       case BUSTYPE__32_I1_4__ID: (static_cast<PIXELBUS_32_I1_4*>(busPtr))->SetPixelColor(pix, RgbwColor(col)); break;
-      case BUSTYPE__32_I1_5__ID: (static_cast<PIXELBUS_32_I1_5*>(busPtr))->SetPixelColor(pix, RgbColor(255,0,0)); break;
+      case BUSTYPE__32_I1_5__ID: (static_cast<PIXELBUS_32_I1_5*>(busPtr))->SetPixelColor(pix, col); break;
       case BUSTYPE__32_I1_400_3__ID: (static_cast<PIXELBUS_32_I1_400_3*>(busPtr))->SetPixelColor(pix, RgbColor(col)); break;
       case BUSTYPE__32_I1_3P__ID: (static_cast<PIXELBUS_32_I1_3P*>(busPtr))->SetPixelColor(pix, RgbColor(col)); break;
       case BUSTYPE__32_I1_4P__ID: (static_cast<PIXELBUS_32_I1_4P*>(busPtr))->SetPixelColor(pix, RgbwColor(col)); break;
@@ -539,10 +548,12 @@ static RgbwwColor getPixelColor(void* busPtr, uint8_t busType, uint16_t pix, uin
       case BUSTYPE__32_I0_5__ID: 
       
       col = (static_cast<PIXELBUS_32_I0_5*>(busPtr))->GetPixelColor(pix); 
-      
-      // Serial.printf("%d getPixelColor[%d] R=%d, G=%d, B=%d, WW=%d, CW=%d\n\r", busType,pix, 
-      //       col.R,col.G,col.B,col.WW,col.CW
-      //   );
+            
+    #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+      Serial.printf("%dFGetPixelColor[%d] R=%d, G=%d, B=%d, WW=%d, CW=%d\n\r", busType,pix, 
+            col.R,col.G,col.B,col.WW,col.CW
+        );
+        #endif
       
       break;
       case BUSTYPE__32_I0_400_3__ID: col = (static_cast<PIXELBUS_32_I0_400_3*>(busPtr))->GetPixelColor(pix); break;
@@ -553,12 +564,7 @@ static RgbwwColor getPixelColor(void* busPtr, uint8_t busType, uint16_t pix, uin
       #ifndef NEOPIXEL_DISABLE_I2S1_PIXELBUS
       case BUSTYPE__32_I1_3__ID: col = (static_cast<PIXELBUS_32_I1_3*>(busPtr))->GetPixelColor(pix); break;
       case BUSTYPE__32_I1_4__ID: col = (static_cast<PIXELBUS_32_I1_4*>(busPtr))->GetPixelColor(pix); break;
-      case BUSTYPE__32_I1_5__ID: 
-      
-      col = (static_cast<PIXELBUS_32_I1_5*>(busPtr))->GetPixelColor(pix); 
-      
-      
-      break;
+      case BUSTYPE__32_I1_5__ID: col = (static_cast<PIXELBUS_32_I1_5*>(busPtr))->GetPixelColor(pix); break;
       case BUSTYPE__32_I1_400_3__ID: col = (static_cast<PIXELBUS_32_I1_400_3*>(busPtr))->GetPixelColor(pix); break;
       case BUSTYPE__32_I1_3P__ID: col = (static_cast<PIXELBUS_32_I1_3P*>(busPtr))->GetPixelColor(pix); break;
       case BUSTYPE__32_I1_4P__ID: col = (static_cast<PIXELBUS_32_I1_4P*>(busPtr))->GetPixelColor(pix); break;
@@ -567,24 +573,30 @@ static RgbwwColor getPixelColor(void* busPtr, uint8_t busType, uint16_t pix, uin
     #endif
     }
 
-    // Handle White channel reordering (upper nibble)
-    // switch (co >> COLOUR_ORDER_WHITE_MASK) {
-    //   case 1: col.WW = col.CW; col.CW = 0; break; // Only CW was used
-    //   case 2: col.CW = col.WW; col.WW = 0; break; // Only WW was used
-    //   case 3: col.WW = 0; col.CW = 0; break;      // Both whites were disabled
-    //   case 4: std::swap(col.WW, col.CW); break;   // Swap WW and CW back
-    //   default: break; // No swap
-    // }
-
-    // Reorder RGB channels based on the provided color order
+    // Reorder RGB channels back to their original order
     switch (co & COLOUR_ORDER_RGB_MASK) {
-      default: break;                                // Default: GRB
-      case 1: std::swap(col.R, col.G); break;        // RGB
-      case 2: std::swap(col.R, col.B); break;        // BRG
-      case 3: std::swap(col.G, col.B); break;        // RBG
-      case 4: std::swap(col.R, col.B); std::swap(col.G, col.R); break; // BGR
-      case 5: std::swap(col.R, col.B); break;        // GBR
+      default: break;                                      // Default: GRB
+      case 1:  std::swap(col.R, col.G); break;            // RGB
+      case 2:  std::swap(col.R, col.B); break;            // BRG
+      case 3:  std::swap(col.G, col.B); break;            // RBG
+      case 4:  std::swap(col.G, col.R); std::swap(col.R, col.B); break; // BGR
+      case 5:  std::swap(col.R, col.B); break;            // GBR
     }
+
+    // // Reorder White channels back to their original order
+    // switch (co >> COLOUR_ORDER_WHITE_MASK) {
+    //   case 1: col.WW = col.CW; col.CW = 0; break;         // Only CW was used
+    //   case 2: col.CW = col.WW; col.WW = 0; break;         // Only WW was used
+    //   case 3: col.WW = 0; col.CW = 0; break;              // Both whites were disabled
+    //   case 4: std::swap(col.WW, col.CW); break;           // Swap WW and CW back
+    //   default: break;                                     // No swap
+    // }
+    
+    #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+    // if(pix==0)
+      Serial.printf("     rgbww get bt%d                %d,%d,%d,%d,%d\n\r", busType, col.R, col.G, col.B, col.WW, col.CW); Serial.flush();
+#endif
+      // col = RgbwwColor(21,22,23,20);
 
     #ifdef ENABLE_DEVFEATURE__PIXEL_COLOUR_ORDER_IN_MULTIPIN_SHOW_LOGS
     if (pix < 5) { // Just first few pixels

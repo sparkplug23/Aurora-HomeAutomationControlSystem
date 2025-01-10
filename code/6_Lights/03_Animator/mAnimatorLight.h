@@ -1,5 +1,5 @@
-#ifndef _AnimatorDALIGHTNEOPIXEL_H
-#define _AnimatorDALIGHTNEOPIXEL_H 7.0
+#ifndef _MANIMATORLIGHT_H
+#define _MANIMATORLIGHT_H
 
 #include "1_TaskerManager/mTaskerManager.h"
 
@@ -10,7 +10,6 @@
 #include "6_Lights/00_Interface/mBusManager.h"
 
 #include "2_CoreSystem/07_Time/Toki.h"
-
 
 #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
 // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING            // Development and testing only
@@ -47,8 +46,6 @@
   #endif
 #endif // ENABLE_DEVFEATURE_CREATE_MINIMAL_BUSSES_SINGLE_OUTPUT
 
-#define MAX_PIXELBUS_DIGITAL_PINS 16
-
 /**
  * @brief GetColourPalette defines to make it visually easy to read
  **/
@@ -65,7 +62,7 @@
 #define SET_BRIGHTNESS                  true
 #define BRIGHTNESS_ALREADY_SET          true
 #define BRIGHTNESS_NOT_YET_SET          false
-#define WITH_BRIGHTNESS_APPLIED      true
+#define WITH_BRIGHTNESS_APPLIED         true
 
 /**
  * WLED conversions
@@ -73,9 +70,6 @@
  * For optimisation, these will be removed and replaced with the correct values.
  **/
 #define color_from_palette(a,b,c,d)    GetPaletteColour(a,b,c,d).getU32()
-// #define ColorFromPalette_WithLoad3(a,b,c)   (if( SEGMENT.palette_id != SEGMENT.palette_container->loaded_palette_id){ LoadPalette(SEGMENT.palette_id, getCurrSegmentId()); ColorFromPalette(a,b,c); })
-// #define ColorFromPalette_WithLoad4(a,b,c,d) (if( SEGMENT.palette_id != SEGMENT.palette_container->loaded_palette_id){ LoadPalette(SEGMENT.palette_id, getCurrSegmentId()); ColorFromPalette(a,b,c,d); })
-
 
 #define MIN(a,b) ((a)<(b)?(a):(b))
 #define MAX(a,b) ((a)>(b)?(a):(b))
@@ -84,7 +78,7 @@
 #define WLED_FPS         42
 #define FRAMETIME_FIXED  (1000/WLED_FPS)
 #define FRAMETIME_MS     24
-#define FRAMETIME        25//getFrameTime()
+#define FRAMETIME        25
 
 extern bool realtimeRespectLedMaps; // used in getMappedPixelIndex()
 
@@ -128,20 +122,6 @@ extern bool realtimeRespectLedMaps; // used in getMappedPixelIndex()
 // #define MIN_SHOW_DELAY   (_frametime < 16 ? 8 : 15)
 #define MINIMUM_SHOW_BACKOFF_PERIOD_MS 30//15
 
-/* How much data bytes all segments combined may allocate */
-#ifdef ESP8266
-#define MAX_SEGMENT_DATA 2048
-#else
-// #define MAX_SEGMENT_DATA 8192
-// Really this value should be split across all segments, since I may want one very large (2000+) pixel or many smaller segments but multiples of them.
-
-// #ifndef MAX_SEGMENT_DATA
-// #define MAX_SEGMENT_DATA 19000 //6*MAX_PIXELS = 
-// #endif 
-#endif
-
-// #define ANIMATOR_UNSET() (seg.anim_function_callback == nullptr)
-
 #define FLASH_COUNT 4 
 #define LED_SKIP_AMOUNT  0
 #define MIN_SHOW_DELAY  15
@@ -156,7 +136,6 @@ extern bool realtimeRespectLedMaps; // used in getMappedPixelIndex()
 #define DEFAULT_C2         (uint8_t)128
 #define DEFAULT_C3         (uint8_t)16
 
-
 //Segment option byte bits
 #define SEG_OPTION_SELECTED       0
 #define SEG_OPTION_REVERSED       1
@@ -165,44 +144,18 @@ extern bool realtimeRespectLedMaps; // used in getMappedPixelIndex()
 #define SEG_OPTION_NONUNITY       4            //Indicates that the effect does not use FRAMETIME_MS or needs getPixelColor
 #define SEG_OPTION_TRANSITIONAL   7
 
-// some common colors
-// white, red, green, blue
-#define RED        (uint32_t)0xFF0000
-#define GREEN      (uint32_t)0x00FF00
-#define BLUE       (uint32_t)0x0000FF
-#define WHITE      (uint32_t)0xFFFFFF
-#define BLACK      (uint32_t)0x000000
-#define YELLOW     (uint32_t)0xFFFF00
-#define CYAN       (uint32_t)0x00FFFF
-#define MAGENTA    (uint32_t)0xFF00FF
-#define PURPLE     (uint32_t)0x400080
-#define ORANGE     (uint32_t)0xFF3000
-#define PINK       (uint32_t)0xFF1493
-#define ULTRAWHITE (uint32_t)0xFFFFFFFF
-#define DARKSLATEGRAY (uint32_t)0x2F4F4F
-#define DARKSLATEGREY (uint32_t)0x2F4F4F
 
-#define NUM_COLORS 3 
-
-#define SEGIDX           getCurrSegmentId()
-
-/**
- * @brief 
- * Note: WLED used full colour RGB SEGCOLOR_U32, here SEGCOLOR_U32 going forward will also have brightness applied otherwise it is assumed as 100% brightness and therefore the same as WLED
- * 
- */
-#define SEGCOLOR_U32(x)      segments[getCurrSegmentId()].rgbcctcolors[x].WithBrightness().getU32()
-#define SEGCOLOR_RGBCCT(x)   segments[getCurrSegmentId()].rgbcctcolors[x].WithBrightness()
-
-#define SEGMENT          segments[getCurrSegmentId()]
-#define pSEGMENT         tkr_anim->segments[tkr_anim->getCurrSegmentId()]
-#define SEGMENT_I(X)     segments[X] // can this be changed later to "getSegment(X)" and hence protect against out of bounds
-#define pSEGMENT_I(X)    tkr_anim->segments[X]
-#define SEGLEN           _virtualSegmentLength // This is still using the function, it just relies on calling the function prior to the effect to set this
-#define SEGPALETTE       SEGMENT.palette_container->CRGB16Palette16_Palette.data
+#define SEGCOLOR_U32(x)       segments[getCurrSegmentId()].segcol[x].getU32()
+#define SEGCOLOR_RGBCCT(x)    segments[getCurrSegmentId()].segcol[x].WithBrightness()
+#define SEGMENT               segments[getCurrSegmentId()]
+#define pSEGMENT              tkr_anim->segments[tkr_anim->getCurrSegmentId()]
+#define SEGMENT_I(X)          segments[X] // can this be changed later to "getSegment(X)" and hence protect against out of bounds
+#define pSEGMENT_I(X)         tkr_anim->segments[X]
+#define SEGLEN                _virtualSegmentLength // This is still using the function, it just relies on calling the function prior to the effect to set this
+#define SEGPALETTE            SEGMENT.palette_container->CRGB16Palette16_Palette.data
+#define SEGIDX                getCurrSegmentId()
 
 #define SPEED_FORMULA_L  5U + (50U*(255U - SEGMENT.speed))/SEGLEN
-
 
 #include "6_Lights/02_Palette/mPalette_Progmem.h"
 #include "6_Lights/02_Palette/mPalette.h"
@@ -325,7 +278,6 @@ class mAnimatorLight :
     PGM_P GetModuleName(){          return PM_MODULE_LIGHTS_ANIMATOR_CTR; }
     uint16_t GetModuleUniqueID(){ return D_UNIQUE_MODULE_LIGHTS_ANIMATOR_ID; }
     
-
     struct ClassState
     {
       uint8_t devices = 0; // sensors/drivers etc, if class operates on multiple items how many are present.
@@ -350,15 +302,10 @@ class mAnimatorLight :
     rt;
 
     
-    bool    pwm_multi_channels = false;        // SetOption68, treat each PWM channel as an independant dimmer
-    bool    fade_initialized = false;      // dont't fade at startup
     bool doInitBusses = false; // debug
     bool     doSerializeConfig = false; // debug
     int8_t loadLedmap = -1;
-    uint16_t fAnyLEDsOnOffCount = 0;
     uint8_t currentLedmap = 0;
-    uint8_t blocking_force_animate_to_complete = true;
-    uint8_t fPixelsUpdated = false;
     uint16_t desired_pixel;
 
     #ifdef ENABLE_DEBUGFEATURE_LIGHTING__EFFECT_LOOP_TIME_SERIAL
@@ -374,13 +321,7 @@ class mAnimatorLight :
      * SECTION: Internal Functions
      ************************************************************************************************/
 
-
     void reset(); // tmp use wled reboot, later make sure to use the system reboot method
-
-
-    void StartAnimation_AsAnimUpdateMemberFunction();
-    
-    const char* GetAnimationStatusCtr(char* buffer, uint8_t buflen);
             
     #ifdef ENABLE_DEVFEATURE_CREATE_MINIMAL_BUSSES_SINGLE_OUTPUT
     byte correctionRGB[4] = {0,0,0,0};
@@ -396,6 +337,7 @@ class mAnimatorLight :
     void BootMessage();
 
     #ifdef ENABLE_FEATURE_LIGHTS__KEY_INPUT_CONTROLS
+    // This should be made into a custom controller
     struct KeyInput_ControlLights_s{
       /**
        * @brief 
@@ -413,34 +355,10 @@ class mAnimatorLight :
     void SubTask_Demo();
     #endif
                 
-
-    IRAM_ATTR RgbcctTOwwType ApplyBrightnesstoDesiredColourWithGamma(RgbcctTOwwType full_range_colour, uint8_t brightness);
     
     #ifdef USE_DEVFEATURE_ANIMATOR_INIT_CODE__SEGMENT_MATRIX_TESTER
     void Test_Config();
     #endif
-
-    #ifdef ENABLE_PIXEL_OUTPUT_POWER_ESTIMATION
-    struct POWER_RATING{
-      float Average_mA_Per_Pixel_Step = 0.0784; //  20/255    //MAKE PROGMEM
-      // uint8_t G_Channel_mA = 20;
-      // uint8_t B_Channel_mA = 20;
-      // uint8_t W_Channel_mA = 20;
-      float current_mA;
-      uint8_t power;
-    }power_rating;
-
-    template<typename T>
-    void swap(T& x, T& y)
-    {
-      T tmp = x;
-      x = y;
-      y = tmp;
-    }
-
-    timereached_t tSavedCalculatePowerUsage;
-    #endif // ENABLE_PIXEL_OUTPUT_POWER_ESTIMATION
-
 
     /************************************************************************************************
      * SECTION: Modes
@@ -498,9 +416,6 @@ class mAnimatorLight :
 
     void CommandSet_HardwareColourOrderTypeByStr(const char* value, uint8_t segment_index = 0);
     void CommandSet_ColourTypeByStr(const char* value, uint8_t segment_index = 0);
-    // const char* GetHardwareColourTypeName(char* buffer, uint8_t buflen, uint8_t segment_index= 0);
-    // const char* GetHardwareColourTypeNameByID(uint8_t id, char* buffer, uint8_t buflen, uint8_t segment_index= 0);
-
     void CommandSet_Animation_Transition_Rate_Ms(uint16_t value, uint8_t segment_index= 0);
   
     void CommandSet_Effect_Intensity(uint8_t value, uint8_t segment_index = 0);
@@ -516,11 +431,6 @@ class mAnimatorLight :
 
     uint8_t GetNumberOfColoursInPalette(uint16_t palette_id);
 
-    /************************************************************************************************
-     * SECTION: Files
-     ************************************************************************************************/
-
-
     /******************************************************************************************************************************************************************************
     *******************************************************************************************************************************************************************************
     ******************************************************************************************************************************************************************************
@@ -530,27 +440,21 @@ class mAnimatorLight :
     *****************************************************************************************************************************************************************************
     ******************************************************************************************************************************************************************************/
 
-
-    void fill(uint32_t c, bool apply_brightness = false);
-    void fill(RgbcctTOwwType c, bool apply_brightness = false);
-    void fill_ranged(uint32_t c, bool apply_brightness = false); 
+    void fill(uint32_t c);
+    void fill(RgbwwColor c);
+    void fill_ranged(uint32_t c);
 
     [[gnu::hot]] uint32_t color_wheel(uint8_t pos) const;
     static uint32_t ColourBlend(uint32_t color1, uint32_t color2, uint8_t blend);
 
     void Init_Segments();
 
-
-
     #ifdef ENABLE_DEVFEATURE_JSON__ASYNCJSON_V6
     StaticJsonDocument<JSON_BUFFER_SIZE> doc;
     JsonDocument *pDoc = &doc;
     #endif // ENABLE_DEVFEATURE_JSON__ASYNCJSON_V6
 
-
     #ifdef ENABLE_DEVFEATURE_LIGHTING__PRESETS
-
-
     volatile byte presetToApply = 0;
     volatile byte callModeToApply = 0;
     volatile byte presetToSave = 0;
@@ -634,8 +538,6 @@ class mAnimatorLight :
     bool handleSet(AsyncWebServerRequest *request, const String& req, bool apply=true);
     #endif // ENABLE_DEVFEATURE_LIGHTING__SETTINGS
 
-
-
     /******************************************************************************************************************************************************************************
     *******************************************************************************************************************************************************************************
     ****** Effect Functions *************************************************************************************************************************************************************************
@@ -688,6 +590,9 @@ class mAnimatorLight :
     #endif 
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
     void EffectAnim__Spanned_Static_Palette();
+    #endif
+    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
+    void EffectAnim__Randomise_Gradient();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
     void EffectAnim__Rotating_Palette();
@@ -1242,8 +1147,10 @@ class mAnimatorLight :
     EFFECTS_FUNCTION__CANDLE_SINGLE__ID,
     EFFECTS_FUNCTION__CANDLE_MULTIPLE__ID,
     #endif
+    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
+    EFFECTS_FUNCTION__RANDOMISE_GRADIENT__ID,
+    #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    // EFFECTS_FUNCTION__SHIMMERING_PALETTE__ID,
     EFFECTS_FUNCTION__SHIMMERING_PALETTE_DOUBLE__ID,
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
@@ -1933,7 +1840,7 @@ class mAnimatorLight :
    * @brief New method that allows getting WLED basic 3 colours, but also applying the colour when getting, the same as my palette method
    * 
    */
-  RgbcctColor GetSegmentColour(uint8_t colour_index, uint8_t segment_index = 0);
+  RgbwwColor GetSegmentColour(uint8_t colour_index, uint8_t segment_index = 0);
 
 
   mAnimatorLight& SetSegment_AnimFunctionCallback(uint8_t segment_index, ANIM_FUNCTION_SIGNATURE);
@@ -1952,26 +1859,26 @@ class mAnimatorLight :
   // void AnimationProcess_LinearBlend_Dynamic_Buffer(const AnimationParam& param);
 
 
-  #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
-  IRAM_ATTR 
-  #endif 
-  void AnimationProcess_LinearBlend_Dynamic_Buffer_BrtNotSet(const AnimationParam& param);
+  // #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
+  // IRAM_ATTR 
+  // #endif 
+  // void AnimationProcess_LinearBlend_Dynamic_Buffer_BrtNotSet(const AnimationParam& param);
 
 
 
-  void AnimationProcess_SingleColour_LinearBlend_Between_RgbcctSegColours(const AnimationParam& param);
+  // void AnimationProcess_SingleColour_LinearBlend_Between_RgbcctSegColours(const AnimationParam& param);
 
   // void 
   // #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
   // IRAM_ATTR 
   // #endif 
-  // SetTransitionColourBuffer_StartingColour(byte* buffer, uint16_t buflen, uint16_t pixel_index, ColourType pixel_type, const RgbcctColor& starting_colour);
+  // SetTransitionColourBuffer_StartingColour(byte* buffer, uint16_t buflen, uint16_t pixel_index, ColourType pixel_type, const RgbwwColor& starting_colour);
   
   // void 
   // #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
   // IRAM_ATTR 
   // #endif 
-  // SetTransitionColourBuffer_DesiredColour(byte* buffer, uint16_t buflen, uint16_t pixel_index,  ColourType pixel_type, const RgbcctColor& desired_colour);
+  // SetTransitionColourBuffer_DesiredColour(byte* buffer, uint16_t buflen, uint16_t pixel_index,  ColourType pixel_type, const RgbwwColor& desired_colour);
 
   // void 
   // #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
@@ -1979,7 +1886,21 @@ class mAnimatorLight :
   // #endif 
   // DynamicBuffer_Segments_UpdateStartingColourWithGetPixel();
 
-inline uint32_t WithBrightnessU32(uint32_t colour32, uint8_t brightnessRGB) {
+inline RgbwwColor AdjustColourWithBrightness(const RgbwwColor& colour, uint8_t brightnessRGB) {
+    // Pre-calculate the scale factor (bit-shift scaling for division by 255)
+    uint16_t scale = brightnessRGB + 1; // Adding 1 to avoid division by zero and maintain full range
+
+    // Apply brightness scaling
+    RgbwwColor adjusted;
+    adjusted.R = (colour.R * scale) >> 8;
+    adjusted.G = (colour.G * scale) >> 8;
+    adjusted.B = (colour.B * scale) >> 8;
+    adjusted.WW = (colour.WW * scale) >> 8;
+    adjusted.CW = (colour.CW * scale) >> 8;
+
+    return adjusted;
+}
+inline uint32_t AdjustColourWithBrightness(uint32_t colour32, uint8_t brightnessRGB) {
     // Pre-calculate the scale factor (bit-shift scaling for division by 255)
     uint16_t scale = brightnessRGB + 1; // Adding 1 to avoid division by zero and maintain full range
 
@@ -2016,12 +1937,6 @@ inline static uint32_t FadeU32(uint32_t colour32, uint8_t fade) {
     return (w << 24) | (r << 16) | (g << 8) | b;
 }
 
-
-
-
-  // void DynamicBuffer_Segments_UpdateStartingColourWithGetPixel_WithFade(uint8_t fade = 0);
-  void DynamicBuffer_Segments_UpdateStartingColourWithGetPixel_FromBus();
-  void Segments_Dynamic_Buffer_UpdateStartingColourWithGetPixel();
 
   #ifdef ENABLE_DEBUGFEATURE_LIGHTING__TIME_CRITICAL_RECORDING
   struct TimeCriticalLogging{
@@ -2229,7 +2144,7 @@ inline static uint32_t FadeU32(uint32_t colour32, uint8_t fade) {
       uint8_t fUpdate = false;
       struct SCREENS{
         struct EDGE{
-          RgbcctColor colour;
+          RgbwwColor colour;
           int8_t blend_between_sides_gradient_percentage = -1; // -1 is unset/none/solid, 0% is bottom/left, 100% is top/right
           uint8_t size = 5;
         };
@@ -2255,24 +2170,7 @@ inline static uint32_t FadeU32(uint32_t colour32, uint8_t fade) {
     **********************************************************************************************************************************************************************
     ******************************************************************************************************************************************************************************/
 
-    RgbcctTOwwType 
-    #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
-    IRAM_ATTR 
-    #endif 
-    GetColourFromUnloadedPalette2(
-      uint16_t palette_id,
-      uint16_t desired_index_from_palette = 0,
-      bool     flag_spanned_segment = true, // true(default):"desired_index_from_palette is exact pixel index", false:"desired_index_from_palette is scaled between 0 to 255, where (127/155 would be the center pixel)"
-      bool     flag_wrap_hard_edge = true,        // true(default):"hard edge for wrapping wround, so last to first pixel (wrap) is blended", false: "hard edge, palette resets without blend on last/first pixels"
-      bool     flag_crgb_exact_colour = false,
-      uint8_t* encoded_index = nullptr,
-      bool flag_request_is_for_full_visual_output = false
-    );
-
-    RgbcctTOwwType 
-    #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
-    IRAM_ATTR 
-    #endif 
+    RgbwwColor IRAM_ATTR
     GetColourFromUnloadedPalette3(
       uint16_t palette_id,
       uint16_t desired_index_from_palette = 0,
@@ -2300,18 +2198,19 @@ inline static uint32_t FadeU32(uint32_t colour32, uint8_t fade) {
 
 
     // Temporary helper functions to be cleaned up and converted
-    uint32_t crgb_to_col(CRGB fastled);
+    uint32_t crgb_to_col(CRGB crgb);
     CRGB col_to_crgb(uint32_t);
+
     uint8_t get_random_wheel_index(uint8_t pos);
     uint16_t triwave16(uint16_t in);
     uint16_t mode_palette();
-    void colorFromUint32(uint32_t in, bool secondary = false);
-    void colorFromUint24(uint32_t in, bool secondary = false);
-    void relativeChangeWhite(int8_t amount, byte lowerBoundary = 0);
-    void colorHStoRGB(uint16_t hue, byte sat, byte* rgb); //hue, sat to rgb
-    void colorCTtoRGB(uint16_t mired, byte* rgb); //white spectrum to rgb
-    void colorFromDecOrHexString(byte* rgb, char* in);
-    void colorRGBtoRGBW(byte* rgb); //rgb to rgbw (http://codewelt.com/rgbw). (RGBW_MODE_LEGACY)
+    // void colorFromUint32(uint32_t in, bool secondary = false);
+    // void colorFromUint24(uint32_t in, bool secondary = false);
+    // void relativeChangeWhite(int8_t amount, byte lowerBoundary = 0);
+    // void colorHStoRGB(uint16_t hue, byte sat, byte* rgb); //hue, sat to rgb
+    // void colorCTtoRGB(uint16_t mired, byte* rgb); //white spectrum to rgb
+    // void colorFromDecOrHexString(byte* rgb, char* in);
+    // void colorRGBtoRGBW(byte* rgb); //rgb to rgbw (http://codewelt.com/rgbw). (RGBW_MODE_LEGACY)
 
 
 
@@ -2362,6 +2261,175 @@ inline static uint32_t FadeU32(uint32_t colour32, uint8_t fade) {
   // #include "6_Lights/03_Animator/SubHeader_Segments.h" // Include the segment header file section, doing this to keep it easier to see
 // #pragma     once
 
+/**
+ * @brief Stores at least 5 full RgbcctColours with all internal manipulations as needed
+ * @NOTE: Replaces WLED 3 colour options
+ **/
+#ifndef CCT_MIN_DEFAULT
+  #define CCT_MIN_DEFAULT 153          // 6500K
+#endif
+#ifndef CCT_MAX_DEFAULT
+  #define CCT_MAX_DEFAULT 500          // 2000K
+#endif
+struct SegmentColour {
+    RgbwwColor colour; // The RgbwwColor object
+    uint8_t bri_rgb;   // Brightness for RGB channels
+    uint8_t bri_ww;    // Brightness for WW and CW channels
+
+    uint16_t cct = CCT_MIN_DEFAULT;             // 153..500, default to 153 (cold white)
+    uint16_t cct_min_range = CCT_MIN_DEFAULT;   // the minimum CT rendered range
+    uint16_t cct_max_range = CCT_MAX_DEFAULT;   // the maximum CT rendered range
+
+    // Constructor for easy initialization
+    SegmentColour(uint8_t r = 0, uint8_t g = 0, uint8_t b = 0, uint8_t ww = 0, uint8_t cw = 0, uint8_t br_rgb = 255, uint8_t br_ww = 255)
+        : colour(r, g, b, ww, cw), bri_rgb(br_rgb), bri_ww(br_ww) {}
+    
+    // Set RGB brightness (0-255)
+void setBrightnessRGB(uint8_t brightness) {
+    bri_rgb = brightness;
+}
+
+// Get RGB brightness (0-255)
+uint8_t getBrightnessRGB() const {
+    return bri_rgb;
+}
+
+// Set WW brightness (0-255)
+void setBrightnessWW(uint8_t brightness) {
+    bri_ww = brightness;
+}
+
+// Get WW brightness (0-255)
+uint8_t getBrightnessWW() const {
+    return bri_ww;
+}
+// TMP FUCNTIONS TO REMOVE
+// Set WW brightness (0-255)
+void setBrightnessCCT(uint8_t brightness) {
+    bri_ww = brightness;
+}
+// Get WW brightness (0-255)
+uint8_t getBrightnessCCT() const {
+    return bri_ww;
+}
+
+
+    // Apply brightness levels to the color and return a new RgbwwColor object
+    RgbwwColor WithBrightness() const {
+        RgbwwColor adjusted = colour;
+
+        // Scale RGB values by bri_rgb
+        uint16_t scaleRGB = bri_rgb + 1; // Prevent division by zero
+        adjusted.R = (colour.R * scaleRGB) >> 8;
+        adjusted.G = (colour.G * scaleRGB) >> 8;
+        adjusted.B = (colour.B * scaleRGB) >> 8;
+
+        // Scale WW and CW values by bri_ww
+        uint16_t scaleWW = bri_ww + 1;
+        adjusted.WW = (colour.WW * scaleWW) >> 8;
+        adjusted.CW = (colour.CW * scaleWW) >> 8;
+
+        return adjusted;
+    }
+
+    // Convert the current color with brightness applied to a 32-bit integer
+    uint32_t getU32() const {
+        RgbwwColor adjusted = WithBrightness();
+        return (static_cast<uint32_t>(adjusted.WW) << 24) | 
+            (static_cast<uint32_t>(adjusted.R) << 16) | 
+            (static_cast<uint32_t>(adjusted.G) << 8) | 
+            static_cast<uint32_t>(adjusted.B);
+    }
+
+    // Set CCT in Kelvin
+    void setCCT_Kelvin(uint16_t _cct) {
+      Serial.println("I dont want this right now");
+        // Clamp CCT to valid range
+        cct = (_cct < cct_min_range) ? cct_min_range : (_cct > cct_max_range ? cct_max_range : _cct);
+
+        // Calculate Warm White and Cool White proportions
+        uint8_t ww_value = ((cct - cct_min_range) * 255) / (cct_max_range - cct_min_range);
+        uint8_t cw_value = 255 - ww_value;
+
+        // Apply brightness scaling for whites
+        uint16_t scaleWW = bri_ww + 1;
+        colour.WW = (ww_value * scaleWW) >> 8;
+        colour.CW = (cw_value * scaleWW) >> 8;
+
+        // Store the current CCT
+        _cct = cct;
+    }// Set CCT as a balance between WW and CW (0-255)
+
+
+    void setCCT(uint8_t cct_balance) {
+        // Directly set the CCT balance
+        cct = cct_balance;
+
+    //         Cooler (bluish): cct = 255 should result in more CW and less WW.
+    // Warmer (yellowish): cct = 0 should result in more WW and less CW.
+
+        // Calculate Warm White and Cool White proportions
+        colour.CW = cct;            // Warm White proportion
+        colour.WW = 255 - cct;      // Cool White proportion
+    }
+
+
+    // Get the current CCT in Kelvin
+    uint16_t getCCT_Kelvin() const {
+        return cct;
+    }
+    // Get the current CCT in Kelvin
+    uint16_t getCCT() const {
+        return cct;
+    }
+
+    // Set Hue (0-360 degrees)
+void setHue(uint16_t hue) {
+    // Normalize hue to 0-360 range
+    hue = hue % 360;
+
+    // Convert current RGB to HSB
+    HsbColor hsb = HsbColor(RgbColor(colour.R, colour.G, colour.B));
+    hsb.H = static_cast<float>(hue) / 360.0f;
+
+    // Update RGB components based on the new hue
+    RgbColor newRgb = RgbColor(hsb);
+    colour.R = newRgb.R;
+    colour.G = newRgb.G;
+    colour.B = newRgb.B;
+}
+
+// Get Hue (0-360 degrees)
+uint16_t getHue() const {
+    // Convert current RGB to HSB
+    HsbColor hsb = HsbColor(RgbColor(colour.R, colour.G, colour.B));
+    return static_cast<uint16_t>(hsb.H * 360.0f);
+}
+
+// Set Saturation (0-255)
+void setSaturation(uint8_t saturation) {
+    // Normalize saturation to 0-1 range
+    float sat = static_cast<float>(saturation) / 255.0f;
+
+    // Convert current RGB to HSB
+    HsbColor hsb = HsbColor(RgbColor(colour.R, colour.G, colour.B));
+    hsb.S = sat;
+
+    // Update RGB components based on the new saturation
+    RgbColor newRgb = RgbColor(hsb);
+    colour.R = newRgb.R;
+    colour.G = newRgb.G;
+    colour.B = newRgb.B;
+}
+
+// Get Saturation (0-255)
+uint8_t getSaturation() const {
+    // Convert current RGB to HSB
+    HsbColor hsb = HsbColor(RgbColor(colour.R, colour.G, colour.B));
+    return static_cast<uint8_t>(hsb.S * 255.0f);
+}
+    
+};
 
 
 typedef struct Segment 
@@ -2439,19 +2507,40 @@ typedef struct Segment
     ColourType colour_width__used_in_effect_generate = ColourType::COLOUR_TYPE__RGB__ID; 
     #endif
 
-    /**
-     * @brief Stores at least 5 full RgbcctColours with all internal manipulations as needed
-     * @NOTE: Replaces WLED 3 colour options
-     **/
+    // Define the size of the color array
     #define RGBCCTCOLOURS_SIZE 5
-    RgbcctTOwwType rgbcctcolors[5] = {RgbcctTOwwType(255,0,0,0,0), RgbcctTOwwType(0,255,0,0,0), RgbcctTOwwType(0,0,255,0,0), RgbcctTOwwType(255,0,255,0,0), RgbcctTOwwType(255,255,0,0,0)};
 
-    void set_colors(uint8_t index, uint8_t r, uint8_t g, uint8_t b, uint8_t w )
+    // Initialize the array with default values
+    SegmentColour segcol[RGBCCTCOLOURS_SIZE] = 
     {
-      uint8_t index_t = index<RGBCCTCOLOURS_SIZE?index:0;
-      if(index>RGBCCTCOLOURS_SIZE){ Serial.println("ERROR"); }
-      rgbcctcolors[index_t] = RgbcctTOwwType(r,g,b,w,w);
+      SegmentColour(255, 0, 0, 0, 0), // Red
+      SegmentColour(0, 255, 0, 0, 0), // Green
+      SegmentColour(0, 0, 255, 0, 0), // Blue
+      SegmentColour(255, 0, 255, 0, 0), // Magenta
+      SegmentColour(255, 255, 0, 0, 0)  // Yellow
+    };
+
+
+    // #define RGBCCTCOLOURS_SIZE 5
+    // RgbcctTOwwType segcol[5] = {RgbcctTOwwType(255,0,0,0,0), RgbcctTOwwType(0,255,0,0,0), RgbcctTOwwType(0,0,255,0,0), RgbcctTOwwType(255,0,255,0,0), RgbcctTOwwType(255,255,0,0,0)};
+
+    // void set_colors(uint8_t index, uint8_t r, uint8_t g, uint8_t b, uint8_t w )
+    // {
+    //   uint8_t index_t = index<RGBCCTCOLOURS_SIZE?index:0;
+    //   if(index>RGBCCTCOLOURS_SIZE){ Serial.println("ERROR"); }
+    //   segcol[index_t] = RgbcctTOwwType(r,g,b,w,w);
+    // }
+
+    void set_colors(uint8_t index, uint8_t r, uint8_t g, uint8_t b, uint8_t ww, uint8_t cw, uint8_t br_rgb = 255, uint8_t br_ww = 255) {
+        if (index >= RGBCCTCOLOURS_SIZE) {
+            Serial.println("ERROR: Index out of bounds");
+            return;
+        }
+
+        segcol[index] = SegmentColour(r, g, b, ww, cw, br_rgb, br_ww);
     }
+
+
 
     ANIMATION_FLAGS flags;
     
@@ -2629,9 +2718,8 @@ typedef struct Segment
      */
     uint16_t params_user[4] = {0};
 
-    byte* data;     // effect data pointer
-    CRGB* leds;     // local leds[] array (may be a pointer to global)
-    static CRGB *_globalLeds;             // global leds[] array
+    // CRGB* leds;     // local leds[] array (may be a pointer to global)
+    // static CRGB *_globalLeds;             // global leds[] array
     static uint16_t maxWidth, maxHeight;  // these define matrix width & height (max. segment dimensions)
     
   // private:
@@ -2645,19 +2733,34 @@ typedef struct Segment
         uint8_t _reserved : 4;
       };
     };
+
+    /***
+     * Effect datastorage
+     ***/
+    byte* data;     // effect data pointer
     uint16_t _dataLen;
     static uint16_t _usedSegmentData;
+    // inline uint16_t DataLength(){ return _dataLen; };
+    // inline byte* Data(){ return data; };
+    /***
+     * dynamic colour byte buffer
+     ***/
+    byte* coldata;     // buffer to be used when leds needed stored in out dynamic colour methods
+    uint16_t _coldataLen;
+    // inline uint16_t ColourDataLength(){ return _dataLen; };
+    // inline byte* ColourData(){ return data; };
 
-    inline uint16_t DataLength(){ return _dataLen; };
-    inline byte* Data(){ return data; };
 
+
+
+
+    mPaletteLoaded* palette_container = new mPaletteLoaded();
     /**
      * Each segment will have its own animator
      * This will also need to share its index into the animation so it knows what segments to run
      * */
     NeoPixelAnimator* animator = new NeoPixelAnimator(1, NEO_MILLISECONDS); //one animator for each segment, which is only init when needed or else delete
 
-    mPaletteLoaded* palette_container = new mPaletteLoaded();
 
     bool LoadPalette_AsyncLock = false;
     void LoadPalette(uint8_t palette_id, mPaletteLoaded* palette_container = nullptr);
@@ -2671,9 +2774,9 @@ typedef struct Segment
     ANIM_FUNCTION_SIGNATURE;
     bool animation_has_anim_callback = false; //should be dafult on start but causing no animation on start right now
 
-    // uint32_t tSaved_AnimateRunTime = millis();
-
     Segment(uint16_t sStart=0, uint16_t sStop=30) :
+      start(sStart),
+      stop(sStop),
       offset(0),
       speed(DEFAULT_SPEED),
       intensity(DEFAULT_INTENSITY),
@@ -2695,12 +2798,16 @@ typedef struct Segment
       step(0),
       call(0),
       data(nullptr),
-      leds(nullptr),
+      coldata(nullptr),
       _capabilities(0),
-      _dataLen(0)
+      _dataLen(0),
+      _coldataLen(0)
     {
-      start = sStart;
-      stop = sStop;
+
+      #ifdef ENABLE_DEBUGFEATURE_LIGHT__SEGMENTS
+      Serial.printf("-- Creating segment: %p\n", this);
+      #endif
+      
       refreshLightCapabilities();
 
       params_internal.aux0 = 0;
@@ -2709,12 +2816,6 @@ typedef struct Segment
       params_internal.aux3 = 0;
 
       palette_container = new mPaletteLoaded(); // duplicate of above, but needed for each segment
-
-      // colour_width__used_in_effect_generate = RgbcctColor::ColourType::COLOUR_TYPE__RGB__ID;
-      // if(bus)
-      // need to make this white here
-
-
       
     }
 
@@ -2723,54 +2824,67 @@ typedef struct Segment
       stopY  = sStopY;
     }
 
-    /**
-     * @brief NOTE: copy, such as "for(auto seg:segments)" will require creation and destruction of the segment everytime in huge blocks and for performance reasons index iteration is preferred 
-     * 
-     * @param orig 
-     */
     Segment(const Segment &orig) // copy constructor
-     {
+    {
+      #ifdef ENABLE_DEBUGFEATURE_LIGHT__SEGMENTS
       Serial.println(F("-- Copy segment constructor --"));
+      #endif
 
       memcpy(this, &orig, sizeof(Segment));
       name = nullptr;
-      data = nullptr;
-      _dataLen = 0;
-      if (leds && !Segment::_globalLeds) leds = nullptr;
-      if (orig.name) { name = new char[strlen(orig.name)+1]; if (name) strcpy(name, orig.name); }
-      if (orig.data) { if (allocateData(orig._dataLen)) memcpy(data, orig.data, orig._dataLen); }
-      if (orig.leds && !Segment::_globalLeds) { leds = (CRGB*)malloc(sizeof(CRGB)*length()); if (leds) memcpy(leds, orig.leds, sizeof(CRGB)*length()); }
-    
+      
+      if (orig.name){ 
+        name = new char[strlen(orig.name)+1]; 
+        if (name){
+          strcpy(name, orig.name); 
+        }
+      }
+
+      data = nullptr; _dataLen = 0;
+      if (orig.data){ 
+        if (allocateData(orig._dataLen)) 
+        {
+          memcpy(data, orig.data, orig._dataLen); 
+        }
+      }
+      
+      coldata = nullptr; _coldataLen = 0;
+      if (orig.coldata) {
+        if(allocateColourData(orig._coldataLen)){
+          memcpy(coldata, orig.coldata, orig._coldataLen);
+        }
+      }
+
     };
 
 
     Segment(Segment &&orig) noexcept // move constructor
     {
 
+      #ifdef ENABLE_DEBUGFEATURE_LIGHT__SEGMENTS
       Serial.println(F("-- Move segment constructor --"));
-      memcpy(this, &orig, sizeof(mAnimatorLight::Segment));
+      #endif
+
+      memcpy((void*)this, (void*)&orig, sizeof(mAnimatorLight::Segment));
+
       orig.name = nullptr;
-      orig.data = nullptr;
-      orig._dataLen = 0;
-      orig.leds = nullptr;
-      
+      orig.data = nullptr;      orig._dataLen = 0;
+      orig.coldata = nullptr;   orig._coldataLen = 0;
+
     }
 
 
-    ~Segment() 
+    ~Segment() // deconstructor
     {
-
-      #ifdef ENABLE_DEBUG_FEATURE_SEGMENT_PRINT_MESSAGES
+      #ifdef ENABLE_DEBUGFEATURE_LIGHT__SEGMENTS
         Serial.print(F("Destroying segment:"));
         if (name) Serial.printf(" %s (%p)", name, name);
         if (data) Serial.printf(" %d (%p)", (int)_dataLen, data);
-        if (leds) Serial.printf(" [%u]", length()*sizeof(CRGB));
         Serial.println();
       #endif
-      if (!Segment::_globalLeds && leds) free(leds);
       if (name) delete[] name;
       deallocateData();
-
+      deallocateColourData();
     }
 
 
@@ -2799,9 +2913,6 @@ typedef struct Segment
     static uint16_t getUsedSegmentData(void)    { return _usedSegmentData; }
     static void     addUsedSegmentData(int len) { _usedSegmentData += len; }
 
-
-
-
     bool    setColor(uint8_t slot, uint32_t c); //returns true if changed
     bool    setColor(uint8_t slot, RgbcctTOwwType c); //returns true if changed
     void    setCCT(uint16_t k);
@@ -2815,13 +2926,8 @@ typedef struct Segment
     static RgbwwColor color_blend(RgbwwColor,RgbwwColor,uint16_t,bool b16=false);
     static uint32_t color_add(uint32_t,uint32_t, bool fast=false);
     static uint32_t color_add(RgbwwColor,RgbwwColor, bool fast=false);
-    
-    // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
     static RgbwwColor color_fade(RgbwwColor c1, uint8_t amount, bool video=false);
     static uint32_t color_fade(uint32_t c1, uint8_t amount, bool video=false);
-    // #else
-    // #endif
-
 
     void setRandomColor(byte* rgb);
     void colorHStoRGB(uint16_t hue, byte sat, byte* rgb);
@@ -2836,6 +2942,11 @@ typedef struct Segment
     inline uint16_t dataSize(void) const { return _dataLen; }
     bool allocateData(size_t len);
     void deallocateData(void);
+
+    bool allocateColourData(uint16_t len);
+    void deallocateColourData(void);
+
+
     void resetIfRequired(void);
     /** 
       * Flags that before the next effect is calculated,
@@ -2847,52 +2958,72 @@ typedef struct Segment
     {
       reset = true; 
     }
-    void setUpLeds(void);   // set up leds[] array for loseless getPixelColor()
 
     // 1D strip
     [[gnu::hot]] uint16_t virtualLength(void) const;
-    
+
     #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-    [[gnu::hot]] void setPixelColor(int n, RgbwwColor c);
-    void setPixelColor(int n, byte r, byte g, byte b, byte w = 0) {      setPixelColor(n, RgbwwColor(r,g,b,w));    }
-    void setPixelColor(int n, CRGB c) {            setPixelColor(n, RgbwwColor(c.r, c.g, c.b));    }
+    [[gnu::hot]] void setPixelColor(int n, RgbwwColor c);                  // Main function others below call
+    void setPixelColor(int n, byte r, byte g, byte b, byte w = 0) 
+    { 
+      #ifdef ENABLE_DEVFEATURE_LIGHTS__SHOW_HEADER_SETPIXEL_OVERLOADING_CALLS
+      Serial.println("setPixelColor(int n, byte r, byte g, byte b, byte w = 0");
+      #endif    
+      setPixelColor(n, RgbwwColor(r,g,b,w));    
+    }
+    void setPixelColor(uint16_t n, RgbwwColor c)
+    {      
+      #ifdef ENABLE_DEVFEATURE_LIGHTS__SHOW_HEADER_SETPIXEL_OVERLOADING_CALLS
+      Serial.println("setPixelColor(uint16_t n, RgbwwColor c)");
+      #endif    
+      setPixelColor((int)n, c); 
+    } // explicit conversion
+    void setPixelColor(int n, CRGB c) 
+    {
+      #ifdef ENABLE_DEVFEATURE_LIGHTS__SHOW_HEADER_SETPIXEL_OVERLOADING_CALLS
+      Serial.println("setPixelColor(int n, CRGB c)");
+      #endif    
+      setPixelColor(n, RgbwwColor(c.r, c.g, c.b));
+    }
+    void setPixelColor(int n, uint32_t c) 
+    {
+      #ifdef ENABLE_DEVFEATURE_LIGHTS__SHOW_HEADER_SETPIXEL_OVERLOADING_CALLS
+      Serial.println("setPixelColor(int n, uint32_t c)");
+      #endif    
+      setPixelColor(n, RgbwwColor(R(c), G(c), B(c), W(c), W(c)));
+    }  // explicit conversion
+    void setPixelColor(unsigned n, uint32_t c)
+    {
+      #ifdef ENABLE_DEVFEATURE_LIGHTS__SHOW_HEADER_SETPIXEL_OVERLOADING_CALLS
+      Serial.println("setPixelColor(unsigned n, uint32_t c)");
+      #endif    
+      setPixelColor((int)n, RgbwwColor(R(c), G(c), B(c), W(c), W(c)));
+    }  // explicit conversion
+    #ifdef USE_AA_PIXELS
     // Anti-aliasing functions
     void setPixelColor(float i, uint32_t c, bool aa = true);
     void setPixelColor(float i, uint8_t r, uint8_t g, uint8_t b, uint8_t w = 0, bool aa = true) { setPixelColor(i, RGBW32(r,g,b,w), aa); }
     void setPixelColor(float i, CRGB c, bool aa = true)                                         { setPixelColor(i, RGBW32(c.r,c.g,c.b,0), aa); }    
+    #endif
     #else    
     [[gnu::hot]] void setPixelColor(int n, uint32_t c);
     void setPixelColor(int n, RgbwwColor c){ setPixelColor(n, RGBW32(c.R, c.G, c.B, c.WW)); } 
     void setPixelColor(unsigned n, uint32_t c){ setPixelColor((int)n, c); } // to keep compatibility with RGBWW
+    void setPixelColor(uint16_t n, uint32_t c){ setPixelColor((int)n, c); } // to keep compatibility with RGBWW
     void setPixelColor(int n, byte r, byte g, byte b, byte w = 0) {      setPixelColor(n, RGBW32(r,g,b,w));    }
     void setPixelColor(int n, CRGB c) {            setPixelColor(n, RGBW32(c.r, c.g, c.b,0));    }
+    #ifdef USE_AA_PIXELS
     // Anti-aliasing functions
     void setPixelColor(float i, uint32_t c, bool aa = true);
     void setPixelColor(float i, uint8_t r, uint8_t g, uint8_t b, uint8_t w = 0, bool aa = true) { setPixelColor(i, RGBW32(r,g,b,w), aa); }
     void setPixelColor(float i, CRGB c, bool aa = true)                                         { setPixelColor(i, RGBW32(c.r,c.g,c.b,0), aa); }
     #endif
+    #endif
     
-    
-    
-    // uint32_t getPixelColor(int i);
-    
-    // RgbcctColor GetPixelColor(uint16_t indexPixel = 0);       
+      
     [[gnu::hot]] uint32_t getPixelColor(int i) const;  
     [[gnu::hot]] RgbwwColor getPixelColorRgbww(int i) const;
     
-    // TMP FIX
-    #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-    // void setPixelColor_RgbwwColor(uint16_t indexPixel, RgbwwColor color, bool flag_brightness_already_applied = false); // TMP FIX
-    
-    #else
-    // void setPixelColor(uint16_t indexPixel, RgbcctColor color); // TMP FIX
-    #endif 
-
-
-    // void setPixelColor(uint16_t indexPixel, uint8_t red, uint8_t green, uint8_t blue);  
-    // void setPixelColor(uint16_t indexPixel, uint32_t color, bool flag_brightness_already_applied = false);
-    
-
     // 1D support functions (some implement 2D as well)
     void blur(uint8_t blur_amount, bool smear);
     void fill(uint32_t c);
@@ -2909,47 +3040,6 @@ typedef struct Segment
     uint8_t get_random_wheel_index(uint8_t pos);
     uint32_t color_wheel(uint8_t pos);
 
-
-
-    RgbcctTOwwType 
-    #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
-    IRAM_ATTR 
-    #endif 
-    GetPaletteColour(
-      /**
-       * @brief _pixel_position
-       * ** [0-SEGLEN]
-       * ** [0-255]   
-       */
-      uint16_t pixel_position = 0,
-      /**
-       * @brief flag_position_scaled255
-       * ** [true] : pixel_position should be between 0-255
-       * ** [false]: pixel is exact, and will automatically wrap around (ie 5 pixels inside palette will be 0,1,2,3,4,0,1,2,3,4)
-       */
-      uint8_t     flag_position_scaled255 = false,
-      /**
-       * @brief flag_wrap_hard_edge
-       * ** [true] : 16 palette gradients will not blend from 15 back to 0. ie 0-255 does not become 0-240 (where 0,15,31,47,63,79,95,111,127,143,159,175,191,207,223,239)
-       * ** [false]: Palette16 with 16 elements, as 0-255 pixel_position, will blend around smoothly using built-in CRGBPalette16
-       */
-      uint8_t     flag_wrap_hard_edge = false,
-      /**
-       * @brief flag_crgb_exact_colour
-       * ** [true] : 16 palette gradients will not blend from 15 back to 0. ie 0-255 does not become 0-240 (where 0,15,31,47,63,79,95,111,127,143,159,175,191,207,223,239)
-       * ** [false]: Palette16 with 16 elements, as 0-255 pixel_position, will blend around smoothly using built-in CRGBPalette16
-       */
-      uint8_t     flag_crgb_exact_colour = false,
-      /**
-       * @brief encoded_value
-       * ** [uint32_t*] : encoded value from palette
-       */
-      uint8_t* encoded_value = nullptr, // Must be passed in as something other than 0, or else nullptr will not be checked inside properly
-
-      
-
-      bool apply_brightness = false
-    );
 
     [[gnu::hot]] RgbwwColor GetPaletteColour_Rgbww(
       /**
@@ -2997,7 +3087,7 @@ typedef struct Segment
      * #define GetPaletteColour GetPaletteColourRGBCCT
      * #endif
      **/
-    [[gnu::hot]] uint32_t GetPaletteColour_U32(
+    [[gnu::hot]] uint32_t GetPaletteColour(
       /**
        * @brief _pixel_position
        * ** [0-SEGLEN]
@@ -3125,9 +3215,11 @@ typedef struct Segment
     void setPixelColorXY(int x, int y, uint32_t c)                         { setPixelColor(x, c); }
     void setPixelColorXY(int x, int y, byte r, byte g, byte b, byte w = 0) { setPixelColor(x, RGBW32(r,g,b,w)); }
     void setPixelColorXY(int x, int y, CRGB c)                             { setPixelColor(x, RGBW32(c.r,c.g,c.b,0)); }
+    #ifdef USE_AA_PIXELS
     void setPixelColorXY(float x, float y, uint32_t c, bool aa = true)     { setPixelColor(x, c, aa); }
     void setPixelColorXY(float x, float y, byte r, byte g, byte b, byte w = 0, bool aa = true) { setPixelColor(x, RGBW32(r,g,b,w), aa); }
     void setPixelColorXY(float x, float y, CRGB c, bool aa = true)         { setPixelColor(x, RGBW32(c.r,c.g,c.b,0), aa); }
+    #endif
     uint32_t getPixelColorXY(uint16_t x, uint16_t y)                       { return getPixelColor(x); }
     void blendPixelColorXY(uint16_t x, uint16_t y, uint32_t c, uint8_t blend) { blendPixelColor(x, c, blend); }
     void blendPixelColorXY(uint16_t x, uint16_t y, CRGB c, uint8_t blend)  { blendPixelColor(x, RGBW32(c.r,c.g,c.b,0), blend); }
@@ -3157,31 +3249,31 @@ typedef struct Segment
   **/
 
 /************************************************************************************
- ****** SETTERS ********************************************************************* 
+ ****** Dynamic led buffer, segment colours ********************************************************************* 
  ************************************************************************************/
 
 inline void Set_DynamicBuffer_DesiredColour(uint16_t pixelIndex, uint32_t color) {
     size_t offset = pixelIndex * colour_width__used_in_effect_generate * 2; // Desired is the first part of the pair
 
     // Write desired color to the buffer
-    data[offset + 0] = R(color); // Red
-    data[offset + 1] = G(color); // Green
-    data[offset + 2] = B(color); // Blue
+    coldata[offset + 0] = R(color); // Red
+    coldata[offset + 1] = G(color); // Green
+    coldata[offset + 2] = B(color); // Blue
 
     if (colour_width__used_in_effect_generate == 4) {
-        data[offset + 3] = W(color); // White for WRGB
+        coldata[offset + 3] = W(color); // White for WRGB
     }
 }
 inline void Set_DynamicBuffer_StartingColour(uint16_t pixelIndex, uint32_t color) {
-    size_t offset = pixelIndex * colour_width__used_in_effect_generate * 2 + colour_width__used_in_effect_generate; // Starting is after desired
+    size_t offset = (pixelIndex * colour_width__used_in_effect_generate * 2) + colour_width__used_in_effect_generate; // Starting is after desired
 
     // Write starting color to the buffer
-    data[offset + 0] = R(color); // Red
-    data[offset + 1] = G(color); // Green
-    data[offset + 2] = B(color); // Blue
+    coldata[offset + 0] = R(color); // Red
+    coldata[offset + 1] = G(color); // Green
+    coldata[offset + 2] = B(color); // Blue
 
     if (colour_width__used_in_effect_generate == 4) {
-        data[offset + 3] = W(color); // White for WRGB
+        coldata[offset + 3] = W(color); // White for WRGB
     }
 }
 
@@ -3190,47 +3282,46 @@ inline void Set_DynamicBuffer_DesiredColour_RgbwwColor(uint16_t pixelIndex, cons
     size_t offset = pixelIndex * 10; // Desired is the first part of the pair (5 bytes * 2)
 
     // Write desired color to the buffer
-    data[offset + 0] = color.R;  // Red
-    data[offset + 1] = color.G;  // Green
-    data[offset + 2] = color.B;  // Blue
-    data[offset + 3] = color.WW; // Warm White
-    data[offset + 4] = color.CW; // Cool White
+    coldata[offset + 0] = color.R;  // Red
+    coldata[offset + 1] = color.G;  // Green
+    coldata[offset + 2] = color.B;  // Blue
+    coldata[offset + 3] = color.WW; // Warm White
+    coldata[offset + 4] = color.CW; // Cool White
 }
 inline void Set_DynamicBuffer_StartingColour_RgbwwColor(uint16_t pixelIndex, const RgbwwColor& color) {
     size_t offset = (pixelIndex * 10) + 5; // Starting is after desired
 
     // Write starting color to the buffer
-    data[offset + 0] = color.R;  // Red
-    data[offset + 1] = color.G;  // Green
-    data[offset + 2] = color.B;  // Blue
-    data[offset + 3] = color.WW; // Warm White
-    data[offset + 4] = color.CW; // Cool White
+    coldata[offset + 0] = color.R;  // Red
+    coldata[offset + 1] = color.G;  // Green
+    coldata[offset + 2] = color.B;  // Blue
+    coldata[offset + 3] = color.WW; // Warm White
+    coldata[offset + 4] = color.CW; // Cool White
 }
 #endif
 
-/************************************************************************************
- ****** SETTERS ********************************************************************* 
- ************************************************************************************/
+
 inline uint32_t Get_DynamicBuffer_DesiredColour(uint16_t pixelIndex) {
     size_t offset = pixelIndex * colour_width__used_in_effect_generate * 2; // Desired is the first part of the pair
 
     // Extract RGB or WRGB based on colour width
     if (colour_width__used_in_effect_generate == 4) { // WRGB
-        return RGBW32(data[offset + 1], data[offset + 2], data[offset + 3], data[offset]);
+        return RGBW32(coldata[offset], coldata[offset + 1], coldata[offset + 2], coldata[offset + 3]); // Correct order: R, G, B, W
     } else if (colour_width__used_in_effect_generate == 3) { // RGB
-        return RGBW32(data[offset], data[offset + 1], data[offset + 2], 0);
+        return RGBW32(coldata[offset], coldata[offset + 1], coldata[offset + 2], 0); // No white channel
     }
 
     return 0; // Return black if colour width is invalid
 }
+
 inline uint32_t Get_DynamicBuffer_StartingColour(uint16_t pixelIndex) {
     size_t offset = (pixelIndex * colour_width__used_in_effect_generate * 2) + colour_width__used_in_effect_generate; // Starting is after desired
 
     // Extract RGB or WRGB based on colour width
     if (colour_width__used_in_effect_generate == 4) { // WRGB
-        return RGBW32(data[offset + 1], data[offset + 2], data[offset + 3], data[offset]);
+        return RGBW32(coldata[offset], coldata[offset + 1], coldata[offset + 2], coldata[offset + 3]); // Correct order: R, G, B, W
     } else if (colour_width__used_in_effect_generate == 3) { // RGB
-        return RGBW32(data[offset], data[offset + 1], data[offset + 2], 0);
+        return RGBW32(coldata[offset], coldata[offset + 1], coldata[offset + 2], 0); // No white channel
     }
 
     return 0; // Return black if colour width is invalid
@@ -3243,11 +3334,11 @@ inline RgbwwColor Get_DynamicBuffer_DesiredColour_RgbwwColor(uint16_t pixelIndex
 
     // Extract RGBWW color from the buffer
     return RgbwwColor(
-        data[offset + 0], // Red
-        data[offset + 1], // Green
-        data[offset + 2], // Blue
-        data[offset + 3], // Warm White
-        data[offset + 4]  // Cool White
+        coldata[offset + 0], // Red
+        coldata[offset + 1], // Green
+        coldata[offset + 2], // Blue
+        coldata[offset + 3], // Warm White
+        coldata[offset + 4]  // Cool White
     );
 }
 inline RgbwwColor Get_DynamicBuffer_StartingColour_RgbwwColor(uint16_t pixelIndex) {
@@ -3255,11 +3346,11 @@ inline RgbwwColor Get_DynamicBuffer_StartingColour_RgbwwColor(uint16_t pixelInde
 
     // Extract RGBWW color from the buffer
     return RgbwwColor(
-        data[offset + 0], // Red
-        data[offset + 1], // Green
-        data[offset + 2], // Blue
-        data[offset + 3], // Warm White
-        data[offset + 4]  // Cool White
+        coldata[offset + 0], // Red
+        coldata[offset + 1], // Green
+        coldata[offset + 2], // Blue
+        coldata[offset + 3], // Warm White
+        coldata[offset + 4]  // Cool White
     );
 }
 #endif
@@ -3326,7 +3417,8 @@ inline void AnimationProcess_LinearBlend_Dynamic_BufferU32(const AnimationParam&
     float progress = param.progress;
     uint8_t blendFactor = static_cast<uint8_t>(progress * 255);
 
-    for (uint16_t i = 0; i < virtualLength(); i++) {
+    for (int i = 0; i < virtualLength(); i++) {
+      // Serial.printf("buffer32 %d\n\r", i);
         if (colour_width__used_in_effect_generate == 5) {
             #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
             // Retrieve starting and desired colors for RGBWW
@@ -3341,9 +3433,12 @@ inline void AnimationProcess_LinearBlend_Dynamic_BufferU32(const AnimationParam&
             // Retrieve starting and desired colors for RGB/WRGB
             uint32_t startColor = Get_DynamicBuffer_StartingColour(i);
             uint32_t desiredColor = Get_DynamicBuffer_DesiredColour(i);
+            // SERIAL_DEBUG_COL32i("startColor", startColor, i);
+            // SERIAL_DEBUG_COL32i("desiredColor", desiredColor, i);
 
             // Blend RGB/WRGB colors and write the result
             uint32_t blendedColor = ColourBlend(startColor, desiredColor, blendFactor);
+            // SERIAL_DEBUG_COL32i("anim----------------------", blendedColor, i);
             setPixelColor(i, blendedColor);
         }
     }
@@ -3369,15 +3464,17 @@ inline void AnimationProcess_LinearBlend_Dynamic_BufferU32_FillSegment(const Ani
         #endif
 
         // Blend the two colors
+        // RgbwwColor blendedRgbww = desiredRgbww;//RgbwwColor::LinearBlend(startRgbww, desiredRgbww, blendFactor);
+
         RgbwwColor blendedRgbww = RgbwwColor::LinearBlend(startRgbww, desiredRgbww, blendFactor);
 
         // blendedRgbww = RgbwwColor(0,0,0,0,255);
         
-        // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+        #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
         // blendedRgbww = RgbwwColor(1,2,255,0,0);
         Serial.printf("startRgbww RGBWW %d,%d,%d,%d,%d", startRgbww.R, startRgbww.G, startRgbww.B, startRgbww.WW, startRgbww.CW); 
         Serial.printf("\t\tdesiredRgbww RGBWW %d,%d,%d,%d,%d\n\r", desiredRgbww.R, desiredRgbww.G, desiredRgbww.B, desiredRgbww.WW, desiredRgbww.CW); 
-        // #endif
+        #endif
 
         // Set the blended color across the segment
         for (int pixel = 0; pixel < virtualLength(); pixel++) {
@@ -3454,9 +3551,8 @@ inline void AnimationProcess_LinearBlend_Dynamic_BufferU32_FillSegment(const Ani
   
   [[gnu::hot]] ColourBaseType getPixelColor(uint32_t i) const;
   void     setPixelColor(uint32_t n, ColourBaseType c);
-  // uint32_t getPixelColor(uint32_t i);
-
-  // using public variables to reduce code size increase due to inline function getSegment() (with bounds checking) and color transitions
+  // using public variables to reduce code size increase du
+  e to inline function getSegment() (with bounds checking) and color transitions
   uint32_t _colors_t_PHASE_OUT[3]; // color used for effect (includes transition)
   uint16_t _virtualSegmentLength;
 
@@ -3605,8 +3701,8 @@ inline void AnimationProcess_LinearBlend_Dynamic_BufferU32_FillSegment(const Ani
     
 
     #ifndef ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
-    void setPixelColor_Rgbcct(int i, RgbcctColor col);
-    RgbcctColor getPixelColor_Rgbcct(uint16_t i);
+    void setPixelColor_Rgbcct(int i, RgbwwColor col);
+    RgbwwColor getPixelColor_Rgbcct(uint16_t i);
     #endif
 
     inline uint32_t getLastShow(void) { return _lastShow; }
@@ -4524,41 +4620,3 @@ extern mAnimatorLight* tkr_extern_lAni;  // global instance of the mAnimatorLigh
 
 #endif
 
-
-/**
- * @brief 
- * 
- 
-
- It sounds like you're working through an interesting challenge in harmonizing your original animation parameters with the WLED framework, which uses a slightly different approach. Here are some thoughts and suggestions on how you might approach this:
-
-Maintain rate and intensity concepts: Your original design with transition rate and transition time clearly defined how often and how long transitions occur. The concept of rate as a maximum bound (e.g., fading lights over 60 seconds) is intuitive and useful for scenarios where precise control over the effect duration is desired.
-
-Map to WLED’s Parameters: Since WLED uses speed and intensity differently, you could adapt your system to fit within these constraints but still retain some original control:
-
-Speed: Map this to your transition rate. WLED's speed generally affects how quickly an effect progresses or cycles. You could map the inverse of your rate to WLED’s speed scale (0-255), where a lower rate value (more frequent changes) corresponds to a higher speed value.
-Intensity: This could be directly used to represent the transition time as a percentage of the transition rate. In WLED, intensity often adjusts the vividness or extent of an effect, but you could repurpose it to control the duration of the transition relative to the cycle.
-Handling cycleTime Internally: If you maintain rate in your interface but calculate cycleTime internally based on rate and intensity, it could simplify the user experience while giving you the flexibility to manage how effects are rendered based on the underlying WLED engine. Essentially, cycleTime could be derived as:
-
-cycleTime
-=
-rate
-×
-(
-intensity
-100
-)
-cycleTime=rate×( 
-100
-intensity
-​
- )
-This keeps the user-facing parameters simpler and consistent with your original design ethos.
-
-Special Cases for Certain Effects: For effects like the ambient kitchen lights, where a very slow transition is needed, having rate as a standalone parameter that directly translates to duration (e.g., 60s) makes sense. Here, intensity might be less about the speed of transition and more about how gradual or smooth the transition appears.
-
-Configuration Flexibility: Allow for different configurations where rate and intensity could independently control different aspects of the transition based on the type of effect. For instance, a slow fade might primarily use rate for duration and intensity for the smoothness of the fade, whereas a quick sparkle effect might use intensity to control the brightness variation and rate for the speed of changes.
-
-By considering these aspects, you can create a system that leverages the best parts of both your original design and the WLED framework, maintaining user-friendly controls while ensuring that the underlying technical implementation can adapt dynamically to various effects and scenarios.
-
- */

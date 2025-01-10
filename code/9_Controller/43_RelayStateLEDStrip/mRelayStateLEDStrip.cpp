@@ -112,9 +112,9 @@ void mRelayStateLEDStrip::EverySecond()
 
   pSEGMENT_I(segment_index).effect_id = mAnimatorLight::EFFECTS_FUNCTION__MANUAL__PIXEL_SET_ELSEWHERE__ID;
   
-  // pSEGMENT_I(segment_index).SetPixelColor(0, RgbcctColor(255,0,0));
-  // pSEGMENT_I(segment_index).SetPixelColor(1, RgbcctColor(0,255,0));
-  // pSEGMENT_I(segment_index).SetPixelColor(2, RgbcctColor(0,0,255));
+  // pSEGMENT_I(segment_index).SetPixelColor(0, RgbwwColor(255,0,0));
+  // pSEGMENT_I(segment_index).SetPixelColor(1, RgbwwColor(0,255,0));
+  // pSEGMENT_I(segment_index).SetPixelColor(2, RgbwwColor(0,0,255));
 
   uint8_t relays_available = pCONT_mry->module_state.devices;
   uint8_t pixels_in_strip = pSEGMENT_I(segment_index).length();
@@ -125,11 +125,11 @@ void mRelayStateLEDStrip::EverySecond()
     {
       if(pCONT_mry->CommandGet_Relay_Power(relay_id))
       {
-        RgbcctColor colour_on = RgbcctColor(0,50,0);
+        RgbwwColor colour_on = RgbwwColor(0,50,0);
         // Toggle LED colour if timer is active, ie if relay is on but will turn itself off
         if(rt.relay_status[relay_id].timer_decounter.active) // zone timer instead should be set into relay code too, but keep this code here so I know when I fix that
         {
-          colour_on = rt.relay_status[relay_id].timer_decounter.active % 2 ?  RgbcctColor(0,50,0) :  RgbcctColor(0,0,50);
+          colour_on = rt.relay_status[relay_id].timer_decounter.active % 2 ?  RgbwwColor(0,50,0) :  RgbwwColor(0,0,50);
         }
         pSEGMENT_I(segment_index).SetPixelColor(relay_id, colour_on);
         pSEGMENT_I(segment_index).setBrightnessRGB(255);
@@ -138,7 +138,7 @@ void mRelayStateLEDStrip::EverySecond()
       }
       else
       {
-        pSEGMENT_I(segment_index).SetPixelColor(relay_id, RgbcctColor(5,0,0));
+        pSEGMENT_I(segment_index).SetPixelColor(relay_id, RgbwwColor(5,0,0));
         pSEGMENT_I(segment_index).setBrightnessRGB(255);
       }
     }

@@ -94,7 +94,7 @@ void mAnimatorLight::serializeSegment(JsonObject& root, mAnimatorLight::Segment&
 
   if (segmentBounds && seg.name != nullptr) root["n"] = reinterpret_cast<const char *>(seg.name); //not good practice, but decreases required JSON buffer
 
-  root["cct"] = seg.palette_id < 5 ? seg.rgbcctcolors[seg.palette_id].getCCT() : 255;
+  root["cct"] = seg.palette_id < 5 ? seg.segcol[seg.palette_id].getCCT() : 255;
   
   root[F("set")] = 0;//seg.set;    // unknown, phase into newer WLED UI
 
@@ -103,7 +103,7 @@ void mAnimatorLight::serializeSegment(JsonObject& root, mAnimatorLight::Segment&
   /**
    * @brief Changing from WLED
    * 
-   * My RGBW values, stored in RGBCCTColor, are stored as 0-255 values with their maximum value. 
+   * My RGBW values, stored in RgbwwColor, are stored as 0-255 values with their maximum value. 
    * - Since white will always be 255 in single white mode, or changes when CCT is used, this value does not represent the actual white value and should be control the slider.
    * Instead, the white (brightness) needs to be controlled by the segment white brightness, and independant of the rgbcct value
    * 
@@ -112,11 +112,11 @@ void mAnimatorLight::serializeSegment(JsonObject& root, mAnimatorLight::Segment&
   for (size_t i = 0; i < 5; i++)
   {
     byte segcol[4]; 
-    segcol[0] = seg.rgbcctcolors[i].R;
-    segcol[1] = seg.rgbcctcolors[i].G;
-    segcol[2] = seg.rgbcctcolors[i].B;
-    segcol[3] = seg.rgbcctcolors[i].WW; // white channels inside RgbcctColor is always stored as max value, so slider should reflect the global CCT brightness
-    segcol[4] = seg.rgbcctcolors[i].CW; // white channels inside RgbcctColor is always stored as max value, so slider should reflect the global CCT brightness
+    segcol[0] = seg.segcol[i].colour.R;
+    segcol[1] = seg.segcol[i].colour.G;
+    segcol[2] = seg.segcol[i].colour.B;
+    segcol[3] = seg.segcol[i].colour.WW; // white channels inside RgbwwColor is always stored as max value, so slider should reflect the global CCT brightness
+    segcol[4] = seg.segcol[i].colour.CW; // white channels inside RgbwwColor is always stored as max value, so slider should reflect the global CCT brightness
     char tmpcol[40];
     snprintf_P(tmpcol, sizeof(tmpcol), PSTR("[%u,%u,%u,%u,%u]"), segcol[0], segcol[1], segcol[2], segcol[3], segcol[3]);
     strcat(colstr, i<4 ? strcat(tmpcol, ",") : tmpcol);
@@ -2245,8 +2245,10 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
     #endif
 
   DEBUG_LINE_HERE_TRACE
-  
-    SEGMENT.LoadPalette(palette_id); // Assume segment 1 exists, and use it to load all palettes. Effect should reset to active palette in main loop. Or here, have it then flip back. Though this may cause flickering midanimation. Animation may also need paused on esp32.
+
+  #ifndef ENABLE_DEVFEATURE_LIGHTING__CRITICAL_DISABLE_LOAD_PALETTE  
+  SEGMENT.LoadPalette(palette_id); // Assume segment 1 exists, and use it to load all palettes. Effect should reset to active palette in main loop. Or here, have it then flip back. Though this may cause flickering midanimation. Animation may also need paused on esp32.
+  #endif
 
   DEBUG_LINE_HERE_TRACE
     uint16_t colours_in_palette = GetNumberOfColoursInPalette(palette_id);
@@ -2314,7 +2316,7 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
 
       encoded_gradient = 0;
       
-      RgbcctColor color;
+      RgbcctTOwwType color;
 
 
       #ifdef ENABLE_FEATURE_WATCHDOG_TIMER
@@ -2419,7 +2421,7 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
 
   DEBUG_LINE_HERE_TRACE
             // Load temporary palette
-            color = GetColourFromUnloadedPalette2(
+            color = GetColourFromUnloadedPalette3(
                 palette_id,
                 j,
                 PALETTE_SPAN_OFF, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, // "PALETTE_DISCRETE_ON" should be the only thing to get the basic colors, without gradients
@@ -2464,9 +2466,9 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
             }
 
             // Add the RGB color components
-            colors.add(color.red);
-            colors.add(color.green);
-            colors.add(color.blue);
+            colors.add(color.R);
+            colors.add(color.G);
+            colors.add(color.B);
 
             #ifdef ENABLE_DEBUGFEATURE_LIGHT__PALETTE_RELOAD_LOGGING
             ALOG_DBM(PSTR("j=%d,encoded_gradient=%d,rgb=%d,%d,%d"), j, encoded_gradient, color.red, color.green, color.blue);

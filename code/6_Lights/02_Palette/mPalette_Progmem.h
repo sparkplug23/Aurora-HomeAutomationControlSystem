@@ -188,6 +188,22 @@ typedef enum {
     FairyLightNCC=0xFF9D2A
 } HTMLColorCode;
 
+// some common colors
+// white, red, green, blue
+#define RED        (uint32_t)0xFF0000
+#define GREEN      (uint32_t)0x00FF00
+#define BLUE       (uint32_t)0x0000FF
+#define WHITE      (uint32_t)0xFFFFFF
+#define BLACK      (uint32_t)0x000000
+#define YELLOW     (uint32_t)0xFFFF00
+#define CYAN       (uint32_t)0x00FFFF
+#define MAGENTA    (uint32_t)0xFF00FF
+#define PURPLE     (uint32_t)0x400080
+#define ORANGE     (uint32_t)0xFF3000
+#define PINK       (uint32_t)0xFF1493
+#define ULTRAWHITE (uint32_t)0xFFFFFFFF
+#define DARKSLATEGRAY (uint32_t)0x2F4F4F
+#define DARKSLATEGREY (uint32_t)0x2F4F4F
 
 #define RGB_RED                         255,0,0, // Hue=0
 #define RGB_RED_SATURATION95            255,13,13,

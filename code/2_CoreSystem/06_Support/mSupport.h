@@ -163,6 +163,14 @@ bool IsWithinLimits(T lower, T value, T upper){
   }
   return false;
 }
+template<typename T, typename U, typename V>
+bool IsWithinLimitsInclusive(T lower, U value, V upper){
+  // returns value if its between limits
+  if((value>=lower)&&(value<=upper)){
+    return true;
+  }
+  return false;
+}
 
 template <typename T>
 bool CheckAndClearFlag(T* flag){

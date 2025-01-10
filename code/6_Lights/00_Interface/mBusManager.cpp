@@ -518,7 +518,7 @@ void IRAM_ATTR BusDigital::setPixelColor(uint32_t pix, ColourBaseType c) {
   // Directly handle RgbwwColor
   unsigned co = _colorOrderMap.getPixelColorOrder(pix + _start, _colorOrder);
   #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
-  ALOG_INF(PSTR("BusDigital::setPixelColor[%d]= %d %d %d %d\n\r"), pix, c.R, c.G, c.B, c.WW);
+  Serial.printf("   BusDigital::setPixelColor[%d]   = %d,%d,%d,%d\n\r", pix, c.R, c.G, c.B, c.WW, c.CW);
   #endif
   // c.R = 100;
   // c.G = 101;
@@ -592,6 +592,9 @@ ColourBaseType IRAM_ATTR BusDigital::getPixelColor(uint32_t pix) const {
 
 
     RgbwwColor c = PolyBus::getPixelColor(_busPtr, _iType, pix, co);
+
+    // c.R = 123;
+    // c.WW = 130;
 
 #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
 ALOG_INF(PSTR("BusDigital::getPixelColor[%d]= %d %d %d %d\n\r"), pix, c.R, c.G, c.B, c.WW);
@@ -1567,7 +1570,7 @@ uint16_t BusManager::getTotalLength() {
 void IRAM_ATTR BusManager::setPixelColor(uint32_t pix, ColourBaseType c) {
   
   #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
-  Serial.printf("BusManager::setPixelColor %d %d,%d,%d,%d,%d\n\r", pix, c.R, c.G, c.B, c.WW, c.CW);
+  Serial.printf("  BusManager::setPixelColor[%d]    = %d,%d,%d,%d,%d\n\r", pix, c.R, c.G, c.B, c.WW, c.CW);
   #endif
   for (unsigned i = 0; i < numBusses; i++) {
     unsigned bstart = busses[i]->getStart();

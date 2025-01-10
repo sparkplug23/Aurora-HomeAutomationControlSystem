@@ -66,6 +66,7 @@ void mAnimatorLight::parse_JSONCommand(JsonParserObject obj)
    **/
   if(segments_found == 0)
   {
+    ALOG_INF(PSTR(D_LOG_NEO "Assume main segment"));
     subparse_JSONCommand(obj, 0); // Legacy commands
   }
 
@@ -637,10 +638,10 @@ void mAnimatorLight::subparse_JSONCommand(JsonParserObject obj, uint8_t segment_
         }
       }
 
-      // ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_HUE)), SEGMENT_I(0).rgbcctcolors[0].getHue360());
-      // ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_BRIGHTNESS_RGB)), SEGMENT_I(0).rgbcctcolors[0].getBrightnessRGB());
-      // ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_HUE)), SEGMENT_I(1).rgbcctcolors[0].getHue360());
-      // ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_BRIGHTNESS_RGB)), SEGMENT_I(1).rgbcctcolors[0].getBrightnessRGB());
+      // ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_HUE)), SEGMENT_I(0).segcol[0].getHue360());
+      // ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_BRIGHTNESS_RGB)), SEGMENT_I(0).segcol[0].getBrightnessRGB());
+      // ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_HUE)), SEGMENT_I(1).segcol[0].getHue360());
+      // ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_BRIGHTNESS_RGB)), SEGMENT_I(1).segcol[0].getBrightnessRGB());
 
 
       // "LightNotif":
@@ -1047,7 +1048,7 @@ if (jtok = obj["MQTTPixelArrays"]) {
 
     snprintf(buffer, sizeof(buffer), "SegColour%d", colour_index);
 
-    // ALOG_HGL(PSTR("SEGMENT_I(segment_index).rgbcctcolors[colour_index] length %d"), RGBCCTCOLOURS_SIZE);    
+    // ALOG_HGL(PSTR("SEGMENT_I(segment_index).segcol[colour_index] length %d"), RGBCCTCOLOURS_SIZE);    
 
     if(seg_obj = obj[buffer].getObject())
     {
@@ -1065,11 +1066,11 @@ if (jtok = obj["MQTTPixelArrays"]) {
             if(arrlen > 5){ break; }
             array[arrlen++] = v.getInt();
           }
-          SEGMENT_I(segment_index).rgbcctcolors[colour_index] = RgbcctColor(array[0],array[1],array[2],array[3],array[4]);
+          SEGMENT_I(segment_index).segcol[colour_index].colour = RgbwwColor(array[0],array[1],array[2],array[3],array[4]);
         }
 
         data_buffer.isserviced++;
-        // ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K("Raw")), SEGMENT_I(segment_index).rgbcctcolors[colour_index].getHue360());
+        // ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K("Raw")), SEGMENT_I(segment_index).segcol[colour_index].getHue360());
       }
       
       #if FIRMWARE_VERSION_MAX(0, 230)
@@ -1081,19 +1082,19 @@ if (jtok = obj["MQTTPixelArrays"]) {
     
       if(jtok = seg_obj[PM_HUE]){ // Range 0-359
         CommandSet_SegColour_RgbcctColour_Hue_360(jtok.getInt(), colour_index, segment_index);
-        ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_HUE)), SEGMENT_I(segment_index).rgbcctcolors[colour_index].getHue360());
+        ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_HUE)), SEGMENT_I(segment_index).segcol[colour_index].getHue());
       }
 
       
       if(jtok = seg_obj[PM_SAT]){ // Range 0-100
         float value = mSupport::mapfloat(jtok.getFloat(), 0,100, 0,255); // Using float so sub 1% transition is possible
         CommandSet_SegColour_RgbcctColour_Sat_255( (uint8_t)value, colour_index, segment_index);
-        ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_SAT)), SEGMENT_I(segment_index).rgbcctcolors[colour_index].getSat255());
+        ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_SAT)), SEGMENT_I(segment_index).segcol[colour_index].getSaturation());
         data_buffer.isserviced++; 
       }else
       if(jtok = seg_obj[PM_SAT_255]){ // Full Range 0-255
         CommandSet_SegColour_RgbcctColour_Sat_255(jtok.getInt(), colour_index, segment_index);
-        ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_SAT255)), SEGMENT_I(segment_index).rgbcctcolors[colour_index].getSat255());
+        ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_SAT255)), SEGMENT_I(segment_index).segcol[colour_index].getSaturation());
         data_buffer.isserviced++;
       }
     
@@ -1101,12 +1102,12 @@ if (jtok = obj["MQTTPixelArrays"]) {
       if(jtok = seg_obj[PM_CCT_PERCENTAGE]){ // Assume range 0-100    
         float value = mSupport::mapfloat(jtok.getFloat(), 0,100, CCT_MIN_DEFAULT,CCT_MAX_DEFAULT); // Using float so sub 1% transition is possible
         CommandSet_SegColour_RgbcctColour_ColourTemp_Kelvin( value, colour_index, segment_index);
-        ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_CCT_PERCENTAGE)), SEGMENT_I(segment_index).rgbcctcolors[colour_index].getCCT());
+        ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_CCT_PERCENTAGE)), SEGMENT_I(segment_index).segcol[colour_index].getCCT());
         data_buffer.isserviced++;
       }else
       if(jtok = seg_obj[PM_CCT_TEMP]){ // Exact kelvin
         CommandSet_SegColour_RgbcctColour_ColourTemp_Kelvin(jtok.getInt(), colour_index, segment_index);
-        ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_CCT_PERCENTAGE)), SEGMENT_I(segment_index).rgbcctcolors[colour_index].getCCT());
+        ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_CCT_PERCENTAGE)), SEGMENT_I(segment_index).segcol[colour_index].getCCT());
         data_buffer.isserviced++;
       }
     
@@ -1114,24 +1115,24 @@ if (jtok = obj["MQTTPixelArrays"]) {
       if(jtok = seg_obj[PM_BRIGHTNESS_RGB]){ // Assume range 0-100
         CommandSet_SegColour_RgbcctColour_BrightnessRGB(mapvalue(jtok.getInt(), 0,100, 0,255), colour_index, segment_index);
         data_buffer.isserviced++;
-        ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_BRIGHTNESS_RGB)), SEGMENT_I(segment_index).rgbcctcolors[colour_index].getBrightnessRGB());
+        ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_BRIGHTNESS_RGB)), SEGMENT_I(segment_index).segcol[colour_index].getBrightnessRGB());
       }else
       if(jtok = seg_obj[PM_BRIGHTNESS_RGB_255]){ // Exact kelvin
         CommandSet_SegColour_RgbcctColour_BrightnessRGB(jtok.getInt(), colour_index, segment_index);
         data_buffer.isserviced++;
-        ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_BRIGHTNESS_RGB_255)), SEGMENT_I(segment_index).rgbcctcolors[colour_index].getBrightnessRGB());
+        ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_BRIGHTNESS_RGB_255)), SEGMENT_I(segment_index).segcol[colour_index].getBrightnessRGB());
       }
 
     
       if(jtok = seg_obj[PM_BRIGHTNESS_CCT]){ // Assume range 0-100
         CommandSet_SegColour_RgbcctColour_BrightnessCCT(mapvalue(jtok.getInt(), 0,100, 0,255), colour_index, segment_index);
         data_buffer.isserviced++;
-        ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_BRIGHTNESS_CCT)), SEGMENT_I(segment_index).rgbcctcolors[colour_index].getBrightnessCCT());
+        ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_BRIGHTNESS_CCT)), SEGMENT_I(segment_index).segcol[colour_index].getBrightnessCCT());
       }else
       if(jtok = seg_obj[PM_BRIGHTNESS_CCT_255]){ // Exact kelvin
         CommandSet_SegColour_RgbcctColour_BrightnessCCT(jtok.getInt(), colour_index, segment_index);
         data_buffer.isserviced++;
-        ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_BRIGHTNESS_CCT_255)), SEGMENT_I(segment_index).rgbcctcolors[colour_index].getBrightnessCCT());
+        ALOG_COM(PSTR(D_LOG_PIXEL D_COMMAND_NVALUE_K(D_BRIGHTNESS_CCT_255)), SEGMENT_I(segment_index).segcol[colour_index].getBrightnessCCT());
       }
      
     }
@@ -1481,35 +1482,35 @@ void mAnimatorLight::CommandSet_Animation_Transition_Rate_Ms(uint16_t value, uin
 void mAnimatorLight::CommandSet_SegColour_RgbcctColour_Hue_360(uint16_t hue_new, uint8_t colour_index, uint8_t segment_index)
 {
   if(colour_index >= RGBCCTCOLOURS_SIZE){ return; }
-  SEGMENT_I(segment_index).rgbcctcolors[colour_index].setHue360(hue_new);      
+  SEGMENT_I(segment_index).segcol[colour_index].setHue(hue_new);      
 }
 
 
 void mAnimatorLight::CommandSet_SegColour_RgbcctColour_Sat_255(uint8_t sat_new, uint8_t colour_index, uint8_t segment_index)
 {
   if(colour_index >= RGBCCTCOLOURS_SIZE){ return; }
-  SEGMENT_I(segment_index).rgbcctcolors[colour_index].setSat255(sat_new);    
+  SEGMENT_I(segment_index).segcol[colour_index].setSaturation(sat_new);    
 }
 
 
 void mAnimatorLight::CommandSet_SegColour_RgbcctColour_ColourTemp_Kelvin(uint16_t ct, uint8_t colour_index, uint8_t segment_index)
 {
   if(colour_index >= RGBCCTCOLOURS_SIZE){ return; }
-  SEGMENT_I(segment_index).rgbcctcolors[colour_index].setCCT_Kelvin(ct);    
+  SEGMENT_I(segment_index).segcol[colour_index].setCCT_Kelvin(ct);    
 }
 
 
 void mAnimatorLight::CommandSet_SegColour_RgbcctColour_BrightnessRGB(uint8_t brightness, uint8_t colour_index, uint8_t segment_index)
 {
   if(colour_index >= RGBCCTCOLOURS_SIZE){ return; }
-  SEGMENT_I(segment_index).rgbcctcolors[colour_index].setBrightnessRGB(brightness);    
+  SEGMENT_I(segment_index).segcol[colour_index].setBrightnessRGB(brightness);    
 }
 
 
 void mAnimatorLight::CommandSet_SegColour_RgbcctColour_BrightnessCCT(uint8_t brightness, uint8_t colour_index, uint8_t segment_index)
 {
   if(colour_index >= RGBCCTCOLOURS_SIZE){ return; }
-  SEGMENT_I(segment_index).rgbcctcolors[colour_index].setBrightnessCCT(brightness);    
+  SEGMENT_I(segment_index).segcol[colour_index].setBrightnessCCT(brightness);    
 }
 
 

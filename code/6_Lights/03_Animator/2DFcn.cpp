@@ -307,6 +307,8 @@ mAnimatorLight::Segment::setPixelColorXY(int x, int y, uint32_t col)
   DEBUG_LINE_HERE;
 }
 
+
+#ifdef USE_AA_PIXELS
 // anti-aliased version of setPixelColorXY()
 void mAnimatorLight::Segment::setPixelColorXY(float x, float y, uint32_t col, bool aa)
 {
@@ -359,6 +361,7 @@ DEBUG_LINE_HERE;
   }
   DEBUG_LINE_HERE;
 }
+#endif
 
 // returns RGBW values of pixel
 uint32_t mAnimatorLight::Segment::getPixelColorXY(uint16_t x, uint16_t y) 
@@ -763,7 +766,7 @@ void mAnimatorLight::Segment::drawCharacter_UsingGradientPalletes(
         }
       }
 
-      RgbcctColor bgCol  = tkr_anim->GetColourFromUnloadedPalette2(
+      RgbcctColor bgCol  = tkr_anim->GetColourFromUnloadedPalette3(
         backgroundPaletteId, _pixel_position,
         PALETTE_INDEX_SPANS_SEGLEN_ON,  // Scale across the segment length
         PALETTE_WRAP_ON,

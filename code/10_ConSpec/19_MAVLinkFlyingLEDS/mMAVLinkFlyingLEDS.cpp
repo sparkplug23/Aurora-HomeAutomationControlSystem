@@ -105,7 +105,7 @@ void mMavlinkFlyingLEDS::EverySecond()
 
   // HsbColor color = HsbColor(hue/360.0f, 1, 1);
 
-  // tkr_anim->SEGMENT_I(0).rgbcctcolors[0] = color;
+  // tkr_anim->SEGMENT_I(0).RgbwwColors[0] = color;
   // tkr_anim->SEGMENT_I(0).palette_id = 0;
   // tkr_anim->SEGMENT_I(0).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
 
@@ -123,7 +123,7 @@ void mMavlinkFlyingLEDS::Effect_LandingLights()
   /**
    * @brief Segment0 [Wings]
    **/
-  tkr_anim->SEGMENT_I(0).rgbcctcolors[0] = RgbcctColor(255,255,255,255,255); //white
+  tkr_anim->SEGMENT_I(0).RgbwwColors[0] = RgbwwColor(255,255,255,255,255); //white
   tkr_anim->SEGMENT_I(0).palette_id = 0;
   tkr_anim->SEGMENT_I(0).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
   tkr_anim->SEGMENT_I(0).cycle_time__rate_ms = FRAMETIME_MS;
@@ -133,7 +133,7 @@ void mMavlinkFlyingLEDS::Effect_LandingLights()
   /**
    * @brief Segment1 [fuselage]
    **/
-  tkr_anim->SEGMENT_I(1).rgbcctcolors[0] = RgbcctColor(255,255,255,255,255); //white
+  tkr_anim->SEGMENT_I(1).RgbwwColors[0] = RgbwwColor(255,255,255,255,255); //white
   tkr_anim->SEGMENT_I(1).palette_id = 0;
   tkr_anim->SEGMENT_I(1).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
   tkr_anim->SEGMENT_I(1).cycle_time__rate_ms = FRAMETIME_MS;
@@ -195,8 +195,8 @@ void mMavlinkFlyingLEDS::Effect_LandingLights()
 
     #endif
   // #endif
-  tkr_anim->SEGMENT_I(2).rgbcctcolors[0] = color_hatch_chase;
-  tkr_anim->SEGMENT_I(2).rgbcctcolors[1] = RgbcctColor(0,0,0,0,0); //black
+  tkr_anim->SEGMENT_I(2).RgbwwColors[0] = color_hatch_chase;
+  tkr_anim->SEGMENT_I(2).RgbwwColors[1] = RgbwwColor(0,0,0,0,0); //black
   tkr_anim->SEGMENT_I(2).palette_id = mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID;
   tkr_anim->SEGMENT_I(2).effect_id = mAnimatorLight::EFFECTS_FUNCTION__CHASE_THEATER__ID;
   tkr_anim->SEGMENT_I(2).cycle_time__rate_ms = FRAMETIME_MS;
@@ -209,7 +209,7 @@ void mMavlinkFlyingLEDS::Effect_LandingLights()
    * @brief Segment1 [Rudder] - height is colour
    **/
   HsbColor color_rudder = color_hatch_chase;
-  tkr_anim->SEGMENT_I(3).rgbcctcolors[0] = color_rudder;
+  tkr_anim->SEGMENT_I(3).RgbwwColors[0] = color_rudder;
   tkr_anim->SEGMENT_I(3).palette_id = mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID;
   tkr_anim->SEGMENT_I(3).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
   tkr_anim->SEGMENT_I(3).cycle_time__rate_ms = FRAMETIME_MS;
@@ -220,7 +220,7 @@ void mMavlinkFlyingLEDS::Effect_LandingLights()
   /**
    * @brief Segment4 [Nose]
    **/
-  tkr_anim->SEGMENT_I(4).rgbcctcolors[0] = RgbcctColor(255,255,255,255,255); //white
+  tkr_anim->SEGMENT_I(4).RgbwwColors[0] = RgbwwColor(255,255,255,255,255); //white
   tkr_anim->SEGMENT_I(4).palette_id = 0;
   tkr_anim->SEGMENT_I(4).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
   tkr_anim->SEGMENT_I(4).cycle_time__rate_ms = FRAMETIME_MS;
@@ -240,7 +240,7 @@ void mMavlinkFlyingLEDS::Effect_TakeoffLights()
   /**
    * @brief Segment0 [Wings]
    **/
-  tkr_anim->SEGMENT_I(0).rgbcctcolors[0] = RgbcctColor(0,255,0,0,0); //white
+  tkr_anim->SEGMENT_I(0).RgbwwColors[0] = RgbwwColor(0,255,0,0,0); //white
   tkr_anim->SEGMENT_I(0).palette_id = 0;
   tkr_anim->SEGMENT_I(0).effect_id = mAnimatorLight::EFFECTS_FUNCTION__ANDROID__ID;
   tkr_anim->SEGMENT_I(0).cycle_time__rate_ms = FRAMETIME_MS;
@@ -253,7 +253,7 @@ void mMavlinkFlyingLEDS::Effect_TakeoffLights()
    * @brief Segment1 [Rudder] - height is colour
    **/
   // HsbColor color_rudder = color_hatch_chase;
-  // tkr_anim->SEGMENT_I(3).rgbcctcolors[0] = color_rudder;
+  // tkr_anim->SEGMENT_I(3).RgbwwColors[0] = color_rudder;
   tkr_anim->SEGMENT_I(3).palette_id = mPalette::PALETTELIST_STATIC_CRGBPALETTE16_GRADIENT__YELLOWOUT__ID;
   tkr_anim->SEGMENT_I(3).effect_id = mAnimatorLight::EFFECTS_FUNCTION__RAINBOW_CYCLE__ID;
   tkr_anim->SEGMENT_I(3).cycle_time__rate_ms = FRAMETIME_MS;
@@ -266,7 +266,7 @@ void mMavlinkFlyingLEDS::Effect_TakeoffLights()
   /**
    * @brief Segment4 [Nose]
    **/
-  tkr_anim->SEGMENT_I(4).rgbcctcolors[0] = RgbcctColor(0,255,0,0,0); //white
+  tkr_anim->SEGMENT_I(4).RgbwwColors[0] = RgbwwColor(0,255,0,0,0); //white
   tkr_anim->SEGMENT_I(4).palette_id = 0;
   tkr_anim->SEGMENT_I(4).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
   tkr_anim->SEGMENT_I(4).cycle_time__rate_ms = FRAMETIME_MS;
@@ -289,7 +289,7 @@ void mMavlinkFlyingLEDS::Effect_Flight01_RandomSweep()
   /**
    * @brief Segment0 [Wings]
    **/
-  tkr_anim->SEGMENT_I(0).rgbcctcolors[0] = RgbcctColor(255,255,255,255,255); //white
+  tkr_anim->SEGMENT_I(0).RgbwwColors[0] = RgbwwColor(255,255,255,255,255); //white
   tkr_anim->SEGMENT_I(0).palette_id = 0;
   // tkr_anim->SEGMENT_I(0).effect_id = mAnimatorLight::EFFECTS_FUNCTION__COLOR_WIPE_RANDOM__ID;// 71;//mAnimatorLight::EFFECTS_FUNCTION__CHASE_THEATER__ID;
   tkr_anim->SEGMENT_I(0).effect_id = mAnimatorLight::EFFECTS_FUNCTION__COLOR_SWEEP_RANDOM__ID;// 71;//mAnimatorLight::EFFECTS_FUNCTION__CHASE_THEATER__ID;
@@ -302,9 +302,9 @@ void mMavlinkFlyingLEDS::Effect_Flight01_RandomSweep()
   /**
    * @brief Segment1 [Fuselage]
    **/
-  // tkr_anim->SEGMENT_I(1).rgbcctcolors[0] = RgbcctColor(0,0,0,255,255); //white
-  // tkr_anim->SEGMENT_I(1).rgbcctcolors[1] = RgbcctColor(0,0,255,255,255); //white
-  // tkr_anim->SEGMENT_I(1).rgbcctcolors[2] = RgbcctColor(0,0,0,100,100); //white
+  // tkr_anim->SEGMENT_I(1).RgbwwColors[0] = RgbwwColor(0,0,0,255,255); //white
+  // tkr_anim->SEGMENT_I(1).RgbwwColors[1] = RgbwwColor(0,0,255,255,255); //white
+  // tkr_anim->SEGMENT_I(1).RgbwwColors[2] = RgbwwColor(0,0,0,100,100); //white
   // tkr_anim->SEGMENT_I(1).palette_id = mPalette::PALETTELIST_LENGTH_OF_PALETTES_IN_FLASH_THAT_ARE_NOT_USER_DEFINED + 9;
   // tkr_anim->SEGMENT_I(1).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SPANNED_PALETTE__ID;
   // tkr_anim->SEGMENT_I(1).colour_width__used_in_effect_generate = mAnimatorLight::ColourType::COLOUR_TYPE__RGBWW__ID;
@@ -337,7 +337,7 @@ void mMavlinkFlyingLEDS::Effect_Flight01_RandomSweep()
   //  * @brief Segment1 [Fuselage] - Copy start of wings
   //  **/
   // uint32_t col32 = tkr_anim->getPixelColor(41);
-  // tkr_anim->SEGMENT_I(1).rgbcctcolors[0] = RgbcctColor(R(col32), G(col32), B(col32), 0, 0); //white
+  // tkr_anim->SEGMENT_I(1).RgbwwColors[0] = RgbwwColor(R(col32), G(col32), B(col32), 0, 0); //white
   // tkr_anim->SEGMENT_I(1).palette_id = 0;
   // tkr_anim->SEGMENT_I(1).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
   // tkr_anim->SEGMENT_I(1).colour_width__used_in_effect_generate = mAnimatorLight::ColourType::COLOUR_TYPE__RGBWW__ID;
@@ -425,8 +425,8 @@ void mMavlinkFlyingLEDS::Effect_Flight01_RandomSweep()
     
     #endif
   // #endif
-  tkr_anim->SEGMENT_I(2).rgbcctcolors[0] = color_hatch_chase;
-  tkr_anim->SEGMENT_I(2).rgbcctcolors[1] = RgbcctColor(0,0,0,0,0); //black
+  tkr_anim->SEGMENT_I(2).RgbwwColors[0] = color_hatch_chase;
+  tkr_anim->SEGMENT_I(2).RgbwwColors[1] = RgbwwColor(0,0,0,0,0); //black
   tkr_anim->SEGMENT_I(2).palette_id = mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID;
   tkr_anim->SEGMENT_I(2).effect_id = mAnimatorLight::EFFECTS_FUNCTION__CHASE_THEATER__ID;
   tkr_anim->SEGMENT_I(2).cycle_time__rate_ms = FRAMETIME_MS;
@@ -439,7 +439,7 @@ void mMavlinkFlyingLEDS::Effect_Flight01_RandomSweep()
    * @brief Segment1 [Rudder] - height is colour
    **/
   HsbColor color_rudder = color_hatch_chase;
-  tkr_anim->SEGMENT_I(3).rgbcctcolors[0] = color_rudder;
+  tkr_anim->SEGMENT_I(3).RgbwwColors[0] = color_rudder;
   tkr_anim->SEGMENT_I(3).palette_id = mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID;
   tkr_anim->SEGMENT_I(3).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
   tkr_anim->SEGMENT_I(3).cycle_time__rate_ms = FRAMETIME_MS;
@@ -450,7 +450,7 @@ void mMavlinkFlyingLEDS::Effect_Flight01_RandomSweep()
   /**
    * @brief Segment4 [Nose]
    **/
-  tkr_anim->SEGMENT_I(4).rgbcctcolors[0] = RgbcctColor(0,0,0,255,255); //white
+  tkr_anim->SEGMENT_I(4).RgbwwColors[0] = RgbwwColor(0,0,0,255,255); //white
   tkr_anim->SEGMENT_I(4).palette_id = 0;
   tkr_anim->SEGMENT_I(4).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
   tkr_anim->SEGMENT_I(4).cycle_time__rate_ms = FRAMETIME_MS;
@@ -580,7 +580,7 @@ void mMavlinkFlyingLEDS::EveryLoop()
       break;
       case 4:
         
-        tkr_anim->SEGMENT_I(4).rgbcctcolors[0] = RgbcctColor(255,0,0,0,0); //white
+        tkr_anim->SEGMENT_I(4).RgbwwColors[0] = RgbwwColor(255,0,0,0,0); //white
         tkr_anim->SEGMENT_I(4).palette_id = 0;
         tkr_anim->SEGMENT_I(4).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
         tkr_anim->SEGMENT_I(4).cycle_time__rate_ms = FRAMETIME_MS;
@@ -591,7 +591,7 @@ void mMavlinkFlyingLEDS::EveryLoop()
       break;
       case 5:
         
-        tkr_anim->SEGMENT_I(4).rgbcctcolors[0] = RgbcctColor(0,255,0,0,0); //white
+        tkr_anim->SEGMENT_I(4).RgbwwColors[0] = RgbwwColor(0,255,0,0,0); //white
         tkr_anim->SEGMENT_I(4).palette_id = 0;
         tkr_anim->SEGMENT_I(4).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
         tkr_anim->SEGMENT_I(4).cycle_time__rate_ms = FRAMETIME_MS;
@@ -602,7 +602,7 @@ void mMavlinkFlyingLEDS::EveryLoop()
       break;
       case 6:
         
-        tkr_anim->SEGMENT_I(4).rgbcctcolors[0] = RgbcctColor(0,0,255,0,0); //white
+        tkr_anim->SEGMENT_I(4).RgbwwColors[0] = RgbwwColor(0,0,255,0,0); //white
         tkr_anim->SEGMENT_I(4).palette_id = 0;
         tkr_anim->SEGMENT_I(4).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
         tkr_anim->SEGMENT_I(4).cycle_time__rate_ms = FRAMETIME_MS;
@@ -615,7 +615,7 @@ void mMavlinkFlyingLEDS::EveryLoop()
          * @brief Segment1 [wing] - height is colour
          **/
         // HsbColor color_rudder = color_hatch_chase;
-        // tkr_anim->SEGMENT_I(3).rgbcctcolors[0] = color_rudder;
+        // tkr_anim->SEGMENT_I(3).RgbwwColors[0] = color_rudder;
         tkr_anim->SEGMENT_I(0).palette_id = mPalette::PALETTELIST_STATIC_CRGBPALETTE16_GRADIENT__YELLOWOUT__ID;
         tkr_anim->SEGMENT_I(0).effect_id = mAnimatorLight::EFFECTS_FUNCTION__RAINBOW_CYCLE__ID;
         tkr_anim->SEGMENT_I(0).cycle_time__rate_ms = FRAMETIME_MS;

@@ -31,6 +31,11 @@
 #define B(c) (byte(c))
 #define W(c) (byte((c) >> 24))
 
+#define ALOG_COL32(level, s, c) AddLog(level, PSTR("%s:%d,%d,%d,%d"), s, R(c), G(c), B(c), W(c))
+#define SERIAL_DEBUG_COL32(s, c) Serial.printf("%s:%d,%d,%d,%d\n\r", s, R(c), G(c), B(c), W(c))
+#define SERIAL_DEBUG_COL32i(s, c, i) Serial.printf("%s[%d]:%d,%d,%d,%d\n\r", s, i, R(c), G(c), B(c), W(c))
+#define SERIAL_DEBUG_COLRGBWWi(s, c, i) Serial.printf("%s[%d]:%d,%d,%d,%d,%d\n\r", s, i, c.R, c.G, c.B, c.WW, c.CW)
+
 #define GET_BIT(var,bit)    (((var)>>(bit))&0x01)
 #define SET_BIT(var,bit)    ((var)|=(uint16_t)(0x0001<<(bit)))
 #define UNSET_BIT(var,bit)  ((var)&=(~(uint16_t)(0x0001<<(bit))))

@@ -133,9 +133,9 @@ void mSensorsInterface::EveryLoop()
  * In InterfaceSensors, the type of applied map can be selected to be added to unified method directly
  * 
  * @param temperature 
- * @return RgbcctColor 
+ * @return RgbwwColor 
  */
-RgbcctColor mSensorsInterface::GetColourValueUsingMaps_ForUnifiedSensor(float temperature) // flag_unified_sensor_colour_heatmap_type
+RgbwwColor mSensorsInterface::GetColourValueUsingMaps_ForUnifiedSensor(float temperature) // flag_unified_sensor_colour_heatmap_type
 {
 
   if(flag_unified_sensor_colour_heatmap_type==1) //adjusted

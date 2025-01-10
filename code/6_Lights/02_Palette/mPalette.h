@@ -425,7 +425,7 @@ class mPalette
   
 
 #ifndef ENABLE_DEVFEATURE_LIGHTING__OCT24_TIMING
-    RgbcctColor Get_Encoded_StaticPalette_Colour(
+    RgbwwColor Get_Encoded_StaticPalette_Colour(
       uint16_t palette_id = 0,
       uint8_t* palette_elements = nullptr,
       uint16_t desired_index_from_palette = 0,
@@ -436,7 +436,7 @@ class mPalette
       bool     flag_forced_gradient = false
     );
 
-    RgbcctColor SubGet_Encoded_CustomPalette_Colour(
+    RgbwwColor SubGet_Encoded_CustomPalette_Colour(
       uint16_t palette_id = 0,
       uint8_t* palette_elements = nullptr,
       uint16_t desired_index_from_palette = 0,
@@ -449,7 +449,7 @@ class mPalette
 
     
     // Dynamic palettes should do any calculations, then rely on the other methods to get colours
-    RgbcctColor Get_Encoded_DynamicPalette_Colour(
+    RgbwwColor Get_Encoded_DynamicPalette_Colour(
       uint16_t palette_id = 0,
       uint8_t* palette_elements = nullptr,
       uint16_t desired_index_from_palette = 0,
