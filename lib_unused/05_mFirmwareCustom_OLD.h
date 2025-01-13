@@ -15241,7 +15241,7 @@ Flash: [======    ]  56.9% (used 582400 bytes from 1023984 bytes)*/
 
 #ifdef SUBDEVICE_TESTGROUP__LIGHTING_MULTIPIN__H801_AS_RGB_AND_CCT_SPLIT_CHANNELS
   #define DEVICENAME_CTR          "testgroup_multipin_h801_rgbsplitcct"
-  #define DEVICENAME_FRIENDLY_CTR "TestGroup H801 RGB Split CCT Channels"
+  #define DEVICENAME_FRIENDLY_CTR "DevelopingByTypes H801 RGB Split CCT Channels"
   #define DEVICENAME_ROOMHINT_CTR "testgroup"
   #define D_MQTTSERVER_IP_ADDRESS_COMMA_DELIMITED   "192.168.1.70"
     #define MQTT_PORT     1883
@@ -15397,7 +15397,7 @@ Flash: [======    ]  56.9% (used 582400 bytes from 1023984 bytes)*/
 
 #ifdef SUBDEVICE_TESTGROUP__LIGHTING_MULTIPIN__H801_AS_FIVE_SINGLE_WHITE_CHANNELS
   #define DEVICENAME_CTR          "testgroup_multipin_h801_5white"
-  #define DEVICENAME_FRIENDLY_CTR "TestGroup H801 Five White Channels"
+  #define DEVICENAME_FRIENDLY_CTR "DevelopingByTypes H801 Five White Channels"
   #define DEVICENAME_ROOMHINT_CTR "testgroup"
   #define D_MQTTSERVER_IP_ADDRESS_COMMA_DELIMITED   "192.168.1.70"
     #define MQTT_PORT     1883
@@ -15584,7 +15584,7 @@ Flash: [======    ]  56.9% (used 582400 bytes from 1023984 bytes)*/
  */
 #ifdef SUBDEVICE_TESTGROUP__LIGHTING_MULTIPIN__ESP32_AS_NEOPIXEL_DUAL_I2S_BUS
   #define DEVICENAME_CTR          "testgroup_multipin_esp32_neodual"
-  #define DEVICENAME_FRIENDLY_CTR "TestGroup H801 RGB Dual Channels"
+  #define DEVICENAME_FRIENDLY_CTR "DevelopingByTypes H801 RGB Dual Channels"
   #define DEVICENAME_ROOMHINT_CTR "testgroup"
   #define D_MQTTSERVER_IP_ADDRESS_COMMA_DELIMITED   "192.168.1.70"
     #define MQTT_PORT     1883

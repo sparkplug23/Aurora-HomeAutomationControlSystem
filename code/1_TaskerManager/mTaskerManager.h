@@ -39,11 +39,11 @@
   #include "0_ConfigUser/00_mFirmwareCustom_Secret_Home_Temporary.h"
   #include "0_ConfigUser/01_mFirmwareCustom_Secret_ExampleTemplates.h"
   #include "0_ConfigUser/02_mFirmwareCustom_Secret_DevTestbeds.h"
-  #include "0_ConfigUser/TestGroups/FirmwareGroup_LightingEffects.h"
-  #include "0_ConfigUser/TestGroups/FirmwareGroup_HVAC.h"
-  #include "0_ConfigUser/TestGroups/FirmwareGroup_PZEM.h"
+  #include "0_ConfigUser/DevelopingByTypes/FirmwareGroup_LightingEffects.h"
+  #include "0_ConfigUser/DevelopingByTypes/FirmwareGroup_HVAC.h"
+  #include "0_ConfigUser/DevelopingByTypes/FirmwareGroup_PZEM.h"
   #include "0_ConfigUser/BuiltUsingGroups/GroupUsing_LightingEffects.h"
-  #include "0_ConfigUser/TestGroups/FirmwareGroup_CellularDatalinks.h"
+  #include "0_ConfigUser/DevelopingByTypes/FirmwareGroup_CellularDatalinks.h"
 #endif // USE_USER_MICHAEL
 
 #include "2_CoreSystem/06_Support/mSensorType.h"

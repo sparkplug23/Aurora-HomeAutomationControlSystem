@@ -121,18 +121,24 @@ enum EM_BUS_TYPE
 #endif
 #endif
 
+#define DISABLE_RMT_METHODS
+
 /*** ESP32 Neopixel methods ***/
 #ifdef ARDUINO_ARCH_ESP32
   //RGB
+  #ifdef DISABLE_RMT_METHODS
+  #define PIXELBUS_32_RN_3 NeoPixelBusLg<NeoRgbFeature, NeoEsp32I2s0800KbpsMethod, NeoGammaNullMethod>
+  #else
   #define PIXELBUS_32_RN_3 NeoPixelBusLg<NeoRgbFeature, NeoEsp32RmtNWs2812xMethod, NeoGammaNullMethod>
+  #endif
   #define PIXELBUS_32_I0_3 NeoPixelBusLg<NeoRgbFeature, NeoEsp32I2s0800KbpsMethod, NeoGammaNullMethod>
   #define PIXELBUS_32_I1_3 NeoPixelBusLg<NeoRgbFeature, NeoEsp32I2s1800KbpsMethod, NeoGammaNullMethod>
   #define PIXELBUS_32_I1_3P NeoPixelBusLg<NeoRgbFeature, NeoEsp32I2s1X8Ws2812xMethod, NeoGammaNullMethod>
   #define PIXELBUS_32_I0_3P NeoPixelBusLg<NeoRgbFeature, NeoEsp32I2s0X16Ws2812xMethod, NeoGammaNullMethod>
   //RGBW
-  #define PIXELBUS_32_RN_4 NeoPixelBusLg<NeoRgbwFeature, NeoEsp32RmtNWs2812xMethod, NeoGammaNullMethod>
-  #define PIXELBUS_32_I0_4 NeoPixelBusLg<NeoRgbwFeature, NeoEsp32I2s0800KbpsMethod, NeoGammaNullMethod>
-  #define PIXELBUS_32_I1_4 NeoPixelBusLg<NeoRgbwFeature, NeoEsp32I2s1800KbpsMethod, NeoGammaNullMethod>
+  #define PIXELBUS_32_RN_4 NeoPixelBusLg<NeoRgbwFeature, NeoEsp32RmtNSk6812Method, NeoGammaNullMethod>
+  #define PIXELBUS_32_I0_4 NeoPixelBusLg<NeoRgbwFeature, NeoEsp32I2s0Sk6812Method, NeoGammaNullMethod>
+  #define PIXELBUS_32_I1_4 NeoPixelBusLg<NeoRgbwFeature, NeoEsp32I2s1Sk6812Method, NeoGammaNullMethod>
   #define PIXELBUS_32_I1_4P NeoPixelBusLg<NeoRgbwFeature, NeoEsp32I2s1X8Sk6812Method, NeoGammaNullMethod>
   #define PIXELBUS_32_I0_4P NeoPixelBusLg<NeoRgbwFeature, NeoEsp32I2s0X16Sk6812Method, NeoGammaNullMethod>
   //RGBWW (WS2805)
@@ -233,7 +239,11 @@ class PolyBus
       case BUSTYPE__8266_DM_4__ID: busPtr = new PIXELBUS_8266_DM_4(len, pins[0]); break;
     #endif
     #ifdef ARDUINO_ARCH_ESP32
+      #ifdef DISABLE_RMT_METHODS
+      case BUSTYPE__32_RN_3__ID: busPtr = new PIXELBUS_32_I0_3(len, pins[0]); break;
+      #else
       case BUSTYPE__32_RN_3__ID: busPtr = new PIXELBUS_32_RN_3(len, pins[0], (NeoBusChannel)channel); break;
+      #endif
       case BUSTYPE__32_RN_4__ID: busPtr = new PIXELBUS_32_RN_4(len, pins[0], (NeoBusChannel)channel); break;
       case BUSTYPE__32_RN_5__ID:  busPtr = new PIXELBUS_32_RN_5(len, pins[0]); break;
       case BUSTYPE__32_RN_400_3__ID: busPtr = new PIXELBUS_32_RN_400_3(len, pins[0], (NeoBusChannel)channel); break;     
@@ -641,6 +651,7 @@ static RgbwwColor getPixelColor(void* busPtr, uint8_t busType, uint16_t pix, uin
     RgbwColor col;
     uint8_t cctWW = wwcw & 0xFF, cctCW = (wwcw>>8) & 0xFF;
 
+
     // reorder channels to selected order
     switch (co & COLOUR_ORDER_RGB_MASK) {
       default: col.G = g; col.R = r; col.B = b; break; //0 = GRB, default
@@ -650,41 +661,18 @@ static RgbwwColor getPixelColor(void* busPtr, uint8_t busType, uint16_t pix, uin
       case  4: col.G = b; col.R = g; col.B = r; break; //4 = BGR
       case  5: col.G = g; col.R = b; col.B = r; break; //5 = GBR
     }
-    // upper nibble contains W swap information
-    switch (co >> COLOUR_ORDER_WHITE_MASK) {
-      default: col.W = w;                break; // no swapping
-      case  1: col.W = col.B; col.B = w; break; // swap W & B
-      case  2: col.W = col.G; col.G = w; break; // swap W & G
-      case  3: col.W = col.R; col.R = w; break; // swap W & R
-      case  4: std::swap(cctWW, cctCW);  break; // swap WW & CW
-    }
-
-    // Optional logging for debugging
-    #ifdef ENABLE_DEVFEATURE__PIXEL_COLOUR_ORDER_IN_MULTIPIN_SHOW_LOGS
-    if(pix == 0){ // Just log for the first pixel
-        Serial.printf("set colour R=%d, G=%d, B=%d, CW=%d, WW=%d %d/%d/%d/%d/%d\n\r",
-            (colour_order & 0x07),   // Red
-            ((colour_order >> 3) & 0x07), // Green
-            ((colour_order >> 6) & 0x07), // Blue
-            colour_hardware.CW,
-            colour_hardware.WW,
-            colour_internal.R,
-            colour_internal.G,
-            colour_internal.B,
-            colour_internal.CW,
-            colour_internal.WW
-        );
-    }
-    #endif    
+    // // upper nibble contains W swap information
+    // switch (co >> COLOUR_ORDER_WHITE_MASK) {
+    //   default: col.W = w;                break; // no swapping
+    //   case  1: col.W = col.B; col.B = w; break; // swap W & B
+    //   case  2: col.W = col.G; col.G = w; break; // swap W & G
+    //   case  3: col.W = col.R; col.R = w; break; // swap W & R
+    //   case  4: std::swap(cctWW, cctCW);  break; // swap WW & CW
+    // }
+   
     #ifdef ENABLE_DEVFEATURE__PIXEL_COLOUR_VALUE_IN_MULTIPIN_SHOW_LOGS // Debug pixel color value log
     if (pix < 1) { // Just log for the first pixel
-        Serial.printf("setPixelColor[%d] R=%d, G=%d, B=%d, WW=%d, CW=%d\n\r", pix, 
-            colour_internal.R, 
-            colour_internal.G, 
-            colour_internal.B, 
-            colour_internal.WW, 
-            colour_internal.CW
-        );
+        Serial.printf("setPixelColor%d[%d] R=%d, G=%d, B=%d, W=%d\n\r", busType, pix, col.R, col.G, col.B, col.W);
     }
     #endif
     
@@ -780,13 +768,19 @@ static uint32_t getPixelColor(void* busPtr, uint8_t busType, uint16_t pix, uint8
     #endif
     }
 
-    // upper nibble contains W swap information
-    uint8_t w = col.W;
-    switch (co >> COLOUR_ORDER_WHITE_MASK) {
-      case 1: col.W = col.B; col.B = w; break; // swap W & B
-      case 2: col.W = col.G; col.G = w; break; // swap W & G
-      case 3: col.W = col.R; col.R = w; break; // swap W & R
+    // #ifdef ENABLE_DEVFEATURE__PIXEL_COLOUR_ORDER_IN_MULTIPIN_SHOW_LOGS
+    if (pix < 1) { // Just first few pixels
+      Serial.printf("get colour_order R=%d, G=%d, B=%d, W=%d\n\r",col.R,col.G,col.B,col.W);
     }
+    // #endif // ENABLE_DEVFEATURE__PIXEL_COLOUR_ORDER_IN_MULTIPIN_SHOW_LOGS
+
+    // // upper nibble contains W swap information
+    // uint8_t w = col.W;
+    // switch (co >> COLOUR_ORDER_WHITE_MASK) {
+    //   case 1: col.W = col.B; col.B = w; break; // swap W & B
+    //   case 2: col.W = col.G; col.G = w; break; // swap W & G
+    //   case 3: col.W = col.R; col.R = w; break; // swap W & R
+    // }
     switch (co & COLOUR_ORDER_RGB_MASK) {
       //                    W               G              R               B
       default: return ((col.W << 24) | (col.G << 8) | (col.R << 16) | (col.B)); //0 = GRB, default
@@ -796,20 +790,6 @@ static uint32_t getPixelColor(void* busPtr, uint8_t busType, uint16_t pix, uint8
       case  4: return ((col.W << 24) | (col.R << 8) | (col.B << 16) | (col.G)); //4 = BGR
       case  5: return ((col.W << 24) | (col.G << 8) | (col.B << 16) | (col.R)); //5 = GBR
     }
-
-    #ifdef ENABLE_DEVFEATURE__PIXEL_COLOUR_ORDER_IN_MULTIPIN_SHOW_LOGS
-    if (pix < 5) { // Just first few pixels
-      Serial.printf("get colour_order R=%d, G=%d, B=%d, CW=%d, WW=%d\n\r",
-        rgb_order,
-        white_order,
-        color_internal.R,
-        color_internal.G,
-        color_internal.B,
-        color_internal.CW,
-        color_internal.WW
-      );
-    }
-    #endif // ENABLE_DEVFEATURE__PIXEL_COLOUR_ORDER_IN_MULTIPIN_SHOW_LOGS
 
     return 0;
 }
@@ -996,7 +976,7 @@ static uint32_t getPixelColor(void* busPtr, uint8_t busType, uint16_t pix, uint8
                   {
                     Serial.printf("BUS DETECT: No Parallel %d\n\r", num);
                     if (num < 2) {
-                      offset_method_inside_group = num + 1;
+                      offset_method_inside_group = num + 1; // +1 to skip RMT method
                     } else if (num < 9) {
                       offset_method_inside_group = num - 7;
                     } else {

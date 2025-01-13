@@ -1,0 +1,10 @@
+
+
+// WLED-SR effects (SR compatible IDs !!!)
+
+
+
+#define FX_MODE_FLOWSTRIPE             179
+    #define FX_MODE_2DHIPHOTIC             180
+
+    #define FX_MODE_WAVESINS               184

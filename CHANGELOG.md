@@ -8,7 +8,7 @@ Section Next, will always be "Development", which with copy and paste will becom
 
 ## [D0.117.0.0] - Created 12-AUG-23
 ### Milestone Point
-Introduction of Lighting TestGroup for garage as debug suite.
+Introduction of Lighting DevelopingByTypes for garage as debug suite.
 
 ### Added
 - template

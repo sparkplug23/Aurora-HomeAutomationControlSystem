@@ -409,7 +409,11 @@ bool  mAnimatorLight::deserializeState(JsonObject root, byte callMode, byte pres
   #endif
 
   bool onBefore = pCONT_iLight->_briRGB_Global ; //bri
-  getVal(root["bri"], &pCONT_iLight->_briRGB_Global);
+  if(getVal(root["bri"], &pCONT_iLight->_briRGB_Global))
+  {
+    //if it was updated, tmp update this bus
+    pCONT_iLight->bus_manager->setBrightness( pCONT_iLight->getBriRGB_Global() ); // fix re-initialised bus' brightness
+  }
 
 
   getVal(root["cBri"], &pCONT_iLight->_briRGB_Global);
@@ -2316,7 +2320,7 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
 
       encoded_gradient = 0;
       
-      RgbcctTOwwType color;
+      RgbwwColor color;
 
 
       #ifdef ENABLE_FEATURE_WATCHDOG_TIMER

@@ -1244,6 +1244,11 @@ void mInterfaceLight::CommandSet_Brt_255(uint8_t brt_new){
   // probably needs to check if they are linked here, or internally
   setBriCT_Global(brt_new);
 
+  
+    bus_manager->setBrightness( getBriRGB_Global() ); // fix re-initialised bus' brightness
+
+
+
   // #ifdef ENABLE_LOG_LEVEL_COMMANDS
   // ALOG_INF(PSTR(D_LOG_LIGHT D_COMMAND_NVALUE_K(D_BRIGHTNESS)), tkr_anim->SEGMENT_I(0).rgbcct_controller->getBrightness255());
   // #endif // ENABLE_LOG_LEVEL_COMMANDS

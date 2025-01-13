@@ -210,13 +210,13 @@ mAnimatorLight::Segment::setPixelColorXY(int x, int y, uint32_t col)
   // }
 
 
-    RgbcctColor c = RgbcctColor(R(col), G(col), B(col), W(col), W(col));
+    RgbwwColor c = RgbwwColor(R(col), G(col), B(col), W(col), W(col));
 
     /**
      * @brief Apply "GLOBAL" brightness to the colour
      * 
      */
-    uint8_t bri_master = pCONT_iLight->getBriRGB_Global();
+    uint8_t bri_master = pCONT_iLight->getBriRGB_Global(); 
     uint8_t bri_segment = getBrightnessRGB();
 
     /**
@@ -232,13 +232,13 @@ mAnimatorLight::Segment::setPixelColorXY(int x, int y, uint32_t col)
     c.R  = scale8(c.R,  bri_master);
     c.G  = scale8(c.G,  bri_master);
     c.B  = scale8(c.B,  bri_master);
-    c.W1 = scale8(c.W1, bri_master);
-    c.W2 = scale8(c.W2, bri_master);
+    c.WW = scale8(c.WW, bri_master);
+    c.CW = scale8(c.CW, bri_master);
 
   
   // This function bypassing the 1D to 2D set function that applies brightness, so we need to apply here before calling the busmanager
 
-    col = c.getU32();
+    col = RgbwwColorU32(c);
 
   // DEBUG_LINE_HERE;
   if (reverse  ) x = virtualWidth()  - x - 1;
@@ -364,7 +364,7 @@ DEBUG_LINE_HERE;
 #endif
 
 // returns RGBW values of pixel
-uint32_t mAnimatorLight::Segment::getPixelColorXY(uint16_t x, uint16_t y) 
+uint32_t mAnimatorLight::Segment::getPixelColorXY(uint16_t x, uint16_t y) const
 {
   
   // Serial.println(__LINE__);
@@ -398,6 +398,74 @@ uint32_t mAnimatorLight::Segment::getPixelColorXY(uint16_t x, uint16_t y)
   return tkr_anim->getPixelColorXY(start + x, startY + y);
   // DEBUG_LINE_HERE;
 }
+
+
+
+// 2D blurring, can be asymmetrical
+void mAnimatorLight::Segment::blur2D(uint8_t blur_x, uint8_t blur_y, bool smear) {
+  if (!isActive()) return; // not active
+  const unsigned cols = vWidth();
+  const unsigned rows = vHeight();
+  uint32_t lastnew;
+  uint32_t last;
+  if (blur_x) {
+    const uint8_t keepx = smear ? 255 : 255 - blur_x;
+    const uint8_t seepx = blur_x >> 1;
+    for (unsigned row = 0; row < rows; row++) { // blur rows (x direction)
+      uint32_t carryover = BLACK;
+      uint32_t curnew = BLACK;
+      for (unsigned x = 0; x < cols; x++) {
+        uint32_t cur = getPixelColorXY(x, row);
+        uint32_t part = color_fade(cur, seepx);
+        curnew = color_fade(cur, keepx);
+        if (x > 0) {
+          if (carryover) curnew = color_add(curnew, carryover);
+          uint32_t prev = color_add(lastnew, part);
+          // optimization: only set pixel if color has changed
+          if (last != prev) setPixelColorXY(x - 1, row, prev);
+        } else setPixelColorXY(x, row, curnew); // first pixel
+        lastnew = curnew;
+        last = cur; // save original value for comparison on next iteration
+        carryover = part;
+      }
+      setPixelColorXY(cols-1, row, curnew); // set last pixel
+    }
+  }
+  if (blur_y) {
+    const uint8_t keepy = smear ? 255 : 255 - blur_y;
+    const uint8_t seepy = blur_y >> 1;
+    for (unsigned col = 0; col < cols; col++) {
+      uint32_t carryover = BLACK;
+      uint32_t curnew = BLACK;
+      for (unsigned y = 0; y < rows; y++) {
+        uint32_t cur = getPixelColorXY(col, y);
+        uint32_t part = color_fade(cur, seepy);
+        curnew = color_fade(cur, keepy);
+        if (y > 0) {
+          if (carryover) curnew = color_add(curnew, carryover);
+          uint32_t prev = color_add(lastnew, part);
+          // optimization: only set pixel if color has changed
+          if (last != prev) setPixelColorXY(col, y - 1, prev);
+        } else setPixelColorXY(col, y, curnew); // first pixel
+        lastnew = curnew;
+        last = cur; //save original value for comparison on next iteration
+        carryover = part;
+      }
+      setPixelColorXY(col, rows - 1, curnew);
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
 
 // Blends the specified color with the existing pixel color.
 void mAnimatorLight::Segment::blendPixelColorXY(uint16_t x, uint16_t y, uint32_t color, uint8_t blend) {
@@ -766,28 +834,28 @@ void mAnimatorLight::Segment::drawCharacter_UsingGradientPalletes(
         }
       }
 
-      RgbcctColor bgCol  = tkr_anim->GetColourFromUnloadedPalette3(
+      RgbwwColor bgCol  = tkr_anim->GetColourFromUnloadedPalette3(
         backgroundPaletteId, _pixel_position,
         PALETTE_INDEX_SPANS_SEGLEN_ON,  // Scale across the segment length
         PALETTE_WRAP_ON,
         PALETTE_DISCRETE_OFF
       ); // Get the background color from the palette
 
-      bgCol.setBrightness( speed );
+      // bgCol.setBrightness( speed );
 
-      backgroundColor = bgCol.WithBrightness().getU32();
+      backgroundColor = RgbwwColorU32(bgCol);//.WithBrightness().getU32();
 
       // Calculate the character color based on the gradient logic
       uint32_t charColor;
       if (solidPerChar) {
         // Use a solid color for the entire character
-        charColor = GetPaletteColour(chr, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_ON, PALETTE_DISCRETE_OFF).getU32();
+        charColor = GetPaletteColour(chr, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_ON, PALETTE_DISCRETE_OFF);
       } else {
         // Apply a gradient either horizontally or vertically
         if (horizontalGradient) {
-          charColor = GetPaletteColour(constrain((x0 * 255 / cols), 0, 255), PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_ON, PALETTE_DISCRETE_OFF).getU32();
+          charColor = GetPaletteColour(constrain((x0 * 255 / cols), 0, 255), PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_ON, PALETTE_DISCRETE_OFF);
         } else {
-          charColor = GetPaletteColour(constrain((y0 * 255 / rows), 0, 255), PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_ON, PALETTE_DISCRETE_OFF).getU32();
+          charColor = GetPaletteColour(constrain((y0 * 255 / rows), 0, 255), PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_ON, PALETTE_DISCRETE_OFF);
         }
       }
 

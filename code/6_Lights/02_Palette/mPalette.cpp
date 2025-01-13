@@ -773,7 +773,7 @@ mPalette::PALETTE_ENCODING_DATA mPalette::findPaletteEncoding(uint16_t id)
  *********************************************************************************************************************************************************************************
  *********************************************************************************************************************************************************************************/
 
-RgbcctTOwwType 
+RgbwwColor 
 #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
 IRAM_ATTR 
 #endif 
@@ -789,7 +789,7 @@ mPalette::GetColourFromPreloadedPaletteBuffer_2023(
 ){
   DEBUG_PIN4_SET(0);
   
-  RgbcctTOwwType colour = RgbcctTOwwType();
+  RgbwwColor colour = RgbwwColor();
 
   // This block merges all dynamic palette handling directly into this function
   if(
@@ -1130,9 +1130,9 @@ uint32_t mPalette::GetColourFromPreloadedPaletteBuffer_2025(
         #endif
         float progress = mSupport::mapfloat(azimuth, 0, 360, 0.0f, 1.0f);
 
-        RgbcctTOwwType colour1 = pSEGMENT.segcol[0].colour;
-        RgbcctTOwwType colour2 = pSEGMENT.segcol[1].colour;
-        RgbwwColor col = RgbcctTOwwType::LinearBlend(colour1, colour2, progress);
+        RgbwwColor colour1 = pSEGMENT.segcol[0].colour;
+        RgbwwColor colour2 = pSEGMENT.segcol[1].colour;
+        RgbwwColor col = RgbwwColor::LinearBlend(colour1, colour2, progress);
         uint32_t col32 = RGBW32(col.R, col.G, col.B, col.WW);
         return col32;
       }
@@ -1149,10 +1149,10 @@ uint32_t mPalette::GetColourFromPreloadedPaletteBuffer_2025(
         #endif
 
         float progress = mSupport::mapfloat(elevation, el_min, el_max, 0.0f, 1.0f);
-        RgbcctTOwwType colour1 = pSEGMENT.segcol[0].colour;
-        RgbcctTOwwType colour2 = pSEGMENT.segcol[1].colour;
+        RgbwwColor colour1 = pSEGMENT.segcol[0].colour;
+        RgbwwColor colour2 = pSEGMENT.segcol[1].colour;
 
-        RgbwwColor col = RgbcctTOwwType::LinearBlend(colour1, colour2, progress);
+        RgbwwColor col = RgbwwColor::LinearBlend(colour1, colour2, progress);
         uint32_t col32 = RGBW32(col.R, col.G, col.B, col.WW);
         return col32;
       }
@@ -1167,7 +1167,7 @@ uint32_t mPalette::GetColourFromPreloadedPaletteBuffer_2025(
   }
 
   DEBUG_PIN4_SET(1);
-        RgbwwColor col = colour;//RgbcctTOwwType::LinearBlend(colour1, colour2, progress);
+        RgbwwColor col = colour;//RgbwwColor::LinearBlend(colour1, colour2, progress);
         uint32_t col32 = RGBW32(col.R, col.G, col.B, col.WW);
         return col32;
 
@@ -2553,7 +2553,7 @@ uint8_t mPalette::GetColoursInPalette(uint16_t palette_id)
 
 #ifdef ENABLE_DEVFEATURE_LIGHTING__OCT24_TIMING
 
-RgbcctTOwwType 
+RgbwwColor 
 #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
 IRAM_ATTR 
 #endif 
@@ -2691,7 +2691,7 @@ Performance improvements:
     Eliminated redundant calculations, such as unnecessary recalculations of pixel_position_adjust.
     The gradient palette vector is now populated in a single pass, and boundary conditions are checked in an efficient loop.
 */
-RgbcctTOwwType  
+RgbwwColor  
 #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
 IRAM_ATTR 
 #endif 
@@ -2707,7 +2707,7 @@ mPalette::Get_Encoded_Palette_Colour(
   bool     flag_crgb_exact_colour,
   bool     flag_force_gradient
 ){
-  RgbcctTOwwType colour;
+  RgbwwColor colour;
   uint16_t pixel_position_adjust = _pixel_position;
 
   // Handling discrete sequence palettes (non-gradient)

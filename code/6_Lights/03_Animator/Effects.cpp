@@ -34,51 +34,48 @@
 //       - FadeToBlack can override the background setting
 //       - Defining SEGCOL(<i>) can override a specific palette using these values (e.g. Color Gradient)
 
-	/** Between @ And first ; is the slider values
-	 * Slider 0: Speed
-	 * Slider 1: Intensity
-	 * Slider 2: Custom 1
-	 * Slider 3: Custom 2
-	 * Slider 4: Custom 3
-	 * Slider 5: Time Period (ie Cycle Time, previously rate_ms)
-	 * Slider 6: Grouping 
-	 * Checkbox 0: Option 1
-	 * Checkbox 1: Option 2 = layered icon, for layering effects
-	 * Checkbox 2: Option 3
-	 * 
-	 */
-
-	/** Between the first ; and the second ; is the color values (! means default name, nothing means leave out, otherwise the name of the color)
-	 * Colour Circle 0: !, blank, or name
-	 * Colour Circle 1: !, blank, or name
-	 * Colour Circle 0: !, blank, or name
-	 * Colour Circle 2: !, blank, or name
-	 * Colour Circle 3: !, blank, or name
-	 */
-
-	/** Between the second ; and third ; is the palette values
-	 * Colour Circle 0: !, blank, or name
-	 * Colour Circle 1: !, blank, or name
-	 * Colour Circle 0: !, blank, or name
-	 * Colour Circle 2: !, blank, or name
-	 * Colour Circle 3: !, blank, or name
-	 */
-
-/*
+/***************************************************************************************************************************************************
 static const char PM_EFFECT_CONFIG__##[] PROGMEM = 
   "Effect Name@Speed,Intensity,Custom1Star,Custom2Cog,Custom3Visibility,EffectPeriod,Grouping,Checkbox1Palette,Checkbox2Layers,Checkbox3Favourite;Fx,Bg,Custom,!,!;pal=21,etp=1000";
 
+Between @ And first ";" is the slider values
+ * Slider 0: Speed
+ * Slider 1: Intensity
+ * Slider 2: Custom 1
+ * Slider 3: Custom 2
+ * Slider 4: Custom 3
+ * Slider 5: Time Period (ie Cycle Time, previously rate_ms)
+ * Slider 6: Grouping 
+ * Checkbox 0: Option 1
+ * Checkbox 1: Option 2 = layered icon, for layering effects
+ * Checkbox 2: Option 3
+ * 
+ *** Between the first ";" and the second ";" is the color values (! means default segcol name, nothing means leave out, otherwise the name of the color)
+ * Colour Circle 0: !, blank, or name
+ * Colour Circle 1: !, blank, or name
+ * Colour Circle 2: !, blank, or name
+ * Colour Circle 3: !, blank, or name
+ * Colour Circle 4: !, blank, or name
+ *
+ *** Between the second ";" and third ";" is the palette values
+ * ??
+ */
 
-*/
+/***************************************************************************************************************************************************
+List of special commands that can load a default setting.
+pal=0  | palette
+ix=127 | intensity
+sx=127 | speed
 
 // m12=0
 // pal=10
-#define EFFECT_CONFIG_DEFAULT_OPTION__PALETTE_INDEX_CTR "pal=95" // The default forced palette
 // 01
 // ix=16
 // o2
 // sx=64
 // 12
+
+***************************************************************************************************************************************************/
 
 
 /********************************************************************************************************************************************************************************************************************
@@ -86,8 +83,8 @@ static const char PM_EFFECT_CONFIG__##[] PROGMEM =
  * @name           : Solid Colour
  * @description:   : For full RGBCCT colour
  * 
- * WLED Solid with Rgbww would work without a dynamic buffer, but this enables us to maintain a nice transition
- * 
+ * Keeping both U32/RGBWW modes here, as its a useful demonstration of both coldata methods
+ * The lower level wrapper will handle the colour conversion 
  * 
  * @param Intensity: None
  * @param Speed    : None
@@ -96,22 +93,15 @@ static const char PM_EFFECT_CONFIG__##[] PROGMEM =
 #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
 void mAnimatorLight::EffectAnim__Solid_Colour() 
 {
-
-  DEBUG_LINE_HERE;
-  // return;
-
-  // Allocate buffer for two channels (desired and starting)    
+ 
   if (!SEGMENT.allocateColourData( SEGMENT.colour_width__used_in_effect_generate * 2) ){ DEBUG_LINE_HERE; return; } // Pixel_Width * Two_Channels
 
-  DEBUG_LINE_HERE;
+Serial.println(SEGMENT.colour_width__used_in_effect_generate);
   // Retrieve the desired color from the palette
   if (SEGMENT.colour_width__used_in_effect_generate == ColourType::COLOUR_TYPE__RGBWW__ID) {
     #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-  DEBUG_LINE_HERE;
     RgbwwColor desiredColour = SEGMENT.GetPaletteColour_Rgbww();
-  DEBUG_LINE_HERE;
     RgbwwColor startingColour = SEGMENT.getPixelColorRgbww(0);
-  DEBUG_LINE_HERE;
 
     #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
     // desiredColour = RgbwwColor(1,2,3,4,5);
@@ -133,18 +123,23 @@ void mAnimatorLight::EffectAnim__Solid_Colour()
     uint32_t desiredColour  = SEGMENT.GetPaletteColour();
     uint32_t startingColour = SEGMENT.getPixelColor(0);
 
+    // SERIAL_DEBUG_COL32i("des", desiredColour, 0);
+    // SERIAL_DEBUG_COL32i("sta", startingColour, 0);
+
     // Set the desired and starting colors in the transition buffer
     SEGMENT.Set_DynamicBuffer_DesiredColour(0, desiredColour);
     SEGMENT.Set_DynamicBuffer_StartingColour(0, startingColour);
+    // AddLog_Array_Block(3, PSTR("ColourData()"), SEGMENT.ColourData(), SEGMENT.ColourDataLength(), 6, true);
+    // AddLog_Array_Block(3, PSTR("Data()"), SEGMENT.ColourData(), 24, 6, true);
   }
 
   // Set up the animation function callback
   SetSegment_AnimFunctionCallback(SEGIDX, [this](const AnimationParam& param) {
     SEGMENT.AnimationProcess_LinearBlend_Dynamic_BufferU32_FillSegment(param);
   });
-  DEBUG_LINE_HERE;
+
 }
-static const char PM_EFFECT_CONFIG__SOLID_COLOUR[] PROGMEM = "Solid Colour@;!,!,!,!,!;pal=0,etp=3000";
+static const char PM_EFFECT_CONFIG__SOLID_COLOUR[] PROGMEM = "Solid Colour@;!,!,!,!,!;pal=0,sx=255,etp=1000";
 #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
 
 /********************************************************************************************************************************************************************************************************************
@@ -155,6 +150,13 @@ static const char PM_EFFECT_CONFIG__SOLID_COLOUR[] PROGMEM = "Solid Colour@;!,!,
  * This version will be limited to U32, another will be made called "Static CCT Palette" which will work on all 5 pixels and Rgbww methods
  * 
  * Version should be made that has no blend, and hence, no dynamic buffer (ie, just set the colour)
+ * 
+ * Multiple Versions of this may need to exist
+ * _U32_Blend: U32 optimised with blending enabled (desired/starting pixels, uses memory)
+ * _Rgbww_Blend: Rgbww enabled for ws2805 and full rgbww palettes (performance will be lower)
+ * _U32_Instant: No buffer, uses much less memory and therefore most efficient. This can be a version of the above, if the speed is 0 ie instant
+ * 
+ *
  * 
  * @param Intensity: None
  * @param Speed    : None
@@ -167,42 +169,40 @@ void mAnimatorLight::EffectAnim__Static_Palette()
 {
   // Serial.printf("EffectAnim__Static_Palette A %d\n\r", SEGLEN);
 
-  if (!SEGMENT.allocateColourData( SEGMENT.colour_width__used_in_effect_generate * 2 * SEGLEN )){ return; } // Pixel_Width * Two_Channels * Pixel_Count
-
-  // Serial.println("EffectAnim__Static_Palette B");
-  DEBUG_LIGHTING__START_TIME_RECORDING(3)
-  // DynamicBuffer_Segments_UpdateStartingColourWithGetPixel();
-  SEGMENT.DynamicBuffer_StartingColour_GetAllSegment();
-  DEBUG_LIGHTING__SAVE_TIME_RECORDING(3, lighting_time_critical_logging.dynamic_buffer__starting_colour);
-
-  // uint8_t brightness = SEGMENT.getBrightnessRGB_WithGlobalApplied(); // Prefetch to save time 
-
-  DEBUG_LIGHTING__START_TIME_RECORDING(3)
-  uint32_t colour;
-  for(uint16_t pixel = 0; pixel < SEGLEN; pixel++)
+  if(SEGMENT.speed) // blending enabled
   {
-    colour = SEGMENT.GetPaletteColour(pixel, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE, false);
-    // SetTransitionColourBuffer_DesiredColour(SEGMENT.Data(), SEGMENT.DataLength(), pixel, SEGMENT.colour_width__used_in_effect_generate, colour.WithBrightness(brightness) );
-    // colour = RGBW32(R(colour), G(colour), B(colour), 0);
-    // colour = RGBW32(11,12,13,10);
-    // colour = RGBW32(1,2,3,4);
-    SEGMENT.Set_DynamicBuffer_DesiredColour(pixel, colour);
-    
-    // Serial.printf("Static Colour --------------------------------------------------%d,%d,%d,%d\n\r", R(colour), G(colour), B(colour), W(colour));
+
+    if (!SEGMENT.allocateColourData( SEGMENT.colour_width__used_in_effect_generate * 2 * SEGLEN )){ return; } // Pixel_Width * Two_Channels * Pixel_Count
+
+    SEGMENT.DynamicBuffer_StartingColour_GetAllSegment();
+    uint32_t colour;
+    for(uint16_t pixel = 0; pixel < SEGLEN; pixel++)
+    {
+      colour = SEGMENT.GetPaletteColour(pixel, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE, false);
+      SEGMENT.Set_DynamicBuffer_DesiredColour(pixel, colour);
+      #ifdef ENABLE_DEBUGFEATURE_LIGHTING__EFFECT_COLOURS    
+      Serial.printf("Static Colour --------------------------------------------------%d,%d,%d,%d\n\r", R(colour), G(colour), B(colour), W(colour));
+      #endif
+    }
+
+    SetSegment_AnimFunctionCallback(SEGIDX, [this](const AnimationParam& param) { SEGMENT.AnimationProcess_LinearBlend_Dynamic_BufferU32(param); });
+
+  }else{
+    // No blending, reserve data usage by directly setting the bus
+
+    uint32_t colour;
+    for(uint16_t pixel = 0; pixel < SEGLEN; pixel++)
+    {
+      colour = SEGMENT.GetPaletteColour(pixel, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE, false);
+      SEGMENT.setPixelColor(pixel, colour);
+    }
+    SEGMENT.cycle_time__rate_ms = 1000;
+    SET_DIRECT_MODE();
+
   }
-  DEBUG_LIGHTING__SAVE_TIME_RECORDING(3, lighting_time_critical_logging.dynamic_buffer__desired_colour);
-
-  // ALOG_ERR( PSTR("GetPixelColor(0) = %d,%d,%d,%d,%d"), 
-  // SEGMENT.GetPixelColor(0).R,SEGMENT.GetPixelColor(0).G,SEGMENT.GetPixelColor(0).B,SEGMENT.GetPixelColor(0).CW,SEGMENT.GetPixelColor(0).WW);
-  
-  // Serial.printf("EffectAnim__Static_Palette C %d", SEGMENT.DataLength());
-  // AddLog_Array_Block(LOG_LEVEL_INFO, PSTR("Data()"), SEGMENT.Data(), SEGMENT.DataLength(), 8, true);
-
-  // SetSegment_AnimFunctionCallback( SEGIDX, [this](const AnimationParam& param){ this->AnimationProcess_LinearBlend_Dynamic_Buffer(param); } );
-  SetSegment_AnimFunctionCallback(SEGIDX, [this](const AnimationParam& param) { SEGMENT.AnimationProcess_LinearBlend_Dynamic_BufferU32(param); });
 
 }
-static const char PM_EFFECT_CONFIG__STATIC_PALETTE[] PROGMEM = "Static Palette@!,!,,,,!,!;C1,C2,C3,C4,C5;etp=1000";
+static const char PM_EFFECT_CONFIG__STATIC_PALETTE[] PROGMEM = "Static Palette@!,!,,,,!,!;C1,C2,C3,C4,C5;sx=255,etp=1000";
 #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
 
 /********************************************************************************************************************************************************************************************************************
@@ -270,7 +270,7 @@ static const char PM_EFFECT_CONFIG__STATIC_PALETTE_VINTAGE[] PROGMEM = "Static P
  *******************************************************************************************************************************************************************************************************************
  ********************************************************************************************************************************************************************************************************************/
 #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-void mAnimatorLight::EffectAnim__Spanned_Static_Palette()
+void mAnimatorLight::EffectAnim__Spanned_Palette()
 {
 
   if (!SEGMENT.allocateColourData( SEGMENT.colour_width__used_in_effect_generate * 2 * SEGLEN )){ return; } // Pixel_Width * Two_Channels * Pixel_Count
@@ -278,13 +278,10 @@ void mAnimatorLight::EffectAnim__Spanned_Static_Palette()
   SEGMENT.DynamicBuffer_StartingColour_GetAllSegment();
 
   uint32_t colour = 0;
-  for(uint16_t pixel = 0; pixel < SEGLEN; pixel++)
-  {    
+  for(uint16_t pixel = 0; pixel < SEGLEN; pixel++){    
     colour = SEGMENT.GetPaletteColour(pixel, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_OFF, NO_ENCODED_VALUE);
     SEGMENT.Set_DynamicBuffer_DesiredColour(pixel, colour);
   }
-
-  SEGMENT.DynamicBuffer_StartingColour_GetAllSegment();
 
   SetSegment_AnimFunctionCallback(SEGIDX, [this](const AnimationParam& param) { SEGMENT.AnimationProcess_LinearBlend_Dynamic_BufferU32(param); });
 
@@ -342,7 +339,7 @@ void mAnimatorLight::EffectAnim__Randomise_Gradient()
   
   */
 
-  EffectAnim__Spanned_Static_Palette();
+  EffectAnim__Spanned_Palette();
 }
 static const char PM_EFFECT_CONFIG__RANDOMISE_GRADIENT[] PROGMEM = "Randomise Gradient@!,!;!,!;!;1;sx=96,ix=224,etp=23";
 #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
@@ -369,15 +366,14 @@ void mAnimatorLight::EffectAnim__Firefly()
     uint8_t brightness = SEGMENT.getBrightnessRGB_WithGlobalApplied(); // Prefetch brightness
 
     // Compute how many pixels to update based on intensity
-    uint16_t pixels_to_update = mapvalue(SEGMENT.intensity, 0, 255, 0, SEGMENT.virtualLength());
-
-    uint16_t pixels_in_map = GetNumberOfColoursInPalette(SEGMENT.palette_id);
-
-    // If it's the first run, update all pixels
-    if (SEGMENT.flags.animator_first_run) {
-        pixels_to_update = SEGMENT.virtualLength();
+    uint16_t pixels_to_update = 0;
+    if (SEGMENT.flags.animator_first_run && (SEGMENT.params_user[0]==0)) { 
+      pixels_to_update = SEGMENT.virtualLength();  // update all on first run, if optional user flag has not disabled it (when it is desired this effect writes over an existing effect)
+    }else{
+      pixels_to_update = mapvalue(SEGMENT.intensity, 0, 255, 0, SEGMENT.virtualLength());
     }
 
+    uint16_t pixels_in_map = GetNumberOfColoursInPalette(SEGMENT.palette_id);
     DEBUG_LIGHTING__START_TIME_RECORDING(4);
 
     // Precompute all random values for pixel indices and palette indices
@@ -397,11 +393,6 @@ void mAnimatorLight::EffectAnim__Firefly()
 
       // Get the WRGB from palette
       uint32_t colour = SEGMENT.GetPaletteColour(desired_pixel, PALETTE_SPAN_OFF, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE);
-
-      // if(iter==0)
-      //   DEBUG_PRINT_U32("Colour", colour);
-      // colour = RGBW32(iter,254,254,12);
-
       SEGMENT.Set_DynamicBuffer_DesiredColour(pixel_index, colour);
     }
 
@@ -427,7 +418,7 @@ void mAnimatorLight::EffectAnim__Firefly()
     });
 
 }
-static const char PM_EFFECT_CONFIG__FIREFLY[] PROGMEM = "Slow Glow@Blend Speed,Pixels Changing,,,,Repeat Rate (ms);!,!,!,!,!;etp=5000,ix=50"; // 6 sliders (speed/intensity/custom1/custom2/custom3/cycle time) + 4 options before first ;
+static const char PM_EFFECT_CONFIG__FIREFLY[] PROGMEM = "Slow Glow@Blend Speed,Pixels Changing,,,,Rate (ms),!;!,!,!,!,!;etp=5000,ix=50"; // 7 sliders (speed/intensity/custom1/custom2/custom3/cycle time/grouping) + 4 options before first ;
 // Change to "Firefly" after xmas24
 #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
 
@@ -536,7 +527,8 @@ void mAnimatorLight::EffectAnim__Flicker_Base(bool use_multi, uint16_t flicker_p
       #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
       colour_sec = GetColourFromUnloadedPalette3(flicker_palette_id, 0, true, true, true);
       #else
-      colour_sec = GetColourFromUnloadedPalette3(flicker_palette_id, 0, true, true, true);
+      RgbwwColor c = GetColourFromUnloadedPalette3(flicker_palette_id, 0, true, true, true);
+      colour_sec = RGBW32(c.R, c.G, c.B, c.WW);
       #endif
     }
 
@@ -620,27 +612,20 @@ void mAnimatorLight::EffectAnim__Flicker_Base(bool use_multi, uint16_t flicker_p
         {
           // Get primary color
           #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-          colour_pri = SEGMENT.GetPaletteColour(i, PALETTE_INDEX_SPANS_SEGLEN_ON, true, true)
-              #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_REPLACING_RGBCCT
-              .getU32()
-              #endif
-              ;
+          colour_pri = SEGMENT.GetPaletteColour(i, PALETTE_INDEX_SPANS_SEGLEN_ON, true, true);
           #else
-          colour_pri = SEGMENT.GetPaletteColour(i, PALETTE_INDEX_SPANS_SEGLEN_ON, true, true); 
+          RgbwwColor c = SEGMENT.GetPaletteColour(i, PALETTE_INDEX_SPANS_SEGLEN_ON, true, true); 
+          colour_pri = RGBW32(c.R, c.G, c.B, c.WW);
           #endif
 
-          // If only one color in secondary palette, reuse it, otherwise get a new color for each pixel
           #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
           if (!single_secondary_color) {
-              colour_sec = GetColourFromUnloadedPalette3(flicker_palette_id, i, true, true, true)
-              #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_REPLACING_RGBCCT
-              .getU32()
-              #endif
-              ;
+              colour_sec = GetColourFromUnloadedPalette3(flicker_palette_id, i, true, true, true);
           }
           #else
           if (!single_secondary_color) {
-              colour_sec = GetColourFromUnloadedPalette3(flicker_palette_id, i, true, true, true);
+            RgbwwColor c2 = GetColourFromUnloadedPalette3(flicker_palette_id, i, true, true, true);
+            colour_sec = RGBW32(c.R, c2.G, c2.B, c2.WW);
           }
           #endif
 
@@ -659,13 +644,10 @@ void mAnimatorLight::EffectAnim__Flicker_Base(bool use_multi, uint16_t flicker_p
           {
             // Get primary color for each pixel
             #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-            colour_pri = SEGMENT.GetPaletteColour(p, PALETTE_INDEX_SPANS_SEGLEN_ON, true, true)
-              #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_REPLACING_RGBCCT
-              .getU32()
-              #endif
-              ;
-            #else
             colour_pri = SEGMENT.GetPaletteColour(p, PALETTE_INDEX_SPANS_SEGLEN_ON, true, true);
+            #else
+            RgbwwColor c = SEGMENT.GetPaletteColour(p, PALETTE_INDEX_SPANS_SEGLEN_ON, true, true);
+            colour_pri = RGBW32(c.R, c.G, c.B, c.WW);
             #endif
 
             // If only one color in secondary palette, reuse it, otherwise get a new color for each pixel
@@ -679,7 +661,8 @@ void mAnimatorLight::EffectAnim__Flicker_Base(bool use_multi, uint16_t flicker_p
             }
             #else
             if (!single_secondary_color) {
-              colour_sec = GetColourFromUnloadedPalette3(flicker_palette_id, p, true, true, true);
+            RgbwwColor c2 = GetColourFromUnloadedPalette3(flicker_palette_id, p, true, true, true);
+            colour_sec = RGBW32(c.R, c2.G, c2.B, c2.WW);
             }
             #endif
 
@@ -1369,7 +1352,7 @@ void mAnimatorLight::EffectAnim__Rotating_Palette()
     break;
   }
 
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 
 }
 static const char PM_EFFECT_CONFIG__ROTATING_PALETTE[] PROGMEM = "Rotating Palette@,,,,,Repeat Rate (ms);!,!,!,!,!;!"; // 7 sliders + 4 options before first ;
@@ -1458,7 +1441,7 @@ static const char PM_EFFECT_CONFIG__ROTATING_PALETTE[] PROGMEM = "Rotating Palet
 //     break;
 //   }
 
-//   SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+//   SET_DIRECT_MODE();
 
 // }
 // static const char PM_EFFECT_CONFIG__ROTATING_PALETTE[] PROGMEM = "Palette@,,,,,Repeat Rate (ms);!,!,!,!,!;!"; // 7 sliders + 4 options before first ;
@@ -1518,7 +1501,7 @@ void mAnimatorLight::EffectAnim__Rotating_Previous_Animation()
     }
     SEGMENT.setPixelColor(SEGLEN-1, colourfirst); // Insert saved first pixel into last pixel as "wrap around"
 
-    SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR(); // Change this to be function that sets transition up
+    SET_DIRECT_MODE(); // Change this to be function that sets transition up
     return;
 
 
@@ -1595,7 +1578,7 @@ void mAnimatorLight::EffectAnim__Rotating_Previous_Animation()
     }
 
 
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR(); // Change this to be function that sets transition up
+  SET_DIRECT_MODE(); // Change this to be function that sets transition up
 
     #endif
 }
@@ -2471,14 +2454,14 @@ void mAnimatorLight::EffectAnim__SunPositions__Sunrise_Alarm_01()
 
   if (!SEGMENT.allocateColourData( SEGMENT.colour_width__used_in_effect_generate * 2 * SEGLEN )){ return; } // Pixel_Width * Two_Channels * Pixel_Count
     
-  RgbcctColor colour = RgbcctColor();
+  SEGMENT.DynamicBuffer_StartingColour_GetAllSegment();
+
+  uint32_t colour;
   for(uint16_t pixel = 0; pixel < SEGLEN; pixel++)
   {
     colour = SEGMENT.GetPaletteColour(pixel, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE);
-    SetTransitionColourBuffer_DesiredColour(SEGMENT.Data(), SEGMENT.DataLength(), pixel, SEGMENT.colour_width__used_in_effect_generate, colour.WithBrightness(brightness) );
+    SEGMENT.Set_DynamicBuffer_DesiredColour(pixel, colour); 
   }
-
-  SEGMENT.DynamicBuffer_StartingColour_GetAllSegment();
 
   SetSegment_AnimFunctionCallback(SEGIDX, [this](const AnimationParam& param) { SEGMENT.AnimationProcess_LinearBlend_Dynamic_BufferU32(param); });
 
@@ -2504,11 +2487,11 @@ void mAnimatorLight::EffectAnim__SunPositions__Azimuth_Selects_Gradient_Of_Palet
 
   if (!SEGMENT.allocateColourData( SEGMENT.colour_width__used_in_effect_generate * 2 * SEGLEN )){ return; } // Pixel_Width * Two_Channels * Pixel_Count
     
-  RgbcctColor colour = RgbcctColor();
+  uint32_t colour;
   for(uint16_t pixel = 0; pixel < SEGLEN; pixel++)
   {
     colour = SEGMENT.GetPaletteColour(pixel, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE);
-    SetTransitionColourBuffer_DesiredColour(SEGMENT.Data(), SEGMENT.DataLength(), pixel, SEGMENT.colour_width__used_in_effect_generate, colour.WithBrightness(brightness));
+    SEGMENT.Set_DynamicBuffer_DesiredColour(pixel, colour); 
   }
 
   SEGMENT.DynamicBuffer_StartingColour_GetAllSegment();
@@ -2537,11 +2520,11 @@ void mAnimatorLight::EffectAnim__SunPositions__Sunset_Blended_Palettes_01()
 
   if (!SEGMENT.allocateColourData( SEGMENT.colour_width__used_in_effect_generate * 2 * SEGLEN )){ return; } // Pixel_Width * Two_Channels * Pixel_Count
     
-  RgbcctColor colour = RgbcctColor();
+  uint32_t colour;
   for(uint16_t pixel = 0; pixel < SEGLEN; pixel++)
   {
     colour = SEGMENT.GetPaletteColour(pixel, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE);
-    SetTransitionColourBuffer_DesiredColour(SEGMENT.Data(), SEGMENT.DataLength(), pixel, SEGMENT.colour_width__used_in_effect_generate, colour.WithBrightness(brightness) );
+    SEGMENT.Set_DynamicBuffer_DesiredColour(pixel, colour); 
   }
 
   SEGMENT.DynamicBuffer_StartingColour_GetAllSegment();
@@ -2570,11 +2553,11 @@ void mAnimatorLight::EffectAnim__SunPositions__DrawSun_1D_Elevation_01()
 
   if (!SEGMENT.allocateColourData( SEGMENT.colour_width__used_in_effect_generate * 2 * SEGLEN )){ return; } // Pixel_Width * Two_Channels * Pixel_Count
     
-  RgbcctColor colour = RgbcctColor();
+  uint32_t colour;
   for(uint16_t pixel = 0; pixel < SEGLEN; pixel++)
   {
     colour = SEGMENT.GetPaletteColour(pixel, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE);
-    SetTransitionColourBuffer_DesiredColour(SEGMENT.Data(), SEGMENT.DataLength(), pixel, SEGMENT.colour_width__used_in_effect_generate, colour.WithBrightness(brightness));
+    SEGMENT.Set_DynamicBuffer_DesiredColour(pixel, colour); 
   }
 
   SEGMENT.DynamicBuffer_StartingColour_GetAllSegment();
@@ -2603,11 +2586,11 @@ void mAnimatorLight::EffectAnim__SunPositions__DrawSun_1D_Azimuth_01()
 
   if (!SEGMENT.allocateColourData( SEGMENT.colour_width__used_in_effect_generate * 2 * SEGLEN )){ return; } // Pixel_Width * Two_Channels * Pixel_Count
     
-  RgbcctColor colour = RgbcctColor();
+  uint32_t colour;
   for(uint16_t pixel = 0; pixel < SEGLEN; pixel++)
   {
     colour = SEGMENT.GetPaletteColour(pixel, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE);
-    SetTransitionColourBuffer_DesiredColour(SEGMENT.Data(), SEGMENT.DataLength(), pixel, SEGMENT.colour_width__used_in_effect_generate, colour.WithBrightness(brightness) );
+    SEGMENT.Set_DynamicBuffer_DesiredColour(pixel, colour); 
   }
 
   SEGMENT.DynamicBuffer_StartingColour_GetAllSegment();
@@ -2636,11 +2619,11 @@ void mAnimatorLight::EffectAnim__SunPositions__DrawSun_2D_Elevation_And_Azimuth_
 
   if (!SEGMENT.allocateColourData( SEGMENT.colour_width__used_in_effect_generate * 2 * SEGLEN )){ return; } // Pixel_Width * Two_Channels * Pixel_Count
     
-  RgbcctColor colour = RgbcctColor();
+  uint32_t colour;
   for(uint16_t pixel = 0; pixel < SEGLEN; pixel++)
   {
     colour = SEGMENT.GetPaletteColour(pixel, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE);
-    SetTransitionColourBuffer_DesiredColour(SEGMENT.Data(), SEGMENT.DataLength(), pixel, SEGMENT.colour_width__used_in_effect_generate, colour.WithBrightness(brightness) );
+    SEGMENT.Set_DynamicBuffer_DesiredColour(pixel, colour); 
   }
 
   SEGMENT.DynamicBuffer_StartingColour_GetAllSegment();
@@ -2668,11 +2651,11 @@ void mAnimatorLight::EffectAnim__SunPositions__White_Colour_Temperature_CCT_Base
 
   if (!SEGMENT.allocateColourData( SEGMENT.colour_width__used_in_effect_generate * 2 * SEGLEN )){ return; } // Pixel_Width * Two_Channels * Pixel_Count
     
-  RgbcctColor colour = RgbcctColor();
+  uint32_t colour;
   for(uint16_t pixel = 0; pixel < SEGLEN; pixel++)
   {
     colour = SEGMENT.GetPaletteColour(pixel, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE);
-    SetTransitionColourBuffer_DesiredColour(SEGMENT.Data(), SEGMENT.DataLength(), pixel, SEGMENT.colour_width__used_in_effect_generate, colour.WithBrightness(brightness) );
+    SEGMENT.Set_DynamicBuffer_DesiredColour(pixel, colour); 
   }
 
   SEGMENT.DynamicBuffer_StartingColour_GetAllSegment();
@@ -3596,2691 +3579,6 @@ static const char PM_EFFECT_CONFIG__7SEGMENTDISPLAY__MANUALSTRING_01[] PROGMEM =
 
 
 
-/********************************************************************************************************************************************************************************************************************
- *******************************************************************************************************************************************************************************************************************
- * @name : Christmas style "slow fade brightness"
- * @note : Randomly changes colours of pixels, and blends to the new one
- * 
- * @param : "cycle_time__rate_ms" : How often it changes
- * @param : "time_ms" : How often it changes
- * @param : "pixels to update" : How often it changes
- * @param : "cycle_time__rate_ms" : How often it changes 
- * 
- *******************************************************************************************************************************************************************************************************************
- ********************************************************************************************************************************************************************************************************************/
-
-
-
-/********************************************************************************************************************************************************************************************************************
- *******************************************************************************************************************************************************************************************************************
- * @name : Saturation fade (all together)
- * @note : Randomly changes colours of pixels, and blends to the new one
- * 
- * @param : "cycle_time__rate_ms" : How often it changes
- * @param : "time_ms" : How often it changes
- * @param : "pixels to update" : How often it changes
- * @param : "cycle_time__rate_ms" : How often it changes 
- * 
- *******************************************************************************************************************************************************************************************************************
- ********************************************************************************************************************************************************************************************************************/
-
-
-
-/********************************************************************************************************************************************************************************************************************
- *******************************************************************************************************************************************************************************************************************
- * @name : Saturation fade (wipe)
- * @note : Randomly changes colours of pixels, and blends to the new one
- * 
- * @param : "cycle_time__rate_ms" : How often it changes
- * @param : "time_ms" : How often it changes
- * @param : "pixels to update" : How often it changes
- * @param : "cycle_time__rate_ms" : How often it changes 
- * 
- *******************************************************************************************************************************************************************************************************************
- ********************************************************************************************************************************************************************************************************************/
-
-
-
-/********************************************************************************************************************************************************************************************************************
- *******************************************************************************************************************************************************************************************************************
- * @name : Saturatoin fade (randomly selected)
- * @note : Randomly changes colours of pixels, and blends to the new one
- * 
- * @param : "cycle_time__rate_ms" : How often it changes
- * @param : "time_ms" : How often it changes
- * @param : "pixels to update" : How often it changes
- * @param : "cycle_time__rate_ms" : How often it changes 
- * 
- *******************************************************************************************************************************************************************************************************************
- ********************************************************************************************************************************************************************************************************************/
-
-
-
-/********************************************************************************************************************************************************************************************************************
- *******************************************************************************************************************************************************************************************************************
- * @name : Sequential
- * @note : Randomly changes colours of pixels, and blends to the new one
- * 
- * @param : "cycle_time__rate_ms" : How often it changes
- * @param : "time_ms" : How often it changes
- * @param : "pixels to update" : How often it changes
- * @param : "cycle_time__rate_ms" : How often it changes 
- * 
- *******************************************************************************************************************************************************************************************************************
- ********************************************************************************************************************************************************************************************************************/
-
-
-
-// // Make this an "Effects" which is public/friendly of animator, but not the same class
-// void mAnimatorLight::SubTask_Flasher_Animate_Function_SunPositions_SunRise_Alarm_01(){
-
-  
-//       AddLog(LOG_LEVEL_DEBUG,PSTR(D_LOG_NEO "SubTask_Flasher_Animate_Function_SunPositions_SunRise_Alarm_01"));
-
-//   //using group 01
-//   // struct{}
-//   //use struct and memcpy to get data, then store results
-
-//   //effects_data_buffer
-//   //each needs 64 byte
-// // typedef struct particle {
-// //   // CRGB     color;
-// //   uint32_t birth  =0;
-// //   uint32_t last   =0;
-// //   float    vel    =0;
-// //   uint16_t pos    =-1;
-// //   float    fragment[12];
-// // } star;
-
-// /**
-//  * How the effects_data_buffer is formatted during effect runtime
-//  * */
-// struct EFFECT_CONFIG {
-//   uint8_t starting_palette_id = 0;
-//   uint8_t ending_palette_id = 10;
-//   uint8_t step_changes_remaining = 10;
-//   uint8_t colour_select_progress_counter = 0;
-//   uint8_t active_palette_id;
-
-// } effect_config;
-
-
-//   // star* stars = reinterpret_cast<star*>(pCONT_iLight->effects_data_buffer);
-//   EFFECT_CONFIG* effect_config2 = reinterpret_cast<EFFECT_CONFIG*>(pCONT_iLight->effects_data_buffer);
-//   //should be memcpy be used to insure size if not exceeded? or sizeof check? pointer is faster
-
-
-
-
-//   // switch(flashersettings.region){
-//   //   case EFFECTS_REGION_COLOUR_SELECT_ID:{ //set colours
-
-
-//       // if(effect_config2->active_palette_id++>mPaletteI->PALETTELIST_STATIC_GRADIENT_SUNLEVEL_GROUP01_07_ID){
-//       //   effect_config2->active_palette_id = mPaletteI->PALETTELIST_STATIC_GRADIENT_SUNLEVEL_GROUP01_01_ID;
-//       // }
-//       if(pCONT_iLight->animation.palette_id++>=mPaletteI->PALETTELIST_STATIC_GRADIENT_SUNLEVEL_GROUP01_07_ID){
-//         pCONT_iLight->animation.palette_id = mPaletteI->PALETTELIST_STATIC_GRADIENT_SUNLEVEL_GROUP01_01_ID;
-//       }
-
-
-// AddLog(LOG_LEVEL_DEV_TEST,PSTR("pCONT_iLight->animation.palette_id=%d"),pCONT_iLight->animation.palette_id);
-
-
-//       UpdateDesiredColourFromPaletteSelected();
-
-
-
-//       UpdateStartingColourWithGetPixel();
-
-
-
-//     //   flashersettings.region = EFFECTS_REGION_ANIMATE_ID;
-//     // // NO 
-//     // }break;
-//     // case EFFECTS_REGION_ANIMATE_ID: //shift along
-//       AddLog(LOG_LEVEL_DEBUG_MORE,PSTR(D_LOG_NEO "EFFECTS_SEQUENTIAL EFFECTS_ANIMATE"));
-//       this->setAnimFunctionCallback([this](const AnimationParam& param){ this->AnimationProcess_SunPositions_Gradient_Alarm_01(param); });
-      
-//   //     flashersettings.region = EFFECTS_REGION_COLOUR_SELECT_ID;
-//   //     break;
-//   // }
-
-// }
-
-// void mAnimatorLight::AnimationProcess_SunPositions_Gradient_Alarm_01(const AnimationParam& param)
-// {   
-//   // Need to make rgbcct pixels possible in the future, with dynamic animation_state
-
-//    for (uint16_t pixel = 0; pixel < pCONT_iLight->settings.light_size_count; pixel++){
-//     RgbTypeColor updatedColor = RgbTypeColor::LinearBlend(
-//         animation_colours[pixel].StartingColor,
-//         animation_colours[pixel].DesiredColour,
-//         param.progress);    
-//     SEGMENT.setPixelColor(pixel, updatedColor);
-//   } // END for
-
-// }
-
-
-
-/********************************************************************************************************************************************************************************************************************
- *******************************************************************************************************************************************************************************************************************
- * @name : Sequential
- * @note : Randomly changes colours of pixels, and blends to the new one
- * 
- * @param : "cycle_time__rate_ms" : How often it changes
- * @param : "time_ms" : How often it changes
- * @param : "pixels to update" : How often it changes
- * @param : "cycle_time__rate_ms" : How often it changes 
- * 
- *******************************************************************************************************************************************************************************************************************
- ********************************************************************************************************************************************************************************************************************/
-
-
-// // Make this an "Effects" which is public/friendly of animator, but not the same class
-// void mAnimatorLight::SubTask_Flasher_Animate_Function_SunPositions_Gradient_Sun_Elevation_And_Azimuth_01(){
-
-  
-//       AddLog(LOG_LEVEL_DEBUG,PSTR(D_LOG_NEO "SunPositions_Gradient_Sun_Elevation_And_Azimuth_01"));
-
-//   //using group 01
-//   // struct{}
-//   //use struct and memcpy to get data, then store results
-
-//   //effects_data_buffer
-//   //each needs 64 byte
-// // typedef struct particle {
-// //   // CRGB     color;
-// //   uint32_t birth  =0;
-// //   uint32_t last   =0;
-// //   float    vel    =0;
-// //   uint16_t pos    =-1;
-// //   float    fragment[12];
-// // } star;
-
-// /**
-//  * How the effects_data_buffer is formatted during effect runtime
-//  * */
-// struct EFFECT_CONFIG {
-//   uint16_t index_circle_center;
-  
-//   uint8_t sun_width;
-//   uint8_t sun_bloom;
-//   RgbcctColor sky_near_colour;
-//   RgbcctColor sky_far_colour;
-
-//   uint8_t value = 0;
-
-
-
-
-
-//   uint8_t starting_palette_id;
-//   uint8_t ending_palette_id;
-//   uint8_t step_changes_remaining;
-//   uint8_t colour_select_progress_counter;
-//   uint8_t active_palette_id;
-//   uint8_t sun_elevation_degrees;
-//   uint8_t sun_azimuth_degrees; //left/right from sunrise/sunset position
-//   // uint8_t sun_bloom; //how wide the main sunlight is
-//   //store colours in here too
-//   // uint8_t sun_elevation_degrees;
-
-
-//   uint8_t direction;
-
-//   //map "visible" azimuth into far left/right of strip
-
-// } effect_config;
-
-
-//   // star* stars = reinterpret_cast<star*>(pCONT_iLight->effects_data_buffer);
-//   EFFECT_CONFIG* effect_config2 = reinterpret_cast<EFFECT_CONFIG*>(pCONT_iLight->effects_data_buffer);
-//   //should be memcpy be used to insure size if not exceeded? or sizeof check? pointer is faster
-
-//   AddLog(LOG_LEVEL_DEV_TEST,PSTR("pCONT_iLight->animation.palette_id=%d"),pCONT_iLight->animation.palette_id);
-
-//   pCONT_iLight->animation.flags.brightness_applied_during_colour_generation = true;
-
-//   pCONT_iLight->settings.light_size_count = 100;
-  
-//   // Get all the current state
-//   // for(unsigned index=0; index<pCONT_iLight->settings.light_size_count; index++ ){
-//   //   animation_colours[index].DesiredColour = SEGMENT.GetPixelColor(index);
-//   // }
-//     for(unsigned index=0; index<pCONT_iLight->settings.light_size_count; index++ ){
-//     animation_colours[index].DesiredColour = RgbcctColor();//,0,30,0,0);//,0,10,0,0);
-//   }
-
-//   //scan back and forth
-//   // if(effect_config2->index_circle_center<=0){
-//   //   effect_config2->direction = 1;
-//   // }else
-//   // if(effect_config2->index_circle_center>100){
-//   //   effect_config2->direction = 0;
-//   // }
-
-//   // if(effect_config2->direction){          
-//   //   effect_config2->index_circle_center++;
-//   // }else{
-//   //   effect_config2->index_circle_center--;
-//   // }
-
-//   effect_config2->index_circle_center = 50;
-  
-//   if(effect_config2->value >= 0){
-//     // Draw full sky
-//     Draw_DesiredColour_LinearGradientMirrored2(
-//       RgbcctColor(0,0,50,0,0), //center
-//       RgbcctColor(0,0,0,0,0), //circum
-//       effect_config2->index_circle_center, //
-//       50,  // tail_size
-//       5, // center region
-//       true
-//     );
-//   }
-
-
-//   // widden
-//   if(effect_config2->value >= 1){
-
-//     // Draw near sky
-//     Draw_DesiredColour_LinearGradientMirrored2(
-//       RgbcctColor(20,5,0,0,0), //center
-//       RgbcctColor(0,0,0,0,0), //circum
-//       effect_config2->index_circle_center, //
-//       25,  // tail_size
-//       10, // center region
-//       true
-//     );
-//   }
-
-//   if(effect_config2->value >= 2){
-//     // Draw near sky
-//     Draw_DesiredColour_LinearGradientMirrored2(
-//       RgbcctColor(100,20,0,0,0), //center
-//       RgbcctColor(0,0,0,0,0), //circum
-//       effect_config2->index_circle_center, //
-//       30,  // tail_size
-//       2, // center region
-//       true
-//     );
-//   }
-
-//   // widden
-//   if(effect_config2->value >= 3){
-
-//     // Draw near sky
-//     Draw_DesiredColour_LinearGradientMirrored2(
-//       RgbcctColor(0,50,50,0,0), //center
-//       RgbcctColor(0,100,75,0,0), //circum
-//       effect_config2->index_circle_center, //
-//       60,  // tail_size
-//       10, // center region
-//       true
-//     );
-//   }
-
-
-//   if(effect_config2->value >= 4){
-//     // Draw sun bloom
-//     Draw_DesiredColour_LinearGradientMirrored2(
-//       RgbcctColor(200,100,0,0,0), //center
-//       RgbcctColor(50, 44, 3,     0,0), //circum
-//       effect_config2->index_circle_center, //D_RGB_ORANGE_WARM_1
-//       50,
-//       5, 
-//       true
-//     );
-//   }
-
-//   // if(effect_config2->value == 4){
-//   //   // Draw sun bloom
-//   //   Remove_DesiredColour_LinearGradientMirrored(
-//   //     RgbcctColor(0,0,  50,       0,0), //center
-//   //     RgbcctColor(0, 0, 10,     0,0), //circum
-//   //     effect_config2->index_circle_center, //D_RGB_ORANGE_WARM_1
-//   //     50,
-//   //     5, 
-//   //     true
-//   //   );
-//   // }
-
-
-  
-//   if(effect_config2->value++ > 6){ effect_config2->value = 0; }
-
-//         // pixel_radius_as_number = 10;
-//         // pixel_position_center = effect_config2->index_circle_center;
-//         // pixel_position_circum = effect_config2->index_circle_center-pixel_radius_as_number;
-//         // for(unsigned index=0; index<pixel_radius_as_number; index++ ){
-//         //   // Create new index
-//         //   index_generate = effect_config2->index_circle_center-index;              
-//         //   //Only write into colour buffer if valid index. Otherwise, consider this an "overscan"
-//         //   if((index_generate>=0)&&(index_generate<100)){
-//         //     //Draw half, larger index side
-//         //     progress = mSupport::mapfloat(index_generate,
-//         //                                     pixel_position_center,pixel_position_circum,
-//         //                                     0,1
-//         //                                   );
-//         //     animation_colours[index_generate].DesiredColour = RgbcctColor::LinearBlend(
-//         //                                                                                 colour_circle_center,
-//         //                                                                                 colour_circle_circumference, 
-//         //                                                                                 //RgbColor(255,0,0), RgbColor(0,255,0)
-//         //                                                                                 progress);
-//         //   } // if test
-
-//         // }
-
-
-
-
-
-// // //use signed value to hold index_adjusted
-// // int32_t index_generate = 0;
-// // uint16_t pixel_position_center, pixel_position_circum, pixel_radius_as_number;
-
-// //         pixel_radius_as_number = 10;
-// //         pixel_position_center = effect_config2->index_circle_center;
-// //         pixel_position_circum = effect_config2->index_circle_center+pixel_radius_as_number;
-// //         for(unsigned index=0; index<pixel_radius_as_number; index++ ){
-// //           // Create new index
-// //           index_generate = effect_config2->index_circle_center+index;   
-          
-// //           //Draw half, larger index side
-// //           progress = mSupport::mapfloat(index_generate,
-// //                                           pixel_position_center,pixel_position_circum,
-// //                                           0,1
-// //                                         );
-// //           colour_draw = RgbcctColor::LinearBlend(
-// //                                         colour_circle_center,
-// //                                         colour_circle_circumference, 
-// //                                         //RgbColor(255,0,0), RgbColor(0,255,0)
-// //                                         progress);
-
-
-
-// //           //Only write into colour buffer if valid index. Otherwise, consider this an "overscan"
-// //           if((index_generate>=0)&&(index_generate<100)){
-// //             animation_colours[index_generate].DesiredColour = colour_draw;
-// //           } // if test
-
-// //         }
-
-// //         pixel_radius_as_number = 10;
-// //         pixel_position_center = effect_config2->index_circle_center;
-// //         pixel_position_circum = effect_config2->index_circle_center-pixel_radius_as_number;
-// //         for(unsigned index=0; index<pixel_radius_as_number; index++ ){
-// //           // Create new index
-// //           index_generate = effect_config2->index_circle_center-index;              
-// //           //Only write into colour buffer if valid index. Otherwise, consider this an "overscan"
-// //           if((index_generate>=0)&&(index_generate<100)){
-// //             //Draw half, larger index side
-// //             progress = mSupport::mapfloat(index_generate,
-// //                                             pixel_position_center,pixel_position_circum,
-// //                                             0,1
-// //                                           );
-// //             animation_colours[index_generate].DesiredColour = RgbcctColor::LinearBlend(
-// //                                                                                         colour_circle_center,
-// //                                                                                         colour_circle_circumference, 
-// //                                                                                         //RgbColor(255,0,0), RgbColor(0,255,0)
-// //                                                                                         progress);
-// //           } // if test
-
-// //         }
-
-
-
-
-
-//           // index_generate = effect_config2->index_circle_center-index+10;
-//           // start_pixel_position = index_generate;
-//           // end_pixel_position = index_generate+10;
-//           // if((index_generate>=0)&&(index_generate<100)){
-//           //   //Draw half, samller index side
-//           //   progress = mSupport::mapfloat(index_generate,start_pixel_position,end_pixel_position,0,1);
-//           //   animation_colours[index_generate].DesiredColour = RgbcctColor::LinearBlend(RgbColor(255,0,255), RgbColor(0,0,255), progress);
-              
-              
-//           //     // colour_circle_circumference, colour_circle_center, progress);
-//           // }// out of range
-
-//         // }
-
-
-//         // randomly blank most of them out again
-//         // uint8_t colour_or_black = 0;
-//         // uint16_t pixels_to_update = pCONT_iLight->animation.transition.pixels_to_update_as_number;
-//         // // pCONT_iLight->GetPixelsToUpdateAsNumberFromPercentage(pCONT_iLight->animation.transition.pixels_to_update_as_percentage);
-//         // Serial.printf("pixels_to_clear=%d\n\r",pixels_to_update);
-//         // for(unsigned index=0; index<pixels_to_update; index++ ){
-//         //   random_pixel_index = random(0,pCONT_iLight->settings.light_size_count);
-//         //   colour_or_black = random(0,1);
-
-//         //   // // Check if pixels is already on, if so, make dark
-//         //   // if(pCONT_iLight->RgbColorto32bit(SEGMENT.GetPixelColor(random_pixel_index))>0){
-//         //   //   animation_colours[random_pixel_index].DesiredColour = RgbColor(0,0,0);
-//         //   // }else
-//         //   // // Previously off, pick new state
-//         //   // {
-//         //     if(colour_or_black){ // 80% in favour of black/off
-//         //       animation_colours[random_pixel_index].DesiredColour = RgbColor(0,255,0);
-//         //     }else{
-//         //       uint8_t desired_pixel = random(0,pixels-1);
-//         //       colour_random = mPaletteI->GetColourFromPalette(mPaletteI->static_palettes.ptr,desired_pixel);  
-//         //       // if(pCONT_iLight->animation.flags.brightness_applied_during_colour_generation){
-//         //       //   colour_random = ApplyBrightnesstoDesiredColour(colour_random,pCONT_iLight->getBriRGB());
-//         //       // }
-//         //       animation_colours[random_pixel_index].DesiredColour =  colour_random;//RgbColor(0,0,255);//
-//         //    }
-//         //   // }
-//         // }
-
-
-
-
-//       // UpdateDesiredColourFromPaletteSelected();
-
-
-//       UpdateStartingColourWithGetPixel();
-
-
-
-//     //   flashersettings.region = EFFECTS_REGION_ANIMATE_ID;
-//     // // NO 
-//     // }break;
-//     // case EFFECTS_REGION_ANIMATE_ID: //shift along
-//       AddLog(LOG_LEVEL_DEBUG_MORE,PSTR(D_LOG_NEO "EFFECTS_SEQUENTIAL EFFECTS_ANIMATE"));
-//       this->setAnimFunctionCallback([this](const AnimationParam& param){ this->AnimationProcess_SunPositions_Gradient_Sun_Elevation_And_Azimuth_01(param); });
-      
-//   //     flashersettings.region = EFFECTS_REGION_COLOUR_SELECT_ID;
-//   //     break;
-//   // }
-
-// }
-
-// void mAnimatorLight::AnimationProcess_SunPositions_Gradient_Sun_Elevation_And_Azimuth_01(const AnimationParam& param)
-// {   
-//   // Need to make rgbcct pixels possible in the future, with dynamic animation_state
-
-//    for (uint16_t pixel = 0; pixel < pCONT_iLight->settings.light_size_count; pixel++){
-//     RgbTypeColor updatedColor = RgbTypeColor::LinearBlend(
-//         animation_colours[pixel].StartingColor,
-//         animation_colours[pixel].DesiredColour,
-//         param.progress);    
-//     SEGMENT.setPixelColor(pixel, updatedColor);
-//   } // END for
-
-// }
-
-
-
-
-/********************************************************************************************************************************************************************************************************************
- *******************************************************************************************************************************************************************************************************************
- * @name : Sequential
- * @note : Randomly changes colours of pixels, and blends to the new one
- * 
- * @param : "cycle_time__rate_ms" : How often it changes
- * @param : "time_ms" : How often it changes
- * @param : "pixels to update" : How often it changes
- * @param : "cycle_time__rate_ms" : How often it changes 
- * 
- *******************************************************************************************************************************************************************************************************************
- ********************************************************************************************************************************************************************************************************************/
-
-
-// /**************************************************************************************************************************************************************
-//  * @brief  Solid_Colour_Based_On_Sun_Elevation_02
-//  * @note   From -10 to noon, CCT will range from yellow to daywhite
-//  * @note   From -5 to dusk, blue will go from 0 to max_brightness 
-//  * 
-//  * @note   Gloabl brightness will be manual, or controlled indirectly eg via mqtt
-//  * 
-//  * Instead of direct Elevation to palette, this animation will perform different versions of the mapping. Should this be one animation with subtypes? or different types
-//  * 
-//  * @note   Using RgbcctColour palette that is designed for each point in elevation
-//  * *************************************************************************************************************************************************************/
-
-// void mAnimatorLight::SubTask_Flasher_Animate_Function_SunPositions_Elevation_Only_RGBCCT_Palette_Indexed_Positions_With_Augmented_01()
-// {
-
-//    AddLog(LOG_LEVEL_DEBUG,PSTR(D_LOG_NEO "SubTask_Flasher_Animate_Function_SunPositions_Solid_Colour_Based_On_Sun_Elevation_02"));
-
-//    /**
-//     * Setting that an mqtt debug exists
-//     * */
-//    pCONT_iLight->animation.debug_mqtt_response_available = 1;
-
-//   #ifdef USE_DEVFEATURE_ENABLE_ANIMATION_SPECIAL_DEBUG_FEEDBACK_OVER_MQTT_WITH_FUNCTION_CALLBACK
-//   if(pCONT_iLight->animation.debug_mqtt_response_available && pCONT_iLight->animation.flags.animator_first_run)
-//   {
-//     this->setCallback_ConstructJSONBody_Debug_Animations_Progress(
-//       [this](void){
-//         this->ConstructJSONBody_Animation_Progress__SunPositions_Elevation_Only_RGBCCT_Palette_Indexed_Positions_With_Augmented_01();
-//       }
-//     );
-//   //   ALOG_INF(PSTR("ConstructJSONBody_Animation_Progress__SunPositions_Elevation_Only_RGBCCT_Palette_Indexed_Positions_With_Augmented_01 FIRST RUN"));
-//   //   delay(5000);
-//   // }else{
-//   //   ALOG_INF(PSTR("NOT SETTING"));
-
-//   }
-//   #endif // USE_DEVFEATURE_ENABLE_ANIMATION_SPECIAL_DEBUG_FEEDBACK_OVER_MQTT_WITH_FUNCTION_CALLBACK
-//   // delay(5000);
-
-//   // pCONT_iLight->animation.palette_id = mPaletteI->PALETTELIST_STATIC_SOLID_RGBCCT_SUN_ELEVATION_WITH_DEGREES_INDEX_01_ID;
-
-//   // Set palette pointer
-//   mPaletteI->SetPaletteListPtrFromID(pCONT_iLight->animation.palette_id);
-//   // Brightness is generated internally, and rgbcct solid palettes are output values
-
-//   /**
-//    * Solar data to use, defined here for testing or simulations
-//    * */
- 
-// float sun_elevation = 0;
-// #ifdef USE_MODULE_SENSORS_SUN_TRACKING
-//   #ifdef USE_DEVFEATURE_SUNPOSITION_ELEVATION_USE_TESTING_VALUE
-//   sun_elevation = (float)pCONT_solar->solar_position_testing.elevation;
-//   #else
-//   sun_elevation = (float)pCONT_solar->solar_position.elevation;
-//   #endif
-// #endif
-//   bool sun_is_ascending = true;//pCONT_solar->solar_position_testing.direction.is_ascending;
-//   // Serial.printf("\n\r\n\rsun_elevation\t => %f\n\r", sun_elevation);
-
-//   // delay(1000);
-
-//   /**
-//    * Sun elevation indexing is stored in palettes index location.
-//    * The current sun elevation shall be searched against for nearest match, then depending on accesending or decending sun the nearest match and nearest next match will be linearblended as current show colour
-//    * */
-
-//   /**
-//    * Get total pixels in palette
-//    * */
-//   mPalette::PALETTELIST::PALETTE *palette_p = mPaletteI->GetPalettePointerByID(pCONT_iLight->animation.palette_id);
-//   uint8_t pixels_max = GetNumberOfColoursInPalette(palette_p);
-//   // AddLog(LOG_LEVEL_INFO,PSTR("pixels_max=%d"),pixels_max);
-
-//   // Lets assume we need a zero crossing index, thus, we can use it to identity AS and DE modes
-//   uint8_t zero_crossing_index = 0;
-
-//   struct INDEXES_MATCHES{
-//     uint8_t previous = 0; //ie colour moving away from
-//     uint8_t next = 0; //colour moving towards
-//   }index;
-
-//   /**
-//    * Steps to finding index
-//    * 1) Find the zero-crossing index from the palette (ie the colour where its index is 0)
-//    * 2) Decide if elevation is pos or neg, begin searching that part of the array
-//    * 3) Find index of closest in array
-//    * 4) Next and previous index will depend on direction of sun, and will be equal to current index if error is exactly 0
-//    * */
-
-//   /**
-//    * Step X: Find zero crossing point
-//    * Step X: Find all differences
-//    * */
-//   int16_t indexing = 0;  
-//   uint8_t lower_boundary_index = 13;
-//   float lower_boundary_value = 45;
-//   uint8_t upper_boundary_index = 14;  
-//   float upper_boundary_value = 90;
-//   float sun_positions_from_palette_index[pixels_max];  
-//   uint8_t searching_matched_index = 0;
-
-//   /**
-//    * Ascending method for finding right region between points
-//    * Check all, but once sun_elev is greater, then thats the current region
-//    * */
-//   for(int i=0;i<pixels_max;i++)
-//   {
-//     mPaletteI->GetColourFromPalette(palette_p, i, &indexing);
-//     sun_positions_from_palette_index[i] = indexing - 90;
-//     // Serial.printf("sun_pos=[%02d]=\t%f\n\r", i, sun_positions_from_palette_index[i]);
-//   }
-
-
-//   for(int i=0;i<pixels_max;i++)
-//   {
-//     // Serial.printf("sun=%f > index[%d]=%f\n\r", sun_elevation, i, sun_positions_from_palette_index[i]);
-//     if(sun_elevation >= sun_positions_from_palette_index[i])
-//     {
-      
-//       // searching_matched_index = i;
-//       // Serial.printf("sun=%f > index[%d]=%f   MATCH=%d\n\r", 
-//       //   sun_elevation, i, sun_positions_from_palette_index[i], searching_matched_index
-//       // );
-//       //Serial.printf("Still less\n\r");
-
-//     }else{
-      
-//       searching_matched_index = i-1;
-//       // Serial.printf("sun=%f > index[%d]=%f   MATCH=%d\n\r", 
-//       //   sun_elevation, i, sun_positions_from_palette_index[i], searching_matched_index
-//       // );
-//       // Serial.printf("searching_matched_index = %d\n\r", searching_matched_index);
-//       break;
-
-//     }
-
-//     // Directly, manually, check the last memory space
-
-//     if(sun_elevation == sun_positions_from_palette_index[pixels_max-1])
-//     {
-//       searching_matched_index = i-1;
-//       // Serial.printf("sun=%f > index[%d]=%f   MATCH=%d\n\r", 
-//       //   sun_elevation, i, sun_positions_from_palette_index[i], searching_matched_index
-//       // );
-//       break;
-
-//     }
-
-
-
-
-//   }
-
-//   lower_boundary_index = searching_matched_index;
-//   upper_boundary_index = searching_matched_index+1;
-
-//   /**
-//    * Check ranges are valid, if not, reset to 0 and 1
-//    * */
-//   if(lower_boundary_index>=pixels_max)
-//   {
-//     lower_boundary_index = 0;
-//     Serial.printf("lower_boundary_index>=pixels_max\n\r");
-//   }
-//   if(upper_boundary_index>=pixels_max)
-//   {
-//     upper_boundary_index = pixels_max;
-//     Serial.printf("upper_boundary_index>=pixels_max\n\r");
-//   }
-
-//   lower_boundary_value = sun_positions_from_palette_index[lower_boundary_index];
-//   upper_boundary_value = sun_positions_from_palette_index[upper_boundary_index];
-
-
-//   float numer = sun_elevation        - lower_boundary_value;
-//   float denum = upper_boundary_value - lower_boundary_value;
-//   float progress_between_colours = numer/denum;
-
-//   Serial.printf("\n\r\n\r\n\rsun_elevation\t => %f\n\r", sun_elevation);
-//   Serial.printf("lower_boundary_value[%02d]=%f\n\r", lower_boundary_index, lower_boundary_value);
-//   Serial.printf("upper_boundary_value[%02d]=%f\n\r", upper_boundary_index, upper_boundary_value);
-//   Serial.printf("numer=\t%f\n\r",numer);
-//   Serial.printf("denum=\t%f\n\r",denum);
-//   Serial.printf("progress_between_colours=\t%f\n\r",progress_between_colours);
-
-//   /**
-//    * Showing the colours
-//    * 1) previous
-//    * 2) next
-//    * 3) linearblend of the exact new colour
-//    * */
-
-//   RgbcctColor c_lower = mPaletteI->GetColourFromPalette(palette_p, lower_boundary_index);
-//   RgbcctColor c_upper = mPaletteI->GetColourFromPalette(palette_p, upper_boundary_index);
-
-//   // Serial.printf("progress_between_colours\t %f(%d)/%f(%d) => %f\n\r", 
-//   //   lower_boundary_value, lower_boundary_index, 
-//   //   upper_boundary_value, upper_boundary_index, progress_between_colours);
-
-//   RgbcctColor c_blended = RgbcctColor::LinearBlend(c_lower, c_upper, progress_between_colours);
-
-//   RgbcctColor c = c_lower; 
-//   // ALOG_INF(PSTR("rgbcct_p\t%d,%d,%d,%d,%d"),c.R,c.G,c.B,c.WW,c.WC);
-//   c = c_blended; 
-//   // ALOG_INF(PSTR("rgbcct_b\t%d,%d,%d,%d,%d (progress %d"),c.R,c.G,c.B,c.WW,c.WC, (int)(progress_between_colours*100));
-//   c = c_upper; 
-//   // ALOG_INF(PSTR("rgbcct_n\t%d,%d,%d,%d,%d"),c.R,c.G,c.B,c.WW,c.WC);
-
-//   /**
-//    * Load new colour into animation
-//    * */
-
-//   pCONT_iLight->animation.flags.fForceUpdate = true;
-
-//   animation_colours_rgbcct.DesiredColour  = c_blended;
-
-
-//   /**
-//    * Evening/Sunset, keep the brightness up
-//    * Morning/Sunrise, wait until closer before increasing brighntess (adjust by elevation_adjust or by time_adjust)
-//    * Instead of elevation mapping, use sunrise and sunset time to control animations
-//    * */
-
-
-//   // ALOG_TST(PSTR("DesiredColour1=%d,%d,%d,%d,%d"), animation_colours_rgbcct.DesiredColour.R,animation_colours_rgbcct.DesiredColour.G,animation_colours_rgbcct.DesiredColour.B,animation_colours_rgbcct.DesiredColour.WC,animation_colours_rgbcct.DesiredColour.WW);
-    
-//   if(!SEGMENT.rgbcct_controller->getApplyBrightnessToOutput())
-//   { // If not already applied, do it using global values
-//     animation_colours_rgbcct.DesiredColour = RgbcctColor::ApplyBrightnesstoRgbcctColour(
-//       animation_colours_rgbcct.DesiredColour, 
-//       SEGMENT.rgbcct_controller->getBrightnessRGB_WithGlobalApplied(),
-//       SEGMENT.rgbcct_controller->getBrightnessCCT255()
-//     );
-//   }
-
-//   animation_colours_rgbcct.StartingColor = SEGMENT.GetPixelColor();
-
-//   AddLog(LOG_LEVEL_DEBUG_MORE,PSTR(D_LOG_NEO "EFFECTS_SEQUENTIAL EFFECTS_ANIMATE"));
-//   this->setAnimFunctionCallback([this](const AnimationParam& param){
-//       this->AnimationProcess_Generic_RGBCCT_Single_Colour_All(param); });
-
-//   pCONT_iLight->animation.flags.animator_first_run = false; // process completed, so lets not redo things above
-   
-// }
-
-
-
-// void mAnimatorLight::ConstructJSONBody_Animation_Progress__SunPositions_Elevation_Only_RGBCCT_Palette_Indexed_Positions_With_Augmented_01()
-// {   
-// // Serial.println("AnimationProcess_Generic_AnimationColour_LinearBlend");
-//   // for (uint16_t pixel = 0; pixel < pCONT_iLight->settings.light_size_count; pixel++){
-//   //   RgbTypeColor updatedColor = RgbTypeColor::LinearBlend(
-//   //       animation_colours[pixel].StartingColor,
-//   //       animation_colours[pixel].DesiredColour,
-//   //       param.progress);    
-//   //   SEGMENT.setPixelColor(pixel, updatedColor);
-//   // } // END for
-
-//   // DEBUG_LINE_HERE;
-
-//   JBI->Add("test2","debug2");
-
-//     // SEGMENT.setPixelColor(0, RgbColor(0,random(0,255),0));
-// }
-
-/********************************************************************************************************************************************************************************************************************
- *******************************************************************************************************************************************************************************************************************
- * @name : Sequential
- * @note : Randomly changes colours of pixels, and blends to the new one
- * 
- * @param : "cycle_time__rate_ms" : How often it changes
- * @param : "time_ms" : How often it changes
- * @param : "pixels to update" : How often it changes
- * @param : "cycle_time__rate_ms" : How often it changes 
- * 
- *******************************************************************************************************************************************************************************************************************
- ********************************************************************************************************************************************************************************************************************/
-
-
-
-
-// // Make this an "Effects" which is public/friendly of animator, but not the same class
-// void mAnimatorLight::SubTask_Flasher_Animate_Function_SunPositions_Solid_Colour_Based_On_Sun_Elevation_01(){
-
-  
-//       AddLog(LOG_LEVEL_DEBUG,PSTR(D_LOG_NEO "SubTask_Flasher_Animate_Function_SunPositions_Solid_Colour_Based_On_Sun_Elevation_01"));
-
-//   //using group 01
-//   // struct{}
-//   //use struct and memcpy to get data, then store results
-
-//   //effects_data_buffer
-//   //each needs 64 byte
-// // typedef struct particle {
-// //   // CRGB     color;
-// //   uint32_t birth  =0;
-// //   uint32_t last   =0;
-// //   float    vel    =0;
-// //   uint16_t pos    =-1;
-// //   float    fragment[12];
-// // } star;
-
-// /**
-//  * How the effects_data_buffer is formatted during effect runtime
-//  * */
-// struct EFFECT_CONFIG {
-//   uint16_t index_circle_center;
-  
-//   uint8_t sun_width;
-//   uint8_t sun_bloom;
-//   RgbcctColor sky_near_colour;
-//   RgbcctColor sky_far_colour;
-
-//   uint8_t value = 0;
-
-
-
-
-
-//   uint8_t starting_palette_id;
-//   uint8_t ending_palette_id;
-//   uint8_t step_changes_remaining;
-//   uint8_t colour_select_progress_counter;
-//   uint8_t active_palette_id;
-//   uint8_t sun_elevation_degrees;
-//   uint8_t sun_azimuth_degrees; //left/right from sunrise/sunset position
-//   // uint8_t sun_bloom; //how wide the main sunlight is
-//   //store colours in here too
-//   // uint8_t sun_elevation_degrees;
-
-
-//   uint8_t direction;
-
-//   //map "visible" azimuth into far left/right of strip
-
-// } effect_config;
-
-// float sun_elevation = 0;
-// #ifdef USE_MODULE_SENSORS_SUN_TRACKING
-//   #ifdef USE_DEVFEATURE_SUNPOSITION_ELEVATION_USE_TESTING_VALUE
-//   sun_elevation = (float)pCONT_solar->solar_position_testing.elevation;
-//   #else
-//   sun_elevation = (float)pCONT_solar->solar_position.elevation;
-//   #endif
-// #endif
-
-
-//   // star* stars = reinterpret_cast<star*>(pCONT_iLight->effects_data_buffer);
-//   EFFECT_CONFIG* effect_config2 = reinterpret_cast<EFFECT_CONFIG*>(pCONT_iLight->effects_data_buffer);
-//   //should be memcpy be used to insure size if not exceeded? or sizeof check? pointer is faster
-
-//   AddLog(LOG_LEVEL_DEV_TEST,PSTR("pCONT_iLight->animation.palette_id=%d"),pCONT_iLight->animation.palette_id);
-
-
-//   // pCONT_iLight->settings.light_size_count = 1;
-  
-//   // Get all the current state
-//   // for(unsigned index=0; index<pCONT_iLight->settings.light_size_count; index++ ){
-//   //   animation_colours[index].DesiredColour = SEGMENT.GetPixelColor(index);
-//   // }
-//   //   for(unsigned index=0; index<pCONT_iLight->settings.light_size_count; index++ ){
-//   //   animation_colours[index].DesiredColour = RgbcctColor(9,255,0,0,0);//,0,30,0,0);//,0,10,0,0);
-//   // }
-
-
-//   /**
-//    * Colour temp of white channels when day time
-//    * Amount of blue when sun is down
-//    * */
-
-//   if(sun_elevation)
-//   {
-//     /**
-//      * Max daily elevation will need to be known later
-//      * */
-//     // Mapping elevation to CCT percentage
-
-//     // pCONT_iLight->CommandSet_ActiveSolidPalette_ColourTemp_Percentage(percentage_cct);
-
-//   }else{
-    
-//     for(unsigned index=0; index<pCONT_iLight->settings.light_size_count; index++ ){
-//       animation_colours[index].DesiredColour = RgbcctColor(0,0,255,0,0);//,0,30,0,0);//,0,10,0,0);
-//     }
-//   }
-
-// /**
-//  * colour channels
-//  * */
-
-//   if((sun_elevation>-50)&&(sun_elevation<10))
-//   {
-//     // HsbColor hsb = HsbColor(RgbColor(0));
-//     // hsb.H = map(sun_elevation,-50,10,255,0)
-
-//     uint8_t blue =  map(sun_elevation,-50,10,255,0);
-
-//     SEGMENT.rgbcct_controller->setRGB(0,0,blue);
-
-//     // ALOG_INF(PSTR("elevation=%d, cct_temp=%d %d"),(int)sun_elevation, elev_perc, cct_val);
-
-
-
-
-//     uint8_t brightness_255 = map(sun_elevation,-50,10,255,0);
-
-//     SEGMENT.rgbcct_controller->setBrightnessRGB255(brightness_255);
-
-//   }
-
-// /**
-//  * WHITE CHANNEL
-//  * */
-//   if((sun_elevation>-10)&&(sun_elevation<25))
-//   {
-
-
-//     // Convert elevation into percentage
-//     uint8_t elev_perc = map(sun_elevation,-10,25,0,100);
-//     // Convert percentage into cct
-//     uint16_t cct_val = mapvalue(elev_perc, 0,100, pCONT_iLight->get_CTRangeMin(),pCONT_iLight->get_CTRangeMax());
-//     // Set the colour temp
-//     SEGMENT.rgbcct_controller->setCCT(cct_val);
-
-
-//     uint8_t brightness_255 = map(sun_elevation,-10,25,0,255);
-
-//     SEGMENT.rgbcct_controller->setBrightnessCCT255(brightness_255);
-
-//   }
-
-
-
-
-//   //scan back and forth
-//   // if(effect_config2->index_circle_center<=0){
-//   //   effect_config2->direction = 1;
-//   // }else
-//   // if(effect_config2->index_circle_center>100){
-//   //   effect_config2->direction = 0;
-//   // }
-
-//   // if(effect_config2->direction){          
-//   //   effect_config2->index_circle_center++;
-//   // }else{
-//   //   effect_config2->index_circle_center--;
-//   // }
-
-//   effect_config2->index_circle_center = 50;
-  
-//   // if(effect_config2->value >= 0){
-//   //   // Draw full sky
-//   //   Draw_DesiredColour_LinearGradientMirrored2(
-//   //     RgbcctColor(0,0,50,0,0), //center
-//   //     RgbcctColor(0,0,0,0,0), //circum
-//   //     effect_config2->index_circle_center, //
-//   //     50,  // tail_size
-//   //     5, // center region
-//   //     true
-//   //   );
-//   // }
-
-
-//   // // widden
-//   // if(effect_config2->value >= 1){
-
-//   //   // Draw near sky
-//   //   Draw_DesiredColour_LinearGradientMirrored2(
-//   //     RgbcctColor(20,5,0,0,0), //center
-//   //     RgbcctColor(0,0,0,0,0), //circum
-//   //     effect_config2->index_circle_center, //
-//   //     25,  // tail_size
-//   //     10, // center region
-//   //     true
-//   //   );
-//   // }
-
-//   // if(effect_config2->value >= 2){
-//   //   // Draw near sky
-//   //   Draw_DesiredColour_LinearGradientMirrored2(
-//   //     RgbcctColor(100,20,0,0,0), //center
-//   //     RgbcctColor(0,0,0,0,0), //circum
-//   //     effect_config2->index_circle_center, //
-//   //     30,  // tail_size
-//   //     2, // center region
-//   //     true
-//   //   );
-//   // }
-
-//   // // widden
-//   // if(effect_config2->value >= 3){
-
-//   //   // Draw near sky
-//   //   Draw_DesiredColour_LinearGradientMirrored2(
-//   //     RgbcctColor(0,50,50,0,0), //center
-//   //     RgbcctColor(0,100,75,0,0), //circum
-//   //     effect_config2->index_circle_center, //
-//   //     60,  // tail_size
-//   //     10, // center region
-//   //     true
-//   //   );
-//   // }
-
-
-//   // if(effect_config2->value >= 4){
-//   //   // Draw sun bloom
-//   //   Draw_DesiredColour_LinearGradientMirrored2(
-//   //     RgbcctColor(200,100,0,0,0), //center
-//   //     RgbcctColor(50, 44, 3,     0,0), //circum
-//   //     effect_config2->index_circle_center, //D_RGB_ORANGE_WARM_1
-//   //     50,
-//   //     5, 
-//   //     true
-//   //   );
-//   // }
-
-//   // if(effect_config2->value == 4){
-//   //   // Draw sun bloom
-//   //   Remove_DesiredColour_LinearGradientMirrored(
-//   //     RgbcctColor(0,0,  50,       0,0), //center
-//   //     RgbcctColor(0, 0, 10,     0,0), //circum
-//   //     effect_config2->index_circle_center, //D_RGB_ORANGE_WARM_1
-//   //     50,
-//   //     5, 
-//   //     true
-//   //   );
-//   // }
-
-
-  
-//   if(effect_config2->value++ > 6){ effect_config2->value = 0; }
-
-//         // pixel_radius_as_number = 10;
-//         // pixel_position_center = effect_config2->index_circle_center;
-//         // pixel_position_circum = effect_config2->index_circle_center-pixel_radius_as_number;
-//         // for(unsigned index=0; index<pixel_radius_as_number; index++ ){
-//         //   // Create new index
-//         //   index_generate = effect_config2->index_circle_center-index;              
-//         //   //Only write into colour buffer if valid index. Otherwise, consider this an "overscan"
-//         //   if((index_generate>=0)&&(index_generate<100)){
-//         //     //Draw half, larger index side
-//         //     progress = mSupport::mapfloat(index_generate,
-//         //                                     pixel_position_center,pixel_position_circum,
-//         //                                     0,1
-//         //                                   );
-//         //     animation_colours[index_generate].DesiredColour = RgbcctColor::LinearBlend(
-//         //                                                                                 colour_circle_center,
-//         //                                                                                 colour_circle_circumference, 
-//         //                                                                                 //RgbColor(255,0,0), RgbColor(0,255,0)
-//         //                                                                                 progress);
-//         //   } // if test
-
-//         // }
-
-
-
-
-
-// // //use signed value to hold index_adjusted
-// // int32_t index_generate = 0;
-// // uint16_t pixel_position_center, pixel_position_circum, pixel_radius_as_number;
-
-// //         pixel_radius_as_number = 10;
-// //         pixel_position_center = effect_config2->index_circle_center;
-// //         pixel_position_circum = effect_config2->index_circle_center+pixel_radius_as_number;
-// //         for(unsigned index=0; index<pixel_radius_as_number; index++ ){
-// //           // Create new index
-// //           index_generate = effect_config2->index_circle_center+index;   
-          
-// //           //Draw half, larger index side
-// //           progress = mSupport::mapfloat(index_generate,
-// //                                           pixel_position_center,pixel_position_circum,
-// //                                           0,1
-// //                                         );
-// //           colour_draw = RgbcctColor::LinearBlend(
-// //                                         colour_circle_center,
-// //                                         colour_circle_circumference, 
-// //                                         //RgbColor(255,0,0), RgbColor(0,255,0)
-// //                                         progress);
-
-
-
-// //           //Only write into colour buffer if valid index. Otherwise, consider this an "overscan"
-// //           if((index_generate>=0)&&(index_generate<100)){
-// //             animation_colours[index_generate].DesiredColour = colour_draw;
-// //           } // if test
-
-// //         }
-
-// //         pixel_radius_as_number = 10;
-// //         pixel_position_center = effect_config2->index_circle_center;
-// //         pixel_position_circum = effect_config2->index_circle_center-pixel_radius_as_number;
-// //         for(unsigned index=0; index<pixel_radius_as_number; index++ ){
-// //           // Create new index
-// //           index_generate = effect_config2->index_circle_center-index;              
-// //           //Only write into colour buffer if valid index. Otherwise, consider this an "overscan"
-// //           if((index_generate>=0)&&(index_generate<100)){
-// //             //Draw half, larger index side
-// //             progress = mSupport::mapfloat(index_generate,
-// //                                             pixel_position_center,pixel_position_circum,
-// //                                             0,1
-// //                                           );
-// //             animation_colours[index_generate].DesiredColour = RgbcctColor::LinearBlend(
-// //                                                                                         colour_circle_center,
-// //                                                                                         colour_circle_circumference, 
-// //                                                                                         //RgbColor(255,0,0), RgbColor(0,255,0)
-// //                                                                                         progress);
-// //           } // if test
-
-// //         }
-
-
-
-
-
-//           // index_generate = effect_config2->index_circle_center-index+10;
-//           // start_pixel_position = index_generate;
-//           // end_pixel_position = index_generate+10;
-//           // if((index_generate>=0)&&(index_generate<100)){
-//           //   //Draw half, samller index side
-//           //   progress = mSupport::mapfloat(index_generate,start_pixel_position,end_pixel_position,0,1);
-//           //   animation_colours[index_generate].DesiredColour = RgbcctColor::LinearBlend(RgbColor(255,0,255), RgbColor(0,0,255), progress);
-              
-              
-//           //     // colour_circle_circumference, colour_circle_center, progress);
-//           // }// out of range
-
-//         // }
-
-
-//         // randomly blank most of them out again
-//         // uint8_t colour_or_black = 0;
-//         // uint16_t pixels_to_update = pCONT_iLight->animation.transition.pixels_to_update_as_number;
-//         // // pCONT_iLight->GetPixelsToUpdateAsNumberFromPercentage(pCONT_iLight->animation.transition.pixels_to_update_as_percentage);
-//         // Serial.printf("pixels_to_clear=%d\n\r",pixels_to_update);
-//         // for(unsigned index=0; index<pixels_to_update; index++ ){
-//         //   random_pixel_index = random(0,pCONT_iLight->settings.light_size_count);
-//         //   colour_or_black = random(0,1);
-
-//         //   // // Check if pixels is already on, if so, make dark
-//         //   // if(pCONT_iLight->RgbColorto32bit(SEGMENT.GetPixelColor(random_pixel_index))>0){
-//         //   //   animation_colours[random_pixel_index].DesiredColour = RgbColor(0,0,0);
-//         //   // }else
-//         //   // // Previously off, pick new state
-//         //   // {
-//         //     if(colour_or_black){ // 80% in favour of black/off
-//         //       animation_colours[random_pixel_index].DesiredColour = RgbColor(0,255,0);
-//         //     }else{
-//         //       uint8_t desired_pixel = random(0,pixels-1);
-//         //       colour_random = mPaletteI->GetColourFromPalette(mPaletteI->static_palettes.ptr,desired_pixel);  
-//         //       //   colour_random = ApplyBrightnesstoDesiredColour(colour_random,pCONT_iLight->getBriRGB());
-//         //       animation_colours[random_pixel_index].DesiredColour =  colour_random;//RgbColor(0,0,255);//
-//         //    }
-//         //   // }
-//         // }
-
-// pCONT_iLight->animation.palette_id = 10;
-
-//  // ALOG_TST(PSTR("SubTask_Flasher_Animate_Function__Solid_Static_Single_Colour"));
-//   // Set palette pointer
-//   mPaletteI->SetPaletteListPtrFromID(pCONT_iLight->animation.palette_id);
-//   // Set up colours
-//   // Brightness is generated internally, and rgbcct solid palettes are output values
-//   animation_colours_rgbcct.DesiredColour  = mPaletteI->GetColourFromPalette(mPaletteI->static_palettes.ptr);
-
-//   // ALOG_TST(PSTR("DesiredColour1=%d,%d,%d,%d,%d"), animation_colours_rgbcct.DesiredColour.R,animation_colours_rgbcct.DesiredColour.G,animation_colours_rgbcct.DesiredColour.B,animation_colours_rgbcct.DesiredColour.WC,animation_colours_rgbcct.DesiredColour.WW);
-    
-//   if(!pCONT_iLight->rgbcct_controller.getApplyBrightnessToOutput()){ // If not already applied, do it using global values
-//     animation_colours_rgbcct.DesiredColour = RgbcctColor::ApplyBrightnesstoRgbcctColour(
-//       animation_colours_rgbcct.DesiredColour, 
-//       pCONT_iLight->rgbcct_controller.getBrightnessRGB_WithGlobalApplied(),
-//       pCONT_iLight->rgbcct_controller.getBrightnessCCT255()
-//     );
-//   }
-
-//   // ALOG_TST(PSTR("DesiredColour2=%d,%d,%d,%d,%d"), animation_colours_rgbcct.DesiredColour.R,animation_colours_rgbcct.DesiredColour.G,animation_colours_rgbcct.DesiredColour.B,animation_colours_rgbcct.DesiredColour.WC,animation_colours_rgbcct.DesiredColour.WW);
-    
-//   animation_colours_rgbcct.StartingColor = SEGMENT.GetPixelColor();
-//   // GetPixelColourHardwareInterface();
-
-//   // ALOG_TST(PSTR("StartingColour2=%d,%d,%d,%d,%d"), animation_colours_rgbcct.StartingColor.R,animation_colours_rgbcct.StartingColor.G,animation_colours_rgbcct.StartingColor.B,animation_colours_rgbcct.StartingColor.WC,animation_colours_rgbcct.StartingColor.WW);
-    
-
-//   // // Call the animator to blend from previous to new
-//   // this->setAnimFunctionCallback(
-//   //   [this](const AnimationParam& param){
-//   //     this->AnimationProcess_BlendStartingToDesiredColour_SOLID_COLOUR(param);
-//   //   }
-//   // );
-
-
-//   //     // UpdateDesiredColourFromPaletteSelected();
-
-
-//   //     UpdateStartingColourWithGetPixel();
-
-
-
-//     //   flashersettings.region = EFFECTS_REGION_ANIMATE_ID;
-//     // // NO 
-//     // }break;
-//     // case EFFECTS_REGION_ANIMATE_ID: //shift along
-//       AddLog(LOG_LEVEL_DEBUG_MORE,PSTR(D_LOG_NEO "EFFECTS_SEQUENTIAL EFFECTS_ANIMATE"));
-//       this->setAnimFunctionCallback([this](const AnimationParam& param){ 
-//         this->AnimationProcess_Generic_RGBCCT_Single_Colour_All(param); });
-      
-//   //     flashersettings.region = EFFECTS_REGION_COLOUR_SELECT_ID;
-//   //     break;
-//   // }
-
-// }
-
-/********************************************************************************************************************************************************************************************************************
- *******************************************************************************************************************************************************************************************************************
- * @name : Sequential
- * @note : Randomly changes colours of pixels, and blends to the new one
- * 
- * @param : "cycle_time__rate_ms" : How often it changes
- * @param : "time_ms" : How often it changes
- * @param : "pixels to update" : How often it changes
- * @param : "cycle_time__rate_ms" : How often it changes 
- * 
- *******************************************************************************************************************************************************************************************************************
- ********************************************************************************************************************************************************************************************************************/
-
-
-// /**************************************************************************************************************************************************************
-//  * @brief  Solid_Colour_Based_On_Sun_Elevation_02
-//  * @note   From -10 to noon, CCT will range from yellow to daywhite
-//  * @note   From -5 to dusk, blue will go from 0 to max_brightness 
-//  * 
-//  * @note   Gloabl brightness will be manual, or controlled indirectly eg via mqtt
-//  * *************************************************************************************************************************************************************/
-
-// void mAnimatorLight::SubTask_Flasher_Animate_Function_SunPositions_Solid_Colour_Based_On_Sun_Elevation_02()
-// {
- 
-//   // AddLog(LOG_LEVEL_DEBUG,PSTR(D_LOG_NEO "SubTask_Flasher_Animate_Function_SunPositions_Solid_Colour_Based_On_Sun_Elevation_02"));
-
-//   // AddLog(LOG_LEVEL_DEV_TEST,PSTR("pCONT_iLight->animation.palette_id=%d"),pCONT_iLight->animation.palette_id);
-
-// /**
-//  * 
-//  * 
-//  * */
-
-
-//   // pCONT_iLight->CommandSet_ActiveRgbcctColourPaletteIDUsedAsScene(10);
-
-//   /**
-//    * Solar data to use, defined here for testing or simulations
-//    * */
-// float sun_elevation = 0;
-// #ifdef USE_MODULE_SENSORS_SUN_TRACKING
-//   #ifdef USE_DEVFEATURE_SUNPOSITION_ELEVATION_USE_TESTING_VALUE
-//   sun_elevation = (float)pCONT_solar->solar_position_testing.elevation;
-//   #else
-//   sun_elevation = (float)pCONT_solar->solar_position.elevation;
-//   #endif
-// #endif
-  
-//   // AddLog(LOG_LEVEL_DEBUG,PSTR(D_LOG_NEO "sun_elevation=%d"), (int)sun_elevation);
-
-//   // struct COLOUR_REGIONS{
-//   //   uint8_t rgb_
-//   // }
-
-//   // uint8_t
-
-//   /**
-//    * Generate the rgb channels
-//    * */
-//   // Add yellow to red hue, with max to lowering rgbbrightness
-//   if(sun_elevation>10)
-//   {
-//     pCONT_iLight->rgbcct_controller.setRGB(0,255,0);    
-
-//   }else
-//   if(
-//     (sun_elevation<10)&&
-//     (sun_elevation>-5)
-//     )
-//   {
-//     HsbColor hsb = HsbColor(RgbColor(0));
-//     hsb.H = pCONT_iLight->HUE_N2F(mapvalue(sun_elevation,10,-5,35,0)); // yellow to red
-//     hsb.S = 1;
-
-//     /**
-//      * Calculate brightness gradient
-//      * */
-//     hsb.B = mapvalue(sun_elevation,10,-5,0.0f,1.0f);
-
-//     uint8_t brightness_255 = map(sun_elevation,10,-5,0,255);
-//     pCONT_iLight->rgbcct_controller.setBrightnessRGB255(brightness_255);
-
-
-//     pCONT_iLight->rgbcct_controller.setHsbColor(hsb);
-
-//     // uint8_t blue =  map(sun_elevation,-50,-5,255,0);
-
-//     // pCONT_iLight->rgbcct_controller.setRGB(0,0,blue);
-
-//     // AddLog(LOG_LEVEL_DEV_TEST,PSTR("sun_elevation=%d, blue=%d"), (int)sun_elevation, blue);
-
-//     // ALOG_INF(PSTR("elevation=%d, cct_temp=%d %d"),(int)sun_elevation, elev_perc, cct_val);
-
-//     // uint8_t brightness_255 = map(sun_elevation,-50,-5,255,0);
-
-//     // pCONT_iLight->rgbcct_controller.setBrightnessRGB255(brightness_255);
-
-//   }else
-//   // Just below hoeizon, sky blue to night blue
-//   // "blue" remains bright
-//  if(
-//     (sun_elevation<=-5)&&
-//     (sun_elevation>=-10)
-//     )
-//   {
-//     // HsbColor hsb = HsbColor(RgbColor(0));
-//     // hsb.H = map(sun_elevation,-50,10,255,0)
-
-//     HsbColor hsb = HsbColor(RgbColor(0));
-//     hsb.H =  pCONT_iLight->HUE_N2F(mapvalue(sun_elevation,-5,-10,180,240)); // yellow to red
-//     hsb.S = 1;
-
-//     /**
-//      * Calculate brightness gradient
-//      * */
-//     hsb.B = mapvalue(sun_elevation,-5,-10,1.0f,1.0f);
-
-//     uint8_t brightness_255 = map(sun_elevation,-5,-10,255,200);
-//     pCONT_iLight->rgbcct_controller.setBrightnessRGB255(brightness_255);
-
-
-//     pCONT_iLight->rgbcct_controller.setHsbColor(hsb);
-
-//     // uint8_t blue =  map(sun_elevation,-50,-5,255,0);
-
-//     // pCONT_iLight->rgbcct_controller.setRGB(0,0,blue);
-
-//     // AddLog(LOG_LEVEL_DEV_TEST,PSTR("sun_elevation=%d, blue=%d"), (int)sun_elevation, blue);
-
-//     // ALOG_INF(PSTR("elevation=%d, cct_temp=%d %d"),(int)sun_elevation, elev_perc, cct_val);
-
-//     // uint8_t brightness_255 = map(sun_elevation,-50,-5,255,0);
-
-//     // pCONT_iLight->rgbcct_controller.setBrightnessRGB255(brightness_255);
-
-//   }else
-//   // "night" blue, slowing fade to low brightness
-//  if(
-//     (sun_elevation>=-50)&&
-//     (sun_elevation<=-5)
-//     )
-//   {
-//     HsbColor hsb = HsbColor(RgbColor(0));
-//     hsb.H = pCONT_iLight->HUE_N2F(240); // yellow to red
-//     hsb.S = 1;
-
-//     /**
-//      * Calculate brightness gradient
-//      * */
-//     hsb.B = mapvalue(sun_elevation,-5,-50,1.0f,0.0f);
-
-
-//     pCONT_iLight->rgbcct_controller.setHsbColor(hsb);
-
-//     uint8_t brightness_255 = map(sun_elevation,-5,-50,255,1);
-//     pCONT_iLight->rgbcct_controller.setBrightnessRGB255(brightness_255);
-
-
-//     // uint8_t blue =  map(sun_elevation,-50,-5,255,0);
-
-//     // pCONT_iLight->rgbcct_controller.setRGB(0,0,blue);
-
-//     // AddLog(LOG_LEVEL_DEV_TEST,PSTR("sun_elevation=%d, blue=%d"), (int)sun_elevation, blue);
-
-//     // ALOG_INF(PSTR("elevation=%d, cct_temp=%d %d"),(int)sun_elevation, elev_perc, cct_val);
-
-//     // uint8_t brightness_255 = map(sun_elevation,-50,-5,255,0);
-
-//     // pCONT_iLight->rgbcct_controller.setBrightnessRGB255(brightness_255);
-
-//   }
-  
-//   // else
-//   // if((sun_elevation>-50)&&(sun_elevation<10))
-//   // {
-//   //   // HsbColor hsb = HsbColor(RgbColor(0));
-//   //   // hsb.H = map(sun_elevation,-50,10,255,0)
-
-//   //   uint8_t blue =  map(sun_elevation,-50,10,255,0);
-
-//   //   pCONT_iLight->rgbcct_controller.setRGB(0,0,blue);
-
-//   //   // ALOG_INF(PSTR("elevation=%d, cct_temp=%d %d"),(int)sun_elevation, elev_perc, cct_val);
-
-
-
-
-//   //   // uint8_t brightness_255 = map(sun_elevation,-50,10,255,0);
-
-//   //   // pCONT_iLight->rgbcct_controller.setBrightnessRGB255(brightness_255);
-
-//   // }
-//   // else
-//   // if(
-//   //   (sun_elevation>5)
-//   //   )
-//   // {
-//   //   pCONT_iLight->rgbcct_controller.setRGB(1,0,0);    
-//   // }
-//   else
-//   {
-//     //unknown, therfore turn off
-//     pCONT_iLight->rgbcct_controller.setRGB(0,0,0);
-//   }
-
-
-
-//   /**
-//    * Generate the CCT channels
-//    * */
-//   if(
-//     (sun_elevation<-5)
-//     )
-//   {
-
-//     // Set the colour temp
-//     pCONT_iLight->rgbcct_controller.setCCT(pCONT_iLight->get_CTRangeMin()); // set as daywhite
-
-//     uint8_t brightness_255 = 0;//map(sun_elevation,-10,25,0,255);
-//     pCONT_iLight->rgbcct_controller.setBrightnessCCT255(brightness_255);
-
-//   }else
-//   if(
-//     (sun_elevation>=10)&&
-//     (sun_elevation<=20)
-//     )
-//   {
-
-//     // Convert elevation into percentage
-//     uint8_t elev_perc = map(sun_elevation,10,20,0,100);
-//     // Convert percentage into cct
-//     uint16_t cct_val = mapvalue(elev_perc, 0,100, pCONT_iLight->get_CTRangeMin(),pCONT_iLight->get_CTRangeMax());
-//     // Set the colour temp
-//     pCONT_iLight->rgbcct_controller.setCCT(cct_val);
-
-    
-//     AddLog(LOG_LEVEL_DEV_TEST,PSTR("sun_elevation=%d, elev_perc=%d, cct_val=%d, cct=%d"), (int)sun_elevation, elev_perc, cct_val, pCONT_iLight->rgbcct_controller.getCCT());
-
-//     uint8_t brightness_255 = map(sun_elevation,10,20,100,255);
-//     pCONT_iLight->rgbcct_controller.setBrightnessCCT255(brightness_255);
-
-//   }else
-//   if(
-//     (sun_elevation>=-5)&&
-//     (sun_elevation<10)
-//     )
-//   {
-
-//     // Convert elevation into percentage
-//     uint8_t elev_perc = 0;//map(sun_elevation,-5,10,0,100);
-//     // Convert percentage into cct
-//     uint16_t cct_val = mapvalue(elev_perc, 0,100, pCONT_iLight->get_CTRangeMin(),pCONT_iLight->get_CTRangeMax());
-//     // Set the colour temp
-//     pCONT_iLight->rgbcct_controller.setCCT(cct_val);
-
-    
-//     AddLog(LOG_LEVEL_DEV_TEST,PSTR("sun_elevation=%d, elev_perc=%d, cct_val=%d, cct=%d"), (int)sun_elevation, elev_perc, cct_val, pCONT_iLight->rgbcct_controller.getCCT());
-
-//     uint8_t brightness_255 = map(sun_elevation,-5,10,0,100);
-//     pCONT_iLight->rgbcct_controller.setBrightnessCCT255(brightness_255);
-
-//   }else
-//   if(
-//     (sun_elevation>20)
-//     )
-//   {
-
-//     // Set the colour temp
-//     pCONT_iLight->rgbcct_controller.setCCT(pCONT_iLight->get_CTRangeMax()); // set as daywhite
-
-//     // uint8_t brightness_255 = map(sun_elevation,-10,25,0,255);
-//     // pCONT_iLight->rgbcct_controller.setBrightnessCCT255(brightness_255);
-
-//   }
-  
-
-
-
-
-// //  pCONT_iLight->rgbcct_controller.setCCT(0); // set as daywhite
-
-  
-//   pCONT_iLight->animation.flags.fForceUpdate = true;
-
-
-
-
-//   pCONT_iLight->animation.palette_id = 10;
-
-//  // ALOG_TST(PSTR("SubTask_Flasher_Animate_Function__Solid_Static_Single_Colour"));
-//   // Set palette pointer
-//   mPaletteI->SetPaletteListPtrFromID(pCONT_iLight->animation.palette_id);
-//   // Set up colours
-//   // Brightness is generated internally, and rgbcct solid palettes are output values
-//   animation_colours_rgbcct.DesiredColour  = mPaletteI->GetColourFromPalette(mPaletteI->static_palettes.ptr);
-
-//   // ALOG_TST(PSTR("DesiredColour1=%d,%d,%d,%d,%d"), animation_colours_rgbcct.DesiredColour.R,animation_colours_rgbcct.DesiredColour.G,animation_colours_rgbcct.DesiredColour.B,animation_colours_rgbcct.DesiredColour.WC,animation_colours_rgbcct.DesiredColour.WW);
-    
-//   if(!pCONT_iLight->rgbcct_controller.getApplyBrightnessToOutput()){ // If not already applied, do it using global values
-//     animation_colours_rgbcct.DesiredColour = RgbcctColor::ApplyBrightnesstoRgbcctColour(
-//       animation_colours_rgbcct.DesiredColour, 
-//       pCONT_iLight->rgbcct_controller.getBrightnessRGB_WithGlobalApplied(),
-//       pCONT_iLight->rgbcct_controller.getBrightnessCCT255()
-//     );
-//   }
-
-//   // ALOG_TST(PSTR("DesiredColour2=%d,%d,%d,%d,%d"), animation_colours_rgbcct.DesiredColour.R,animation_colours_rgbcct.DesiredColour.G,animation_colours_rgbcct.DesiredColour.B,animation_colours_rgbcct.DesiredColour.WC,animation_colours_rgbcct.DesiredColour.WW);
-    
-//   animation_colours_rgbcct.StartingColor = SEGMENT.GetPixelColor();
-//   // GetPixelColourHardwareInterface();
-
-//   // ALOG_TST(PSTR("StartingColour2=%d,%d,%d,%d,%d"), animation_colours_rgbcct.StartingColor.R,animation_colours_rgbcct.StartingColor.G,animation_colours_rgbcct.StartingColor.B,animation_colours_rgbcct.StartingColor.WC,animation_colours_rgbcct.StartingColor.WW);
-    
-
-//   // // Call the animator to blend from previous to new
-//   // this->setAnimFunctionCallback(
-//   //   [this](const AnimationParam& param){
-//   //     this->AnimationProcess_BlendStartingToDesiredColour_SOLID_COLOUR(param);
-//   //   }
-//   // );
-
-
-//   //     // UpdateDesiredColourFromPaletteSelected();
-
-
-//   //     UpdateStartingColourWithGetPixel();
-
-
-
-//     //   flashersettings.region = EFFECTS_REGION_ANIMATE_ID;
-//     // // NO 
-//     // }break;
-//     // case EFFECTS_REGION_ANIMATE_ID: //shift along
-//       AddLog(LOG_LEVEL_DEBUG_MORE,PSTR(D_LOG_NEO "EFFECTS_SEQUENTIAL EFFECTS_ANIMATE"));
-//       this->setAnimFunctionCallback([this](const AnimationParam& param){ 
-//         this->AnimationProcess_Generic_RGBCCT_Single_Colour_All(param); });
-      
-//   //     flashersettings.region = EFFECTS_REGION_COLOUR_SELECT_ID;
-//   //     break;
-//   // }
-
-// }
-
-
-/********************************************************************************************************************************************************************************************************************
- *******************************************************************************************************************************************************************************************************************
- * @name : Sequential
- * @note : Randomly changes colours of pixels, and blends to the new one
- * 
- * @param : "cycle_time__rate_ms" : How often it changes
- * @param : "time_ms" : How often it changes
- * @param : "pixels to update" : How often it changes
- * @param : "cycle_time__rate_ms" : How often it changes 
- * 
- *******************************************************************************************************************************************************************************************************************
- ********************************************************************************************************************************************************************************************************************/
-
-
-// /**************************************************************************************************************************************************************
-//  * @brief  Solid_Colour_Based_On_Sun_Elevation_02
-//  * @note   From -10 to noon, CCT will range from yellow to daywhite
-//  * @note   From -5 to dusk, blue will go from 0 to max_brightness 
-//  * 
-//  * @note   Gloabl brightness will be manual, or controlled indirectly eg via mqtt
-//  * 
-//  * @note   Using RgbcctColour palette that is designed for each point in elevation
-//  * *************************************************************************************************************************************************************/
-
-// void mAnimatorLight::SubTask_Flasher_Animate_Function_SunPositions_Solid_Colour_Based_On_Sun_Elevation_03()
-// {
- 
-//   // AddLog(LOG_LEVEL_DEBUG,PSTR(D_LOG_NEO "SubTask_Flasher_Animate_Function_SunPositions_Solid_Colour_Based_On_Sun_Elevation_02"));
-
-//   pCONT_iLight->animation.palette_id = mPaletteI->PALETTELIST_STATIC_SOLID_RGBCCT_SUN_ELEVATION_WITH_DEGREES_INDEX_01_ID;
-
-//  // ALOG_TST(PSTR("SubTask_Flasher_Animate_Function__Solid_Static_Single_Colour"));
-//   // Set palette pointer
-//   mPaletteI->SetPaletteListPtrFromID(pCONT_iLight->animation.palette_id);
-//   // Brightness is generated internally, and rgbcct solid palettes are output values
-//   pCONT_iLight->animation.flags.brightness_applied_during_colour_generation = false;
-
-
-
-//   /**
-//    * Solar data to use, defined here for testing or simulations
-//    * */
-// float sun_elevation = 0;
-// #ifdef USE_MODULE_SENSORS_SUN_TRACKING
-//   #ifdef USE_DEVFEATURE_SUNPOSITION_ELEVATION_USE_TESTING_VALUE
-//   sun_elevation = (float)pCONT_solar->solar_position_testing.elevation;
-//   #else
-//   sun_elevation = (float)pCONT_solar->solar_position.elevation;
-//   #endif
-// #endif
-//   bool sun_is_ascending = true;//pCONT_solar->solar_position_testing.direction.is_ascending;
-
-//   // Serial.printf("\n\r\n\rsun_elevation\t => %f\n\r", sun_elevation);
-//   /**
-//    * Sun elevation indexing is stored in palettes index location.
-//    * The current sun elevation shall be searched against for nearest match, then depending on accesending or decending sun the nearest match and nearest next match will be linearblended as current show colour
-//    * */
-
-//   /**
-//    * Get total pixels in palette
-//    * */
-//   mPalette::PALETTELIST::PALETTE *palette_p = mPaletteI->GetPalettePointerByID(mPaletteI->PALETTELIST_STATIC_SOLID_RGBCCT_SUN_ELEVATION_WITH_DEGREES_INDEX_01_ID);
-//   uint8_t pixels_max = GetNumberOfColoursInPalette(palette_p);
-//   AddLog(LOG_LEVEL_INFO,PSTR("pixels_max=%d"),pixels_max);
-
-//   // Lets assume we need a zero crossing index, thus, we can use it to identity AS and DE modes
-//   uint8_t zero_crossing_index = 0;
-
-//   struct INDEXES_MATCHES{
-//     uint8_t previous = 0; //ie colour moving away from
-//     uint8_t next = 0; //colour moving towards
-//   }index;
-
-//   /**
-//    * Steps to finding index
-//    * 1) Find the zero-crossing index from the palette (ie the colour where its index is 0)
-//    * 2) Decide if elevation is pos or neg, begin searching that part of the array
-//    * 3) Find index of closest in array
-//    * 4) Next and previous index will depend on direction of sun, and will be equal to current index if error is exactly 0
-//    * */
-
-//   /**
-//    * Step X: Find zero crossing point
-//    * Step X: Find all differences
-//    * */
-//   double last_index_difference = 0;
-//   double current_index_difference = 0;
-//   uint8_t lowest_difference_pixel_index = 0;
-//   int16_t indexing = 0;
-//   int16_t adjusted_index_back_to_minus90_to_plus90 = 0;
-
-  
-//   uint8_t lower_boundary_index = 13;
-//   float lower_boundary_value = 45;
-//   uint8_t upper_boundary_index = 14;
-//   float upper_boundary_value = 90;
-
-
-
-
-//   // Generate all the errors into an array
-//   float sun_error[pixels_max];  
-//   int16_t palette_indexes[pixels_max];  
-//   // for(int i=0;i<pixels_max;i++)
-//   // {
-//   //   mPaletteI->GetColourFromPalette(palette_p, i, &indexing);
-//   //   palette_indexes[i] = indexing - 90;
-//   //   sun_error[i] = (float)sun_elevation - palette_indexes[i];
-//   //   ALOG_INF(PSTR("sun_error[%d] = %d %d \t %d"),i, indexing,  (int)sun_error[i], palette_indexes[i]);
-//   //   // Also record zero-crossing point
-//   //   if((indexing-90) == 0)
-//   //   {
-//   //     zero_crossing_index = i;
-//   //     ALOG_INF(PSTR("zero_crossing_index = %d FOUND"), zero_crossing_index);
-//   //   }
-//   // }
-
-//   //     ALOG_INF(PSTR(DEBUG_INSERT_PAGE_BREAK "zero_crossing_index = %d FOUND"), zero_crossing_index);
-//   /**
-//    * Ascending method for finding right region between points
-//    * Check all, but once sun_elev is greater, then thats the current region
-//    * */
-//   float sun_positions_from_palette_index[pixels_max];    
-//   for(int i=0;i<pixels_max;i++)
-//   {
-//     mPaletteI->GetColourFromPalette(palette_p, i, &indexing);
-//     sun_positions_from_palette_index[i] = indexing - 90;
-//     Serial.printf("sun_pos=[%02d]=\t%f\n\r", i, sun_positions_from_palette_index[i]);
-//   }
-
-
-
-
-
-//   uint8_t searching_matched_index = 0;
-//   for(int i=0;i<pixels_max;i++)
-//   {
-//     Serial.printf("sun=%f > index[%d]=%f\n\r", sun_elevation, i, sun_positions_from_palette_index[i]);
-//     if(sun_elevation >= sun_positions_from_palette_index[i])
-//     {
-      
-//       // searching_matched_index = i;
-//       // Serial.printf("sun=%f > index[%d]=%f   MATCH=%d\n\r", 
-//       //   sun_elevation, i, sun_positions_from_palette_index[i], searching_matched_index
-//       // );
-//       Serial.printf("Still less\n\r");
-
-//     }else{
-      
-//       searching_matched_index = i-1;
-//       // Serial.printf("sun=%f > index[%d]=%f   MATCH=%d\n\r", 
-//       //   sun_elevation, i, sun_positions_from_palette_index[i], searching_matched_index
-//       // );
-//       Serial.printf("searching_matched_index = %d\n\r", searching_matched_index);
-//       break;
-
-//     }
-//   }
-
-//   lower_boundary_index = searching_matched_index;
-//   upper_boundary_index = searching_matched_index+1;
-//   lower_boundary_value = sun_positions_from_palette_index[lower_boundary_index];
-//   upper_boundary_value = sun_positions_from_palette_index[upper_boundary_index];
-
-//   /**
-//    * Check ranges are valid, if not, reset to 0 and 1
-//    * */
-
-//   float numer = sun_elevation        - lower_boundary_value;
-//   float denum = upper_boundary_value - lower_boundary_value;
-//   float progress_between_colours = numer/denum;
-
-//   Serial.printf("\n\r\n\r\n\rsun_elevation\t => %f\n\r", sun_elevation);
-//   Serial.printf("lower_boundary_value[%02d]=%f\n\r", lower_boundary_index, lower_boundary_value);
-//   Serial.printf("upper_boundary_value[%02d]=%f\n\r", upper_boundary_index, upper_boundary_value);
-//   Serial.printf("numer=\t%f\n\r",numer);
-//   Serial.printf("denum=\t%f\n\r",denum);
-//   Serial.printf("progress_between_colours=\t%f\n\r",progress_between_colours);
-
-
-
-
-
-
-
-
-
-
-// //   float progress_between_colours = 0;
-
-// //   /**
-// //    * Change to working out the positive or negative side
-// //    * */
-// //   if(sun_elevation>=0)
-// //   {
-
-// //     ALOG_INF(PSTR("Checking POSITIVE elevation\n\r"));
-
-// //     uint8_t smallest_error_index = 0;
-// //     float smallest_elev_error = fabs(sun_error[zero_crossing_index]);
-// //     for(int i=zero_crossing_index+1;i<pixels_max;i++) // skip first
-// //     {
-// //       if(fabs(sun_error[i])<smallest_elev_error)
-// //       {
-// //         smallest_error_index = i;
-// //         smallest_elev_error = fabs(sun_error[i]);
-// //       }
-// //       // ALOG_INF(PSTR("sun_error[%d] = %d\t smallest_elev[%d]=%d"),
-// //       //     i, (int)sun_error[i], smallest_error_index, (int)smallest_elev_error );
-// //     }
-
-// //     /**
-// //      * previous colour will always equal the matched index (bring to tersary)
-// //      * Work out the transitions
-// //      * */
-// //     if(sun_error[smallest_error_index] == 0) // EXACT ERROR
-// //     {
-// //       ALOG_INF(PSTR("sun_error EXACT"));
-// //       // next index depends on direction
-// //       if (sun_is_ascending){
-// //         index.previous = smallest_error_index; // equals this exact index
-// //         index.next = smallest_error_index + 1;
-// //         progress_between_colours = ((float)palette_indexes[index.next]/(float)palette_indexes[index.previous]);
-// //       }else{
-// //         index.previous = smallest_error_index; // equals this exact index
-// //         index.next = smallest_error_index - 1;
-// //         progress_between_colours = ((float)palette_indexes[index.previous]/(float)palette_indexes[index.next]);
-// //       }
-// //       Serial.printf("prev=%d, next=%d, progress=%d\n\r", index.previous, index.next, progress_between_colours);
-// //     }else{                                    // CLOSE ERROR
-// //       // depends on direction
-// //       ALOG_INF(PSTR("sun_error CLOSE"));
-// //       if (sun_is_ascending){ // sun going up, means next will be bigger in elevation, in palette index, means index larger (since palette starts with negatives)
-// //         ALOG_INF(PSTR("sun_error[smallest_error_index] != 0 sun_is_ascending"));
-        
-// //         sun_elevation = 50;
-// //         // smallest_error_index=11;
-
-// //         float lower_boundary_index = 13;
-// //         float lower_boundary_value = 45;
-// //         float upper_boundary_index = 14;
-// //         float upper_boundary_value = 90;
-
-
-// //         // index.previous = lower_boundary_index; // equals this exact index
-// //         // index.next = upper_boundary_index;
-
-
-
-// //         // float numer = smallest_error_index - (float)palette_indexes[index.next];
-// //         // float denum = smallest_error_index - (float)palette_indexes[index.previous];
-
-
-// //         float numer = sun_elevation - lower_boundary_value;
-// //         float denum = upper_boundary_value - lower_boundary_value;
-// //         float ratio = numer/denum;
-
-
-
-// //         Serial.printf("\n\r\n\r\n\rsun_elevation\t => %f\n\r", sun_elevation);
-// //         Serial.printf("numer=%f\n\r",numer);
-// //         Serial.printf("denum=%f\n\r",denum);
-// //         Serial.printf("ratio=%f\n\r",ratio);
-
-
-
-
-
-// //         // Serial.printf("%d %d %f %f\n\r", palette_indexes[index.next],palette_indexes[index.previous],numer,denum);
-// //         // Serial.printf("%d %d %f %f\n\r", palette_indexes[index.next],palette_indexes[index.previous],numer,denum);
-
-// //         /**
-// //          * 10 ======= 20
-// //          *      15
-// //          * 
-// //          * 20-10 = 10
-// //          * 15-10 = 5
-// //          * 5/10 = 0.5
-// //          * 
-// //          * 2-1 = 1
-// //          * 1.5-1=0.5      * 
-// //          * 0.5/1 => 0.5
-// //          *  
-// //          * 10*(1+0.5) = 15
-// //          * 
-// //          * In equation
-// //          * 
-// //          * full_range = next_max_val - prev_min_val
-// //          * current_range = current_inbetween_val - prev_min_val
-// //          * 
-// //          * ratio_of_range = current_range/full_range
-// //          * 
-// //          * */
-
-// //         for(int i=0;i<pixels_max;i++)
-// //         {
-// //           Serial.printf("palette_indexes[%02d] = %d\n\r",i, palette_indexes[i]);
-// //         }
- 
-// //         float next_max_val = palette_indexes[index.next];
-// //         float prev_min_val = palette_indexes[index.previous];
-// //         float current_inbetween_val = smallest_elev_error;
-
-// //         float full_range = next_max_val - prev_min_val;
-// //         float current_range = current_inbetween_val - prev_min_val;
-// //         float ratio_of_range = current_range/full_range;
-
-// //         // Serial.printf("\n\r\n\r\n\rsun_elevation\t => %f\n\r", sun_elevation);
-// //         // Serial.printf("smallest_error_index=%d\n\r",smallest_error_index);
-// //         // Serial.printf("index.previous=%d\n\r",index.previous);
-// //         // Serial.printf("index.next=%d\n\r",index.next);
-// //         // Serial.printf("next_max_val=%f\n\r",next_max_val);
-// //         // Serial.printf("prev_min_val=%f\n\r",prev_min_val);
-// //         // Serial.printf("current_inbetween_val=%f\n\r",current_inbetween_val);
-// //         // Serial.printf("full_range=%f\n\r",full_range);
-// //         // Serial.printf("current_range=%f\n\r",current_range);
-// //         // Serial.printf("ratio_of_range=%f\n\r",ratio_of_range);
-
-       
-// //         // AddLog_f
-
-// //         progress_between_colours = (numer/denum);
-
-
-// //       }else{
-// //         index.previous = smallest_error_index; // equals this exact index
-// //         index.next = smallest_error_index - 1;
-// //         progress_between_colours = ((float)palette_indexes[index.previous]/(float)palette_indexes[index.next]);
-// //       }
-// //       Serial.printf("prev=%d, next=%d, progress=%f\n\r", index.previous, index.next, progress_between_colours);
-// //     }
-
-
-// //   }
-// //   else // sun_elevation<0
-// //   {
-
-// //     ALOG_INF(PSTR("Checking NEGATIVE elevation"));
-    
-// //     uint8_t smallest_error_index = 0;
-// //     float smallest_elev_error = fabs(sun_error[0]);
-// //     for(int i=1;i<zero_crossing_index;i++) // skip first
-// //     {
-// //       if(fabs(sun_error[i])<smallest_elev_error)
-// //       {
-// //         smallest_error_index = i;
-// //         smallest_elev_error = fabs(sun_error[i]);
-// //       }
-// //       ALOG_INF(PSTR("sun_error[%d] = %d smallest_elev_error%d smallest_error_index%d"),i, (int)sun_error[i], (int)smallest_elev_error, smallest_error_index);
-// //     }
-
-// //     /**
-// //      * previous colour will always equal the matched index (bring to tersary)
-// //      * Work out the transitions
-// //      * */
-// //     if(sun_error[smallest_error_index] == 0)
-// //     {
-// //       ALOG_INF(PSTR("sun_error[smallest_error_index] == 0"));
-// //       // next index depends on direction
-// //       if (sun_is_ascending){
-// //         index.previous = smallest_error_index; // equals this exact index
-// //         index.next = smallest_error_index + 1;
-// //         progress_between_colours = 0;//((float)palette_indexes[index.next]/(float)palette_indexes[index.previous]);
-// //       }else{
-// //         index.previous = smallest_error_index; // equals this exact index
-// //         index.next = smallest_error_index - 1;
-// //         progress_between_colours = 0;//((float)palette_indexes[index.previous]/(float)palette_indexes[index.next]);
-// //       }
-// //     }else{
-// //       // depends on direction
-// //       ALOG_INF(PSTR("sun_error[smallest_error_index] != 0"));
-// //       if (sun_is_ascending){ // sun going up, means next will be bigger in elevation, in palette index, means index larger (since palette starts with negatives)
-// //       ALOG_INF(PSTR("sun_error[smallest_error_index] != 0 sun_is_ascending"));
-// //         index.previous = smallest_error_index; // equals this exact index
-// //         index.next = smallest_error_index + 1;
-// //         progress_between_colours = ((float)palette_indexes[index.next]/(float)palette_indexes[index.previous]);
-// //       }else{
-// //         index.previous = smallest_error_index; // equals this exact index
-// //         index.next = smallest_error_index - 1;
-// //         progress_between_colours = ((float)palette_indexes[index.previous]/(float)palette_indexes[index.next]);
-// //       }
-// //     }
-
-
-// //   }
-
-// /**
-//  * Showing the colours
-//  * 1) previous
-//  * 2) next
-//  * 3) linearblend of the exact new colour
-//  * */
-
-//     RgbcctColor c_prev = mPaletteI->GetColourFromPalette(palette_p, lower_boundary_index);
-//     RgbcctColor c_next = mPaletteI->GetColourFromPalette(palette_p, upper_boundary_index);
-
-//     Serial.printf("progress_between_colours\t %f(%d)/%f(%d) => %f\n\r", 
-//       lower_boundary_value, lower_boundary_index, 
-//       upper_boundary_value, upper_boundary_index, progress_between_colours);
-
-//     RgbcctColor c_blended = RgbcctColor::LinearBlend(c_prev,c_next,progress_between_colours);
-
-//     RgbcctColor c = c_prev; 
-//     ALOG_INF(PSTR("rgbcct_p\t%d,%d,%d,%d,%d"),c.R,c.G,c.B,c.WW,c.WC);
-//     c = c_blended; 
-//     ALOG_INF(PSTR("rgbcct_b\t%d,%d,%d,%d,%d (progress %d"),c.R,c.G,c.B,c.WW,c.WC, (int)(progress_between_colours*100));
-//     c = c_next; 
-//     ALOG_INF(PSTR("rgbcct_n\t%d,%d,%d,%d,%d"),c.R,c.G,c.B,c.WW,c.WC);
-
-//     /**
-//      * Load new colour into animation
-//      * */
-
-// //   /**
-// //    * Debug, show all colours
-// //    * */
-// //   int16_t adjusted_index = 0;
-// //   for(int desired_index=0;desired_index<pixels_max;desired_index++)
-// //   {
-// //     RgbcctColor c = mPaletteI->GetColourFromPalette(mPaletteI->GetPalettePointerByID(mPaletteI->PALETTELIST_STATIC_SOLID_RGBCCT_SUN_ELEVATION_WITH_DEGREES_INDEX_01_ID), desired_index, &indexing);
-// //     adjusted_index = indexing - 90;
-// //     ALOG_INF(PSTR("rgbcct[%d]=\t%d\t%d\t%d,%d,%d,%d,%d"),desired_index,indexing,adjusted_index,c.R,c.G,c.B,c.WW,c.WC);
-// //   }
-
-//   // delay(100);
-
-  
-//   pCONT_iLight->animation.flags.fForceUpdate = true;
-
-//   animation_colours_rgbcct.DesiredColour  = c_blended;//mPaletteI->GetColourFromPalette(mPaletteI->static_palettes.ptr);
-
-//   // ALOG_TST(PSTR("DesiredColour1=%d,%d,%d,%d,%d"), animation_colours_rgbcct.DesiredColour.R,animation_colours_rgbcct.DesiredColour.G,animation_colours_rgbcct.DesiredColour.B,animation_colours_rgbcct.DesiredColour.WC,animation_colours_rgbcct.DesiredColour.WW);
-    
-//   if(!pCONT_iLight->rgbcct_controller.getApplyBrightnessToOutput()){ // If not already applied, do it using global values
-//     animation_colours_rgbcct.DesiredColour = RgbcctColor::ApplyBrightnesstoRgbcctColour(
-//       animation_colours_rgbcct.DesiredColour, 
-//       pCONT_iLight->rgbcct_controller.getBrightnessRGB_WithGlobalApplied(),
-//       pCONT_iLight->rgbcct_controller.getBrightnessCCT255()
-//     );
-//   }
-  
-//   animation_colours_rgbcct.StartingColor = SEGMENT.GetPixelColor();
-  
-//   AddLog(LOG_LEVEL_DEBUG_MORE,PSTR(D_LOG_NEO "EFFECTS_SEQUENTIAL EFFECTS_ANIMATE"));
-//   this->setAnimFunctionCallback([this](const AnimationParam& param){ 
-//     this->AnimationProcess_Generic_RGBCCT_Single_Colour_All(param); });
-   
-// }
-
-
-
-
-/********************************************************************************************************************************************************************************************************************
- *******************************************************************************************************************************************************************************************************************
- * @name : Sequential
- * @note : Randomly changes colours of pixels, and blends to the new one
- * 
- * @param : "cycle_time__rate_ms" : How often it changes
- * @param : "time_ms" : How often it changes
- * @param : "pixels to update" : How often it changes
- * @param : "cycle_time__rate_ms" : How often it changes 
- * 
- *******************************************************************************************************************************************************************************************************************
- ********************************************************************************************************************************************************************************************************************/
-
-
-// /**************************************************************************************************************************************************************
-//  * @brief  Solid_Colour_Based_On_Sun_Elevation_02
-//  * @note   From -10 to noon, CCT will range from yellow to daywhite
-//  * @note   From -5 to dusk, blue will go from 0 to max_brightness 
-//  * 
-//  * @note   Gloabl brightness will be manual, or controlled indirectly eg via mqtt
-//  * 
-//  * @note   Using RgbcctColour palette that is designed for each point in elevation
-//  * *************************************************************************************************************************************************************/
-
-// void mAnimatorLight::SubTask_Flasher_Animate_Function_SunPositions_Solid_Colour_Based_On_Sun_Elevation_04()
-// {
- 
-//   // AddLog(LOG_LEVEL_DEBUG,PSTR(D_LOG_NEO "SubTask_Flasher_Animate_Function_SunPositions_Solid_Colour_Based_On_Sun_Elevation_02"));
-
-//   // pCONT_iLight->animation.palette_id = mPaletteI->PALETTELIST_STATIC_SOLID_RGBCCT_SUN_ELEVATION_WITH_DEGREES_INDEX_01_ID;
-
-//   // Set palette pointer
-//   mPaletteI->SetPaletteListPtrFromID(pCONT_iLight->animation.palette_id);
-
-//   /**
-//    * Solar data to use, defined here for testing or simulations
-//    * */
-// float sun_elevation = 0;
-// #ifdef USE_MODULE_SENSORS_SUN_TRACKING
-//   #ifdef USE_DEVFEATURE_SUNPOSITION_ELEVATION_USE_TESTING_VALUE
-//   sun_elevation = (float)pCONT_solar->solar_position_testing.elevation;
-//   #else
-//   sun_elevation = (float)pCONT_solar->solar_position.elevation;
-//   #endif
-// #endif
-//   bool sun_is_ascending = true;//pCONT_solar->solar_position_testing.direction.is_ascending;
-//   // Serial.printf("\n\r\n\rsun_elevation\t => %f\n\r", sun_elevation);
-
-//   /**
-//    * Sun elevation indexing is stored in palettes index location.
-//    * The current sun elevation shall be searched against for nearest match, then depending on accesending or decending sun the nearest match and nearest next match will be linearblended as current show colour
-//    * */
-
-//   /**
-//    * Get total pixels in palette
-//    * */
-//   mPalette::PALETTELIST::PALETTE *palette_p = mPaletteI->GetPalettePointerByID(pCONT_iLight->animation.palette_id);
-//   uint8_t pixels_max = GetNumberOfColoursInPalette(palette_p);
-//   // AddLog(LOG_LEVEL_INFO,PSTR("pixels_max=%d"),pixels_max);
-
-//   // Lets assume we need a zero crossing index, thus, we can use it to identity AS and DE modes
-//   uint8_t zero_crossing_index = 0;
-
-//   struct INDEXES_MATCHES{
-//     uint8_t previous = 0; //ie colour moving away from
-//     uint8_t next = 0; //colour moving towards
-//   }index;
-
-//   /**
-//    * Steps to finding index
-//    * 1) Find the zero-crossing index from the palette (ie the colour where its index is 0)
-//    * 2) Decide if elevation is pos or neg, begin searching that part of the array
-//    * 3) Find index of closest in array
-//    * 4) Next and previous index will depend on direction of sun, and will be equal to current index if error is exactly 0
-//    * */
-
-//   /**
-//    * Step X: Find zero crossing point
-//    * Step X: Find all differences
-//    * */
-//   int16_t indexing = 0;  
-//   uint8_t lower_boundary_index = 13;
-//   float lower_boundary_value = 45;
-//   uint8_t upper_boundary_index = 14;  
-//   float upper_boundary_value = 90;
-//   float sun_positions_from_palette_index[pixels_max];  
-//   uint8_t searching_matched_index = 0;
-
-//   /**
-//    * Ascending method for finding right region between points
-//    * Check all, but once sun_elev is greater, then thats the current region
-//    * */
-//   for(int i=0;i<pixels_max;i++)
-//   {
-//     mPaletteI->GetColourFromPalette(palette_p, i, &indexing);
-//     sun_positions_from_palette_index[i] = indexing - 90;
-//     // Serial.printf("sun_pos=[%02d]=\t%f\n\r", i, sun_positions_from_palette_index[i]);
-//   }
-
-
-//   for(int i=0;i<pixels_max;i++)
-//   {
-//     // Serial.printf("sun=%f > index[%d]=%f\n\r", sun_elevation, i, sun_positions_from_palette_index[i]);
-//     if(sun_elevation >= sun_positions_from_palette_index[i])
-//     {
-      
-//       // searching_matched_index = i;
-//       // Serial.printf("sun=%f > index[%d]=%f   MATCH=%d\n\r", 
-//       //   sun_elevation, i, sun_positions_from_palette_index[i], searching_matched_index
-//       // );
-//       //Serial.printf("Still less\n\r");
-
-//     }else{
-      
-//       searching_matched_index = i-1;
-//       // Serial.printf("sun=%f > index[%d]=%f   MATCH=%d\n\r", 
-//       //   sun_elevation, i, sun_positions_from_palette_index[i], searching_matched_index
-//       // );
-//       // Serial.printf("searching_matched_index = %d\n\r", searching_matched_index);
-//       break;
-
-//     }
-
-//     // Directly, manually, check the last memory space
-
-//     if(sun_elevation == sun_positions_from_palette_index[pixels_max-1])
-//     {
-//       searching_matched_index = i-1;
-//       // Serial.printf("sun=%f > index[%d]=%f   MATCH=%d\n\r", 
-//       //   sun_elevation, i, sun_positions_from_palette_index[i], searching_matched_index
-//       // );
-//       break;
-
-//     }
-
-
-
-
-//   }
-
-//   lower_boundary_index = searching_matched_index;
-//   upper_boundary_index = searching_matched_index+1;
-
-//   /**
-//    * Check ranges are valid, if not, reset to 0 and 1
-//    * */
-//   if(lower_boundary_index>=pixels_max)
-//   {
-//     lower_boundary_index = 0;
-//     Serial.printf("lower_boundary_index>=pixels_max\n\r");
-//   }
-//   if(upper_boundary_index>=pixels_max)
-//   {
-//     upper_boundary_index = pixels_max;
-//     Serial.printf("upper_boundary_index>=pixels_max\n\r");
-//   }
-
-//   lower_boundary_value = sun_positions_from_palette_index[lower_boundary_index];
-//   upper_boundary_value = sun_positions_from_palette_index[upper_boundary_index];
-
-
-//   float numer = sun_elevation        - lower_boundary_value;
-//   float denum = upper_boundary_value - lower_boundary_value;
-//   float progress_between_colours = numer/denum;
-
-//   Serial.printf("\n\r\n\r\n\rsun_elevation\t => %f\n\r", sun_elevation);
-//   Serial.printf("lower_boundary_value[%02d]=%f\n\r", lower_boundary_index, lower_boundary_value);
-//   Serial.printf("upper_boundary_value[%02d]=%f\n\r", upper_boundary_index, upper_boundary_value);
-//   Serial.printf("numer=\t%f\n\r",numer);
-//   Serial.printf("denum=\t%f\n\r",denum);
-//   Serial.printf("progress_between_colours=\t%f\n\r",progress_between_colours);
-
-//   /**
-//    * Showing the colours
-//    * 1) previous
-//    * 2) next
-//    * 3) linearblend of the exact new colour
-//    * */
-
-//   RgbcctColor c_lower = mPaletteI->GetColourFromPalette(palette_p, lower_boundary_index);
-//   RgbcctColor c_upper = mPaletteI->GetColourFromPalette(palette_p, upper_boundary_index);
-
-//   // Serial.printf("progress_between_colours\t %f(%d)/%f(%d) => %f\n\r", 
-//   //   lower_boundary_value, lower_boundary_index, 
-//   //   upper_boundary_value, upper_boundary_index, progress_between_colours);
-
-//   RgbcctColor c_blended = RgbcctColor::LinearBlend(c_lower, c_upper, progress_between_colours);
-
-//   RgbcctColor c = c_lower; 
-//   // ALOG_INF(PSTR("rgbcct_p\t%d,%d,%d,%d,%d"),c.R,c.G,c.B,c.WW,c.WC);
-//   c = c_blended; 
-//   // ALOG_INF(PSTR("rgbcct_b\t%d,%d,%d,%d,%d (progress %d"),c.R,c.G,c.B,c.WW,c.WC, (int)(progress_between_colours*100));
-//   c = c_upper; 
-//   // ALOG_INF(PSTR("rgbcct_n\t%d,%d,%d,%d,%d"),c.R,c.G,c.B,c.WW,c.WC);
-
-//   /**
-//    * Load new colour into animation
-//    * */
-
-//   pCONT_iLight->animation.flags.fForceUpdate = true;
-
-//   animation_colours_rgbcct.DesiredColour  = c_blended;
-
-//   // ALOG_TST(PSTR("DesiredColour1=%d,%d,%d,%d,%d"), animation_colours_rgbcct.DesiredColour.R,animation_colours_rgbcct.DesiredColour.G,animation_colours_rgbcct.DesiredColour.B,animation_colours_rgbcct.DesiredColour.WC,animation_colours_rgbcct.DesiredColour.WW);
-    
-//   if(!pCONT_iLight->rgbcct_controller.getApplyBrightnessToOutput())
-//   { // If not already applied, do it using global values
-//     animation_colours_rgbcct.DesiredColour = RgbcctColor::ApplyBrightnesstoRgbcctColour(
-//       animation_colours_rgbcct.DesiredColour, 
-//       pCONT_iLight->rgbcct_controller.getBrightnessRGB_WithGlobalApplied(),
-//       pCONT_iLight->rgbcct_controller.getBrightnessCCT255()
-//     );
-//   }
-
-//   animation_colours_rgbcct.StartingColor = SEGMENT.GetPixelColor();
-
-//   AddLog(LOG_LEVEL_DEBUG_MORE,PSTR(D_LOG_NEO "EFFECTS_SEQUENTIAL EFFECTS_ANIMATE"));
-//   this->setAnimFunctionCallback([this](const AnimationParam& param){
-//       this->AnimationProcess_Generic_RGBCCT_Single_Colour_All(param); });
-   
-// }
-
-
-
-/********************************************************************************************************************************************************************************************************************
- *******************************************************************************************************************************************************************************************************************
- * @name : Sequential
- * @note : Randomly changes colours of pixels, and blends to the new one
- * 
- * @param : "cycle_time__rate_ms" : How often it changes
- * @param : "time_ms" : How often it changes
- * @param : "pixels to update" : How often it changes
- * @param : "cycle_time__rate_ms" : How often it changes 
- * 
- *******************************************************************************************************************************************************************************************************************
- ********************************************************************************************************************************************************************************************************************/
-
-
-// /****
-//  * Changes pixels randomly to new colour, with slow blending
-//  * Requires new colour calculation each call
-//  */
-// void mAnimatorLight::SubTask_Flasher_Animate_Function_Twinkle_Palette_Brightness_From_Lower_To_Upper_And_Back(){
-
-// // Finish this mode later in december
-// // Split strip into parts
-// // Take every X pixels as the animated pixel, then I only need to remember a count 0:X
-// // Move across that each time (or make it random)
-// // Use this, to manipulate brightness from low to high... on the next animate_id call, return birghtness back (with require another counter for "progress of animation")
-// // Once that group has changed, or, even during it, pick another group to manipulate
-// // Effect should be "Group of pixels pulsing on, while the rest remain at a darker brightness"
-
-//   return;
-
-//    switch(flashersettings.region){
-//     case EFFECTS_REGION_COLOUR_SELECT_ID: //set colours
-//       AddLog(LOG_LEVEL_DEBUG_MORE,PSTR(D_LOG_NEO "EFFECTS_SEQUENTIAL EFFECTS_COLOUR_SELECT"));
-//       pCONT_iLight->animation.flags.brightness_applied_during_colour_generation = true;
-//       // if(flashersettings.flags.enable_endingcolour_as_alternate){
-//       //   AddLog(LOG_LEVEL_DEBUG_MORE,PSTR(D_LOG_NEO "EFFECTS_SEQUENTIAL flashersettings.flags.enable_endingcolour_as_alternate"));
-//       //   UpdateDesiredColourWithSingleColour(RgbcctColor());
-//       // }
-
-//       pCONT_iLight->rgbcct_controller.setBrightnessRGB255(map(flashersettings.brightness_min, 0,100, 0,255));
-
-
-//       UpdateDesiredColourFromPaletteSelected();
-//       // if(flashersettings.flags.enable_startcolour_as_alternate){
-//       //   AddLog(LOG_LEVEL_DEBUG_MORE,PSTR(D_LOG_NEO "EFFECTS_SEQUENTIAL flashersettings.flags.enable_startcolour_as_alternate"));
-//       //   UpdateStartingColourWithSingleColour(RgbcctColor());
-//       // }else{
-//         UpdateStartingColourWithGetPixel();
-//       // }
-//       flashersettings.region = EFFECTS_REGION_ANIMATE_ID;
-//     break;
-//     case EFFECTS_REGION_ANIMATE_ID: //shift along
-
-
-
-
-    
-//         // UpdateStartingColourWithGetPixel();
-
-//         // uint16_t index_random = random(0,pCONT_iLight->settings.light_size_count);
-
-//         // HsbColor hsb = SEGMENT.GetPixelColor(index_random);
-
-//         // if(hsb.B < pCONT_iLight->BrtN2F(flashersettings.brightness_max)){
-//         //   hsb.B = pCONT_iLight->BrtN2F(flashersettings.brightness_max);
-//         //   animation_colours[index_random].DesiredColour = hsb;
-//         // }
-
-//       AddLog(LOG_LEVEL_DEBUG_MORE,PSTR(D_LOG_NEO "EFFECTS_SEQUENTIAL EFFECTS_ANIMATE"));
-//       this->setAnimFunctionCallback([this](const AnimationParam& param){ this->AnimationProcess_Twinkle_Palette_Brightness_From_Lower_To_Upper_And_Back(param); });
-//       break;
-
-      
-//       // Stay on this until restarted
-//   }
-
-// }
-
-
-// void mAnimatorLight::AnimationProcess_Twinkle_Palette_Brightness_From_Lower_To_Upper_And_Back(const AnimationParam& param)
-// {   
-
-//   // As integer so the if statement checks will not fail due to rounding errors
-//   // uint8_t progress_percentage = param.progress*100; 
-//   // uint8_t brightness_as_percentage = map(pCONT_iLight->getBriRGB(), 0,255, 0,100);
-//   // uint8_t random_amount = map(shared_flasher_parameters.alternate_random_amount_as_percentage, 0,100, 0,pCONT_iLight->settings.light_size_count);
-
-//   //       uint16_t index_random = random(0,pCONT_iLight->settings.light_size_count);
-
-//   // /*
-//   // 0-10    20-30   40-50   60-70    80-90      //coloured
-//   //     10-20   30-40   50-60   70-80   90-0    //white
-//   // */
-//   // if(progress_percentage != shared_flasher_parameters.progress_percentage_last_animated_on){
-//   //   shared_flasher_parameters.progress_percentage_last_animated_on = progress_percentage; //update stored value
-//   //   switch(progress_percentage){
-//   //     case 50:
-
-
-//   //       HsbColor hsb = SEGMENT.GetPixelColor(index_random);
-
-//   //       if(hsb.B < pCONT_iLight->BrtN2F(flashersettings.brightness_max)){
-//   //         hsb.B = pCONT_iLight->BrtN2F(flashersettings.brightness_max);
-//   //         // animation_colours[index_random].DesiredColour = hsb;
-//   //       }
-
-//   //       SEGMENT.setPixelColor(index_random, hsb);
-
-
-
-//   //       // for (uint16_t ii = 0; ii < random_amount; ii++){
-//   //       //   SEGMENT.setPixelColor(
-//   //       //     random(0,pCONT_iLight->settings.light_size_count), 
-//   //       //     HsbColor(pCONT_iLight->HUE_N2F(30),pCONT_iLight->SatN2F(90),pCONT_iLight->BrtN2F(random(0,brightness_as_percentage)))
-//   //       //   );
-//   //       // }
-//   //     break;
-//   //     case 0:
-//   //     case 100:
-//   //       for (uint16_t pixel = 0; pixel < pCONT_iLight->settings.light_size_count; pixel++){
-//   //         SEGMENT.setPixelColor(pixel, animation_colours[pixel].DesiredColour);
-//   //       }
-//   //     break;
-//   //   }
-//   // }
-
-
-
-//    RgbTypeColor updatedColor;
-//   for (uint16_t pixel = 0; pixel < pCONT_iLight->settings.light_size_count; pixel++){
-//     updatedColor = RgbTypeColor::LinearBlend(
-//         animation_colours[pixel].StartingColor,
-//         animation_colours[pixel].DesiredColour,
-//         param.progress);    
-//     SEGMENT.setPixelColor(pixel, updatedColor);
-//   } // END for
-  
-
-// }
-
-
-/********************************************************************************************************************************************************************************************************************
- *******************************************************************************************************************************************************************************************************************
- * @name : Sequential
- * @note : Randomly changes colours of pixels, and blends to the new one
- * 
- * @param : "cycle_time__rate_ms" : How often it changes
- * @param : "time_ms" : How often it changes
- * @param : "pixels to update" : How often it changes
- * @param : "cycle_time__rate_ms" : How often it changes 
- * 
- *******************************************************************************************************************************************************************************************************************
- ********************************************************************************************************************************************************************************************************************/
-
-
-// /**************************************************************************************************************************************************************
-//  * @brief  Solid_Colour_Based_On_Sun_Elevation_05
-//  * 
-//  * CCT_Mapped, day white to warm white around +-20, then >20 is max cct
-//  * 
-//  * *************************************************************************************************************************************************************/
-
-// void mAnimatorLight::SubTask_Flasher_Animate_Function_SunPositions_Solid_Colour_Based_On_Sun_Elevation_05()
-// {
- 
-//   // AddLog(LOG_LEVEL_DEBUG,PSTR(D_LOG_NEO "SubTask_Flasher_Animate_Function_SunPositions_Solid_Colour_Based_On_Sun_Elevation_05"));
-
-//   pCONT_iLight->animation.palette_id = mPaletteI->PALETTELIST_VARIABLE_RGBCCT_COLOUR_01_ID;
-
-//   mPaletteI->SetPaletteListPtrFromID(pCONT_iLight->animation.palette_id);
-//   // Set up colours
-//   // Brightness is generated internally, and rgbcct solid palettes are output values
-
-
-// float sun_elevation = 0;
-// #ifdef USE_MODULE_SENSORS_SUN_TRACKING
-//   #ifdef USE_DEVFEATURE_SUNPOSITION_ELEVATION_USE_TESTING_VALUE
-//   sun_elevation = (float)pCONT_solar->solar_position_testing.elevation;
-//   #else
-//   sun_elevation = (float)pCONT_solar->solar_position.elevation;
-//   #endif
-// #endif
-//   if(sun_elevation < -20)
-//   {
-//     pCONT_iLight->rgbcct_controller.setCCT(pCONT_iLight->get_CTRangeMax());      
-//   }else
-//   if(sun_elevation > 20)
-//   {
-//     pCONT_iLight->rgbcct_controller.setCCT(pCONT_iLight->get_CTRangeMin());      
-//   }else{
-//     // Convert elevation into percentage
-//     uint8_t elev_perc = map(sun_elevation,-20,20,0,100);
-//     // Convert percentage into cct
-//     uint16_t cct_val = mapvalue(elev_perc, 0,100, pCONT_iLight->get_CTRangeMax(),pCONT_iLight->get_CTRangeMin());
- 
-//     // AddLog(LOG_LEVEL_DEBUG,PSTR(D_LOG_NEO "cct_val=%d"),cct_val);
-//     // Set the colour temp
-//     pCONT_iLight->rgbcct_controller.setCCT(cct_val);    
-//   }
-
-//   pCONT_iLight->animation.flags.brightness_applied_during_colour_generation = false;
-//   animation_colours_rgbcct.DesiredColour  = mPaletteI->GetColourFromPalette(mPaletteI->static_palettes.ptr);
-//   pCONT_iLight->animation.flags.fForceUpdate = true;
-
-//   // ALOG_TST(PSTR("DesiredColour1=%d,%d,%d,%d,%d"), animation_colours_rgbcct.DesiredColour.R,animation_colours_rgbcct.DesiredColour.G,animation_colours_rgbcct.DesiredColour.B,animation_colours_rgbcct.DesiredColour.WC,animation_colours_rgbcct.DesiredColour.WW);
-    
-//   if(!pCONT_iLight->rgbcct_controller.getApplyBrightnessToOutput())
-//   { // If not already applied, do it using global values
-//     animation_colours_rgbcct.DesiredColour = RgbcctColor::ApplyBrightnesstoRgbcctColour(
-//       animation_colours_rgbcct.DesiredColour, 
-//       pCONT_iLight->rgbcct_controller.getBrightnessRGB_WithGlobalApplied(),
-//       pCONT_iLight->rgbcct_controller.getBrightnessCCT255()
-//     );
-//   }
-
-//   animation_colours_rgbcct.StartingColor = SEGMENT.GetPixelColor();
-
-//   AddLog(LOG_LEVEL_DEBUG_MORE,PSTR(D_LOG_NEO "EFFECTS_SEQUENTIAL EFFECTS_ANIMATE"));
-//   this->setAnimFunctionCallback([this](const AnimationParam& param){
-//       this->AnimationProcess_Generic_RGBCCT_Single_Colour_All(param); });
-   
-// }
-
-
-/********************************************************************************************************************************************************************************************************************
- *******************************************************************************************************************************************************************************************************************
- * @name : Sequential
- * @note : Randomly changes colours of pixels, and blends to the new one
- * 
- * @param : "cycle_time__rate_ms" : How often it changes
- * @param : "time_ms" : How often it changes
- * @param : "pixels to update" : How often it changes
- * @param : "cycle_time__rate_ms" : How often it changes 
- * 
- *******************************************************************************************************************************************************************************************************************
- ********************************************************************************************************************************************************************************************************************/
-
-
-
-// void mAnimatorLight::SubTask_Flasher_Animate_Function_Twinkle_SingleColour_Random(){
-
-//   switch(flashersettings.region){
-//     case EFFECTS_REGION_COLOUR_SELECT_ID:{ //set colours
-//       AddLog(LOG_LEVEL_DEBUG_MORE,PSTR(D_LOG_NEO "EFFECTS_SEQUENTIAL EFFECTS_COLOUR_SELECT"));
-//       UpdateDesiredColourFromPaletteSelected();
-//       UpdateStartingColourWithGetPixel();
-//       flashersettings.region = EFFECTS_REGION_ANIMATE_ID;
-//     // NO 
-//     }break;
-//     case EFFECTS_REGION_ANIMATE_ID: //shift along
-//       AddLog(LOG_LEVEL_DEBUG_MORE,PSTR(D_LOG_NEO "EFFECTS_SEQUENTIAL EFFECTS_ANIMATE"));
-//       this->setAnimFunctionCallback([this](const AnimationParam& param){ this->AnimationProcess_TwinkleSingleColourRandom(param); });
-//       break;
-//   }
-
-// }
-
-// void mAnimatorLight::AnimationProcess_TwinkleSingleColourRandom(const AnimationParam& param)
-// {   
-
-//   // As integer so the if statement checks will not fail due to rounding errors
-//   uint8_t progress_percentage = param.progress*100; 
-//   uint8_t brightness_as_percentage = map(pCONT_iLight->rgbcct_controller.getBrightnessRGB_WithGlobalApplied(), 0,255, 0,100);
-//   uint8_t random_amount = map(shared_flasher_parameters.alternate_random_amount_as_percentage, 0,100, 0,pCONT_iLight->settings.light_size_count);
-
-//   /*
-//   0-10    20-30   40-50   60-70    80-90      //coloured
-//       10-20   30-40   50-60   70-80   90-0    //white
-//   */
-//   if(progress_percentage != shared_flasher_parameters.progress_percentage_last_animated_on){
-//     shared_flasher_parameters.progress_percentage_last_animated_on = progress_percentage; //update stored value
-//     switch(progress_percentage){
-//       case 10:
-//       case 30:
-//       case 50:
-//       case 70:
-//       case 90:
-//         for (uint16_t ii = 0; ii < random_amount; ii++){
-//           SEGMENT.setPixelColor(
-//             random(0,pCONT_iLight->settings.light_size_count), 
-//             HsbColor(pCONT_iLight->HUE_N2F(30),pCONT_iLight->SatN2F(90),pCONT_iLight->BrtN2F(random(0,brightness_as_percentage)))
-//           );
-//         }
-//       break;
-//       case 0:
-//       case 20:
-//       case 40:
-//       case 60:
-//       case 80: //go back to coloured
-//         for (uint16_t pixel = 0; pixel < pCONT_iLight->settings.light_size_count; pixel++){
-//           SEGMENT.setPixelColor(pixel, animation_colours[pixel].DesiredColour);
-//         }
-//       break;
-//     }
-//   }
-
-// }
-
-
-
-/********************************************************************************************************************************************************************************************************************
- *******************************************************************************************************************************************************************************************************************
- * @name : Sequential
- * @note : Randomly changes colours of pixels, and blends to the new one
- * 
- * @param : "cycle_time__rate_ms" : How often it changes
- * @param : "time_ms" : How often it changes
- * @param : "pixels to update" : How often it changes
- * @param : "cycle_time__rate_ms" : How often it changes 
- * 
- *******************************************************************************************************************************************************************************************************************
- ********************************************************************************************************************************************************************************************************************/
-
-
-
-// void mAnimatorLight::SubTask_Flasher_Animate_Function_Twinkle_PaletteColour_Random(){
-  
-//   switch(flashersettings.region){
-//     case EFFECTS_REGION_COLOUR_SELECT_ID: //set colours
-//       AddLog(LOG_LEVEL_DEBUG_MORE,PSTR(D_LOG_NEO "EFFECTS_SEQUENTIAL EFFECTS_COLOUR_SELECT"));
-//       // if(flashersettings.flags.enable_endingcolour_as_alternate){
-//       //   AddLog(LOG_LEVEL_DEBUG_MORE,PSTR(D_LOG_NEO "EFFECTS_SEQUENTIAL flashersettings.flags.enable_endingcolour_as_alternate"));
-//       //   UpdateDesiredColourWithSingleColour(RgbcctColor());
-//       // }
-//       UpdateDesiredColourFromPaletteSelected();
-//       // if(flashersettings.flags.enable_startcolour_as_alternate){
-//       //   AddLog(LOG_LEVEL_DEBUG_MORE,PSTR(D_LOG_NEO "EFFECTS_SEQUENTIAL flashersettings.flags.enable_startcolour_as_alternate"));
-//       //   UpdateStartingColourWithSingleColour(RgbcctColor());
-//       // }else{
-//         UpdateStartingColourWithGetPixel();
-//       // }
-//       flashersettings.region = EFFECTS_REGION_ANIMATE_ID;
-//     break;
-//   //   case EFFECTS_REGION_ANIMATE_ID: //shift along
-//   //     AddLog(LOG_LEVEL_DEBUG_MORE,PSTR(D_LOG_NEO "EFFECTS_SEQUENTIAL EFFECTS_ANIMATE"));
-//   //     this->setAnimFunctionCallback([this](const AnimationParam& param){ this->AnimationProcess_TwinkleUsingPaletteColourRandom(param); });
-//   //     break;
-//   }
-
-// }
-
-
-
-// void mAnimatorLight::AnimationProcess_TwinkleUsingPaletteColourRandom(const AnimationParam& param)
-// {   
-
-//   // As integer so the if statement checks will not fail due to rounding errors
-//   uint8_t progress_percentage = param.progress*100; 
-//   // uint8_t brightness_as_percentage = map(pCONT_iLight->getBriRGB(), 0,255, 0,100);
-//   uint8_t random_amount = map(shared_flasher_parameters.alternate_random_amount_as_percentage, 0,100, 0,pCONT_iLight->settings.light_size_count);
-//   RgbTypeColor flash_colour = RgbTypeColor(0);
-//   uint8_t desired_pixel = 0;
-//   int16_t pixel_position = -1;
-//   uint8_t flashed_brightness = 0; // use set brightness or flash brighter as option
-  
-//   // Update pointer of struct
-//   mPaletteI->SetPaletteListPtrFromID(pCONT_iLight->animation.palette_id);
-
-  
-//   // for (uint16_t pixel = 0; pixel < pCONT_iLight->settings.light_size_count; pixel++){
-//   //   RgbTypeColor updatedColor = RgbTypeColor::LinearBlend(
-//   //       animation_colours[pixel].StartingColor,
-//   //       animation_colours[pixel].DesiredColour,
-//   //       param.progress);    
-//   //   SEGMENT.setPixelColor(pixel, updatedColor);
-//   // } // END for
-
-//   /*
-//   0-10    20-30   40-50   60-70    80-90      //coloured
-//       10-20   30-40   50-60   70-80   90-0    //white
-//   */
-//   if(progress_percentage != shared_flasher_parameters.progress_percentage_last_animated_on){
-//     shared_flasher_parameters.progress_percentage_last_animated_on = progress_percentage; //update stored value
-//       switch(progress_percentage){
-//       case 10:
-//       case 30:
-//       case 50:
-//       case 70:
-//       case 90:
-//         for (uint16_t ii = 0; ii < random_amount; ii++){
-//           flashed_brightness = random(0,shared_flasher_parameters.alternate_brightness_max);        
-//           // For random, desired pixel from map will also be random
-//           desired_pixel = random(0,GetNumberOfColoursInPalette(mPaletteI->static_palettes.ptr));
-//           // get colour from palette
-//           flash_colour = mPaletteI->GetColourFromPalette(mPaletteI->static_palettes.ptr,desired_pixel,&pixel_position);
-//           flash_colour = RgbcctColor::ApplyBrightnesstoRgbcctColour(flash_colour,flashed_brightness);
-//           SEGMENT.setPixelColor(
-//             random(0,pCONT_iLight->settings.light_size_count), 
-//             flash_colour
-//           );
-//         }
-//       break;
-//       case 0:
-//       case 20:
-//       case 40:
-//       case 60:
-//       case 80: //go back to coloured
-//         for (uint16_t pixel = 0; pixel < pCONT_iLight->settings.light_size_count; pixel++){
-//           SEGMENT.setPixelColor(pixel, animation_colours[pixel].DesiredColour);
-//         }
-//       break;
-//     }
-//   }
-
-// }
-
-
-
-
-/***
- * 
- * Create an animator for each segment, or do one by hand?
- * 
- * */
-
-
 #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
 
 
@@ -6314,11 +3612,11 @@ void mAnimatorLight::EffectAnim__Tri_Static_Pattern()
   {
 
     if ( currSeg % 3 == 0 ) {
-      SEGMENT.setPixelColor(i, GetSegmentColour(0, SEGIDX));
+      SEGMENT.setPixelColor(i, SEGCOLOR_U32(0));
     } else if( currSeg % 3 == 1) {
-      SEGMENT.setPixelColor(i, GetSegmentColour(1, SEGIDX));
+      SEGMENT.setPixelColor(i, SEGCOLOR_U32(1));
     } else {
-      SEGMENT.setPixelColor(i, (GetSegmentColour(2, SEGIDX).CalculateBrightness() > 0 ? GetSegmentColour(2, SEGIDX) : WHITE));
+      SEGMENT.setPixelColor(i, (SEGCOLOR_U32(2) > 0 ? SEGCOLOR_U32(2) : WHITE));
     }   
 
     currSegCount += 1;
@@ -6333,6 +3631,7 @@ void mAnimatorLight::EffectAnim__Tri_Static_Pattern()
 
 }
 static const char PM_EFFECT_CONFIG__TRI_STATIC_PATTERN[] PROGMEM = "Static Pattern Tri@,Size;1,2,3;;;pal=6";
+
 
 
 
@@ -6369,7 +3668,7 @@ DEBUG_TIME__START
 //speed of 128, cycletime = 19800
   uint32_t cycleTime = 750 + (255 - SEGMENT.speed)*150;
   // millis() % total_cycle_time ==> gives remainder, and therefore process of animation from 0->cycleTime is 0->100%
-  uint32_t perc = millis_at_start_of_effect_update % cycleTime;
+  uint32_t perc = effect_start_time % cycleTime;
   // prog gets the process from 0->65535 again
   uint16_t prog = (perc * 65535) / cycleTime;
    
@@ -6486,7 +3785,7 @@ DEBUG_TIME__START
   // DEBUG_TIME__SHOW_MESSAGE("wrtcols")
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 
   DEBUG_TIME__SHOW
 
@@ -6733,7 +4032,7 @@ void mAnimatorLight::EffectAnim__Base_Chase(uint32_t color1, uint32_t color2, ui
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 
@@ -6778,7 +4077,7 @@ void mAnimatorLight::EffectAnim__Chase_Rainbow()
   uint32_t color = color_wheel(((SEGMENT.step * color_sep) + color_index) & 0xFF);
 
   EffectAnim__Base_Chase(color, SEGCOLOR_U32(0), SEGCOLOR_U32(1), false);
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__CHASE_RAINBOW[] PROGMEM = "Chase Rainbow@!,Width;!,!;!";
@@ -6830,7 +4129,7 @@ void mAnimatorLight::EffectAnim__Chase_Flash()
     SEGMENT.step = (SEGMENT.step + 1) % SEGLEN;
   }
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__CHASE_FLASH[] PROGMEM = "Chase Flash@!;Bg,Fx;!";
@@ -6882,7 +4181,7 @@ void mAnimatorLight::EffectAnim__Chase_Flash_Random()
   SEGMENT.animation_has_anim_callback = false; // When no animation callback is needed
           Serial.print("@4");
 //  pCONT_iLight->ShowInterface();
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 
 }
 static const char PM_EFFECT_CONFIG__CHASE_FLASH_RANDOM[] PROGMEM = "Chase Flash Rnd@!;!,!;!";
@@ -6908,7 +4207,7 @@ void mAnimatorLight::EffectAnim__Chase_Rainbow_White()
   uint32_t color3 = color_wheel(((m * 256 / SEGLEN) + (SEGMENT.call & 0xFF)) & 0xFF);
 
   EffectAnim__Base_Chase(SEGCOLOR_U32(0), color2, color3, false);
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__CHASE_RAINBOW_WHITE[] PROGMEM = "Rainbow Runner@!,Size;Bg;!";
@@ -6952,7 +4251,7 @@ void mAnimatorLight::EffectAnim__Base_Chase_Theater(uint32_t color1, uint32_t co
     }
   }
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   return;
 }
 
@@ -7013,7 +4312,7 @@ void mAnimatorLight::EffectAnim__Base_Chase_TriColour(uint32_t color1, uint32_t 
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 
 }
@@ -7062,7 +4361,7 @@ void mAnimatorLight::EffectAnim__Chase_Random()
 
   SEGMENT.step = it;
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   return;
 }
 static const char PM_EFFECT_CONFIG__CHASE_RANDOM[] PROGMEM = "Stream 2@!,Width;!,,!;!";
@@ -7094,7 +4393,7 @@ void mAnimatorLight::EffectAnim__Breath()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__BREATH[] PROGMEM = "Breath@!;!,!;!;01";
@@ -7119,7 +4418,7 @@ void mAnimatorLight::EffectAnim__Fade()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__FADE[] PROGMEM = "Fade@!;!,!;!;01";
@@ -7173,7 +4472,7 @@ void mAnimatorLight::EffectAnim__Fireworks()
     }
   }
   
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__FIREWORKS[] PROGMEM = "Fireworks@,Frequency;!,!;!;12;ix=137," EFFECT_CONFIG_DEFAULT_OPTION__PALETTE_INDEX_CTR ""; // ix(itensity)=192, pal=randomise01
@@ -7311,7 +4610,7 @@ void mAnimatorLight::EffectAnim__Fireworks_Starburst()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 
@@ -7431,7 +4730,7 @@ void mAnimatorLight::EffectAnim__Fireworks_Starburst_Glows()
     }
   }
 
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__STARBURST_GLOWS[] PROGMEM = "Fireworks Starburst Glows@Chance,Fragments,,,,,,,Overlay;,!;!;" EFFECT_CONFIG_DEFAULT_OPTION__PALETTE_INDEX_CTR ",m12=0";
@@ -7562,7 +4861,7 @@ void mAnimatorLight::EffectAnim__Exploding_Fireworks()
   SEGMENT.setOption(SEG_OPTION_REVERSED, actuallyReverse);
   
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 
 }
 static const char PM_EFFECT_CONFIG__EXPLODING_FIREWORKS[] PROGMEM = "Fireworks 1D@Gravity,Firing side;!,!;!;12;pal=10,ix=128";
@@ -7719,7 +5018,7 @@ void mAnimatorLight::EffectAnim__Exploding_Fireworks_NoLaunch()
   SEGMENT.setOption(SEG_OPTION_REVERSED, actuallyReverse);
   
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 
 }
 static const char PM_EFFECT_CONFIG__EXPLODING_FIREWORKS_NOLAUNCH[] PROGMEM = "Fireworks 1D No Launch@Gravity,Firing side;!,!;!;12;pal=10,ix=128";
@@ -7761,12 +5060,106 @@ void mAnimatorLight::EffectAnim__Rain()
   }
   
   EffectAnim__Fireworks();
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();  
+  SET_DIRECT_MODE();  
 
 }
 static const char PM_EFFECT_CONFIG__RAIN[] PROGMEM = "Rain@!,Spawning rate;!,!;!;12;ix=128";
 
 #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+
+
+
+#ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+/*
+ * Tetris or Stacking (falling bricks) Effect
+ * by Blaz Kristan (AKA blazoncek) (https://github.com/blazoncek, https://blaz.at/home)
+ */
+//20 bytes
+typedef struct Tetris {
+  float    pos;
+  float    speed;
+  uint8_t  col;   // color index
+  uint16_t brick; // brick size in pixels
+  uint16_t stack; // stack size in pixels
+  uint32_t step;  // 2D-fication of SEGMENT.step (state)
+} tetris;
+
+void mAnimatorLight::EffectAnim__Tetrix(void) {
+  if (SEGLEN == 1) return EffectAnim__Solid_Colour();
+  unsigned strips = SEGMENT.nrOfVStrips(); // allow running on virtual strips (columns in 2D segment)
+  unsigned dataSize = sizeof(tetris);
+  if (!SEGMENT.allocateData(dataSize * strips)) return EffectAnim__Solid_Colour(); //allocation failed
+  Tetris* drops = reinterpret_cast<Tetris*>(SEGMENT.data);
+
+  // //if (SEGMENT.call == 0) SEGMENT.fill(SEGCOLOR(1));  // will fill entire segment (1D or 2D), then use drop->step = 0 below
+
+  // // virtualStrip idea by @ewowi (Ewoud Wijma)
+  // // requires virtual strip # to be embedded into upper 16 bits of index in setPixelcolor()
+  // // the following functions will not work on virtual strips: fill(), fade_out(), fadeToBlack(), blur()
+  // struct virtualStrip {
+  //   static void runStrip(size_t stripNr, Tetris *drop) {
+  //     // initialize dropping on first call or segment full
+  //     if (SEGMENT.call == 0) {
+  //       drop->stack = 0;                  // reset brick stack size
+  //       drop->step = effect_start_time + 2000;     // start by fading out strip
+  //       if (SEGMENT.check1) drop->col = 0;// use only one color from palette
+  //     }
+
+  //     if (drop->step == 0) {              // init brick
+  //       // speed calculation: a single brick should reach bottom of strip in X seconds
+  //       // if the speed is set to 1 this should take 5s and at 255 it should take 0.25s
+  //       // as this is dependant on SEGLEN it should be taken into account and the fact that effect runs every FRAMETIME s
+  //       int speed = SEGMENT.speed ? SEGMENT.speed : hw_random8(1,255);
+  //       speed = map(speed, 1, 255, 5000, 250); // time taken for full (SEGLEN) drop
+  //       drop->speed = float(SEGLEN * FRAMETIME) / float(speed); // set speed
+  //       drop->pos   = SEGLEN;             // start at end of segment (no need to subtract 1)
+  //       if (!SEGMENT.check1) drop->col = hw_random8(0,15)<<4;   // limit color choices so there is enough HUE gap
+  //       drop->step  = 1;                  // drop state (0 init, 1 forming, 2 falling)
+  //       drop->brick = (SEGMENT.intensity ? (SEGMENT.intensity>>5)+1 : hw_random8(1,5)) * (1+(SEGLEN>>6));  // size of brick
+  //     }
+
+  //     if (drop->step == 1) {              // forming
+  //       if (hw_random8()>>6) {               // random drop
+  //         drop->step = 2;                 // fall
+  //       }
+  //     }
+
+  //     if (drop->step == 2) {              // falling
+  //       if (drop->pos > drop->stack) {    // fall until top of stack
+  //         drop->pos -= drop->speed;       // may add gravity as: speed += gravity
+  //         if (int(drop->pos) < int(drop->stack)) drop->pos = drop->stack;
+  //         for (unsigned i = unsigned(drop->pos); i < SEGLEN; i++) {
+  //           uint32_t col = i < unsigned(drop->pos)+drop->brick ? SEGMENT.color_from_palette(drop->col, false, false, 0) : SEGCOLOR_U32(1);
+  //           SEGMENT.setPixelColor(indexToVStrip(i, stripNr), col);
+  //         }
+  //       } else {                          // we hit bottom
+  //         drop->step = 0;                 // proceed with next brick, go back to init
+  //         drop->stack += drop->brick;     // increase the stack size
+  //         if (drop->stack >= SEGLEN) drop->step = effect_start_time + 2000; // fade out stack
+  //       }
+  //     }
+
+  //     if (drop->step > 2) {               // fade strip
+  //       drop->brick = 0;                  // reset brick size (no more growing)
+  //       if (drop->step > effect_start_time) {
+  //         // allow fading of virtual strip
+  //         for (unsigned i = 0; i < SEGLEN; i++) SEGMENT.blendPixelColor(indexToVStrip(i, stripNr), SEGCOLOR(1), 25); // 10% blend
+  //       } else {
+  //         drop->stack = 0;                // reset brick stack size
+  //         drop->step = 0;                 // proceed with next brick
+  //         if (SEGMENT.check1) drop->col += 8;   // gradually increase palette index
+  //       }
+  //     }
+  //   }
+  // };
+
+  // for (unsigned stripNr=0; stripNr<strips; stripNr++)
+  //   virtualStrip::runStrip(stripNr, &drops[stripNr]);
+
+  return;
+}
+static const char PM_EFFECT_CONFIG__TETRIX[] PROGMEM = "Tetrix@!,Width,,,,One color;!,!;!;;sx=0,ix=0,pal=11,m12=1";
+#endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
 
 
 #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
@@ -7807,7 +5200,7 @@ void mAnimatorLight::EffectAnim__Sparkle() // Firework_Rain
   SEGMENT.setPixelColor(SEGMENT.params_internal.aux0, SEGCOLOR_RGBCCT(0));  
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__SPARKLE[] PROGMEM = "Sparkle@!,,,,,,,,Overlay;!,!;!;;m12=0";
@@ -7835,7 +5228,7 @@ void mAnimatorLight::EffectAnim__Sparkle_Flash() // Firework_Rain
     SEGMENT.cycle_time__rate_ms = 20;//return 20;
   } 
   SEGMENT.cycle_time__rate_ms =  20 + (uint16_t)(255-SEGMENT.speed);
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__FLASH_SPARKLE[] PROGMEM = "Sparkle Dark@!,!,,,,,,,Overlay;Bg,Fx;!;;m12=0";
@@ -7865,7 +5258,7 @@ void mAnimatorLight::EffectAnim__Sparkle_Hyper() // Firework_Rain
     SEGMENT.cycle_time__rate_ms =  20;
   }
   SEGMENT.cycle_time__rate_ms =  20 + (uint16_t)(255-SEGMENT.speed);
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__HYPER_SPARKLE[] PROGMEM = "Sparkle+@!,!,,,,,,,Overlay;Bg,Fx;!;;m12=0";
@@ -7895,7 +5288,7 @@ void mAnimatorLight::EffectAnim__Twinkle_Up() // Firework_Rain
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__TWINKLE_UP[] PROGMEM = "Twinkle Up@!,Intensity;!,!;!;;m12=0";
@@ -7939,7 +5332,7 @@ void mAnimatorLight::EffectAnim__Random_Colour()
   fill(ColourBlend(color_wheel(SEGMENT.params_internal.aux1), color_wheel(SEGMENT.params_internal.aux0), fade));//, true);
   
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__RANDOM_COLOR[] PROGMEM = "Random Colors@!,Fade time;;!";
@@ -7970,7 +5363,7 @@ void mAnimatorLight::EffectAnim__Rainbow_Cycle()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__RAINBOW_CYCLE[] PROGMEM = "Rainbow Cylcle@!,Size;;!";
@@ -8009,7 +5402,7 @@ void mAnimatorLight::EffectAnim__Base_Running(bool saw)
     );
   }
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 
@@ -8081,7 +5474,7 @@ void mAnimatorLight::EffectAnim__Twinkle()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__TWINKLE[] PROGMEM = "Twinkle@!,!;!,!;!;;m12=0"; //pixels
@@ -8132,7 +5525,7 @@ uint8_t _brightness = pCONT_iLight->getBriRGB_Global();
   }
   
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 
@@ -8220,7 +5613,7 @@ void mAnimatorLight::EffectAnim__Android()
   SEGMENT.step = a;
   
   SEGMENT.cycle_time__rate_ms =  3 + ((8 * (uint32_t)(255 - SEGMENT.speed)) / SEGLEN);
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 
 }
 static const char PM_EFFECT_CONFIG__ANDROID[] PROGMEM = "Android@!,Width;!,!;!;;m12=1"; //vertical
@@ -8266,7 +5659,7 @@ void mAnimatorLight::EffectAnim__ColourFul()
   for (size_t i = numColors; i < numColors*2 -1U; i++) cols[i] = cols[i-numColors];
 
   uint32_t cycleTime = 50 + (8 * (uint32_t)(255 - SEGMENT.speed));
-  uint32_t it = millis_at_start_of_effect_update / cycleTime;
+  uint32_t it = effect_start_time / cycleTime;
   if (it != SEGMENT.step)
   {
     if (SEGMENT.speed > 0) SEGMENT.params_internal.aux0++;
@@ -8280,7 +5673,7 @@ void mAnimatorLight::EffectAnim__ColourFul()
   }
   
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__COLORFUL[] PROGMEM = "Colourful@!,Saturation;1,2,3;!";
@@ -8325,7 +5718,7 @@ void mAnimatorLight::EffectAnim__Traffic_Light()
   }
   
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__TRAFFIC_LIGHT[] PROGMEM = "Traffic Light@!,US style;,!;!";
@@ -8374,7 +5767,7 @@ void mAnimatorLight::EffectAnim__Base_Running(uint32_t color1, uint32_t color2)
     SEGMENT.step = it;
   }
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 
@@ -8424,7 +5817,7 @@ void mAnimatorLight::EffectAnim__Running_Random()
 
   SEGMENT.params_internal.aux1 = it;
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__RUNNING_RANDOM[] PROGMEM = "Stream@!,Zone size;;!";
@@ -8475,7 +5868,7 @@ void mAnimatorLight::EffectAnim__Base_Gradient(bool loading)
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 
@@ -8549,7 +5942,7 @@ void mAnimatorLight::EffectAnim__Base_Police(uint32_t color1, uint32_t color2, b
   }
   
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 
@@ -8585,7 +5978,7 @@ void mAnimatorLight::EffectAnim__Two_Dots()
   fill(SEGCOLOR_U32(2));
   uint32_t color2 = (SEGCOLOR_U32(1) == SEGCOLOR_U32(2)) ? SEGCOLOR_U32(0) : SEGCOLOR_U32(1);
 
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
   return EffectAnim__Base_Police(SEGCOLOR_U32(0), color2, false);
 }
@@ -8647,7 +6040,7 @@ void mAnimatorLight::EffectAnim__TriColour()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__TRICOLOR_WIPE[] PROGMEM = "TriColour@!;1,2,3;!";
@@ -8712,7 +6105,7 @@ void mAnimatorLight::EffectAnim__Fade_TriColour()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__TRICOLOR_FADE[] PROGMEM = "TriColour Fade@!;1,2,3;!";
@@ -8768,7 +6161,7 @@ void mAnimatorLight::EffectAnim__Multi_Comet()
 
   SEGMENT.step = it;
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__MULTI_COMET[] PROGMEM = "Multi Comet@!,Speed;1,2,3;!";
@@ -8865,7 +6258,7 @@ void mAnimatorLight::EffectAnim__Oscillate()
   SEGMENT.step = it;
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__OSCILLATE[] PROGMEM = "Oscillate@";
@@ -8925,7 +6318,7 @@ void mAnimatorLight::EffectAnim__Pride_2015()
   SEGMENT.step = sPseudotime;
   SEGMENT.params_internal.aux0 = sHue16;
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__PRIDE_2015[] PROGMEM = "Pride@!;;";
@@ -8967,7 +6360,7 @@ void mAnimatorLight::EffectAnim__Juggle()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__JUGGLES[] PROGMEM = "Juggle@!,Trail;;!;;sx=64,ix=128"; // Pixels, Beatsin
@@ -9006,7 +6399,7 @@ void mAnimatorLight::EffectAnim__Palette()
 
   }
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__PALETTE[] PROGMEM = "Palette@Cycle speed;;!;;c3=0,o2=0";
@@ -9099,7 +6492,7 @@ void mAnimatorLight::EffectAnim__ColourWaves()
   SEGMENT.params_internal.aux0 = sHue16;
   
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__COLORWAVES[] PROGMEM = "Colour Waves@!,Hue;!;!";
@@ -9124,7 +6517,7 @@ void mAnimatorLight::EffectAnim__BPM()
     SEGMENT.setPixelColor(i, fastled_col.red, fastled_col.green, fastled_col.blue);
   }
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__BPM[] PROGMEM = "BPM@!;!;!;;sx=64";
@@ -9194,7 +6587,7 @@ void mAnimatorLight::EffectAnim__Twinkle_Colour()
     }
   }
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__COLORTWINKLE[] PROGMEM = "Colortwinkles@Fade speed,Spawn speed;;!;;m12=0"; //pixels
@@ -9228,7 +6621,7 @@ void mAnimatorLight::EffectAnim__Lake()
     SEGMENT.setPixelColor(i, fastled_col.red, fastled_col.green, fastled_col.blue);
   }
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__LAKE[] PROGMEM = "Lake@!;Fx;!";
@@ -9283,7 +6676,7 @@ void mAnimatorLight::EffectAnim__Meteor()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__METEOR[] PROGMEM = "Meteor@!,Trail length;!;!";
@@ -9333,7 +6726,7 @@ void mAnimatorLight::EffectAnim__Metoer_Smooth()
   SEGMENT.step += SEGMENT.speed +1;
   
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__METEOR_SMOOTH[] PROGMEM = "Meteor Smooth@!,Trail length;!;!";
@@ -9407,7 +6800,7 @@ CRGB mAnimatorLight::EffectAnim__Base_Twinkle_Fox_One_Twinkle(uint32_t ms, uint8
     c = HTMLColorCode::Black;
   }
   return c;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
   
 }
@@ -9488,7 +6881,7 @@ void mAnimatorLight::EffectAnim__Base_Twinkle_Fox(bool cat)
   }
   
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 
@@ -9540,7 +6933,7 @@ void mAnimatorLight::EffectAnim__Base_Spots(uint16_t threshold)
   }
   
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 
@@ -9549,7 +6942,7 @@ void mAnimatorLight::EffectAnim__Base_Spots(uint16_t threshold)
 void mAnimatorLight::EffectAnim__Spots()
 {
   EffectAnim__Base_Spots((255 - SEGMENT.speed) << 8);
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__SPOTS[] PROGMEM = "Spots@Spread,Width,,,,,,,Overlay;!,!;!";
@@ -9563,7 +6956,7 @@ void mAnimatorLight::EffectAnim__Fade_Spots()
   uint16_t tr = (t >> 1) + (t >> 2);
 //   return spots_base(tr);
   EffectAnim__Base_Spots(tr);
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__SPOTS_FADE[] PROGMEM = "Spots Fade@Spread,Width,,,,Repeat Rate (ms),,Overlay;!,!;!"; // 7 sliders + 4 options before first ;
@@ -9608,7 +7001,7 @@ uint16_t mAnimatorLight::mode_palette()
     SEGMENT.setPixelColor(i, colour);
   }
   return FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 
@@ -9623,7 +7016,7 @@ void mAnimatorLight::EffectAnim__Glitter()
   }
   
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__GLITTER[] PROGMEM = "Glitter@!,!,,,,,,,Overlay;1,2,Glitter color;!;;pal=25,m12=0"; //pixels
@@ -9700,7 +7093,7 @@ void mAnimatorLight::EffectAnim__Popcorn()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 
 }
@@ -9734,7 +7127,7 @@ void mAnimatorLight::EffectAnim__Plasma()
     CRGB color = ColorFromPalette_WithLoad(SEGMENT.palette_container->CRGB16Palette16_Palette.data, colorIndex, thisBright, LINEARBLEND);
     SEGMENT.setPixelColor(i, color.red, color.green, color.blue);
   }
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 } 
 static const char PM_EFFECT_CONFIG__PLASMA[] PROGMEM = "Plasma@Phase,!;!;!";
@@ -9793,7 +7186,7 @@ void mAnimatorLight::EffectAnim__Percent()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 
 }
@@ -9910,7 +7303,7 @@ void mAnimatorLight::EffectAnim__Pacifica()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__PACIFICA[] PROGMEM = "Pacifica@!,Angle;;!;;pal=51";
@@ -9919,7 +7312,7 @@ static const char PM_EFFECT_CONFIG__PACIFICA[] PROGMEM = "Pacifica@!,Angle;;!;;p
 CRGB mAnimatorLight::pacifica_one_layer(uint16_t i, CRGBPalette16& p, uint16_t cistart, uint16_t wavescale, uint8_t bri, uint16_t ioff)
 {
 
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
   uint16_t ci = cistart;
   uint16_t waveangle = ioff;
@@ -9956,7 +7349,7 @@ void mAnimatorLight::EffectAnim__Solid_Glitter()
     SEGMENT.setPixelColor(random16(SEGLEN), ULTRAWHITE);
   }
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__SOLID_GLITTER[] PROGMEM = "Solid Glitter@,!;Bg,,Glitter color;;;m12=0";
@@ -10023,7 +7416,7 @@ void mAnimatorLight::EffectAnim__Sunrise()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__SUNRISE[] PROGMEM = "Sunrise@Time [min],Width;;!;;sx=60";
@@ -10060,7 +7453,7 @@ void mAnimatorLight::EffectAnim__Sinewave()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__SINEWAVE[] PROGMEM = "Sine@";
@@ -10105,7 +7498,7 @@ void mAnimatorLight::EffectAnim__Flow()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__FLOW[] PROGMEM = "Flow@!,Zones;;!;;m12=1"; //vertical
@@ -10145,10 +7538,50 @@ void mAnimatorLight::EffectAnim__Static_Pattern()
   }
   
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__STATIC_PATTERN[] PROGMEM = "Static Pattern Lit@Fg size,Bg size;Fg,!;!;;pal=19";
+#endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+
+
+/**
+ * @brief Effect X: New effect of "Static Palette Mix"
+ * 
+ * The aim is to make the "Colour and Warm White Stripe" but in a way I can mix them. 
+ * 
+ * Palette1 ABCD
+ * Palette2 abcde
+ * 
+ * So mix would be AaBbCcDdAe (notice shorter palettes that mix already)
+ * 
+ */
+
+#ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+void mAnimatorLight::EffectAnim__Static_Interleaved_Pattern()
+{
+  
+  uint16_t lit = 1 + SEGMENT.speed;
+  uint16_t unlit = 1 + SEGMENT.intensity;
+  bool drawingLit = true;
+  uint16_t cnt = 0;
+
+  for (uint16_t i = 0; i < SEGLEN; i++) {
+    SEGMENT.setPixelColor(i, 
+      (drawingLit) ? SEGMENT.GetPaletteColour(i, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_ON, PALETTE_DISCRETE_OFF, NO_ENCODED_VALUE) : SEGCOLOR_U32(1)
+    );
+    cnt++;
+    if (cnt >= ((drawingLit) ? lit : unlit)) {
+      cnt = 0;
+      drawingLit = !drawingLit;
+    }
+  }
+  
+  SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
+  SET_DIRECT_MODE();
+  
+}
+static const char PM_EFFECT_CONFIG__STATIC_INTERLEAVED_PATTERN[] PROGMEM = "Static Inter Pattern@Fg size,Bg size;Fg,!;!;;pal=19";
 #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
 
 
@@ -10169,8 +7602,8 @@ void mAnimatorLight::EffectAnim__Base_Blink(uint32_t color1, uint32_t color2, bo
   uint32_t onTime = FRAMETIME;
   if (!strobe) onTime += ((cycleTime * SEGMENT.intensity) >> 8);
   cycleTime += FRAMETIME*2;
-  uint32_t it = millis_at_start_of_effect_update / cycleTime;
-  uint32_t rem = millis_at_start_of_effect_update % cycleTime;
+  uint32_t it = effect_start_time / cycleTime;
+  uint32_t rem = effect_start_time % cycleTime;
 
   bool on = false;
   if (it != SEGMENT.step //new iteration, force on state for one frame, even if set time is too brief
@@ -10193,7 +7626,7 @@ void mAnimatorLight::EffectAnim__Base_Blink(uint32_t color1, uint32_t color2, bo
   }
   
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 
@@ -10268,7 +7701,7 @@ void mAnimatorLight::EffectAnim__Strobe_Multi()
   }
   SEGMENT.step = (SEGMENT.step + 1) % (count + 1);  
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__MULTI_STROBE[] PROGMEM = "Strobe Multi@!,!;!,!;!;01";
@@ -10309,7 +7742,7 @@ void mAnimatorLight::EffectAnim__Rainbow()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__RAINBOW[] PROGMEM = "Rainbow@!,Saturation;;!";
@@ -10359,7 +7792,7 @@ void mAnimatorLight::EffectAnim__Lightning()
     }
   }
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__LIGHTNING[] PROGMEM = "Lightning@!,!,,,,,,,Overlay;!,!;!";
@@ -10431,7 +7864,7 @@ void mAnimatorLight::EffectAnim__Fire_2012()
     SEGMENT.setPixelColor(j, color.red, color.green, color.blue);
   }
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__FIRE_2012[] PROGMEM = "Fire 2012@Cooling,Spark rate,,,Boost;;!;1;sx=64,ix=160,m12=1";
@@ -10472,7 +7905,7 @@ void mAnimatorLight::EffectAnim__Railway()
   }
   SEGMENT.step += FRAMETIME_MS;
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__RAILWAY[] PROGMEM = "Railway@!,Smoothness;1,2;!";
@@ -10516,7 +7949,7 @@ void mAnimatorLight::EffectAnim__Heartbeat()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__HEARTBEAT[] PROGMEM = "Heartbeat@!,!;!,!;!;01;m12=1";
@@ -10547,7 +7980,7 @@ void mAnimatorLight::EffectAnim__FillNoise8()
   SEGMENT.step += beatsin8(SEGMENT.speed, 1, 6); //10,1,4
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__FILLNOISE8[] PROGMEM = "Fill Noise@!;!;!";
@@ -10584,7 +8017,7 @@ void mAnimatorLight::EffectAnim__Noise16_1()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__NOISE16_1[] PROGMEM = "Noise 1@!;!;!";
@@ -10618,7 +8051,7 @@ void mAnimatorLight::EffectAnim__Noise16_2()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__NOISE16_2[] PROGMEM = "Noise 2@!;!;!";
@@ -10654,7 +8087,7 @@ void mAnimatorLight::EffectAnim__Noise16_3()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__NOISE16_3[] PROGMEM = "Noise 3@!;!;!";
@@ -10676,7 +8109,7 @@ void mAnimatorLight::EffectAnim__Noise16_4()
     SEGMENT.setPixelColor(i, fastled_col.red, fastled_col.green, fastled_col.blue);
   }
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__NOISE16_4[] PROGMEM = "Noise 4@!;!;!";
@@ -10724,7 +8157,7 @@ void mAnimatorLight::EffectAnim__Noise_Pal()
   SEGMENT.params_internal.aux0 += beatsin8(10,1,4);                                        // Moving along the distance. Vary it a bit with a sine wave.
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__NOISEPAL[] PROGMEM = "Noise Pal@!,Scale;;!";
@@ -10760,7 +8193,7 @@ void mAnimatorLight::EffectAnim__Base_Phased(uint8_t moder)
     index += 256 / SEGLEN;
   }
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 
@@ -10818,7 +8251,7 @@ void mAnimatorLight::EffectAnim__Base_Scan(bool dual)
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 
 }
@@ -10882,7 +8315,7 @@ void mAnimatorLight::EffectAnim__Base_Larson_Scanner(bool dual)
 
   SEGMENT.step = index;
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 
@@ -10950,7 +8383,7 @@ void mAnimatorLight::EffectAnim__ICU()
   SEGMENT.setPixelColor(dest + SEGLEN/space, col);
 
   SEGMENT.cycle_time__rate_ms = SPEED_FORMULA_L;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__ICU[] PROGMEM = "ICU@!,!,,,,,,,Overlay;!,!;!";
@@ -11044,7 +8477,7 @@ void mAnimatorLight::EffectAnim__Base_Ripple(bool rainbow)
     }
   }
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 
@@ -11090,7 +8523,7 @@ void mAnimatorLight::EffectAnim__Comet()
   SEGMENT.params_internal.aux0 = index++;
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__COMET[] PROGMEM = "Comet@!,Fade rate;!,!;!";
@@ -11119,7 +8552,7 @@ void mAnimatorLight::EffectAnim__Chunchun()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 
 }
 static const char PM_EFFECT_CONFIG__CHUNCHUN[] PROGMEM = "Chunchun@!,Gap size;!,!;!";
@@ -11191,10 +8624,113 @@ void mAnimatorLight::EffectAnim__Bouncing_Balls()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__BOUNCINGBALLS[] PROGMEM = "Bouncing Balls@Gravity,# of balls,,,,,,,Overlay;!,!,!;!;1;m12=1"; //bar
+
+
+
+
+/*
+ *  bouncing balls on a track track Effect modified from Aircoookie's bouncing balls
+ *  Courtesy of pjhatch (https://github.com/pjhatch)
+ *  https://github.com/Aircoookie/WLED/pull/1039
+ */
+// modified for balltrack mode
+typedef struct RollingBall {
+  unsigned long lastBounceUpdate;
+  float mass; // could fix this to be = 1. if memory is an issue
+  float velocity;
+  float height;
+} rball_t;
+
+void mAnimatorLight::EffectAnim__Rolling_Balls(void) {
+  //allocate segment data
+  const unsigned maxNumBalls = 16; // 255/16 + 1
+  unsigned dataSize = sizeof(rball_t) * maxNumBalls;
+  if (!SEGMENT.allocateData(dataSize)) return EffectAnim__Static_Palette(); //allocation failed
+
+  rball_t *balls = reinterpret_cast<rball_t *>(SEGMENT.data);
+
+  // number of balls based on intensity setting to max of 16 (cycles colors)
+  // non-chosen color is a random color
+  unsigned numBalls = SEGMENT.intensity/16 + 1;
+  bool hasCol2 = SEGCOLOR(2);
+
+  if (SEGMENT.call == 0) {
+    SEGMENT.fill(hasCol2 ? BLACK : SEGCOLOR(1));                    // start clean
+    for (unsigned i = 0; i < maxNumBalls; i++) {
+      balls[i].lastBounceUpdate = effect_start_time;
+      balls[i].velocity = 20.0f * float(hw_random16(1000, 10000))/10000.0f;  // number from 1 to 10
+      if (hw_random8()<128) balls[i].velocity = -balls[i].velocity;    // 50% chance of reverse direction
+      balls[i].height = (float(hw_random16(0, 10000)) / 10000.0f);     // from 0. to 1.
+      balls[i].mass   = (float(hw_random16(1000, 10000)) / 10000.0f);  // from .1 to 1.
+    }
+  }
+
+  float cfac = float(scale8(8, 255-SEGMENT.speed) +1)*20000.0f; // this uses the Aircoookie conversion factor for scaling time using speed slider
+
+  if (SEGMENT.check3) SEGMENT.fade_out(250); // 2-8 pixel trails (optional)
+  else {
+  	if (!SEGMENT.check2) SEGMENT.fill(hasCol2 ? BLACK : SEGCOLOR(1)); // don't fill with background color if user wants to see trails
+  }
+
+  for (unsigned i = 0; i < numBalls; i++) {
+    float timeSinceLastUpdate = float((effect_start_time - balls[i].lastBounceUpdate))/cfac;
+    float thisHeight = balls[i].height + balls[i].velocity * timeSinceLastUpdate; // this method keeps higher resolution
+    // test if intensity level was increased and some balls are way off the track then put them back
+    if (thisHeight < -0.5f || thisHeight > 1.5f) {
+      thisHeight = balls[i].height = (float(hw_random16(0, 10000)) / 10000.0f); // from 0. to 1.
+      balls[i].lastBounceUpdate = effect_start_time;
+    }
+    // check if reached ends of the strip
+    if ((thisHeight <= 0.0f && balls[i].velocity < 0.0f) || (thisHeight >= 1.0f && balls[i].velocity > 0.0f)) {
+      balls[i].velocity = -balls[i].velocity; // reverse velocity
+      balls[i].lastBounceUpdate = effect_start_time;
+      balls[i].height = thisHeight;
+    }
+    // check for collisions
+    if (SEGMENT.check1) {
+      for (unsigned j = i+1; j < numBalls; j++) {
+        if (balls[j].velocity != balls[i].velocity) {
+          //  tcollided + balls[j].lastBounceUpdate is acutal time of collision (this keeps precision with long to float conversions)
+          float tcollided = (cfac*(balls[i].height - balls[j].height) +
+                balls[i].velocity*float(balls[j].lastBounceUpdate - balls[i].lastBounceUpdate))/(balls[j].velocity - balls[i].velocity);
+
+          if ((tcollided > 2.0f) && (tcollided < float(effect_start_time - balls[j].lastBounceUpdate))) { // 2ms minimum to avoid duplicate bounces
+            balls[i].height = balls[i].height + balls[i].velocity*(tcollided + float(balls[j].lastBounceUpdate - balls[i].lastBounceUpdate))/cfac;
+            balls[j].height = balls[i].height;
+            balls[i].lastBounceUpdate = (unsigned long)(tcollided + 0.5f) + balls[j].lastBounceUpdate;
+            balls[j].lastBounceUpdate = balls[i].lastBounceUpdate;
+            float vtmp = balls[i].velocity;
+            balls[i].velocity = ((balls[i].mass - balls[j].mass)*vtmp              + 2.0f*balls[j].mass*balls[j].velocity)/(balls[i].mass + balls[j].mass);
+            balls[j].velocity = ((balls[j].mass - balls[i].mass)*balls[j].velocity + 2.0f*balls[i].mass*vtmp)             /(balls[i].mass + balls[j].mass);
+            thisHeight = balls[i].height + balls[i].velocity*(effect_start_time - balls[i].lastBounceUpdate)/cfac;
+          }
+        }
+      }
+    }
+
+    uint32_t color = SEGCOLOR(0);
+    if (SEGMENT.palette_id) {
+      //color = SEGMENT.color_wheel(i*(256/MAX(numBalls, 8)));
+      color = SEGMENT.color_from_palette(i*255/numBalls, false, PALETTE_SOLID_WRAP, 0);
+    } else if (hasCol2) {
+      color = SEGCOLOR(i % NUM_COLORS);
+    }
+
+    if (thisHeight < 0.0f) thisHeight = 0.0f;
+    if (thisHeight > 1.0f) thisHeight = 1.0f;
+    unsigned pos = round(thisHeight * (SEGLEN - 1));
+    SEGMENT.setPixelColor(pos, color);
+    balls[i].lastBounceUpdate = effect_start_time;
+    balls[i].height = thisHeight;
+  }
+
+  return;
+}
+static const char PM_EFFECT_CONFIG__ROLLINGBALLS[] PROGMEM = "Rolling Balls@!,# of balls,,,,Collisions,Overlay,Trails;!,!,!;!;1;m12=1"; //bar
 
 
 
@@ -11247,7 +8783,7 @@ void mAnimatorLight::EffectAnim__Base_Sinelon(bool dual, bool rainbow)
   }
   
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 
@@ -11307,7 +8843,7 @@ void mAnimatorLight::EffectAnim__Drip()
   // SEGMENT.setPixelColor(800, RgbcctColor(0,0,100,0,0));// water source
   // SEGMENT.setPixelColor(900, RgbcctColor(25,0,25,0,0));// water source
   // SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  // SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  // SET_DIRECT_MODE();
   // return;
 
 
@@ -11383,65 +8919,65 @@ void mAnimatorLight::EffectAnim__Drip()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__DRIP[] PROGMEM = "Drip@Gravity,# of drips,,,,,,,Overlay;!,!;!;;m12=1"; //bar
 #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
 
-#ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING
-/********************************************************************************************************************************************************************************************************************
- *******************************************************************************************************************************************************************************************************************
- * @name : Test case used for developing new animations
- * @note : Shows pixels from palette, in order. Gradients can either be displayed over total length of segment, or repeated by X pixels
- * 
- * @param : "cycle_time__rate_ms" : How often it changes
- * @param : "time_ms" : How often it changes
- * @param : "pixels to update" : How often it changes
- * @param : "cycle_time__rate_ms" : How often it changes 
- * 
- *******************************************************************************************************************************************************************************************************************
- ********************************************************************************************************************************************************************************************************************/
-void mAnimatorLight::SubTask_Flasher_Animate_Function_Tester_01()
-{
+// #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING
+// /********************************************************************************************************************************************************************************************************************
+//  *******************************************************************************************************************************************************************************************************************
+//  * @name : Test case used for developing new animations
+//  * @note : Shows pixels from palette, in order. Gradients can either be displayed over total length of segment, or repeated by X pixels
+//  * 
+//  * @param : "cycle_time__rate_ms" : How often it changes
+//  * @param : "time_ms" : How often it changes
+//  * @param : "pixels to update" : How often it changes
+//  * @param : "cycle_time__rate_ms" : How often it changes 
+//  * 
+//  *******************************************************************************************************************************************************************************************************************
+//  ********************************************************************************************************************************************************************************************************************/
+// void mAnimatorLight::SubTask_Flasher_Animate_Function_Tester_01()
+// {
 
 
- SEGMENT.palette_container->CRGB16Palette16_Palette.data = Test_p;
- tkr_anim->_virtualSegmentLength = 50;
- tkr_anim->paletteBlend = 3;
+//  SEGMENT.palette_container->CRGB16Palette16_Palette.data = Test_p;
+//  tkr_anim->_virtualSegmentLength = 50;
+//  tkr_anim->paletteBlend = 3;
  
-uint8_t index = 15;
+// uint8_t index = 15;
 
-uint8_t paletteIndex = 0; 
-
-CRGB colour;
-      uint8_t pbri = 255;
-
- uint16_t j = 0;
- uint16_t i = 0;
-    tkr_anim->SEGMENT.setPixelColor(j, mPaletteI->GetColourFromPreloadedPalette (SEGMENT.palette_id, i, nullptr, true, false, 10));
-  for(unsigned i = 0; i < 50; i++) {
-    
-    j = i;//map(i,0,50,0,255);
-  //  tkr_anim->SEGMENT.setPixelColor(j, mPaletteI->color_from_palette_internal(0, i, true, true, 10));
-    // tkr_anim->SEGMENT.setPixelColor(i, mPaletteI->color_from_palette_internal(i, true, true, 10));
-  index = i;
-  
-paletteIndex = i*((255/16)-1);//map(i,);//((255/16)*index)-1; 
-colour = ColorFromPalette_WithLoad( Test_p, paletteIndex, pbri, NOBLEND);
-
-uint32_t col = colour.r*65536 +  colour.g*256 +  colour.b;
-
-
-    tkr_anim->SEGMENT.setPixelColor(i, col);
-  
-  }
-    // tkr_anim->SEGMENT.setPixelColor(0, RgbColor(255,0,0));
-  SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
+// uint8_t paletteIndex = 0; 
 
 // CRGB colour;
-//  = ColorFromPalette_WithLoad( Test_p, paletteIndex, pbri, NOBLEND);
-// ALOG_TST(PSTR("colour %d %d,%d,%d"),paletteIndex,colour.r,colour.g,colour.b);
+//       uint8_t pbri = 255;
+
+//  uint16_t j = 0;
+//  uint16_t i = 0;
+//     tkr_anim->SEGMENT.setPixelColor(j, mPaletteI->GetColourFromPreloadedPalette (SEGMENT.palette_id, i, nullptr, true, false, 10));
+//   for(unsigned i = 0; i < 50; i++) {
+    
+//     j = i;//map(i,0,50,0,255);
+//   //  tkr_anim->SEGMENT.setPixelColor(j, mPaletteI->color_from_palette_internal(0, i, true, true, 10));
+//     // tkr_anim->SEGMENT.setPixelColor(i, mPaletteI->color_from_palette_internal(i, true, true, 10));
+//   index = i;
+  
+// paletteIndex = i*((255/16)-1);//map(i,);//((255/16)*index)-1; 
+// colour = ColorFromPalette_WithLoad( Test_p, paletteIndex, pbri, NOBLEND);
+
+// uint32_t col = colour.r*65536 +  colour.g*256 +  colour.b;
+
+
+//     tkr_anim->SEGMENT.setPixelColor(i, col);
+  
+//   }
+//     // tkr_anim->SEGMENT.setPixelColor(0, RgbColor(255,0,0));
+//   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
+
+// // CRGB colour;
+// //  = ColorFromPalette_WithLoad( Test_p, paletteIndex, pbri, NOBLEND);
+// // ALOG_TST(PSTR("colour %d %d,%d,%d"),paletteIndex,colour.r,colour.g,colour.b);
 
 
 
@@ -11449,170 +8985,170 @@ uint32_t col = colour.r*65536 +  colour.g*256 +  colour.b;
 
 
 
-  // uint16_t dataSize = SEGMENT.colour_width__used_in_effect_generate * 2 * SEGMENT.length(); //allocate space for 10 test pixels
+//   // uint16_t dataSize = SEGMENT.colour_width__used_in_effect_generate * 2 * SEGMENT.length(); //allocate space for 10 test pixels
 
-  // //ALOG_TST(PSTR("dataSize = %d"), dataSize);
+//   // //ALOG_TST(PSTR("dataSize = %d"), dataSize);
 
-  // if (!SEGMENT.allocateData(dataSize))
-  // {
-  //   ALOG_TST(PSTR("Not Enough Memory"));
-  //   SEGMENT.effect_id = EFFECTS_FUNCTION_STATIC_PALETTE_ID; // Default
-  // }
+//   // if (!SEGMENT.allocateData(dataSize))
+//   // {
+//   //   ALOG_TST(PSTR("Not Enough Memory"));
+//   //   SEGMENT.effect_id = EFFECTS_FUNCTION_STATIC_PALETTE_ID; // Default
+//   // }
   
   
-  // // Pick new colours
-  // DynamicBuffer_Segments_UpdateDesiredColourFromPaletteSelected(SEGMENT.palette_id, SEGIDX);
+//   // // Pick new colours
+//   // DynamicBuffer_Segments_UpdateDesiredColourFromPaletteSelected(SEGMENT.palette_id, SEGIDX);
   
-  // // Get starting positions already on show
-  // SEGMENT.DynamicBuffer_StartingColour_GetAllSegment();
+//   // // Get starting positions already on show
+//   // SEGMENT.DynamicBuffer_StartingColour_GetAllSegment();
 
-  // // Call the animator to blend from previous to new
-  // SetSegment_AnimFunctionCallback(  SEGIDX, 
-  //   [this](const AnimationParam& param){ 
-  //     this->AnimationProcess_LinearBlend_Dynamic_Buffer(param); 
-  //   }
-  // );
+//   // // Call the animator to blend from previous to new
+//   // SetSegment_AnimFunctionCallback(  SEGIDX, 
+//   //   [this](const AnimationParam& param){ 
+//   //     this->AnimationProcess_LinearBlend_Dynamic_Buffer(param); 
+//   //   }
+//   // );
 
 
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+//   SET_DIRECT_MODE();
   
 
-}
+// }
 
 
-/********************************************************************************************************************************************************************************************************************
- *******************************************************************************************************************************************************************************************************************
- * @name : Test case used for developing new animations
- * @note : Shows pixels from palette, in order. Gradients can either be displayed over total length of segment, or repeated by X pixels
- * 
- * @param : "cycle_time__rate_ms" : How often it changes
- * @param : "time_ms" : How often it changes
- * @param : "pixels to update" : How often it changes
- * @param : "cycle_time__rate_ms" : How often it changes 
- * 
- * Currently using to test all palettes as they are converted into one method
- * 
- *******************************************************************************************************************************************************************************************************************
- ********************************************************************************************************************************************************************************************************************/
-void mAnimatorLight::SubTask_Flasher_Animate_Function_Tester_02()
-{
+// /********************************************************************************************************************************************************************************************************************
+//  *******************************************************************************************************************************************************************************************************************
+//  * @name : Test case used for developing new animations
+//  * @note : Shows pixels from palette, in order. Gradients can either be displayed over total length of segment, or repeated by X pixels
+//  * 
+//  * @param : "cycle_time__rate_ms" : How often it changes
+//  * @param : "time_ms" : How often it changes
+//  * @param : "pixels to update" : How often it changes
+//  * @param : "cycle_time__rate_ms" : How often it changes 
+//  * 
+//  * Currently using to test all palettes as they are converted into one method
+//  * 
+//  *******************************************************************************************************************************************************************************************************************
+//  ********************************************************************************************************************************************************************************************************************/
+// void mAnimatorLight::SubTask_Flasher_Animate_Function_Tester_02()
+// {
 
 
-  ALOG_INF( PSTR("SubTask_Flasher_Animate_Function_Tester_02") );
+//   ALOG_INF( PSTR("SubTask_Flasher_Animate_Function_Tester_02") );
 
 
-  // SEGMENT.palette_container->CRGB16Palette16_Palette.data = Test_p;
-  // tkr_anim->_virtualSegmentLength = 50;
-  // tkr_anim->paletteBlend = 3;
+//   // SEGMENT.palette_container->CRGB16Palette16_Palette.data = Test_p;
+//   // tkr_anim->_virtualSegmentLength = 50;
+//   // tkr_anim->paletteBlend = 3;
 
-  // uint8_t index = 15;
+//   // uint8_t index = 15;
 
-  // uint8_t paletteIndex = 0; 
+//   // uint8_t paletteIndex = 0; 
 
-  // CRGB colour;
-  // uint8_t pbri = 255;
+//   // CRGB colour;
+//   // uint8_t pbri = 255;
 
-  // uint16_t j = 0;
-  // uint16_t i = 0;
-  // tkr_anim->SEGMENT.setPixelColor(j, mPaletteI->color_from_pale tte_Intermediate(i, true, false, 10));
-  // for(unsigned i = 0; i < 50; i++) {
+//   // uint16_t j = 0;
+//   // uint16_t i = 0;
+//   // tkr_anim->SEGMENT.setPixelColor(j, mPaletteI->color_from_pale tte_Intermediate(i, true, false, 10));
+//   // for(unsigned i = 0; i < 50; i++) {
 
-  //   j = i;//map(i,0,50,0,255);
-  //   //  tkr_anim->SEGMENT.setPixelColor(j, mPaletteI->color_from_palette_internal(0, i, true, true, 10));
-  //   // tkr_anim->SEGMENT.setPixelColor(i, mPaletteI->color_from_palette_internal(i, true, true, 10));
-  //   index = i;
+//   //   j = i;//map(i,0,50,0,255);
+//   //   //  tkr_anim->SEGMENT.setPixelColor(j, mPaletteI->color_from_palette_internal(0, i, true, true, 10));
+//   //   // tkr_anim->SEGMENT.setPixelColor(i, mPaletteI->color_from_palette_internal(i, true, true, 10));
+//   //   index = i;
 
-  //   paletteIndex = i*((255/16)-1);//map(i,);//((255/16)*index)-1; 
-  //   colour = ColorFromPalette_WithLoad( Test_p, paletteIndex, pbri, NOBLEND);
+//   //   paletteIndex = i*((255/16)-1);//map(i,);//((255/16)*index)-1; 
+//   //   colour = ColorFromPalette_WithLoad( Test_p, paletteIndex, pbri, NOBLEND);
 
-  //   uint32_t col = colour.r*65536 +  colour.g*256 +  colour.b;
+//   //   uint32_t col = colour.r*65536 +  colour.g*256 +  colour.b;
 
 
-  //   tkr_anim->SEGMENT.setPixelColor(i, col, true);
+//   //   tkr_anim->SEGMENT.setPixelColor(i, col, true);
 
-  // }
+//   // }
 
-  uint8_t colours_in_palette = 0;
+//   uint8_t colours_in_palette = 0;
 
-  RgbcctColor colour = mPaletteI->GetColourFromPaletteAdvanced(tkr_anim->SEGMENT_I(0).palette_id,0,nullptr,true,true,false,255,&colours_in_palette);
+//   RgbcctColor colour = mPaletteI->GetColourFromPaletteAdvanced(tkr_anim->SEGMENT_I(0).palette_id,0,nullptr,true,true,false,255,&colours_in_palette);
 
-  // RgbcctColor colour = mPaletteI->GetColourFromPaletteAdvanced(mPaletteI->PALETTELIST_VARIABLE_CRGBPALETTE16__BASIC_COLOURS_PRIMARY_SECONDARY_TERTIARY__ID,0,nullptr,true,true,255,&colours_in_palette);
+//   // RgbcctColor colour = mPaletteI->GetColourFromPaletteAdvanced(mPaletteI->PALETTELIST_VARIABLE_CRGBPALETTE16__BASIC_COLOURS_PRIMARY_SECONDARY_TERTIARY__ID,0,nullptr,true,true,255,&colours_in_palette);
 
-  // SEGMENT.palette_id = mPaletteI->PALETTELIST_VARIABLE_CRGBPALETTE16__BASIC_COLOURS_PRIMARY_SECONDARY_TERTIARY__ID;
+//   // SEGMENT.palette_id = mPaletteI->PALETTELIST_VARIABLE_CRGBPALETTE16__BASIC_COLOURS_PRIMARY_SECONDARY_TERTIARY__ID;
 
-  ALOG_INF( PSTR("pID{%d}, colours_in_palette = %d"), tkr_anim->SEGMENT_I(0).palette_id, colours_in_palette );
+//   ALOG_INF( PSTR("pID{%d}, colours_in_palette = %d"), tkr_anim->SEGMENT_I(0).palette_id, colours_in_palette );
 
-  // SEGMENT.setPixelColor(0,colour,true);
-//  for(int i=0;i<50;i++)
+//   // SEGMENT.setPixelColor(0,colour,true);
+// //  for(int i=0;i<50;i++)
+// //   {
+// //     SEGMENT.setPixelColor(i, RgbColor(0));
+// //   }
+
+//   for(int i=0;i<256;i++)
 //   {
-//     SEGMENT.setPixelColor(i, RgbColor(0));
+
+//     colour = mPaletteI->GetColourFromPaletteAdvanced(tkr_anim->SEGMENT_I(0).palette_id,i,nullptr,true,true,true,255,&colours_in_palette);
+
+//     SEGMENT.setPixelColor(i, colour, true);
+
+//     // ALOG_INF( PSTR("pID{%d}, colours_in_palette = %d"),tkr_anim->SEGMENT_I(0).palette_id, colours_in_palette );
+
+//     // if(i>colours_in_palette)
+//     // {
+//     //   break;
+//     // }
+
+
 //   }
 
-  for(int i=0;i<256;i++)
-  {
-
-    colour = mPaletteI->GetColourFromPaletteAdvanced(tkr_anim->SEGMENT_I(0).palette_id,i,nullptr,true,true,true,255,&colours_in_palette);
-
-    SEGMENT.setPixelColor(i, colour, true);
-
-    // ALOG_INF( PSTR("pID{%d}, colours_in_palette = %d"),tkr_anim->SEGMENT_I(0).palette_id, colours_in_palette );
-
-    // if(i>colours_in_palette)
-    // {
-    //   break;
-    // }
 
 
-  }
+//     // tkr_anim->SEGMENT.setPixelColor(0, RgbColor(255,0,0));
+//   // SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
+
+// // CRGB colour;
+// //  = ColorFromPalette_WithLoad( Test_p, paletteIndex, pbri, NOBLEND);
+// // ALOG_TST(PSTR("colour %d %d,%d,%d"),paletteIndex,colour.r,colour.g,colour.b);
 
 
-
-    // tkr_anim->SEGMENT.setPixelColor(0, RgbColor(255,0,0));
-  // SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-
-// CRGB colour;
-//  = ColorFromPalette_WithLoad( Test_p, paletteIndex, pbri, NOBLEND);
-// ALOG_TST(PSTR("colour %d %d,%d,%d"),paletteIndex,colour.r,colour.g,colour.b);
-
-
-// DEBUG_LINE_HERE;
-#ifdef ENABLE_DEVFEATURE_DEBUG_SERIAL__ANIMATION_OUTPUT
-          Serial.print("@1");
-          #endif 
-pCONT_iLight->ShowInter face();
+// // DEBUG_LINE_HERE;
+// #ifdef ENABLE_DEVFEATURE_DEBUG_SERIAL__ANIMATION_OUTPUT
+//           Serial.print("@1");
+//           #endif 
+// pCONT_iLight->ShowInter face();
 
 
 
 
-  // uint16_t dataSize = SEGMENT.colour_width__used_in_effect_generate * 2 * SEGMENT.length(); //allocate space for 10 test pixels
+//   // uint16_t dataSize = SEGMENT.colour_width__used_in_effect_generate * 2 * SEGMENT.length(); //allocate space for 10 test pixels
 
-  // //ALOG_TST(PSTR("dataSize = %d"), dataSize);
+//   // //ALOG_TST(PSTR("dataSize = %d"), dataSize);
 
-  // if (!SEGMENT.allocateData(dataSize))
-  // {
-  //   ALOG_TST(PSTR("Not Enough Memory"));
-  //   SEGMENT.effect_id = EFFECTS_FUNCTION_STATIC_PALETTE_ID; // Default
-  // }
+//   // if (!SEGMENT.allocateData(dataSize))
+//   // {
+//   //   ALOG_TST(PSTR("Not Enough Memory"));
+//   //   SEGMENT.effect_id = EFFECTS_FUNCTION_STATIC_PALETTE_ID; // Default
+//   // }
   
   
-  // // Pick new colours
-  // DynamicBuffer_Segments_UpdateDesiredColourFromPaletteSelected(SEGMENT.palette_id, SEGIDX);
+//   // // Pick new colours
+//   // DynamicBuffer_Segments_UpdateDesiredColourFromPaletteSelected(SEGMENT.palette_id, SEGIDX);
   
-  // // Get starting positions already on show
-  // SEGMENT.DynamicBuffer_StartingColour_GetAllSegment();
+//   // // Get starting positions already on show
+//   // SEGMENT.DynamicBuffer_StartingColour_GetAllSegment();
 
-  // // Call the animator to blend from previous to new
-  // SetSegment_AnimFunctionCallback(  SEGIDX, 
-  //   [this](const AnimationParam& param){ 
-  //     this->AnimationProcess_LinearBlend_Dynamic_Buffer(param); 
-  //   }
-  // );
+//   // // Call the animator to blend from previous to new
+//   // SetSegment_AnimFunctionCallback(  SEGIDX, 
+//   //   [this](const AnimationParam& param){ 
+//   //     this->AnimationProcess_LinearBlend_Dynamic_Buffer(param); 
+//   //   }
+//   // );
 
 
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+//   SET_DIRECT_MODE();
   
-}
-#endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING
+// }
+// #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING
 
 
 #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__NOTIFICATIONS
@@ -11869,20 +9405,20 @@ void mAnimatorLight::EffectAnim__BorderWallpaper__TwoColour_Gradient()
     uint16_t edge_lengths[4] = {44,67,109,133}; // 2 extra pixels on centre inlay
     
 
-    std::vector<RgbcctColor> corner_colours;
+    std::vector<RgbwwColor> corner_colours;
 
   }edge_settings;
 
 
 
-  edge_settings.corner_colours.push_back(RgbcctColor(255,0,0,0,0));
-  edge_settings.corner_colours.push_back(RgbcctColor(255,0,0,0,0));
-  edge_settings.corner_colours.push_back(RgbcctColor(0,255,0,0,0));
-  edge_settings.corner_colours.push_back(RgbcctColor(0,255,0,0,0));
-  edge_settings.corner_colours.push_back(RgbcctColor(0,0,255,0,0));
-  edge_settings.corner_colours.push_back(RgbcctColor(0,0,255,0,0));
-  edge_settings.corner_colours.push_back(RgbcctColor(255,0,255,0,0));
-  edge_settings.corner_colours.push_back(RgbcctColor(255,0,255,0,0));
+  edge_settings.corner_colours.push_back(RgbwwColor(255,0,0,0,0));
+  edge_settings.corner_colours.push_back(RgbwwColor(255,0,0,0,0));
+  edge_settings.corner_colours.push_back(RgbwwColor(0,255,0,0,0));
+  edge_settings.corner_colours.push_back(RgbwwColor(0,255,0,0,0));
+  edge_settings.corner_colours.push_back(RgbwwColor(0,0,255,0,0));
+  edge_settings.corner_colours.push_back(RgbwwColor(0,0,255,0,0));
+  edge_settings.corner_colours.push_back(RgbwwColor(255,0,255,0,0));
+  edge_settings.corner_colours.push_back(RgbwwColor(255,0,255,0,0));
 
 
 
@@ -11895,13 +9431,13 @@ void mAnimatorLight::EffectAnim__BorderWallpaper__TwoColour_Gradient()
   // RgbcctColor edge4_colour = RgbcctColor(255,0,255,0,0);
 
 
-  RgbcctColor edge1_colour = RgbcctColor(0,100,100,0,0);
-  RgbcctColor edge2_colour = RgbcctColor(D_RGB_ORANGE_PASTEL_90SAT  0,0);
-  RgbcctColor edge3_colour = RgbcctColor(D_RGB_ORANGE_PASTEL_90SAT  0,0);
-  RgbcctColor edge4_colour = RgbcctColor(D_RGB_ORANGE_PASTEL_90SAT  0,0);
+  RgbwwColor edge1_colour = RgbwwColor(0,100,100,0,0);
+  RgbwwColor edge2_colour = RgbwwColor(D_RGB_ORANGE_PASTEL_90SAT  0,0);
+  RgbwwColor edge3_colour = RgbwwColor(D_RGB_ORANGE_PASTEL_90SAT  0,0);
+  RgbwwColor edge4_colour = RgbwwColor(D_RGB_ORANGE_PASTEL_90SAT  0,0);
 
   float progress;
-  RgbcctColor colour;
+  RgbwwColor colour;
   
   uint16_t edge_start_t = 0;
   uint16_t edge_stop_t = 0;
@@ -11917,7 +9453,9 @@ void mAnimatorLight::EffectAnim__BorderWallpaper__TwoColour_Gradient()
   for(uint16_t pixel = 0; pixel < edge_length; pixel++)
   {
     colour = edge1_colour;
-    SetTransitionColourBuffer_DesiredColour(SEGMENT.Data(), SEGMENT.DataLength(), edge_start_t + pixel, SEGMENT.colour_width__used_in_effect_generate, colour.WithBrightness(brightness) );
+    // SetTransitionColourBuffer_DesiredColour(SEGMENT.Data(), SEGMENT.DataLength(), edge_start_t + pixel, SEGMENT.colour_width__used_in_effect_generate, colour.WithBrightness(brightness) );
+  
+    SEGMENT.Set_DynamicBuffer_DesiredColour(edge_start_t + pixel, RgbwwColorU32(colour) );
   }
 
 
@@ -11930,7 +9468,11 @@ void mAnimatorLight::EffectAnim__BorderWallpaper__TwoColour_Gradient()
   for(uint16_t pixel = 0; pixel < edge_length; pixel++)
   {
     colour = edge2_colour;
-    SetTransitionColourBuffer_DesiredColour(SEGMENT.Data(), SEGMENT.DataLength(), edge_start_t + pixel, SEGMENT.colour_width__used_in_effect_generate, colour.WithBrightness(brightness) );
+    // SetTransitionColourBuffer_DesiredColour(SEGMENT.Data(), SEGMENT.DataLength(), edge_start_t + pixel, SEGMENT.colour_width__used_in_effect_generate, colour.WithBrightness(brightness) );
+  
+  
+    SEGMENT.Set_DynamicBuffer_DesiredColour(edge_start_t + pixel, RgbwwColorU32(colour) );
+  
   }
 
 
@@ -11943,7 +9485,11 @@ void mAnimatorLight::EffectAnim__BorderWallpaper__TwoColour_Gradient()
   for(uint16_t pixel = 0; pixel < edge_length; pixel++)
   {
     colour = edge3_colour;
-    SetTransitionColourBuffer_DesiredColour(SEGMENT.Data(), SEGMENT.DataLength(), edge_start_t + pixel, SEGMENT.colour_width__used_in_effect_generate, colour.WithBrightness(brightness) );
+    // SetTransitionColourBuffer_DesiredColour(SEGMENT.Data(), SEGMENT.DataLength(), edge_start_t + pixel, SEGMENT.colour_width__used_in_effect_generate, colour.WithBrightness(brightness) );
+  
+  
+    SEGMENT.Set_DynamicBuffer_DesiredColour(edge_start_t + pixel, RgbwwColorU32(colour) );
+  
   }
 
 
@@ -11956,7 +9502,11 @@ void mAnimatorLight::EffectAnim__BorderWallpaper__TwoColour_Gradient()
   for(uint16_t pixel = 0; pixel < edge_length; pixel++)
   {
     colour = edge4_colour;
-    SetTransitionColourBuffer_DesiredColour(SEGMENT.Data(), SEGMENT.DataLength(), edge_start_t + pixel, SEGMENT.colour_width__used_in_effect_generate, colour.WithBrightness(brightness) );
+    // SetTransitionColourBuffer_DesiredColour(SEGMENT.Data(), SEGMENT.DataLength(), edge_start_t + pixel, SEGMENT.colour_width__used_in_effect_generate, colour.WithBrightness(brightness) );
+  
+  
+    SEGMENT.Set_DynamicBuffer_DesiredColour(edge_start_t + pixel, RgbwwColorU32(colour) );
+  
   }
 
 
@@ -12212,11 +9762,16 @@ void mAnimatorLight::EffectAnim__BorderWallpaper__FourColour_Gradient()
 
   if (!SEGMENT.allocateColourData( SEGMENT.colour_width__used_in_effect_generate * 2 * SEGLEN )){ return; } // Pixel_Width * Two_Channels * Pixel_Count
     
-  RgbcctColor colour = RgbcctColor();
+  uint32_t colour = 0;//RgbcctColor();
   for(uint16_t pixel = 0; pixel < SEGLEN; pixel++)
   {    
     colour = SEGMENT.GetPaletteColour(pixel, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_OFF, NO_ENCODED_VALUE);
-    SetTransitionColourBuffer_DesiredColour(SEGMENT.Data(), SEGMENT.DataLength(), pixel, SEGMENT.colour_width__used_in_effect_generate, colour.WithBrightness(brightness) );
+    // SetTransitionColourBuffer_DesiredColour(SEGMENT.Data(), SEGMENT.DataLength(), pixel, SEGMENT.colour_width__used_in_effect_generate, colour.WithBrightness(brightness) );
+  
+  
+  
+    SEGMENT.Set_DynamicBuffer_DesiredColour(pixel, colour );
+  
   }
 
   SEGMENT.DynamicBuffer_StartingColour_GetAllSegment();
@@ -12244,11 +9799,15 @@ void mAnimatorLight::EffectAnim__BorderWallpaper__FourColour_Solid()
 
   if (!SEGMENT.allocateColourData( SEGMENT.colour_width__used_in_effect_generate * 2 * SEGLEN )){ return; } // Pixel_Width * Two_Channels * Pixel_Count
     
-  RgbcctColor colour = RgbcctColor();
+  uint32_t colour = 0;//RgbcctColor();
   for(uint16_t pixel = 0; pixel < SEGLEN; pixel++)
   {    
     colour = SEGMENT.GetPaletteColour(pixel, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_OFF, NO_ENCODED_VALUE);
-    SetTransitionColourBuffer_DesiredColour(SEGMENT.Data(), SEGMENT.DataLength(), pixel, SEGMENT.colour_width__used_in_effect_generate, colour.WithBrightness(brightness) );
+    // SetTransitionColourBuffer_DesiredColour(SEGMENT.Data(), SEGMENT.DataLength(), pixel, SEGMENT.colour_width__used_in_effect_generate, colour.WithBrightness(brightness) );
+  
+  
+  
+    SEGMENT.Set_DynamicBuffer_DesiredColour( pixel, colour );
   }
 
   SEGMENT.DynamicBuffer_StartingColour_GetAllSegment();
@@ -13021,20 +10580,20 @@ void mAnimatorLight::EffectAnim__Hardware__Show_Bus()
 
     ALOG_INF(PSTR("EffectAnim__Hardware__Show_Bus %d/%d (%d/%d\t%d)"), bus_i, buscount, start, length, start + length);
 
-    float huef = mSupport::mapfloat((float)bus_i, 0.0f, (float)buscount, 0.0f, 1.0f);
-    float satf = 1.0f;
+    uint16_t hue = map(bus_i, 0, buscount, 0, 360);
+    uint8_t sat = 255;
 
     if(bus_i%2)
-      satf = 1.0f;
+      sat = 255;
 
-    RgbcctColor colour = HsbColor(huef,satf,1.0f);
+    uint32_t colour = HueSatBrt(hue,sat,1.0f);
 
     for(unsigned i = start; i < start + length; i++)
     {
       if(i < start + 1 + bus_i) // let the number of one white pixels be the bus index
       {
-        SEGMENT.setPixelColor(i, RgbcctColor(255,255,255));
-        ALOG_INF(PSTR("Bus i < start  %d (%d/%d\t%d)\ti=%d hue100=%d"), bus_i, start, length, start + length, i, uint16_t(huef*100));
+        SEGMENT.setPixelColor(i, RGBW32(255,255,255,255) );
+        ALOG_INF(PSTR("Bus i < start  %d (%d/%d\t%d)\ti=%d hue=%d"), bus_i, start, length, start + length, i, hue);
       }else{
         SEGMENT.setPixelColor(i, colour);
       }
@@ -13045,7 +10604,7 @@ void mAnimatorLight::EffectAnim__Hardware__Show_Bus()
 
   
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__HARDWARE__SHOW_BUS[] PROGMEM = "Debug Visualise Bus@Fg size,Bg size;Fg,!;!;;pal=19";
@@ -13062,12 +10621,12 @@ static const char PM_EFFECT_CONFIG__HARDWARE__SHOW_BUS[] PROGMEM = "Debug Visual
 void mAnimatorLight::EffectAnim__Hardware__Manual_Pixel_Counting()
 {
   
-  SEGMENT.fill(RgbcctColor(5,5,5).getU32());
+  SEGMENT.fill(RGBW32(5,5,5,0));
 
   uint16_t hue_list[] = {0,120,240,340,50,180,14,350,280};
   uint8_t used_hue = 0;  
   
-  RgbcctColor colour = RgbcctColor();
+  uint32_t colour = 0;//RgbcctColor();
 
 
   for (uint16_t i = 0; i < SEGLEN; i++)
@@ -13106,7 +10665,7 @@ void mAnimatorLight::EffectAnim__Hardware__Manual_Pixel_Counting()
   // SEGMENT.setPixelColor(0, RgbcctColor(255,0,0));
   
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__HARDWARE__MANUAL_PIXEL_COUNTING[] PROGMEM = "Debug Pixel Counting@Fg size,Bg size;Fg,!;!;;pal=19";
@@ -13131,7 +10690,7 @@ void mAnimatorLight::EffectAnim__Hardware__View_Pixel_Range()
   }
     
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__HARDWARE__VIEW_PIXEL_RANGE[] PROGMEM = "Debug Pixel Range@Fg size,Bg size;Fg,!;!;;pal=0";
@@ -13155,7 +10714,7 @@ void mAnimatorLight::EffectAnim__Hardware__Light_Sensor_Pixel_Indexing()
 
   for (uint16_t i = 0; i < SEGLEN; i++) {
     SEGMENT.setPixelColor(i, 
-      (drawingLit) ? SEGMENT.GetPaletteColour(i, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_ON, PALETTE_DISCRETE_OFF, NO_ENCODED_VALUE).getU32() : SEGCOLOR_U32(1)
+      (drawingLit) ? SEGMENT.GetPaletteColour(i, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_ON, PALETTE_DISCRETE_OFF, NO_ENCODED_VALUE) : SEGCOLOR_U32(1)
     );
     cnt++;
     if (cnt >= ((drawingLit) ? lit : unlit)) {
@@ -13165,7 +10724,7 @@ void mAnimatorLight::EffectAnim__Hardware__Light_Sensor_Pixel_Indexing()
   }
   
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   
 }
 static const char PM_EFFECT_CONFIG__HARDWARE__LIGHT_SENSOR_PIXEL_INDEXING[] PROGMEM = "Debug Light Sensor Indexing@Fg size,Bg size;Fg,!;!;;pal=19";
@@ -13182,38 +10741,15 @@ static const char PM_EFFECT_CONFIG__HARDWARE__LIGHT_SENSOR_PIXEL_INDEXING[] PROG
 
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
- * @name : Name
- * @note : Converted from WLED Effects
- * Speed slider sets amount of LEDs lit, intensity sets unlit
+ * @name : Manual__PixelSetElsewhere
+ * @note : Temporary effect before realtime can take over
  *******************************************************************************************************************************************************************************************************************
  ********************************************************************************************************************************************************************************************************************/
 #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__PIXEL_SET_ELSEWHERE
 void mAnimatorLight::EffectAnim__Manual__PixelSetElsewhere()
-{
-  
-  // uint16_t lit = 1 + SEGMENT.speed;
-  // uint16_t unlit = 1 + SEGMENT.intensity;
-  // bool drawingLit = true;
-  // uint16_t cnt = 0;
-
-  // for (uint16_t i = 0; i < SEGLEN; i++) {
-  //   SEGMENT.setPixelColor(i, 
-  //     (drawingLit) ? RgbcctColor::GetU32Colour(SEGMENT.GetPaletteColour(i, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_ON, PALETTE_DISCRETE_OFF, NO_ENCODED_VALUE)) : SEGCOLOR_U32(1)
-  //   );
-  //   cnt++;
-  //   if (cnt >= ((drawingLit) ? lit : unlit)) {
-  //     cnt = 0;
-  //     drawingLit = !drawingLit;
-  //   }
-  // }
-
-  // SEGMENT.setPixelColor(0, RgbcctColor(255,0,0));
-  // SEGMENT.setPixelColor(1, RgbcctColor(0,255,0));
-  // SEGMENT.setPixelColor(2, RgbcctColor(0,0,255));
-  
+{  
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
-  
+  SET_DIRECT_MODE(); 
 }
 static const char PM_EFFECT_CONFIG__MANUAL__PIXEL_SET_ELSEWHERE__INDEXING[] PROGMEM = "Debug Pixel Set Manually@Fg size,Bg size;Fg,!;!;;pal=19";
 #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__PIXEL_SET_ELSEWHERE
@@ -13222,896 +10758,6 @@ static const char PM_EFFECT_CONFIG__MANUAL__PIXEL_SET_ELSEWHERE__INDEXING[] PROG
 
 
 
-
-
-
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING
-// const uint32_t MUSIC_TIMING[] = {
-
-// 0,
-// 7,
-// 240,
-// 248,
-// 488,
-// 500,
-// 739,
-// 747,
-// 1239,
-// 1247,
-// 1738,
-// 1746,
-// 2478,
-// 2486,
-// 2726,
-// 2738,
-// 3218,
-// 3225,
-// 3717,
-// 3725,
-// 4217,
-// 4224,
-// 4716,
-// 4724,
-// 5216,
-// 5223,
-// 5715,
-// 5723,
-// 6455,
-// 6463,
-// 6704,
-// 6714,
-// 7202,
-// 7214,
-// 7694,
-// 7702,
-// 8694,
-// 8701,
-// 9273,
-// 9281,
-// 9853,
-// 9861,
-// 10433,
-// 10441,
-// 11013,
-// 11020,
-// 11592,
-// 11600,
-// 12172,
-// 12180,
-// 12471,
-// 12479,
-// 12752,
-// 12759,
-// 13331,
-// 13339,
-// 13911,
-// 13918,
-// 14490,
-// 14498,
-// 15070,
-// 15077,
-// 15649,
-// 15657,
-// 16229,
-// 16236,
-// 16816,
-// 16828,
-// 17108,
-// 17116,
-// 17396,
-// 17408,
-// 17976,
-// 17987,
-// 18556,
-// 18567,
-// 19136,
-// 19146,
-// 19726,
-// 19733,
-// 20006,
-// 20013,
-// 20305,
-// 20313,
-// 20586,
-// 20593,
-// 20885,
-// 20893,
-// 21465,
-// 21472,
-// 22044,
-// 22052,
-// 22324,
-// 22332,
-// 22624,
-// 22632,
-// 22904,
-// 22912,
-// 23203,
-// 23211,
-// 23783,
-// 23791,
-// 24363,
-// 24371,
-// 24643,
-// 24650,
-// 24942,
-// 24950,
-// 25223,
-// 25230,
-// 25522,
-// 25530,
-// 26102,
-// 26110,
-// 26390,
-// 26401,
-// 26682,
-// 26689,
-// 27261,
-// 27269,
-// 27841,
-// 27849,
-// 28420,
-// 28428,
-// 29000,
-// 29008,
-// 29579,
-// 29588,
-// 30159,
-// 30167,
-// 30739,
-// 30747,
-// 31319,
-// 31326,
-// 31898,
-// 31906,
-// 32478,
-// 32485,
-// 33636,
-// 33645,
-// 34304,
-// 34316,
-// 34635,
-// 34644,
-// 34975,
-// 34983,
-// 35464,
-// 35475,
-// 35635,
-// 35642,
-// 35954,
-// 35963,
-// 36295,
-// 36302,
-// 36634,
-// 36641,
-// 36954,
-// 36962,
-// 37293,
-// 37301,
-// 37614,
-// 37621,
-// 37953,
-// 37961,
-// 38282,
-// 38293,
-// 38952,
-// 38960,
-// 39272,
-// 39280,
-// 39612,
-// 39620,
-// 39940,
-// 39952,
-// 40271,
-// 40279,
-// 40611,
-// 40618,
-// 40931,
-// 40939,
-// 41271,
-// 41278,
-// 41590,
-// 41598,
-// 41930,
-// 41938,
-// 42270,
-// 42277,
-// 43589,
-// 43597,
-// 44168,
-// 44176,
-// 44456,
-// 44468,
-// 44748,
-// 44756,
-// 45036,
-// 45048,
-// 45907,
-// 45915,
-// 46196,
-// 46207,
-// 46486,
-// 46494,
-// 46786,
-// 46793,
-// 47365,
-// 47373,
-// 47646,
-// 47653,
-// 47945,
-// 47953,
-// 48225,
-// 48232,
-// 48524,
-// 48532,
-// 49384,
-// 49392,
-// 49683,
-// 49691,
-// 49964,
-// 49971,
-// 50263,
-// 50271,
-// 50843,
-// 50850,
-// 51422,
-// 51430,
-// 51862,
-// 51869,
-// 52002,
-// 52010,
-// 52581,
-// 52589,
-// 53161,
-// 53169,
-// 53601,
-// 53608,
-// 53740,
-// 53748,
-// 54320,
-// 54328,
-// 54609,
-// 54620,
-// 54900,
-// 54907,
-// 55189,
-// 55199,
-// 55479,
-// 55487,
-// 56059,
-// 56067,
-// 56639,
-// 56646,
-// 57218,
-// 57226,
-// 57798,
-// 57805,
-// 58457,
-// 58465,
-// 58797,
-// 58805,
-// 59125,
-// 59136,
-// 59796,
-// 59803,
-// 60116,
-// 60124,
-// 60456,
-// 60463,
-// 60783,
-// 60795,
-// 61115,
-// 61123,
-// 61774,
-// 61783,
-// 62434,
-// 62442,
-// 62774,
-// 62782,
-// 63103,
-// 63114,
-// 63433,
-// 63441,
-// 63773,
-// 63780,
-// 64093,
-// 64101,
-// 64433,
-// 64440,
-// 64761,
-// 64772,
-// 65092,
-// 65100,
-// 65751,
-// 65759,
-// 66419,
-// 66431,
-// 66750,
-// 66758,
-// 67090,
-// 67097,
-// 67410,
-// 67418,
-// 67750,
-// 67757,
-// 68069,
-// 68077,
-// 68410,
-// 68417,
-// 68738,
-// 68749,
-// 69069,
-// 69077,
-// 69728,
-// 69737,
-// 70396,
-// 70408,
-// 71068,
-// 71075,
-// 71727,
-// 71735,
-// 72387,
-// 72395,
-// 73047,
-// 73054,
-// 74374,
-// 74385,
-// 74866,
-// 74873,
-// 75625,
-// 75632,
-// 75865,
-// 75872,
-// 76364,
-// 76372,
-// 76864,
-// 76872,
-// 77364,
-// 77372,
-// 77864,
-// 77871,
-// 78352,
-// 78363,
-// 78603,
-// 78611,
-// 78843,
-// 78851,
-// 79103,
-// 79110,
-// 79343,
-// 79351,
-// 79603,
-// 79610,
-// 79842,
-// 79850,
-// 80342,
-// 80350,
-// 80582,
-// 80590,
-// 80842,
-// 80849,
-// 81341,
-// 81349,
-// 81841,
-// 81848,
-// 82329,
-// 82341,
-// 82821,
-// 82828,
-// 83580,
-// 83588,
-// 83820,
-// 83828,
-// 84320,
-// 84328,
-// 84560,
-// 84567,
-// 84819,
-// 84827,
-// 85559,
-// 85567,
-// 85819,
-// 85826,
-// 86307,
-// 86318,
-// 86558,
-// 86566,
-// 86798,
-// 86806,
-// 87058,
-// 87066,
-// 87298,
-// 87306,
-// 87797,
-// 87806,
-// 88047,
-// 88058,
-// 88297,
-// 88305,
-// 88797,
-// 88805,
-// 89296,
-// 89304,
-// 89796,
-// 89804,
-// 90285,
-// 90296,
-// 90776,
-// 90784,
-// 91275,
-// 91284,
-// 91535,
-// 91543,
-// 92025,
-// 92035,
-// 92275,
-// 92283,
-// 92774,
-// 92783,
-// 93274,
-// 93282,
-// 93774,
-// 93782,
-// 94262,
-// 94274,
-// 94753,
-// 94761,
-// 95253,
-// 95261,
-// 95513,
-// 95521,
-// 95753,
-// 95760,
-// 96002,
-// 96012,
-// 96253,
-// 96260,
-// 96752,
-// 96760,
-// 97252,
-// 97259,
-// 97751,
-// 97759,
-// 98240,
-// 98251,
-// 98731,
-// 98739,
-// 99231,
-// 99238,
-// 99490,
-// 99498,
-// 99990,
-// 99997,
-// 100069
-
-// };
-
-
-
-const uint32_t MUSIC_TIMING[] = {
-0,
-7.972,
-499.402,
-507.345,
-1239.155,
-1246.915,
-1486.988,
-1498.504,
-1978.485,
-1986.135,
-2477.608,
-2485.89,
-2977.531,
-2985.234,
-3476.742,
-3485.012,
-3976.526,
-3984.354,
-4216.1,
-4224.27,
-4476.055,
-4483.668,
-4715.713,
-4723.855,
-4975.646,
-4983.101,
-5215.28,
-5223.448,
-5475.251,
-5482.568,
-5963.141,
-5974.626,
-6214.72,
-6222.387,
-6454.313,
-6462.491,
-6954.357,
-6962.023,
-7453.624,
-7461.892,
-7953.691,
-7961.352,
-8452.793,
-8461.126,
-9192.867,
-9200.642,
-9452.332,
-9460.077,
-9940.75,
-9952.133,
-10191.923,
-10200.067,
-10432.143,
-10439.687,
-11191.14,
-11199.189,
-11431.529,
-11439.092,
-11930.861,
-11939.134,
-12178.845,
-12190.851,
-12430.409,
-12438.662,
-12670.817,
-12678.358,
-12930.18,
-12938.213,
-13430.08,
-13437.6,
-13669.854,
-13678.009,
-13919.112,
-13929.893,
-14409.374,
-14417.651,
-14909.454,
-14917.125,
-15408.764,
-15417.023,
-15908.825,
-15916.49,
-16408.118,
-16416.381,
-16907.866,
-16915.69,
-17147.64,
-17155.794,
-17647.684,
-17655.34,
-17907.063,
-17914.782,
-18395.001,
-18406.844,
-18886.432,
-18894.685,
-19386.443,
-19394.129,
-19885.738,
-19893.997,
-20385.762,
-20393.437,
-20884.842,
-20893.168,
-21125.234,
-21132.779,
-21384.583,
-21392.539,
-21624.889,
-21632.418,
-21884.245,
-21892.017,
-22372.704,
-22384.026,
-22863.555,
-22871.818,
-23363.529,
-23371.224,
-23862.805,
-23871.069,
-24362.828,
-24370.49,
-24861.942,
-24870.356,
-25102.289,
-25109.86,
-25601.557,
-25609.85,
-25861.549,
-25869.021,
-26350.888,
-26360.99,
-26848.94,
-26860.828,
-27340.425,
-27348.692,
-27840.485,
-27848.167,
-28339.784,
-28348.051,
-28839.847,
-28847.528,
-29079.292,
-29087.475,
-29339.325,
-29346.962,
-29578.959,
-29587.14,
-29838.977,
-29846.462,
-30338.364,
-30346.149,
-30826.407,
-30838.185,
-31817.477,
-31825.872,
-32817.334,
-32825.151,
-33316.531,
-33324.865,
-33816.602,
-33824.242,
-34316.244,
-34324.005,
-34556.58,
-34564.162,
-34804.449,
-34816.025,
-35296.2,
-35303.891,
-35795.556,
-35803.833,
-36295.647,
-36303.341,
-36794.925,
-36803.228,
-37055.158,
-37059.831,
-
-
-};
-
-  #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING
-
-
-/********************************************************************************************************************************************************************************************************************
- *******************************************************************************************************************************************************************************************************************
- * @name           : Slow Glow 
- * @description:   : Randomly changes colours of pixels, and blends to the new one
- * 
- * @param intensity: 0-255 is how many should pixels should randomly change (0-255 scaled to 0-pixel_count)
- * @param Speed    : None
- * @param rate     : Period of time (ms) between updates
- * @param time     : Blend time
- * 
- * 
- * Method 1: Inside the music function, when aux0 is reseting, then "playTrack" should be started where another driver for the music should be called.
- *           Wait until finished, or with timeout, and then use the start time as the animation sync start and play the effect until the end.
- * 
- * Method 2: Could be started same as above. I may want to call any other effect and simple apply the music as a trigger. Or introduce animation trigger methods where
- *            - using speed/intensity
- *            - using sound reactive, which uses a microphone to then call each animation
- *            - using prerecorded tracks, ie christmas music controller
- * 
- *            Method 2 would allow animations to be applied to any current and future animation, and simply be triggering calls for the animation to update. 
- * 
- *            Playlists in this case could actually be used to literally link sound/animations together.
- * 
- *******************************************************************************************************************************************************************************************************************
- ********************************************************************************************************************************************************************************************************************/
-#ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING
-void mAnimatorLight::EffectAnim__Christmas_Musical__01()
-{
-
-  uint16_t dataSize = SEGMENT.colour_width__used_in_effect_generate * 2 * SEGMENT.length(); //allocate space for 10 test pixels
-
-  if (!SEGMENT.allocateColourData(dataSize)){    
-    ALOG_ERR( PM_MEMORY_INSUFFICIENT );
-    SEGMENT.effect_id = DEFAULT_EFFECTS_FUNCTION;
-    return;
-  }
-
-
-
-  if(SEGMENT.params_internal.aux0 == 0)
-  {
-
-  }
-  if(SEGMENT.params_internal.aux0 == ARRAY_SIZE(MUSIC_TIMING))
-  {
-    SEGMENT.params_internal.aux0 = 0;
-    SEGMENT.tSaved_EffectStartReferenceTime = millis();
-    
-  }
-
-  SEGMENT.params_internal.aux0++;
-
-
-  uint32_t time_from_reference = millis() - SEGMENT.tSaved_EffectStartReferenceTime;
-
-
-  // ALOG_INF(PSTR("EffectAnim__Christmas_Musical__01 aux0 = %d %d/%d"), SEGMENT.params_internal.aux0, 
-  //   SEGMENT.tSaved_EffectStartReferenceTime,
-  //   time_from_reference
-
-  
-  
-  // );
-
-
-
-  uint32_t next_time = 0;
-  if(SEGMENT.params_internal.aux0 < ARRAY_SIZE(MUSIC_TIMING))
-  {
-    next_time = MUSIC_TIMING[SEGMENT.params_internal.aux0+1] - MUSIC_TIMING[SEGMENT.params_internal.aux0];
-
-      
-    // ALOG_INF(PSTR("EffectAnim__Christmas_Musical__01 aux0 = %d|%d next=%d"), 
-    // MUSIC_TIMING[SEGMENT.params_internal.aux0+1], MUSIC_TIMING[SEGMENT.params_internal.aux0],
-    // next_time
-    // );
-
-
-
-
-
-  }
-
-  
-  // for (uint16_t i = 0; i < c; i++) //fill from start until c
-    // SEGMENT.setPixelColor(0, RgbcctColor( SEGMENT.params_internal.aux0,0,0  ));
-  // }
-
-  SEGMENT.cycle_time__rate_ms = next_time;
-  SEGMENT.time_ms = 0;
-  // SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
-  
-
-
-
-  // ALOG_INF(PSTR("EffectAnim__Christmas_Musical__01 aux0 = %d %d/%d"), SEGMENT.params_internal.aux0, 
-  //   SEGMENT.tSaved_EffectStartReferenceTime,
-  //   time_from_reference
-  // );
-
-
-  uint16_t* region_p          = &SEGMENT.params_internal.aux0;
-  uint16_t* indexes_active_p  = &SEGMENT.params_internal.aux1; // shared_flasher_parameters_segments.indexes.active
-  uint16_t* indexes_counter_p = &SEGMENT.params_internal.aux2; // shared_flasher_parameters_segments.indexes.counter
-
-  desired_pixel=0;
-    
-  uint8_t pixel_position = 0;
-  uint8_t pixels_in_map = GetNumberOfColoursInPalette(SEGMENT.palette_id);
-
-  // AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_NEO "pixels_in_map= %d"),pixels_in_map);
-  
-  desired_pixel = *indexes_active_p;
-  uint8_t pixels_map_upper_limit = *indexes_active_p+1;
-  uint8_t pixels_map_lower_limit = *indexes_active_p;
-
-  uint8_t index_1, index_2;
-  uint8_t counter = 0;
-      
-  //if last pixel, then include it and the first, else include it and the next
-  if(*indexes_active_p == pixels_in_map-1){ //wrap wround
-    index_1 = 0;
-    index_2 = *indexes_active_p;
-    counter = 0;
-  }else{
-    index_1 = *indexes_active_p;
-    index_2 = *indexes_active_p+1;
-    counter = 1;
-
-  }
-
-  *indexes_counter_p ^= 1;
-
-  // AddLog(LOG_LEVEL_DEV_TEST,PSTR(D_LOG_NEO "counter = %d/%d/%d"), counter,index_1,index_2);
-
-  RgbcctColor colour;
-
-  for(unsigned index=SEGMENT.start;
-                index<=SEGMENT.stop;
-                index++
-  ){
-
-    if(counter^=1){
-      desired_pixel = *indexes_counter_p ? index_2 : index_1;
-    }else{
-      desired_pixel = *indexes_counter_p ? index_1 : index_2;
-    }
-    
-    colour = SEGMENT.GetPaletteColour(desired_pixel, PALETTE_SPAN_OFF, PALETTE_WRAP_OFF, PALETTE_DISCRETE_OFF, &pixel_position);
-    
-    colour = RgbcctColor::ApplyBrightnesstoRgbcctColour(colour, SEGMENT.getBrightnessRGB_WithGlobalApplied());
-
-    SetTransitionColourBuffer_DesiredColour(SEGMENT.data, SEGMENT.DataLength(), index, SEGMENT.colour_width__used_in_effect_generate, colour);
-        
-  } 
-
-//messy
-  if(++*indexes_active_p>pixels_in_map-1){
-    *indexes_active_p=0;
-  }
-  
-  
-  SEGMENT.DynamicBuffer_StartingColour_GetAllSegment();
-  
-  SetSegment_AnimFunctionCallback(  SEGIDX, 
-    [this](const AnimationParam& param){ 
-      this->AnimationProcess_LinearBlend_Dynamic_Buffer(param); 
-    }
-  );
-
-
-}
-static const char PM_EFFECT_CONFIG__CHRISTMAS_MUSICAL_01[] PROGMEM = "CHRISTMAS_MUSICAL_01@,,,,,Repeat Rate (ms);!,!,!,!,!;!"; // 7 sliders + 4 options before first ;
-#endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING
-
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
-//********************************************************************************************************************************************************************************************************************/
 
 
 #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE_TODO
@@ -14218,9 +10864,7 @@ class AuroraWave {
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -14296,7 +10940,7 @@ void mAnimatorLight::EffectAnim__1D__Aurora()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 }
 static const char _data_FX_MODE_AURORA[] PROGMEM = "Aurora@!,!;1,2,3;!;;sx=24,pal=50";
 
@@ -14306,9 +10950,7 @@ static const char _data_FX_MODE_AURORA[] PROGMEM = "Aurora@!,!;1,2,3;!;;sx=24,pa
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -14340,7 +10982,7 @@ void mAnimatorLight::EffectAnim__1D__PerlinMove()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_perlinmove()
 static const char _data_FX_MODE_PERLINMOVE[] PROGMEM = "Perlin Move@!,# of pixels,Fade rate;!,!;!";
 
@@ -14348,9 +10990,7 @@ static const char _data_FX_MODE_PERLINMOVE[] PROGMEM = "Perlin Move@!,# of pixel
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -14381,16 +11021,14 @@ void mAnimatorLight::EffectAnim__1D__Waveins()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_waveins()
 static const char _data_FX_MODE_WAVESINS[] PROGMEM = "Wavesins@!,Brightness variation,Starting color,Range of colors,Color variation;!;!";
 #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE_TODO
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -14426,7 +11064,7 @@ void mAnimatorLight::EffectAnim__1D__FlowStripe()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_FlowStripe()
 static const char _data_FX_MODE_FLOWSTRIPE[] PROGMEM = "Flow Stripe@Hue speed,Effect speed;;";
 
@@ -14435,9 +11073,7 @@ static const char _data_FX_MODE_FLOWSTRIPE[] PROGMEM = "Flow Stripe@Hue speed,Ef
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -14457,7 +11093,7 @@ static const char _data_FX_MODE_FLOWSTRIPE[] PROGMEM = "Flow Stripe@Hue speed,Ef
 
 
 // Black hole  
-#ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
+#ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
 void mAnimatorLight::EffectAnim__2D__Blackhole()
 {
 // uint16_t mode_2DBlackHole(void) {            // By: Stepko https://editor.soulmatelights.com/gallery/1012 , Modified by: Andrew Tuline
@@ -14487,16 +11123,16 @@ void mAnimatorLight::EffectAnim__2D__Blackhole()
   SEGMENT.blur(16);
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_2DBlackHole()
-static const char _data_FX_MODE_2DBLACKHOLE[] PROGMEM = "Black Hole@Fade rate,Outer Y freq.,Outer X freq.,Inner X freq.,Inner Y freq.,Solid;!;!;2;pal=11";
-  #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
+static const char PM_EFFECT_CONFIG__2D__BLACK_HOLE__INDEXING[] PROGMEM = "Black Hole@Fade rate,Outer Y freq.,Outer X freq.,Inner X freq.,Inner Y freq.,Solid;!;!;2;pal=11";
+#endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
+
+
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -14561,17 +11197,18 @@ void mAnimatorLight::EffectAnim__2D__ColouredBursts()
   if (SEGMENT.custom3) SEGMENT.blur(SEGMENT.custom3/2);
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_2DColoredBursts()
 static const char _data_FX_MODE_2DCOLOREDBURSTS[] PROGMEM = "Colored Bursts@Speed,# of lines,,,Blur,Gradient,,Dots;;!;2;c3=16";
   #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
+
+
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
- * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @name           : 2D DNA
+ * @description:   : 
  * @note           :  
+ * @modifed        : 12Jan25
  * 
  * @param intensity: 
  * @param speed    : 
@@ -14583,38 +11220,34 @@ static const char _data_FX_MODE_2DCOLOREDBURSTS[] PROGMEM = "Colored Bursts@Spee
  * @param aux3     : 
  *******************************************************************************************************************************************************************************************************************
  ********************************************************************************************************************************************************************************************************************/
-
-/////////////////////
-//      2D DNA     //
-/////////////////////  
-#ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-void mAnimatorLight::EffectAnim__2D__DNA()
-{
-// uint16_t mode_2Ddna(void) {         // dna originally by by ldirko at https://pastebin.com/pCkkkzcs. Updated by Preyy. WLED conversion by Andrew Tuline.
-  if (!isMatrix) return EffectAnim__Solid_Colour(); // not a 2D set-up
+#ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
+void mAnimatorLight::EffectAnim__2D__DNA() // dna originally by by ldirko at https://pastebin.com/pCkkkzcs. Updated by Preyy. WLED conversion by Andrew Tuline.
+{    
+  if (!isMatrix || !SEGMENT.is2D()) return EffectAnim__Solid_Colour(); // not a 2D set-up
 
   const uint16_t cols = SEGMENT.virtualWidth();
   const uint16_t rows = SEGMENT.virtualHeight();
 
   SEGMENT.fadeToBlackBy(64);
   for (int i = 0; i < cols; i++) {
-    SEGMENT.setPixelColorXY_CRGB(i, beatsin8(SEGMENT.speed/8, 0, rows-1, 0, i*4    ), ColorFromPalette_WithLoad(SEGPALETTE, i*5+millis()/17, beatsin8(5, 55, 255, 0, i*10), LINEARBLEND));
-    SEGMENT.setPixelColorXY_CRGB(i, beatsin8(SEGMENT.speed/8, 0, rows-1, 0, i*4+128), ColorFromPalette_WithLoad(SEGPALETTE, i*5+128+millis()/17, beatsin8(5, 55, 255, 0, i*10+128), LINEARBLEND));
+    SEGMENT.setPixelColorXY_CRGB(i, beatsin8(SEGMENT.speed/8, 0, rows-1, 0, i*4    ), ColorFromPalette_WithLoad(SEGPALETTE, i*5+effect_start_time/17,     beatsin8(5, 55, 255, 0, i*10),     LINEARBLEND));
+    SEGMENT.setPixelColorXY_CRGB(i, beatsin8(SEGMENT.speed/8, 0, rows-1, 0, i*4+128), ColorFromPalette_WithLoad(SEGPALETTE, i*5+128+effect_start_time/17, beatsin8(5, 55, 255, 0, i*10+128), LINEARBLEND));
   }
-  SEGMENT.blur(SEGMENT.intensity>>3);
+  SEGMENT.blur(SEGMENT.intensity / (8 - (SEGMENT.check1 * 2)), SEGMENT.check1);
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
-} // mode_2Ddna()
-static const char _data_FX_MODE_2DDNA[] PROGMEM = "DNA@Scroll speed,Blur;;!;2";
-#endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
+  SET_DIRECT_MODE();
+}
+static const char PM_EFFECT_CONFIG__2D__DNA__INDEXING[] PROGMEM = "DNA@Scroll speed,Blur,,,,Smear;;!;2;ix=0,sx=1";
+#endif
+
+
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
- * @name           : Waving Cell
+ * @name           : 2D DNA Spiral
  * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
- * @note           :  
+ * @note           : By: ldirko  https://editor.soulmatelights.com/gallery/810 , modified by: Andrew Tuline
+ * @modifed        : 12Jan25
  * 
  * @param intensity: 
  * @param speed    : 
@@ -14626,15 +11259,11 @@ static const char _data_FX_MODE_2DDNA[] PROGMEM = "DNA@Scroll speed,Blur;;!;2";
  * @param aux3     : 
  *******************************************************************************************************************************************************************************************************************
  ********************************************************************************************************************************************************************************************************************/
-
-/////////////////////////
-//     2D DNA Spiral   //
-/////////////////////////  
-#ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
+#ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
 void mAnimatorLight::EffectAnim__2D__DNASpiral()
 {
-// uint16_t mode_2DDNASpiral() {               // By: ldirko  https://editor.soulmatelights.com/gallery/810 , modified by: Andrew Tuline
-  if (!isMatrix) return EffectAnim__Solid_Colour(); // not a 2D set-up
+
+  if (!isMatrix || !SEGMENT.is2D()) return EffectAnim__Solid_Colour(); // not a 2D set-up
 
   const uint16_t cols = SEGMENT.virtualWidth();
   const uint16_t rows = SEGMENT.virtualHeight();
@@ -14643,10 +11272,10 @@ void mAnimatorLight::EffectAnim__2D__DNASpiral()
     SEGMENT.fill(BLACK);
   }
 
-  uint8_t speeds = SEGMENT.speed/2 + 1;
+  uint8_t speeds = SEGMENT.speed/2 + 7;
   uint8_t freq = SEGMENT.intensity/8;
 
-  uint32_t ms = millis() / 20;
+  uint32_t ms = effect_start_time / 20;
   SEGMENT.fadeToBlackBy(135);
 
   for (int i = 0; i < rows; i++) {
@@ -14671,16 +11300,16 @@ void mAnimatorLight::EffectAnim__2D__DNASpiral()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
-} // mode_2DDNASpiral()
-static const char _data_FX_MODE_2DDNASPIRAL[] PROGMEM = "DNA Spiral@Scroll speed,Y frequency;;!;2";
-  #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
+  SET_DIRECT_MODE();
+}
+static const char PM_EFFECT_CONFIG__2D__DNA_SPIRAL__INDEXING[] PROGMEM = "DNA Spiral@Scroll speed,Y frequency;;!;2";
+#endif
+
+
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
- * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @name           : 2D Drift
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -14693,10 +11322,6 @@ static const char _data_FX_MODE_2DDNASPIRAL[] PROGMEM = "DNA Spiral@Scroll speed
  * @param aux3     : 
  *******************************************************************************************************************************************************************************************************************
  ********************************************************************************************************************************************************************************************************************/
-
-/////////////////////////
-//     2D Drift        //
-/////////////////////////  
 #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
 void mAnimatorLight::EffectAnim__2D__Drift()
 {
@@ -14719,16 +11344,16 @@ void mAnimatorLight::EffectAnim__2D__Drift()
   SEGMENT.blur(SEGMENT.intensity>>3);
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
-} // mode_2DDrift()
+  SET_DIRECT_MODE();
+}
 static const char _data_FX_MODE_2DDRIFT[] PROGMEM = "Drift@Rotation speed,Blur amount;;!;2";
-  #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
+#endif
+
+
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -14775,16 +11400,14 @@ void mAnimatorLight::EffectAnim__2D__FireNoise()
   } // for j
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_2Dfirenoise()
 static const char _data_FX_MODE_2DFIRENOISE[] PROGMEM = "Firenoise@X scale,Y scale;;!;2";
   #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -14819,7 +11442,7 @@ void mAnimatorLight::EffectAnim__2D__Frizzles()
   SEGMENT.blur(SEGMENT.custom1>>3);
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_2DFrizzles()
 static const char _data_FX_MODE_2DFRIZZLES[] PROGMEM = "Frizzles@X frequency,Y frequency,Blur;;!;2";
 
@@ -14828,9 +11451,7 @@ static const char _data_FX_MODE_2DFRIZZLES[] PROGMEM = "Frizzles@X frequency,Y f
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -14869,8 +11490,8 @@ void mAnimatorLight::EffectAnim__2D__GameOfLife()
 
   CRGB backgroundColor = SEGCOLOR_U32(1);
 
-  if (SEGMENT.call == 0 || strip.now - SEGMENT.step > 3000) {
-    SEGMENT.step = strip.now;
+  if (SEGMENT.call == 0 || effect_start_time - SEGMENT.step > 3000) {
+    SEGMENT.step = effect_start_time;
     SEGMENT.params_internal.aux0 = 0;
     random16_set_seed(millis()>>2); //seed the random generator
 
@@ -14885,10 +11506,10 @@ void mAnimatorLight::EffectAnim__2D__GameOfLife()
 
     for (int y = 0; y < rows; y++) for (int x = 0; x < cols; x++) prevLeds[XY(x,y)] = Black;
     memset(crcBuffer, 0, sizeof(uint16_t)*crcBufferLen);
-  } else if (strip.now - SEGMENT.step < FRAMETIME_FIXED * (uint32_t)map(SEGMENT.speed,0,255,64,4)) {
+  } else if (effect_start_time - SEGMENT.step < FRAMETIME_FIXED * (uint32_t)map(SEGMENT.speed,0,255,64,4)) {
     // update only when appropriate time passes (in 42 FPS slots)
     SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
   }
 
   //copy previous leds (save previous generation)
@@ -14949,22 +11570,20 @@ void mAnimatorLight::EffectAnim__2D__GameOfLife()
   bool repetition = false;
   for (int i=0; i<crcBufferLen && !repetition; i++) repetition = (crc == crcBuffer[i]); // (Ewowi)
   // same CRC would mean image did not change or was repeating itself
-  if (!repetition) SEGMENT.step = strip.now; //if no repetition avoid reset
+  if (!repetition) SEGMENT.step = effect_start_time; //if no repetition avoid reset
   // remember CRCs across frames
   crcBuffer[SEGMENT.params_internal.aux0] = crc;
   ++SEGMENT.params_internal.aux0 %= crcBufferLen;
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_2Dgameoflife()
 static const char _data_FX_MODE_2DGAMEOFLIFE[] PROGMEM = "Game Of Life@!;!,!;!;2";
   #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -14989,7 +11608,7 @@ void mAnimatorLight::EffectAnim__2D__Hipnotic()
 
   const uint16_t cols = SEGMENT.virtualWidth();
   const uint16_t rows = SEGMENT.virtualHeight();
-  const uint32_t a = strip.now / ((SEGMENT.custom3>>1)+1);
+  const uint32_t a = effect_start_time / ((SEGMENT.custom3>>1)+1);
 
   for (int x = 0; x < cols; x++) {
     for (int y = 0; y < rows; y++) {
@@ -14998,16 +11617,14 @@ void mAnimatorLight::EffectAnim__2D__Hipnotic()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_2DHiphotic()
 static const char _data_FX_MODE_2DHIPHOTIC[] PROGMEM = "Hiphotic@X scale,Y scale,,,Speed;!;!;2";
 #endif //   #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -15137,16 +11754,14 @@ void mAnimatorLight::EffectAnim__2D__Julia()
 //  SEGMENT.blur(64);
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_2DJulia()
 static const char _data_FX_MODE_2DJULIA[] PROGMEM = "Julia@,Max iterations per pixel,X center,Y center,Area size;!;!;2;ix=24,c1=128,c2=128,c3=16";
   #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -15187,16 +11802,14 @@ void mAnimatorLight::EffectAnim__2D__Lissajous()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_2DLissajous()
 static const char _data_FX_MODE_2DLISSAJOUS[] PROGMEM = "Lissajous@X frequency,Fade rate,,,Speed;!;!;2;;c3=15";
   #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -15241,8 +11854,8 @@ void mAnimatorLight::EffectAnim__2D__Matrix()
     trailColor = CRGB(27,130,39);
   }
 
-  if (strip.now - SEGMENT.step >= speed) {
-    SEGMENT.step = strip.now;
+  if (effect_start_time - SEGMENT.step >= speed) {
+    SEGMENT.step = effect_start_time;
     // find out what color value is returned by gPC for a "falling code" example pixel
     // the color values returned may differ from the previously set values, due to
     // - auto brightness limiter (dimming)
@@ -15284,7 +11897,7 @@ void mAnimatorLight::EffectAnim__2D__Matrix()
   } // if millis
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_2Dmatrix()
 static const char _data_FX_MODE_2DMATRIX[] PROGMEM = "Matrix@!,Spawning rate,Trail,,,Custom color;Spawn,Trail;;2";
 
@@ -15293,9 +11906,7 @@ static const char _data_FX_MODE_2DMATRIX[] PROGMEM = "Matrix@!,Spawning rate,Tra
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -15324,11 +11935,11 @@ void mAnimatorLight::EffectAnim__2D__Metaballs()
   float speed = 0.25f * (1+(SEGMENT.speed>>6));
 
   // get some 2 random moving points
-  uint8_t x2 = map(inoise8(strip.now * speed, 25355, 685), 0, 255, 0, cols-1);
-  uint8_t y2 = map(inoise8(strip.now * speed, 355, 11685), 0, 255, 0, rows-1);
+  uint8_t x2 = map(inoise8(effect_start_time * speed, 25355, 685), 0, 255, 0, cols-1);
+  uint8_t y2 = map(inoise8(effect_start_time * speed, 355, 11685), 0, 255, 0, rows-1);
 
-  uint8_t x3 = map(inoise8(strip.now * speed, 55355, 6685), 0, 255, 0, cols-1);
-  uint8_t y3 = map(inoise8(strip.now * speed, 25355, 22685), 0, 255, 0, rows-1);
+  uint8_t x3 = map(inoise8(effect_start_time * speed, 55355, 6685), 0, 255, 0, cols-1);
+  uint8_t y3 = map(inoise8(effect_start_time * speed, 25355, 22685), 0, 255, 0, rows-1);
 
   // and one Lissajou function
   uint8_t x1 = beatsin8(23 * speed, 0, cols-1);
@@ -15367,16 +11978,14 @@ void mAnimatorLight::EffectAnim__2D__Metaballs()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_2Dmetaballs()
 static const char _data_FX_MODE_2DMETABALLS[] PROGMEM = "Metaballs@!;;!;2";
   #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -15412,16 +12021,14 @@ void mAnimatorLight::EffectAnim__2D__Noise()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_2Dnoise()
 static const char _data_FX_MODE_2DNOISE[] PROGMEM = "Noise2D@!,Scale;;!;2";
   #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -15471,16 +12078,14 @@ void mAnimatorLight::EffectAnim__2D__PlasmaBall()
   SEGMENT.blur(SEGMENT.custom2>>5);
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_2DPlasmaball()
 static const char _data_FX_MODE_2DPLASMABALL[] PROGMEM = "Plasma Ball@Speed,,Fade,Blur;;!;2";
   #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -15547,16 +12152,14 @@ void mAnimatorLight::EffectAnim__2D__PolarLights()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_2DPolarLights()
 static const char _data_FX_MODE_2DPOLARLIGHTS[] PROGMEM = "Polar Lights@!,Scale;;;2";
   #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -15583,7 +12186,7 @@ void mAnimatorLight::EffectAnim__2D__Pulser()
   const uint16_t rows = SEGMENT.virtualHeight();
 
   SEGMENT.fadeToBlackBy(8 - (SEGMENT.intensity>>5));
-  uint32_t a = strip.now / (18 - SEGMENT.speed / 16);
+  uint32_t a = effect_start_time / (18 - SEGMENT.speed / 16);
   uint16_t x = (a / 14) % cols;
   uint16_t y = map((sin8(a * 5) + sin8(a * 4) + sin8(a * 2)), 0, 765, rows-1, 0);
   SEGMENT.setPixelColorXY_CRGB(x, y, ColorFromPalette_WithLoad(SEGPALETTE, map(y, 0, rows-1, 0, 255), 255, LINEARBLEND));
@@ -15591,16 +12194,14 @@ void mAnimatorLight::EffectAnim__2D__Pulser()
   SEGMENT.blur(1 + (SEGMENT.intensity>>4));
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_2DPulser()
 static const char _data_FX_MODE_2DPULSER[] PROGMEM = "Pulser@!,Blur;;!;2";
   #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -15642,16 +12243,14 @@ void mAnimatorLight::EffectAnim__2D__SinDots()
   SEGMENT.blur(SEGMENT.custom2>>3);
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_2DSindots()
 static const char _data_FX_MODE_2DSINDOTS[] PROGMEM = "Sindots@!,Dot distance,Fade rate,Blur;;!;2";
   #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -15700,16 +12299,14 @@ void mAnimatorLight::EffectAnim__2D__SqauredSwirl()
   SEGMENT.addPixelColorXY(k, p, ColorFromPalette_WithLoad(SEGPALETTE, ms/73, 255, LINEARBLEND));
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_2Dsquaredswirl()
 static const char _data_FX_MODE_2DSQUAREDSWIRL[] PROGMEM = "Squared Swirl@,,,,Blur;;!;2";
   #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -15772,16 +12369,14 @@ void mAnimatorLight::EffectAnim__2D__SunRadiation()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_2DSunradiation()
 static const char _data_FX_MODE_2DSUNRADIATION[] PROGMEM = "Sun Radiation@Variance,Brightness;;;2";
   #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -15833,16 +12428,14 @@ void mAnimatorLight::EffectAnim__2D__Tartan()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_2DTartan()
 static const char _data_FX_MODE_2DTARTAN[] PROGMEM = "Tartan@X scale,Y scale,,,Sharpness;;!;2";
   #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -15868,7 +12461,7 @@ void mAnimatorLight::EffectAnim__2D__SpaceShips()
   const uint16_t cols = SEGMENT.virtualWidth();
   const uint16_t rows = SEGMENT.virtualHeight();
 
-  uint32_t tb = strip.now >> 12;  // every ~4s
+  uint32_t tb = effect_start_time >> 12;  // every ~4s
   if (tb > SEGMENT.step) {
     int8_t dir = ++SEGMENT.params_internal.aux0;
     dir  += (int)random8(3)-1;
@@ -15896,16 +12489,14 @@ void mAnimatorLight::EffectAnim__2D__SpaceShips()
   SEGMENT.blur(SEGMENT.intensity>>3);
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 }
 static const char _data_FX_MODE_2DSPACESHIPS[] PROGMEM = "Spaceships@!,Blur;;!;2";
   #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -15990,16 +12581,14 @@ void mAnimatorLight::EffectAnim__2D__CrazyBees()
     SEGMENT.blur(SEGMENT.intensity>>4);
   }
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 }
 static const char _data_FX_MODE_2DCRAZYBEES[] PROGMEM = "Crazy Bees@!,Blur;;;2";
   #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -16048,7 +12637,7 @@ void mAnimatorLight::EffectAnim__2D__GhostRider()
   if (SEGMENT.params_internal.aux0 != cols || SEGMENT.params_internal.aux1 != rows) {
     SEGMENT.params_internal.aux0 = cols;
     SEGMENT.params_internal.aux1 = rows;
-    random16_set_seed(strip.now);
+    random16_set_seed(effect_start_time);
     lighter->angleSpeed = random8(0,20) - 10;
     lighter->gAngle = random16();
     lighter->Vspeed = 5;
@@ -16102,16 +12691,14 @@ void mAnimatorLight::EffectAnim__2D__GhostRider()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 }
 static const char _data_FX_MODE_2DGHOSTRIDER[] PROGMEM = "Ghost Rider@Fade rate,Blur;;!;2";
   #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -16224,7 +12811,7 @@ void mAnimatorLight::EffectAnim__2D__FloatingBlobs()
   if (SEGMENT.step < millis()) SEGMENT.step = millis() + 2000; // change colors every 2 seconds
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 }
 #undef MAX_BLOBS
 static const char _data_FX_MODE_2DBLOBS[] PROGMEM = "Blobs@!,# blobs,Blur,Trail;!;!;2;c1=8";
@@ -16233,9 +12820,7 @@ static const char _data_FX_MODE_2DBLOBS[] PROGMEM = "Blobs@!,# blobs,Blur,Trail;
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -16277,7 +12862,7 @@ void mAnimatorLight::EffectAnim__2D__DriftRose()
   SEGMENT.blur((SEGMENT.intensity>>4)+1);
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 }
 static const char _data_FX_MODE_2DDRIFTROSE[] PROGMEM = "Drift Rose@Fade,Blur;;;2";
 
@@ -16286,9 +12871,7 @@ static const char _data_FX_MODE_2DDRIFTROSE[] PROGMEM = "Drift Rose@Fade,Blur;;;
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -16425,7 +13008,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__1D__Ripple_Peak()
   } // for i
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_ripplepeak()
 static const char _data_FX_MODE_RIPPLEPEAK[] PROGMEM = "Ripple Peak@Fade rate,Max # of ripples,Select bin,Volume (min);!,!;!;1v;c2=0,m12=0,si=0"; // Pixel, Beatsin
 
@@ -16486,7 +13069,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__2D__Swirl()
   SEGMENT.addPixelColorXY(ni, j, ColorFromPalette_WithLoad(SEGPALETTE, (ms / 41 + volumeSmth*4), volumeRaw * SEGMENT.intensity / 64, LINEARBLEND)); //CHSV( ms / 41, 200, 255);
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 }
 static const char PM_EFFECT_CONFIG__AUDIOREACTIVE__2D__SWIRL__INDEXING[] PROGMEM = "Swirl@!,Sensitivity,Blur;,Bg Swirl;!;2v;ix=64,si=0"; // Beatsin // TODO: color 1 unused?
 #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
@@ -16545,7 +13128,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__2D__Waverly()
   SEGMENT.blur(16);
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_2DWaverly()
 static const char PM_EFFECT_CONFIG__AUDIOREACTIVE__2D__WAVERLY__INDEXING[] PROGMEM = "Waverly@Amplification,Sensitivity;;!;2v;ix=64,si=0"; // Beatsin
 #endif //  ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D_TODO
@@ -16555,9 +13138,7 @@ static const char PM_EFFECT_CONFIG__AUDIOREACTIVE__2D__WAVERLY__INDEXING[] PROGM
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -16631,7 +13212,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__1D__GravCenter()
   gravcen->gravityCounter = (gravcen->gravityCounter + 1) % gravity;
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_gravcenter()
 static const char _data_FX_MODE_GRAVCENTER[] PROGMEM = "Gravcenter@Rate of fall,Sensitivity;!,!;!;1v;ix=128,m12=2,si=0"; // Circle, Beatsin
 
@@ -16644,9 +13225,7 @@ static const char _data_FX_MODE_GRAVCENTER[] PROGMEM = "Gravcenter@Rate of fall,
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -16711,7 +13290,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__1D__GravCentric()
   gravcen->gravityCounter = (gravcen->gravityCounter + 1) % gravity;
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_gravcentric()
 static const char _data_FX_MODE_GRAVCENTRIC[] PROGMEM = "Gravcentric@Rate of fall,Sensitivity;!,!;!;1v;ix=128,m12=3,si=0"; // Corner, Beatsin
 
@@ -16725,9 +13304,7 @@ static const char _data_FX_MODE_GRAVCENTRIC[] PROGMEM = "Gravcentric@Rate of fal
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -16787,7 +13364,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__1D__GraviMeter()
   gravcen->gravityCounter = (gravcen->gravityCounter + 1) % gravity;
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_gravimeter()
 static const char _data_FX_MODE_GRAVIMETER[] PROGMEM = "Gravimeter@Rate of fall,Sensitivity;!,!;!;1v;ix=128,m12=2,si=0"; // Circle, Beatsin
 
@@ -16797,9 +13374,7 @@ static const char _data_FX_MODE_GRAVIMETER[] PROGMEM = "Gravimeter@Rate of fall,
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -16838,7 +13413,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__1D__Juggles()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_juggles()
 static const char _data_FX_MODE_JUGGLES[] PROGMEM = "Juggles@!,# of balls;!,!;!;1v;m12=0,si=0"; // Pixels, Beatsin
 
@@ -16846,9 +13421,7 @@ static const char _data_FX_MODE_JUGGLES[] PROGMEM = "Juggles@!,# of balls;!,!;!;
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -16895,7 +13468,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__1D__Matripix()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_matripix()
 static const char _data_FX_MODE_MATRIPIX[] PROGMEM = "Matripix@!,Brightness;!,!;!;1v;ix=64,m12=2,si=1"; //,rev=1,mi=1,rY=1,mY=1 Circle, WeWillRockYou, reverseX
 
@@ -16903,9 +13476,7 @@ static const char _data_FX_MODE_MATRIPIX[] PROGMEM = "Matripix@!,Brightness;!,!;
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -16955,7 +13526,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__1D__MidNoise()
   SEGMENT.params_internal.aux1=SEGMENT.params_internal.aux1+beatsin8(4,0,10);
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_midnoise()
 static const char _data_FX_MODE_MIDNOISE[] PROGMEM = "Midnoise@Fade rate,Max. length;!,!;!;1v;ix=128,m12=1,si=0"; // Bar, Beatsin
 
@@ -16963,9 +13534,7 @@ static const char _data_FX_MODE_MIDNOISE[] PROGMEM = "Midnoise@Fade rate,Max. le
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -17012,7 +13581,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__1D__NoiseFire()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_noisefire()
 static const char _data_FX_MODE_NOISEFIRE[] PROGMEM = "Noisefire@!,!;;;1v;m12=2,si=0"; // Circle, Beatsin
 
@@ -17021,9 +13590,7 @@ static const char _data_FX_MODE_NOISEFIRE[] PROGMEM = "Noisefire@!,!;;;1v;m12=2,
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -17072,7 +13639,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__1D__NoiseMeter()
   SEGMENT.params_internal.aux1+=beatsin8(4,0,10);
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_noisemeter()
 static const char _data_FX_MODE_NOISEMETER[] PROGMEM = "Noisemeter@Fade rate,Width;!,!;!;1v;ix=128,m12=2,si=0"; // Circle, Beatsin
 
@@ -17083,9 +13650,7 @@ static const char _data_FX_MODE_NOISEMETER[] PROGMEM = "Noisemeter@Fade rate,Wid
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -17133,7 +13698,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__1D__PixelWave()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_pixelwave()
 static const char _data_FX_MODE_PIXELWAVE[] PROGMEM = "Pixelwave@!,Sensitivity;!,!;!;1v;ix=64,m12=2,si=0"; // Circle, Beatsin
 
@@ -17143,9 +13708,7 @@ static const char _data_FX_MODE_PIXELWAVE[] PROGMEM = "Pixelwave@!,Sensitivity;!
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -17200,7 +13763,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__1D__Plasmoid()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_plasmoid()
 static const char _data_FX_MODE_PLASMOID[] PROGMEM = "Plasmoid@Phase,# of pixels;!,!;!;1v;sx=128,ix=128,m12=0,si=0"; // Pixels, Beatsin
 
@@ -17211,9 +13774,7 @@ static const char _data_FX_MODE_PLASMOID[] PROGMEM = "Plasmoid@Phase,# of pixels
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -17273,7 +13834,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__1D__PuddlePeak()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_puddlepeak()
 static const char _data_FX_MODE_PUDDLEPEAK[] PROGMEM = "Puddlepeak@Fade rate,Puddle size,Select bin,Volume (min);!,!;!;1v;c2=0,m12=0,si=0"; // Pixels, Beatsin
 
@@ -17281,9 +13842,7 @@ static const char _data_FX_MODE_PUDDLEPEAK[] PROGMEM = "Puddlepeak@Fade rate,Pud
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -17329,7 +13888,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__1D__Puddles()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_puddles()
 static const char _data_FX_MODE_PUDDLES[] PROGMEM = "Puddles@Fade rate,Puddle size;!,!;!;1v;m12=0,si=0"; // Pixels, Beatsin
 
@@ -17337,9 +13896,7 @@ static const char _data_FX_MODE_PUDDLES[] PROGMEM = "Puddles@Fade rate,Puddle si
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -17382,7 +13939,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__1D__Pixels()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_pixels()
 static const char _data_FX_MODE_PIXELS[] PROGMEM = "Pixels@Fade rate,# of pixels;!,!;!;1v;m12=0,si=0"; // Pixels, Beatsin
 
@@ -17395,9 +13952,7 @@ static const char _data_FX_MODE_PIXELS[] PROGMEM = "Pixels@Fade rate,# of pixels
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -17449,7 +14004,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__1D__FFT_Blurz()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_blurz()
 static const char _data_FX_MODE_BLURZ[] PROGMEM = "Blurz@Fade rate,Blur;!,Color mix;!;1f;m12=0,si=0"; // Pixels, Beatsin
 
@@ -17457,9 +14012,7 @@ static const char _data_FX_MODE_BLURZ[] PROGMEM = "Blurz@Fade rate,Blur;!,Color 
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -17507,7 +14060,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__1D__FFT_DJLight()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_DJLight()
 static const char _data_FX_MODE_DJLIGHT[] PROGMEM = "DJ Light@Speed;;;1f;m12=2,si=0"; // Circle, Beatsin
 #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
@@ -17515,9 +14068,7 @@ static const char _data_FX_MODE_DJLIGHT[] PROGMEM = "DJ Light@Speed;;;1f;m12=2,s
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -17569,7 +14120,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__1D__FFT_FreqMap()
   SEGMENT.setPixelColor(locn, color_blend(SEGCOLOR_U32(1), SEGMENT.color_from_palette(SEGMENT.intensity+pixCol, false, PALETTE_SOLID_WRAP, 0), bright));
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_freqmap()
 static const char _data_FX_MODE_FREQMAP[] PROGMEM = "Freqmap@Fade rate,Starting color;!,!;!;1f;m12=0,si=0"; // Pixels, Beatsin
 
@@ -17577,9 +14128,7 @@ static const char _data_FX_MODE_FREQMAP[] PROGMEM = "Freqmap@Fade rate,Starting 
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -17648,7 +14197,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__1D__FFT_FreqMatrix()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_freqmatrix()
 static const char _data_FX_MODE_FREQMATRIX[] PROGMEM = "Freqmatrix@Speed,Sound effect,Low bin,High bin,Sensitivity;;;1f;m12=3,si=0"; // Corner, Beatsin
 
@@ -17656,9 +14205,7 @@ static const char _data_FX_MODE_FREQMATRIX[] PROGMEM = "Freqmatrix@Speed,Sound e
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -17710,7 +14257,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__1D__FFT_FreqPixels()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_freqpixels()
 static const char _data_FX_MODE_FREQPIXELS[] PROGMEM = "Freqpixels@Fade rate,Starting color and # of pixels;!,!,;!;1f;m12=0,si=0"; // Pixels, Beatsin
 
@@ -17718,9 +14265,7 @@ static const char _data_FX_MODE_FREQPIXELS[] PROGMEM = "Freqpixels@Fade rate,Sta
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -17802,7 +14347,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__1D__FFT_FreqWave()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_freqwave()
 static const char _data_FX_MODE_FREQWAVE[] PROGMEM = "Freqwave@Speed,Sound effect,Low bin,High bin,Pre-amp;;;1f;m12=2,si=0"; // Circle, Beatsin
 
@@ -17810,9 +14355,7 @@ static const char _data_FX_MODE_FREQWAVE[] PROGMEM = "Freqwave@Speed,Sound effec
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -17877,16 +14420,14 @@ void mAnimatorLight::EffectAnim__AudioReactive__1D__FFT_GravFreq()
   gravcen->gravityCounter = (gravcen->gravityCounter + 1) % gravity;
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_gravfreq()
 static const char _data_FX_MODE_GRAVFREQ[] PROGMEM = "Gravfreq@Rate of fall,Sensitivity;!,!;!;1f;ix=128,m12=0,si=0"; // Pixels, Beatsin
 #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -17926,7 +14467,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__1D__FFT_NoiseMove()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_noisemove()
 static const char _data_FX_MODE_NOISEMOVE[] PROGMEM = "Noisemove@Speed of perlin movement,Fade rate;!,!;!;1f;m12=0,si=0"; // Pixels, Beatsin
 
@@ -17934,9 +14475,7 @@ static const char _data_FX_MODE_NOISEMOVE[] PROGMEM = "Noisemove@Speed of perlin
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -17989,7 +14528,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__1D__FFT_RockTaves()
   SEGMENT.addPixelColor(i, color_blend(SEGCOLOR_U32(1), SEGMENT.color_from_palette((uint8_t)frTemp, false, PALETTE_SOLID_WRAP, 0), volTemp));
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_rocktaves()
 static const char _data_FX_MODE_ROCKTAVES[] PROGMEM = "Rocktaves@;!,!;!;1f;m12=1,si=0"; // Bar, Beatsin
 
@@ -18058,7 +14597,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__1D__FFT_Waterfall()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 }
 static const char PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__FFT_WATERFALL[] PROGMEM = "Waterfall@!,Adjust color,Select bin,Volume (min);!,!;!;1f;c2=0,m12=2,si=0"; // Circles, Beatsin
 #endif //  ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D
@@ -18134,7 +14673,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__2D__FFT_GED()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_2DGEQ()
 static const char PM_EFFECT_CONFIG__AUDIOREACTIVE__2D__FFT_GED__INDEXING[] PROGMEM = "GEQ@Fade speed,Ripple decay,# of bands,,,Color bars;!,,Peaks;!;2f;c1=255,c2=64,pal=11,si=0"; // Beatsin
 
@@ -18211,7 +14750,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__2D__FFT_FunkyPlank()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 }
 static const char PM_EFFECT_CONFIG__AUDIOREACTIVE__2D__FFT_FUNKY_PLANK__INDEXING[] PROGMEM = "Funky Plank@Scroll speed,,# of bands;;;2f;si=0"; // Beatsin
 #endif //  ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
@@ -18219,9 +14758,7 @@ static const char PM_EFFECT_CONFIG__AUDIOREACTIVE__2D__FFT_FUNKY_PLANK__INDEXING
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -18280,7 +14817,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__2D__FFT_Akemi()
   const uint16_t cols = SEGMENT.virtualWidth();
   const uint16_t rows = SEGMENT.virtualHeight();
 
-  uint16_t counter = (millis_at_start_of_effect_update * ((SEGMENT.speed >> 2) +2)) & 0xFFFF;
+  uint16_t counter = (effect_start_time * ((SEGMENT.speed >> 2) +2)) & 0xFFFF;
   counter = counter >> 8;
 
   const float lightFactor  = 0.15f;
@@ -18325,7 +14862,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__2D__FFT_Akemi()
       uint16_t band = x * cols/8;
       band = constrain(band, 0, 15);
       uint16_t barHeight = map(fftResult[band], 0, 255, 0, 17*rows/32);
-      CRGB color = SEGMENT.GetPaletteColour((band * 35), WLED_PALETTE_MAPPING_ARG_FALSE, PALETTE_WRAP_ON, PALETTE_DISCRETE_OFF, NO_ENCODED_VALUE).getU32() ;//SEGMENT.color_from_palette((band * 35), false, PALETTE_SOLID_WRAP, 0);
+      CRGB color = SEGMENT.GetPaletteColour((band * 35), WLED_PALETTE_MAPPING_ARG_FALSE, PALETTE_WRAP_ON, PALETTE_DISCRETE_OFF, NO_ENCODED_VALUE);//SEGMENT.color_from_palette((band * 35), false, PALETTE_SOLID_WRAP, 0);
 
       for (int y=0; y < barHeight; y++) {
         SEGMENT.setPixelColorXY_CRGB(x, rows/2-y, color);
@@ -18335,7 +14872,7 @@ void mAnimatorLight::EffectAnim__AudioReactive__2D__FFT_Akemi()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 } // mode_2DAkemi
 static const char PM_EFFECT_CONFIG__AUDIOREACTIVE__2D__FFT_AKEMI__INDEXING[] PROGMEM = "Akemi@Color speed,Dance;Head palette,Arms & Legs,Eyes & Mouth;Face palette;2f;si=0"; //beatsin
 #endif //  ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
@@ -18408,7 +14945,7 @@ void mAnimatorLight::EffectAnim__2D__DistortionWaves()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 }
 static const char PM_EFFECT_CONFIG__2D__DISTORTION_WAVES__INDEXING[] PROGMEM = "Distortion Waves@!,Scale;;;2";
 #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
@@ -18540,7 +15077,7 @@ void mAnimatorLight::EffectAnim__2D__Soap()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 }
 static const char PM_EFFECT_CONFIG__2D__SOAP__INDEXING[] PROGMEM = "Soap@!,Smoothness;;!;2";
 #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
@@ -18619,7 +15156,7 @@ void mAnimatorLight::EffectAnim__2D__Octopus()
     }
   }
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 }
 static const char PM_EFFECT_CONFIG__2D__OCTOPUS__INDEXING[] PROGMEM = "Octopus@!,,Offset X,Offset Y,Legs;;!;2;";
 #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
@@ -18628,9 +15165,7 @@ static const char PM_EFFECT_CONFIG__2D__OCTOPUS__INDEXING[] PROGMEM = "Octopus@!
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -18660,7 +15195,7 @@ void mAnimatorLight::EffectAnim__2D__WavingCell()
     SEGMENT.setPixelColorXY_CRGB(x, y, ColorFromPalette_WithLoad(SEGPALETTE, ((sin8((x*aX)+sin8((y+t)*aY))+cos8(y*aZ))+1)+t));
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 }
 static const char PM_EFFECT_CONFIG__2D__WAVING_CELL__INDEXING[] PROGMEM = "Waving Cell@!,,Amplitude 1,Amplitude 2,Amplitude 3;;!;2"; // anything is "2D" if the function will only run when matrix is enabled
 #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
@@ -18670,9 +15205,7 @@ static const char PM_EFFECT_CONFIG__2D__WAVING_CELL__INDEXING[] PROGMEM = "Wavin
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -18716,7 +15249,7 @@ void mAnimatorLight::EffectAnim__2D__ScrollingText()
   // ALOG_INF(PSTR("EffectAnim__Matrix__2D_Scrolling_Text --------------------------------- EFFECT END"));
 
   // SEGMENT.cycle_time__rate_ms = 1000;
-  // SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  // SET_DIRECT_MODE();
 
   // return;
 
@@ -18829,7 +15362,7 @@ void mAnimatorLight::EffectAnim__2D__ScrollingText()
   // // DEBUG_LINE_HERE;
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 
 }
 static const char PM_EFFECT_CONFIG__2D__SCROLLING_TEXT__INDEXING[] PROGMEM = "Scrolling Text@!,Y Offset,Trail,Font size,Rotate,Gradient,Overlay,Reverse;!,!,Gradient;!;2;ix=128,c1=0,rev=0,mi=0,rY=0,mY=0";
@@ -18939,7 +15472,7 @@ void mAnimatorLight::EffectAnim__2D__DigitalClock()
   }
 
   SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+  SET_DIRECT_MODE();
 
 }
 static const char PM_EFFECT_CONFIG__2D__DIGITAL_CLOCK__INDEXING[] PROGMEM = 
@@ -18967,9 +15500,7 @@ static const char PM_EFFECT_CONFIG__2D__DIGITAL_CLOCK__INDEXING[] PROGMEM =
 /********************************************************************************************************************************************************************************************************************
  *******************************************************************************************************************************************************************************************************************
  * @name           : Waving Cell
- * @description:   :  
- *                   Inspired by @Stepko (https://editor.soulmatelights.com/gallery/1704-wavingcells)
- *                   Adapted for WLED by @blazoncek
+ * @description:   : 
  * @note           :  
  * 
  * @param intensity: 
@@ -18983,37 +15514,6 @@ static const char PM_EFFECT_CONFIG__2D__DIGITAL_CLOCK__INDEXING[] PROGMEM =
  *******************************************************************************************************************************************************************************************************************
  ********************************************************************************************************************************************************************************************************************/
 
-#ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
-/////////////////////
-//      2D DNA     //
-/////////////////////
-void mAnimatorLight::EffectAnim__2D__DNA() // dna originally by by ldirko at https://pastebin.com/pCkkkzcs. Updated by Preyy. WLED conversion by Andrew Tuline.
-{
-
-  if (!isMatrix) return EffectAnim__Solid_Colour(); // not a 2D set-up
-
-  const uint16_t cols = SEGMENT.virtualWidth();
-  const uint16_t rows = SEGMENT.virtualHeight();
-  
-  SEGMENT.fadeToBlackBy(64);
-  for (int i = 0; i < cols; i++) 
-  {
-    SEGMENT.setPixelColorXY_CRGB(i, beatsin8(SEGMENT.speed/8, 0, rows-1, 0, i*4    ), ColorFromPalette_WithLoad(SEGPALETTE, i*5+millis()/17, beatsin8(5, 55, 255, 0, i*10), LINEARBLEND));
-    SEGMENT.setPixelColorXY_CRGB(i, beatsin8(SEGMENT.speed/8, 0, rows-1, 0, i*4+128), ColorFromPalette_WithLoad(SEGPALETTE, i*5+128+millis()/17, beatsin8(5, 55, 255, 0, i*10+128), LINEARBLEND));
-  }
-  SEGMENT.blur(SEGMENT.intensity>>3);
-
-  SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-  SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
-
-} // mode_2Ddna()
-static const char PM_EFFECT_CONFIG__2D__DNA__INDEXING[] PROGMEM = "DNA@Scroll speed,Blur;;!;2";
-#endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
-
-
-
-
-
 /**
  * @brief 
  * 
@@ -19023,593 +15523,1083 @@ static const char PM_EFFECT_CONFIG__2D__DNA__INDEXING[] PROGMEM = "DNA@Scroll sp
  *     - Using a background colour, either black or white for the "unfilled" part will give nice effects
  * (2) A vertical strip shows the sky as horizon to top. Hence, instead of the moving gradient, 16 key points on it will be set and change depending on the time of day to reflect the darkening sunset.
  * 
+ * All effects below are in order, and should over time be added (uncommented) so they build
+ * 
+ * 
  */
 void mAnimatorLight::LoadEffects()
 {
+  // General Level 1 Minimal Home Effects
+  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
+  addEffect(EFFECTS_FUNCTION__SOLID_COLOUR__ID,
+            &mAnimatorLight::EffectAnim__Solid_Colour,
+            PM_EFFECT_CONFIG__SOLID_COLOUR,
+            Effect_DevStage::Release);
 
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-  addEffect(EFFECTS_FUNCTION__SOLID_COLOUR__ID,                  
-            &mAnimatorLight::EffectAnim__Solid_Colour,                    
-            PM_EFFECT_CONFIG__SOLID_COLOUR, 
+  addEffect(EFFECTS_FUNCTION__STATIC_PALETTE__ID,
+            &mAnimatorLight::EffectAnim__Static_Palette,
+            PM_EFFECT_CONFIG__STATIC_PALETTE,
             Effect_DevStage::Release);
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-  addEffect(EFFECTS_FUNCTION__STATIC_PALETTE__ID,                
-            &mAnimatorLight::EffectAnim__Static_Palette,                  
-            PM_EFFECT_CONFIG__STATIC_PALETTE, 
-            Effect_DevStage::Release);
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-  addEffect(EFFECTS_FUNCTION__SPANNED_PALETTE__ID,                            
-            &mAnimatorLight::EffectAnim__Spanned_Static_Palette,  
-            PM_EFFECT_CONFIG__SPANNED_PALETTE, 
+
+  addEffect(EFFECTS_FUNCTION__SPANNED_PALETTE__ID,
+            &mAnimatorLight::EffectAnim__Spanned_Palette,
+            PM_EFFECT_CONFIG__SPANNED_PALETTE,
             Effect_DevStage::Beta);
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-  addEffect(EFFECTS_FUNCTION__FIREFLY__ID,                     
-            &mAnimatorLight::EffectAnim__Firefly,                       
-            PM_EFFECT_CONFIG__FIREFLY, 
+
+  addEffect(EFFECTS_FUNCTION__FIREFLY__ID,
+            &mAnimatorLight::EffectAnim__Firefly,
+            PM_EFFECT_CONFIG__FIREFLY,
             Effect_DevStage::Release);
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-  addEffect(EFFECTS_FUNCTION__CANDLE_SINGLE__ID,            
-            &mAnimatorLight::EffectAnim__Candle_Single,                   
-            PM_EFFECT_CONFIG__CANDLE_SINGLE, 
-            Effect_DevStage::Alpha);  
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-  addEffect(EFFECTS_FUNCTION__CANDLE_MULTIPLE__ID,          
-            &mAnimatorLight::EffectAnim__Candle_Multiple,                 
-            PM_EFFECT_CONFIG__CANDLE_MULTIPLE, 
+
+  addEffect(EFFECTS_FUNCTION__CANDLE_SINGLE__ID,
+            &mAnimatorLight::EffectAnim__Candle_Single,
+            PM_EFFECT_CONFIG__CANDLE_SINGLE,
             Effect_DevStage::Alpha);
-  #endif
 
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-  addEffect(EFFECTS_FUNCTION__RANDOMISE_GRADIENT__ID,                            
-            &mAnimatorLight::EffectAnim__Randomise_Gradient,  
-            PM_EFFECT_CONFIG__RANDOMISE_GRADIENT, 
+  addEffect(EFFECTS_FUNCTION__CANDLE_MULTIPLE__ID,
+            &mAnimatorLight::EffectAnim__Candle_Multiple,
+            PM_EFFECT_CONFIG__CANDLE_MULTIPLE,
+            Effect_DevStage::Alpha);
+
+  addEffect(EFFECTS_FUNCTION__RANDOMISE_GRADIENT__ID,
+            &mAnimatorLight::EffectAnim__Randomise_Gradient,
+            PM_EFFECT_CONFIG__RANDOMISE_GRADIENT,
             Effect_DevStage::Beta);
-  #endif
-// while spanned/static, together with random01, can perform the nice blending I like, I want to make this an effect
-// or at least by name, where it then calls the other function. It just makes it easier to assert the effect by selecting and having a default load pattern with effect settings
-
-
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-  addEffect(EFFECTS_FUNCTION__SHIMMERING_PALETTE_DOUBLE__ID,     
-            &mAnimatorLight::EffectAnim__Shimmering_Two_Palette,          
-            PM_EFFECT_CONFIG__SHIMMERING_TWO_PALETTES, 
-            Effect_DevStage::Dev);
-  #endif  
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-  addEffect(EFFECTS_FUNCTION__SHIMMERING_PALETTE_SATURATION__ID, &mAnimatorLight::EffectAnim__Shimmering_Palette_Saturation,   PM_EFFECT_CONFIG__SHIMMERING_PALETTE_SATURATION);
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-  addEffect(EFFECTS_FUNCTION__STATIC_GRADIENT_PALETTE__ID,       &mAnimatorLight::EffectAnim__Static_Gradient_Palette,         PM_EFFECT_CONFIG__STATIC_GRADIENT_PALETTE);
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-  addEffect(EFFECTS_FUNCTION__ROTATING_PALETTE__ID,              &mAnimatorLight::EffectAnim__Rotating_Palette,                PM_EFFECT_CONFIG__ROTATING_PALETTE);
-  #endif 
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-  addEffect(EFFECTS_FUNCTION__ROTATING_PREVIOUS_ANIMATION__ID,   &mAnimatorLight::EffectAnim__Rotating_Previous_Animation,     PM_EFFECT_CONFIG__ROTATING_PREVIOUS_ANIMATION);
-  #endif 
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-  addEffect(EFFECTS_FUNCTION__STEPPING_PALETTE_WITH_BACKGROUND__ID,           &mAnimatorLight::EffectAnim__Stepping_Palette_With_Background,                      PM_EFFECT_CONFIG__STEPPING_PALETTE_WITH_BACKGROUND);
-  #endif 
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-  addEffect(EFFECTS_FUNCTION__STEPPING_PALETTE__ID,                           &mAnimatorLight::EffectAnim__Stepping_Palette,                      PM_EFFECT_CONFIG__STEPPING_PALETTE);
-  #endif 
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-  addEffect(EFFECTS_FUNCTION__BLEND_PALETTE_BETWEEN_ANOTHER_PALETTE__ID,      &mAnimatorLight::EffectAnim__Blend_Two_Palettes,                    PM_EFFECT_CONFIG__BLEND_TWO_PALETTES);
-  #endif 
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-  addEffect(EFFECTS_FUNCTION__TWINKLE_PALETTE_SEC_ON_ORDERED_PALETTE_PRI__ID, &mAnimatorLight::EffectAnim__Twinkle_Palette_Onto_Palette,          PM_EFFECT_CONFIG__TWINKLE_PALETTE_SEC_ON_ORDERED_PALETTE_PRI);
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-  addEffect(EFFECTS_FUNCTION__TWINKLE_OFF_PALETTE__ID,                        &mAnimatorLight::EffectAnim__Twinkle_Out_Palette,          PM_EFFECT_CONFIG__TWINKLE_OUT_PALETTE);
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-  addEffect(EFFECTS_FUNCTION__STATIC_PALETTE_VINTAGE__ID,                
-            &mAnimatorLight::EffectAnim__Static_Palette_Vintage,                  
-            PM_EFFECT_CONFIG__STATIC_PALETTE_VINTAGE, 
+            
+  addEffect(EFFECTS_FUNCTION__STATIC_PALETTE_VINTAGE__ID,
+            &mAnimatorLight::EffectAnim__Static_Palette_Vintage,
+            PM_EFFECT_CONFIG__STATIC_PALETTE_VINTAGE,
             Effect_DevStage::Dev);
   #endif
+
+  // General Level 2 Flashing Basic Effects
   #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-  addEffect(EFFECTS_FUNCTION__TIMEBASED__HOUR_PROGRESS__ID,  
-            &mAnimatorLight::EffectAnim__TimeBased__HourProgress,             
-            PM_EFFECT_CONFIG__TIMEBASED__HOUR_PROGRESS); 
-  #endif  
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-  addEffect(EFFECTS_FUNCTION__TWINKLE_DECAYING_PALETTE__ID,                   
-            &mAnimatorLight::EffectAnim__Twinkle_Decaying_Palette,              
+  addEffect(EFFECTS_FUNCTION__SHIMMERING_PALETTE_DOUBLE__ID,
+            &mAnimatorLight::EffectAnim__Shimmering_Two_Palette,
+            PM_EFFECT_CONFIG__SHIMMERING_TWO_PALETTES,
+            Effect_DevStage::Dev);
+
+  addEffect(EFFECTS_FUNCTION__SHIMMERING_PALETTE_SATURATION__ID,
+            &mAnimatorLight::EffectAnim__Shimmering_Palette_Saturation,
+            PM_EFFECT_CONFIG__SHIMMERING_PALETTE_SATURATION);
+
+  addEffect(EFFECTS_FUNCTION__STATIC_GRADIENT_PALETTE__ID,
+            &mAnimatorLight::EffectAnim__Static_Gradient_Palette,
+            PM_EFFECT_CONFIG__STATIC_GRADIENT_PALETTE);
+
+  addEffect(EFFECTS_FUNCTION__ROTATING_PALETTE__ID,
+            &mAnimatorLight::EffectAnim__Rotating_Palette,
+            PM_EFFECT_CONFIG__ROTATING_PALETTE);
+
+  addEffect(EFFECTS_FUNCTION__ROTATING_PREVIOUS_ANIMATION__ID,
+            &mAnimatorLight::EffectAnim__Rotating_Previous_Animation,
+            PM_EFFECT_CONFIG__ROTATING_PREVIOUS_ANIMATION);
+
+  addEffect(EFFECTS_FUNCTION__STEPPING_PALETTE_WITH_BACKGROUND__ID,
+            &mAnimatorLight::EffectAnim__Stepping_Palette_With_Background,
+            PM_EFFECT_CONFIG__STEPPING_PALETTE_WITH_BACKGROUND);
+
+  addEffect(EFFECTS_FUNCTION__STEPPING_PALETTE__ID,
+            &mAnimatorLight::EffectAnim__Stepping_Palette,
+            PM_EFFECT_CONFIG__STEPPING_PALETTE);
+
+  addEffect(EFFECTS_FUNCTION__BLEND_PALETTE_BETWEEN_ANOTHER_PALETTE__ID,
+            &mAnimatorLight::EffectAnim__Blend_Two_Palettes,
+            PM_EFFECT_CONFIG__BLEND_TWO_PALETTES);
+
+  addEffect(EFFECTS_FUNCTION__TWINKLE_PALETTE_SEC_ON_ORDERED_PALETTE_PRI__ID,
+            &mAnimatorLight::EffectAnim__Twinkle_Palette_Onto_Palette,
+            PM_EFFECT_CONFIG__TWINKLE_PALETTE_SEC_ON_ORDERED_PALETTE_PRI);
+
+  addEffect(EFFECTS_FUNCTION__TWINKLE_OFF_PALETTE__ID,
+            &mAnimatorLight::EffectAnim__Twinkle_Out_Palette,
+            PM_EFFECT_CONFIG__TWINKLE_OUT_PALETTE);
+            
+  addEffect(EFFECTS_FUNCTION__TIMEBASED__HOUR_PROGRESS__ID,
+            &mAnimatorLight::EffectAnim__TimeBased__HourProgress,
+            PM_EFFECT_CONFIG__TIMEBASED__HOUR_PROGRESS);
+
+  addEffect(EFFECTS_FUNCTION__TWINKLE_DECAYING_PALETTE__ID,
+            &mAnimatorLight::EffectAnim__Twinkle_Decaying_Palette,
             PM_EFFECT_CONFIG__TWINKLE_DECAYING_PALETTE);
   #endif
+
+  // General Level 3 Flashing Extended Effects
   #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
-  addEffect(EFFECTS_FUNCTION__POPPING_DECAY_PALETTE_TO_BLACK__ID,                      &mAnimatorLight::EffectAnim__Popping_Decay_Palette_To_Black,PM_EFFECT_CONFIG__POPPING_DECAY_PALETTE_TO_BLACK, Effect_DevStage::Unstable);
-  #endif 
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
-  addEffect(EFFECTS_FUNCTION__POPPING_DECAY_RANDOM_TO_BLACK__ID,                       &mAnimatorLight::EffectAnim__Popping_Decay_Random_To_Black,                                                PM_EFFECT_CONFIG__POPPING_DECAY_RANDOM_TO_BLACK);
-  #endif 
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
-  addEffect(EFFECTS_FUNCTION__POPPING_DECAY_PALETTE_TO_WHITE__ID,                       &mAnimatorLight::EffectAnim__Popping_Decay_Palette_To_White,                                                PM_EFFECT_CONFIG__POPPING_DECAY_PALETTE_TO_WHITE);
-  #endif 
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
-  addEffect(EFFECTS_FUNCTION__POPPING_DECAY_RANDOM_TO_WHITE__ID,                       &mAnimatorLight::EffectAnim__Popping_Decay_Random_To_White,                                                PM_EFFECT_CONFIG__POPPING_DECAY_RANDOM_TO_WHITE);
-  #endif 
-  // #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING   
-  // addEffect(EFFECTS_FUNCTION__STATIC_PALETTE_SPANNING_SEGMENT__ID,            &mAnimatorLight::SubTask_Flasher_Animate_Function__Static_Palette_Spanning_Segment, PM_EFFECTS_FUNCTION__STATIC_PALETTE_SPANNING_SEGMENT__NAME_CTR); 
-  // #endif        
-  /**
-   * Static
-   **/
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
-  addEffect(EFFECTS_FUNCTION__STATIC_PATTERN__ID,       &mAnimatorLight::EffectAnim__Static_Pattern,                        PM_EFFECT_CONFIG__STATIC_PATTERN);
-  addEffect(EFFECTS_FUNCTION__TRI_STATIC_PATTERN__ID,   &mAnimatorLight::EffectAnim__Tri_Static_Pattern,                    PM_EFFECT_CONFIG__TRI_STATIC_PATTERN);
+  addEffect(EFFECTS_FUNCTION__POPPING_DECAY_PALETTE_TO_BLACK__ID,
+            &mAnimatorLight::EffectAnim__Popping_Decay_Palette_To_Black,
+            PM_EFFECT_CONFIG__POPPING_DECAY_PALETTE_TO_BLACK,
+            Effect_DevStage::Unstable);
+
+  addEffect(EFFECTS_FUNCTION__POPPING_DECAY_RANDOM_TO_BLACK__ID,
+            &mAnimatorLight::EffectAnim__Popping_Decay_Random_To_Black,
+            PM_EFFECT_CONFIG__POPPING_DECAY_RANDOM_TO_BLACK);
+
+  addEffect(EFFECTS_FUNCTION__POPPING_DECAY_PALETTE_TO_WHITE__ID,
+            &mAnimatorLight::EffectAnim__Popping_Decay_Palette_To_White,
+            PM_EFFECT_CONFIG__POPPING_DECAY_PALETTE_TO_WHITE);
+
+  addEffect(EFFECTS_FUNCTION__POPPING_DECAY_RANDOM_TO_WHITE__ID,
+            &mAnimatorLight::EffectAnim__Popping_Decay_Random_To_White,
+            PM_EFFECT_CONFIG__POPPING_DECAY_RANDOM_TO_WHITE);
+
+  addEffect(EFFECTS_FUNCTION__STATIC_PATTERN__ID,
+            &mAnimatorLight::EffectAnim__Static_Pattern,
+            PM_EFFECT_CONFIG__STATIC_PATTERN);
+
+  addEffect(EFFECTS_FUNCTION__TRI_STATIC_PATTERN__ID,
+            &mAnimatorLight::EffectAnim__Tri_Static_Pattern,
+            PM_EFFECT_CONFIG__TRI_STATIC_PATTERN);
+
+  addEffect(EFFECTS_FUNCTION__STATIC_INTERLEAVED_PATTERN__ID,
+            &mAnimatorLight::EffectAnim__Static_Interleaved_Pattern,
+            PM_EFFECT_CONFIG__STATIC_INTERLEAVED_PATTERN);
   #endif
+
+  // General Level 4 Flashing Complete Effects
   #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-  addEffect(EFFECTS_FUNCTION__SPOTS__ID,                &mAnimatorLight::EffectAnim__Spots,                                 PM_EFFECT_CONFIG__SPOTS);
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-  addEffect(EFFECTS_FUNCTION__PERCENT__ID,              &mAnimatorLight::EffectAnim__Percent,                               PM_EFFECT_CONFIG__PERCENT);
-  #endif
-  /**
-   * One Colour
-   **/
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
-  addEffect(EFFECTS_FUNCTION__RANDOM_COLOR__ID,         &mAnimatorLight::EffectAnim__Random_Colour,                         PM_EFFECT_CONFIG__RANDOM_COLOR);
-  #endif
+  addEffect(EFFECTS_FUNCTION__SPOTS__ID,
+            &mAnimatorLight::EffectAnim__Spots,
+            PM_EFFECT_CONFIG__SPOTS);
+
+  addEffect(EFFECTS_FUNCTION__PERCENT__ID,
+            &mAnimatorLight::EffectAnim__Percent,
+            PM_EFFECT_CONFIG__PERCENT);
+
+  addEffect(EFFECTS_FUNCTION__RANDOM_COLOR__ID,         
+            &mAnimatorLight::EffectAnim__Random_Colour,                         
+            PM_EFFECT_CONFIG__RANDOM_COLOR);
+
+  addEffect(EFFECTS_FUNCTION__TRICOLOR_WIPE__ID,
+            &mAnimatorLight::EffectAnim__TriColour,
+            PM_EFFECT_CONFIG__TRICOLOR_WIPE);
   /**
    * Wipe/Sweep/Runners 
    **/
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-  addEffect(EFFECTS_FUNCTION__COLOR_WIPE__ID,           &mAnimatorLight::EffectAnim__Colour_Wipe,                           PM_EFFECT_CONFIG__COLOR_WIPE);
-  addEffect(EFFECTS_FUNCTION__COLOR_WIPE_RANDOM__ID,    &mAnimatorLight::EffectAnim__Colour_Wipe_Random,                    PM_EFFECT_CONFIG__COLOR_WIPE_RANDOM);
-  addEffect(EFFECTS_FUNCTION__COLOR_WIPE_PALETTE__ID,   &mAnimatorLight::EffectAnim__Colour_Wipe_Palette,                   PM_EFFECT_CONFIG__COLOR_WIPE_PALETTE);
-  addEffect(EFFECTS_FUNCTION__COLOR_SWEEP__ID,          &mAnimatorLight::EffectAnim__Colour_Sweep,                          PM_EFFECT_CONFIG__COLOR_SWEEP);
-  addEffect(EFFECTS_FUNCTION__COLOR_SWEEP_RANDOM__ID,   &mAnimatorLight::EffectAnim__Colour_Sweep_Random,                   PM_EFFECT_CONFIG__COLOR_SWEEP_RANDOM);
-  addEffect(EFFECTS_FUNCTION__COLOR_SWEEP_PALETTE__ID,  &mAnimatorLight::EffectAnim__Colour_Sweep_Palette,                  PM_EFFECT_CONFIG__COLOR_SWEEP_PALETTE);
-  #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-  /**
-   * Fireworks
-   **/
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
-  addEffect(EFFECTS_FUNCTION__FIREWORKS__ID,                     &mAnimatorLight::EffectAnim__Fireworks,                    PM_EFFECT_CONFIG__FIREWORKS);
-  addEffect(EFFECTS_FUNCTION__FIREWORKS_EXPLODING__ID,           &mAnimatorLight::EffectAnim__Exploding_Fireworks,          PM_EFFECT_CONFIG__EXPLODING_FIREWORKS);
-  addEffect(EFFECTS_FUNCTION__FIREWORKS_STARBURST__ID,           &mAnimatorLight::EffectAnim__Fireworks_Starburst,          PM_EFFECT_CONFIG__STARBURST);
-  addEffect(EFFECTS_FUNCTION__FIREWORKS_STARBURST_GLOWS__ID,     &mAnimatorLight::EffectAnim__Fireworks_Starburst_Glows,    PM_EFFECT_CONFIG__STARBURST_GLOWS);
-  addEffect(EFFECTS_FUNCTION__RAIN__ID,                          &mAnimatorLight::EffectAnim__Rain,                         PM_EFFECT_CONFIG__RAIN);
-  addEffect(EFFECTS_FUNCTION__FIREWORKS_EXPLODING_NO_LAUNCH__ID, &mAnimatorLight::EffectAnim__Exploding_Fireworks_NoLaunch, PM_EFFECT_CONFIG__EXPLODING_FIREWORKS_NOLAUNCH);
-  #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-  addEffect(EFFECTS_FUNCTION__TRICOLOR_WIPE__ID,         &mAnimatorLight::EffectAnim__TriColour,          PM_EFFECT_CONFIG__TRICOLOR_WIPE);
+  addEffect(EFFECTS_FUNCTION__COLOR_WIPE__ID,
+            &mAnimatorLight::EffectAnim__Colour_Wipe,
+            PM_EFFECT_CONFIG__COLOR_WIPE);
+
+  addEffect(EFFECTS_FUNCTION__COLOR_WIPE_RANDOM__ID,
+            &mAnimatorLight::EffectAnim__Colour_Wipe_Random,
+            PM_EFFECT_CONFIG__COLOR_WIPE_RANDOM);
+
+  addEffect(EFFECTS_FUNCTION__COLOR_WIPE_PALETTE__ID,
+            &mAnimatorLight::EffectAnim__Colour_Wipe_Palette,
+            PM_EFFECT_CONFIG__COLOR_WIPE_PALETTE);
+
+  addEffect(EFFECTS_FUNCTION__COLOR_SWEEP__ID,
+            &mAnimatorLight::EffectAnim__Colour_Sweep,
+            PM_EFFECT_CONFIG__COLOR_SWEEP);
+
+  addEffect(EFFECTS_FUNCTION__COLOR_SWEEP_RANDOM__ID,
+            &mAnimatorLight::EffectAnim__Colour_Sweep_Random,
+            PM_EFFECT_CONFIG__COLOR_SWEEP_RANDOM);
+
+  addEffect(EFFECTS_FUNCTION__COLOR_SWEEP_PALETTE__ID,
+            &mAnimatorLight::EffectAnim__Colour_Sweep_Palette,
+            PM_EFFECT_CONFIG__COLOR_SWEEP_PALETTE);
+            
+  addEffect(EFFECTS_FUNCTION__RUNNING_COLOR__ID,
+            &mAnimatorLight::EffectAnim__Running_Colour,
+            PM_EFFECT_CONFIG__RUNNING_COLOR);
+
+  addEffect(EFFECTS_FUNCTION__RUNNING_RANDOM__ID,
+            &mAnimatorLight::EffectAnim__Running_Random,
+            PM_EFFECT_CONFIG__RUNNING_RANDOM);
+  
+  addEffect(EFFECTS_FUNCTION__ANDROID__ID,               
+            &mAnimatorLight::EffectAnim__Android,            
+            PM_EFFECT_CONFIG__ANDROID);  
+
+  addEffect(EFFECTS_FUNCTION__GRADIENT__ID,
+            &mAnimatorLight::EffectAnim__Gradient,
+            PM_EFFECT_CONFIG__GRADIENT);
+
+  addEffect(EFFECTS_FUNCTION__LOADING__ID,
+            &mAnimatorLight::EffectAnim__Loading,
+            PM_EFFECT_CONFIG__LOADING);
+
+  addEffect(EFFECTS_FUNCTION__ROLLINGBALLS__ID,
+            &mAnimatorLight::EffectAnim__Rolling_Balls,
+            PM_EFFECT_CONFIG__ROLLINGBALLS);
+
+  addEffect(EFFECTS_FUNCTION__POLICE__ID,
+            &mAnimatorLight::EffectAnim__Police,
+            PM_EFFECT_CONFIG__POLICE);
+
+  addEffect(EFFECTS_FUNCTION__POLICE_ALL__ID,
+            &mAnimatorLight::EffectAnim__Polce_All,
+            PM_EFFECT_CONFIG__POLICE_ALL);
+
+  // addEffect(EFFECTS_FUNCTION__FAIRY__ID,
+  //           &mAnimatorLight::EffectAnim__Fairy,
+  //           PM_EFFECT_CONFIG__FAIRY);
+
+  addEffect(EFFECTS_FUNCTION__TWO_DOTS__ID,
+            &mAnimatorLight::EffectAnim__Two_Dots,
+            PM_EFFECT_CONFIG__TWO_DOTS);
+
+  addEffect(EFFECTS_FUNCTION__TWO_AREAS__ID,
+            &mAnimatorLight::EffectAnim__Two_Areas,
+            PM_EFFECT_CONFIG__TWO_AREAS);
+            
+  // addEffect(EFFECTS_FUNCTION__FAIRYTWINKLE__ID,
+  //           &mAnimatorLight::EffectAnim__Fairy_Twinkle,
+  //           PM_EFFECT_CONFIG__FAIRYTWINKLE);
+            
+  // addEffect(EFFECTS_FUNCTION__RUNNING_DUAL__ID,
+  //           &mAnimatorLight::EffectAnim__Running_Dual,
+  //           PM_EFFECT_CONFIG__RUNNING_DUAL);            
+
+  addEffect(EFFECTS_FUNCTION__MULTI_COMET__ID,
+            &mAnimatorLight::EffectAnim__Multi_Comet,
+            PM_EFFECT_CONFIG__MULTI_COMET);
+
+  addEffect(EFFECTS_FUNCTION__OSCILLATE__ID,
+            &mAnimatorLight::EffectAnim__Oscillate,
+            PM_EFFECT_CONFIG__OSCILLATE);
+
+  addEffect(EFFECTS_FUNCTION__BPM__ID,
+            &mAnimatorLight::EffectAnim__BPM,
+            PM_EFFECT_CONFIG__BPM);
+
+  addEffect(EFFECTS_FUNCTION__JUGGLE__ID,
+            &mAnimatorLight::EffectAnim__Juggle,
+            PM_EFFECT_CONFIG__JUGGLES);
+
+  addEffect(EFFECTS_FUNCTION__PALETTE__ID,
+            &mAnimatorLight::EffectAnim__Palette,
+            PM_EFFECT_CONFIG__PALETTE);
+
+  addEffect(EFFECTS_FUNCTION__COLORWAVES__ID,
+            &mAnimatorLight::EffectAnim__ColourWaves,
+            PM_EFFECT_CONFIG__COLORWAVES);
+
+  addEffect(EFFECTS_FUNCTION__LAKE__ID,
+            &mAnimatorLight::EffectAnim__Lake,
+            PM_EFFECT_CONFIG__LAKE);
+
+  addEffect(EFFECTS_FUNCTION__GLITTER__ID,
+            &mAnimatorLight::EffectAnim__Glitter,
+            PM_EFFECT_CONFIG__GLITTER);
+
+  addEffect(EFFECTS_FUNCTION__METEOR__ID,
+            &mAnimatorLight::EffectAnim__Meteor,
+            PM_EFFECT_CONFIG__METEOR);
+
+  addEffect(EFFECTS_FUNCTION__METEOR_SMOOTH__ID,
+            &mAnimatorLight::EffectAnim__Metoer_Smooth,
+            PM_EFFECT_CONFIG__METEOR_SMOOTH);
+
+  addEffect(EFFECTS_FUNCTION__PRIDE_2015__ID,
+            &mAnimatorLight::EffectAnim__Pride_2015,
+            PM_EFFECT_CONFIG__PRIDE_2015);
+
+  addEffect(EFFECTS_FUNCTION__PACIFICA__ID,
+            &mAnimatorLight::EffectAnim__Pacifica,
+            PM_EFFECT_CONFIG__PACIFICA);
+
+  addEffect(EFFECTS_FUNCTION__SUNRISE__ID,
+            &mAnimatorLight::EffectAnim__Sunrise,
+            PM_EFFECT_CONFIG__SUNRISE);
+
+  addEffect(EFFECTS_FUNCTION__SINEWAVE__ID,
+            &mAnimatorLight::EffectAnim__Sinewave,
+            PM_EFFECT_CONFIG__SINEWAVE);
+
+  addEffect(EFFECTS_FUNCTION__FLOW__ID,
+            &mAnimatorLight::EffectAnim__Flow,
+            PM_EFFECT_CONFIG__FLOW);
+
+  addEffect(EFFECTS_FUNCTION__RUNNING_LIGHTS__ID,
+            &mAnimatorLight::EffectAnim__Running_Lights,
+            PM_EFFECT_CONFIG__RUNNING_LIGHTS);
+
+  addEffect(EFFECTS_FUNCTION__RAINBOW_CYCLE__ID,
+            &mAnimatorLight::EffectAnim__Rainbow_Cycle,
+            PM_EFFECT_CONFIG__RAINBOW_CYCLE);
   #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
-  addEffect(EFFECTS_FUNCTION__ANDROID__ID,               &mAnimatorLight::EffectAnim__Android,            PM_EFFECT_CONFIG__ANDROID);
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-  addEffect(EFFECTS_FUNCTION__RUNNING_COLOR__ID,         &mAnimatorLight::EffectAnim__Running_Colour,     PM_EFFECT_CONFIG__RUNNING_COLOR);
-  addEffect(EFFECTS_FUNCTION__RUNNING_RANDOM__ID,        &mAnimatorLight::EffectAnim__Running_Random,     PM_EFFECT_CONFIG__RUNNING_RANDOM);
-  addEffect(EFFECTS_FUNCTION__GRADIENT__ID,              &mAnimatorLight::EffectAnim__Gradient,           PM_EFFECT_CONFIG__GRADIENT);
-  addEffect(EFFECTS_FUNCTION__LOADING__ID,               &mAnimatorLight::EffectAnim__Loading,            PM_EFFECT_CONFIG__LOADING);
-  addEffect(EFFECTS_FUNCTION__POLICE__ID,                &mAnimatorLight::EffectAnim__Police,             PM_EFFECT_CONFIG__POLICE);
-  addEffect(EFFECTS_FUNCTION__POLICE_ALL__ID,            &mAnimatorLight::EffectAnim__Polce_All,          PM_EFFECT_CONFIG__POLICE_ALL);
-  addEffect(EFFECTS_FUNCTION__TWO_DOTS__ID,              &mAnimatorLight::EffectAnim__Two_Dots,           PM_EFFECT_CONFIG__TWO_DOTS);
-  addEffect(EFFECTS_FUNCTION__TWO_AREAS__ID,             &mAnimatorLight::EffectAnim__Two_Areas,          PM_EFFECT_CONFIG__TWO_AREAS);
-  addEffect(EFFECTS_FUNCTION__MULTI_COMET__ID,           &mAnimatorLight::EffectAnim__Multi_Comet,        PM_EFFECT_CONFIG__MULTI_COMET); // PM_EFFECTS_FUNCTION__[A-Z_]+__NAME_CTR,\s*
-  addEffect(EFFECTS_FUNCTION__OSCILLATE__ID,             &mAnimatorLight::EffectAnim__Oscillate,          PM_EFFECT_CONFIG__OSCILLATE);
-  addEffect(EFFECTS_FUNCTION__BPM__ID,                   &mAnimatorLight::EffectAnim__BPM,                PM_EFFECT_CONFIG__BPM);
-  addEffect(EFFECTS_FUNCTION__JUGGLE__ID,                &mAnimatorLight::EffectAnim__Juggle,             PM_EFFECT_CONFIG__JUGGLES);
-  addEffect(EFFECTS_FUNCTION__PALETTE__ID,               &mAnimatorLight::EffectAnim__Palette,            PM_EFFECT_CONFIG__PALETTE);
-  addEffect(EFFECTS_FUNCTION__COLORWAVES__ID,            &mAnimatorLight::EffectAnim__ColourWaves,        PM_EFFECT_CONFIG__COLORWAVES);
-  addEffect(EFFECTS_FUNCTION__LAKE__ID,                  &mAnimatorLight::EffectAnim__Lake,               PM_EFFECT_CONFIG__LAKE);
-  addEffect(EFFECTS_FUNCTION__GLITTER__ID,               &mAnimatorLight::EffectAnim__Glitter,            PM_EFFECT_CONFIG__GLITTER);
-  addEffect(EFFECTS_FUNCTION__METEOR__ID,                &mAnimatorLight::EffectAnim__Meteor,             PM_EFFECT_CONFIG__METEOR);
-  addEffect(EFFECTS_FUNCTION__METEOR_SMOOTH__ID,         &mAnimatorLight::EffectAnim__Metoer_Smooth,      PM_EFFECT_CONFIG__METEOR_SMOOTH);
-  addEffect(EFFECTS_FUNCTION__PRIDE_2015__ID,            &mAnimatorLight::EffectAnim__Pride_2015,         PM_EFFECT_CONFIG__PRIDE_2015);
-  addEffect(EFFECTS_FUNCTION__PACIFICA__ID,              &mAnimatorLight::EffectAnim__Pacifica,           PM_EFFECT_CONFIG__PACIFICA);
-  addEffect(EFFECTS_FUNCTION__SUNRISE__ID,               &mAnimatorLight::EffectAnim__Sunrise,            PM_EFFECT_CONFIG__SUNRISE);
-  addEffect(EFFECTS_FUNCTION__SINEWAVE__ID,              &mAnimatorLight::EffectAnim__Sinewave,           PM_EFFECT_CONFIG__SINEWAVE);
-  addEffect(EFFECTS_FUNCTION__FLOW__ID,                  &mAnimatorLight::EffectAnim__Flow,               PM_EFFECT_CONFIG__FLOW);
-  addEffect(EFFECTS_FUNCTION__RUNNING_LIGHTS__ID,        &mAnimatorLight::EffectAnim__Running_Lights,     PM_EFFECT_CONFIG__RUNNING_LIGHTS);
-  addEffect(EFFECTS_FUNCTION__RAINBOW_CYCLE__ID,         &mAnimatorLight::EffectAnim__Rainbow_Cycle,      PM_EFFECT_CONFIG__RAINBOW_CYCLE);
-  #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+
   /**
    * Chase
    **/
   #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-  addEffect(EFFECTS_FUNCTION__CHASE_COLOR__ID,           &mAnimatorLight::EffectAnim__Chase_Colour,          PM_EFFECT_CONFIG__CHASE_COLOR);
-  addEffect(EFFECTS_FUNCTION__CHASE_RANDOM__ID,          &mAnimatorLight::EffectAnim__Chase_Random,          PM_EFFECT_CONFIG__CHASE_RANDOM);
-  addEffect(EFFECTS_FUNCTION__CHASE_RAINBOW__ID,         &mAnimatorLight::EffectAnim__Chase_Rainbow,         PM_EFFECT_CONFIG__CHASE_RAINBOW);
-  addEffect(EFFECTS_FUNCTION__CHASE_FLASH__ID,           &mAnimatorLight::EffectAnim__Chase_Flash,           PM_EFFECT_CONFIG__CHASE_FLASH);
-  addEffect(EFFECTS_FUNCTION__CHASE_FLASH_RANDOM__ID,    &mAnimatorLight::EffectAnim__Chase_Flash_Random,    PM_EFFECT_CONFIG__CHASE_FLASH_RANDOM);
-  addEffect(EFFECTS_FUNCTION__CHASE_RAINBOW_WHITE__ID,   &mAnimatorLight::EffectAnim__Chase_Rainbow_White,   PM_EFFECT_CONFIG__CHASE_RAINBOW_WHITE);
-  addEffect(EFFECTS_FUNCTION__CHASE_THEATER__ID,         &mAnimatorLight::EffectAnim__Chase_Theater,         PM_EFFECT_CONFIG__THEATER_CHASE);
-  addEffect(EFFECTS_FUNCTION__CHASE_THEATER_RAINBOW__ID, &mAnimatorLight::EffectAnim__Chase_Theatre_Rainbow, PM_EFFECT_CONFIG__THEATER_CHASE_RAINBOW);
-  addEffect(EFFECTS_FUNCTION__CHASE_TRICOLOR__ID,        &mAnimatorLight::EffectAnim__Chase_TriColour,       PM_EFFECT_CONFIG__TRICOLOR_CHASE);
-  #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+  addEffect(EFFECTS_FUNCTION__CHASE_COLOR__ID,
+            &mAnimatorLight::EffectAnim__Chase_Colour,
+            PM_EFFECT_CONFIG__CHASE_COLOR);
+
+  addEffect(EFFECTS_FUNCTION__CHASE_RANDOM__ID,
+            &mAnimatorLight::EffectAnim__Chase_Random,
+            PM_EFFECT_CONFIG__CHASE_RANDOM);
+
+  addEffect(EFFECTS_FUNCTION__CHASE_RAINBOW__ID,
+            &mAnimatorLight::EffectAnim__Chase_Rainbow,
+            PM_EFFECT_CONFIG__CHASE_RAINBOW);
+
+  addEffect(EFFECTS_FUNCTION__CHASE_FLASH__ID,
+            &mAnimatorLight::EffectAnim__Chase_Flash,
+            PM_EFFECT_CONFIG__CHASE_FLASH);
+
+  addEffect(EFFECTS_FUNCTION__CHASE_FLASH_RANDOM__ID,
+            &mAnimatorLight::EffectAnim__Chase_Flash_Random,
+            PM_EFFECT_CONFIG__CHASE_FLASH_RANDOM);
+
+  addEffect(EFFECTS_FUNCTION__CHASE_RAINBOW_WHITE__ID,
+            &mAnimatorLight::EffectAnim__Chase_Rainbow_White,
+            PM_EFFECT_CONFIG__CHASE_RAINBOW_WHITE);
+
+  addEffect(EFFECTS_FUNCTION__CHASE_THEATER__ID,
+            &mAnimatorLight::EffectAnim__Chase_Theater,
+            PM_EFFECT_CONFIG__THEATER_CHASE);
+
+  addEffect(EFFECTS_FUNCTION__CHASE_THEATER_RAINBOW__ID,
+            &mAnimatorLight::EffectAnim__Chase_Theatre_Rainbow,
+            PM_EFFECT_CONFIG__THEATER_CHASE_RAINBOW);
+
+  addEffect(EFFECTS_FUNCTION__CHASE_TRICOLOR__ID,
+            &mAnimatorLight::EffectAnim__Chase_TriColour,
+            PM_EFFECT_CONFIG__TRICOLOR_CHASE);
+  #endif
+
   /**
    *  Breathe/Fade/Pulse
-   **/    
+   **/      
   #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-  addEffect(EFFECTS_FUNCTION__BREATH__ID,                &mAnimatorLight::EffectAnim__Breath,                PM_EFFECT_CONFIG__BREATH);
-  addEffect(EFFECTS_FUNCTION__FADE__ID,                  &mAnimatorLight::EffectAnim__Fade,                  PM_EFFECT_CONFIG__FADE);
-  addEffect(EFFECTS_FUNCTION__FADE_TRICOLOR__ID,         &mAnimatorLight::EffectAnim__Fade_TriColour,        PM_EFFECT_CONFIG__TRICOLOR_FADE);
-  addEffect(EFFECTS_FUNCTION__FADE_SPOTS__ID,            &mAnimatorLight::EffectAnim__Fade_Spots,            PM_EFFECT_CONFIG__SPOTS_FADE);
-  #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+  addEffect(EFFECTS_FUNCTION__BREATH__ID,
+            &mAnimatorLight::EffectAnim__Breath,
+            PM_EFFECT_CONFIG__BREATH);
+
+  addEffect(EFFECTS_FUNCTION__FADE__ID,
+            &mAnimatorLight::EffectAnim__Fade,
+            PM_EFFECT_CONFIG__FADE);
+
+  addEffect(EFFECTS_FUNCTION__FADE_TRICOLOR__ID,
+            &mAnimatorLight::EffectAnim__Fade_TriColour,
+            PM_EFFECT_CONFIG__TRICOLOR_FADE);
+
+  addEffect(EFFECTS_FUNCTION__FADE_SPOTS__ID,
+            &mAnimatorLight::EffectAnim__Fade_Spots,
+            PM_EFFECT_CONFIG__SPOTS_FADE);
+  #endif
+  
   /**
    * Sparkle/Twinkle
    **/
   #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-  addEffect(EFFECTS_FUNCTION__SOLID_GLITTER__ID,   &mAnimatorLight::EffectAnim__Solid_Glitter,               PM_EFFECT_CONFIG__SOLID_GLITTER);
-  addEffect(EFFECTS_FUNCTION__POPCORN__ID,         &mAnimatorLight::EffectAnim__Popcorn,                     PM_EFFECT_CONFIG__POPCORN);
-  addEffect(EFFECTS_FUNCTION__PLASMA__ID,          &mAnimatorLight::EffectAnim__Plasma,                      PM_EFFECT_CONFIG__PLASMA);
-  addEffect(EFFECTS_FUNCTION__SPARKLE__ID,         &mAnimatorLight::EffectAnim__Sparkle,                     PM_EFFECT_CONFIG__SPARKLE);
-  addEffect(EFFECTS_FUNCTION__FLASH_SPARKLE__ID,   &mAnimatorLight::EffectAnim__Sparkle_Flash,               PM_EFFECT_CONFIG__FLASH_SPARKLE);
-  addEffect(EFFECTS_FUNCTION__HYPER_SPARKLE__ID,   &mAnimatorLight::EffectAnim__Sparkle_Hyper,               PM_EFFECT_CONFIG__HYPER_SPARKLE);
-  addEffect(EFFECTS_FUNCTION__TWINKLE__ID,         &mAnimatorLight::EffectAnim__Twinkle,                     PM_EFFECT_CONFIG__TWINKLE);
-  addEffect(EFFECTS_FUNCTION__COLORTWINKLE__ID,    &mAnimatorLight::EffectAnim__Twinkle_Colour,              PM_EFFECT_CONFIG__COLORTWINKLE);
-  addEffect(EFFECTS_FUNCTION__TWINKLE_FOX__ID,     &mAnimatorLight::EffectAnim__Twinkle_Fox,                 PM_EFFECT_CONFIG__TWINKLE_FOX);
-  addEffect(EFFECTS_FUNCTION__TWINKLE_CAT__ID,     &mAnimatorLight::EffectAnim__Twinkle_Cat,                 PM_EFFECT_CONFIG__TWINKLE_CAT);
-  addEffect(EFFECTS_FUNCTION__TWINKLE_UP__ID,      &mAnimatorLight::EffectAnim__Twinkle_Up,                  PM_EFFECT_CONFIG__TWINKLE_UP);
-  addEffect(EFFECTS_FUNCTION__SAW__ID,             &mAnimatorLight::EffectAnim__Saw,                         PM_EFFECT_CONFIG__SAW);
-  addEffect(EFFECTS_FUNCTION__DISSOLVE__ID,        &mAnimatorLight::EffectAnim__Dissolve,                    PM_EFFECT_CONFIG__DISSOLVE);
-  addEffect(EFFECTS_FUNCTION__DISSOLVE_RANDOM__ID, &mAnimatorLight::EffectAnim__Dissolve_Random,             PM_EFFECT_CONFIG__DISSOLVE_RANDOM);
-  addEffect(EFFECTS_FUNCTION__COLORFUL__ID,        &mAnimatorLight::EffectAnim__ColourFul,                   PM_EFFECT_CONFIG__COLORFUL);
-  addEffect(EFFECTS_FUNCTION__TRAFFIC_LIGHT__ID,   &mAnimatorLight::EffectAnim__Traffic_Light,               PM_EFFECT_CONFIG__TRAFFIC_LIGHT);
-  #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+  addEffect(EFFECTS_FUNCTION__SOLID_GLITTER__ID,
+            &mAnimatorLight::EffectAnim__Solid_Glitter,
+            PM_EFFECT_CONFIG__SOLID_GLITTER);
+
+  addEffect(EFFECTS_FUNCTION__POPCORN__ID,
+            &mAnimatorLight::EffectAnim__Popcorn,
+            PM_EFFECT_CONFIG__POPCORN);
+
+  addEffect(EFFECTS_FUNCTION__PLASMA__ID,
+            &mAnimatorLight::EffectAnim__Plasma,
+            PM_EFFECT_CONFIG__PLASMA);
+
+  addEffect(EFFECTS_FUNCTION__SPARKLE__ID,
+            &mAnimatorLight::EffectAnim__Sparkle,
+            PM_EFFECT_CONFIG__SPARKLE);
+
+  addEffect(EFFECTS_FUNCTION__FLASH_SPARKLE__ID,
+            &mAnimatorLight::EffectAnim__Sparkle_Flash,
+            PM_EFFECT_CONFIG__FLASH_SPARKLE);
+
+  addEffect(EFFECTS_FUNCTION__HYPER_SPARKLE__ID,
+            &mAnimatorLight::EffectAnim__Sparkle_Hyper,
+            PM_EFFECT_CONFIG__HYPER_SPARKLE);
+
+  addEffect(EFFECTS_FUNCTION__TWINKLE__ID,
+            &mAnimatorLight::EffectAnim__Twinkle,
+            PM_EFFECT_CONFIG__TWINKLE);
+
+  addEffect(EFFECTS_FUNCTION__COLORTWINKLE__ID,
+            &mAnimatorLight::EffectAnim__Twinkle_Colour,
+            PM_EFFECT_CONFIG__COLORTWINKLE);
+
+  addEffect(EFFECTS_FUNCTION__TWINKLE_FOX__ID,
+            &mAnimatorLight::EffectAnim__Twinkle_Fox,
+            PM_EFFECT_CONFIG__TWINKLE_FOX);
+
+  addEffect(EFFECTS_FUNCTION__TWINKLE_CAT__ID,
+            &mAnimatorLight::EffectAnim__Twinkle_Cat,
+            PM_EFFECT_CONFIG__TWINKLE_CAT);
+
+  addEffect(EFFECTS_FUNCTION__TWINKLE_UP__ID,
+            &mAnimatorLight::EffectAnim__Twinkle_Up,
+            PM_EFFECT_CONFIG__TWINKLE_UP);
+
+  addEffect(EFFECTS_FUNCTION__SAW__ID,
+            &mAnimatorLight::EffectAnim__Saw,
+            PM_EFFECT_CONFIG__SAW);
+
+  addEffect(EFFECTS_FUNCTION__DISSOLVE__ID,
+            &mAnimatorLight::EffectAnim__Dissolve,
+            PM_EFFECT_CONFIG__DISSOLVE);
+
+  addEffect(EFFECTS_FUNCTION__DISSOLVE_RANDOM__ID,
+            &mAnimatorLight::EffectAnim__Dissolve_Random,
+            PM_EFFECT_CONFIG__DISSOLVE_RANDOM);
+
+  addEffect(EFFECTS_FUNCTION__COLORFUL__ID,
+            &mAnimatorLight::EffectAnim__ColourFul,
+            PM_EFFECT_CONFIG__COLORFUL);
+
+  addEffect(EFFECTS_FUNCTION__TRAFFIC_LIGHT__ID,
+            &mAnimatorLight::EffectAnim__Traffic_Light,
+            PM_EFFECT_CONFIG__TRAFFIC_LIGHT);
+  #endif
+
+  /**
+   * Fireworks
+   **/
+  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+  addEffect(EFFECTS_FUNCTION__FIREWORKS__ID,                     
+            &mAnimatorLight::EffectAnim__Fireworks,                    
+            PM_EFFECT_CONFIG__FIREWORKS);
+
+  addEffect(EFFECTS_FUNCTION__FIREWORKS_EXPLODING__ID,           
+            &mAnimatorLight::EffectAnim__Exploding_Fireworks,          
+            PM_EFFECT_CONFIG__EXPLODING_FIREWORKS);
+
+  addEffect(EFFECTS_FUNCTION__FIREWORKS_STARBURST__ID,           
+            &mAnimatorLight::EffectAnim__Fireworks_Starburst,          
+            PM_EFFECT_CONFIG__STARBURST);
+
+  addEffect(EFFECTS_FUNCTION__FIREWORKS_STARBURST_GLOWS__ID,     
+            &mAnimatorLight::EffectAnim__Fireworks_Starburst_Glows,    
+            PM_EFFECT_CONFIG__STARBURST_GLOWS);
+
+  addEffect(EFFECTS_FUNCTION__RAIN__ID,                          
+            &mAnimatorLight::EffectAnim__Rain,                         
+            PM_EFFECT_CONFIG__RAIN);
+
+  addEffect(EFFECTS_FUNCTION__TETRIX__ID,                          
+            &mAnimatorLight::EffectAnim__Tetrix,                         
+            PM_EFFECT_CONFIG__TETRIX);
+
+  // addEffect(EFFECTS_FUNCTION__FIRE_FLICKER__ID,                          
+  //           &mAnimatorLight::EffectAnim__Fire_Flicker,                         
+  //           PM_EFFECT_CONFIG__FIRE_FLICKER);
+  
+  addEffect(EFFECTS_FUNCTION__FIREWORKS_EXPLODING_NO_LAUNCH__ID,     
+            &mAnimatorLight::EffectAnim__Exploding_Fireworks_NoLaunch,    
+            PM_EFFECT_CONFIG__EXPLODING_FIREWORKS_NOLAUNCH);
+  #endif
+
   /**
    * Blink/Strobe
    **/
   #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-  addEffect(EFFECTS_FUNCTION__BLINK__ID,           &mAnimatorLight::EffectAnim__Blink,                       PM_EFFECT_CONFIG__BLINK);
-  addEffect(EFFECTS_FUNCTION__BLINK_RAINBOW__ID,   &mAnimatorLight::EffectAnim__Blink_Rainbow,               PM_EFFECT_CONFIG__BLINK_RAINBOW);
-  addEffect(EFFECTS_FUNCTION__STROBE__ID,          &mAnimatorLight::EffectAnim__Strobe,                      PM_EFFECT_CONFIG__STROBE);
-  addEffect(EFFECTS_FUNCTION__MULTI_STROBE__ID,    &mAnimatorLight::EffectAnim__Strobe_Multi,                PM_EFFECT_CONFIG__MULTI_STROBE);
-  addEffect(EFFECTS_FUNCTION__STROBE_RAINBOW__ID,  &mAnimatorLight::EffectAnim__Strobe_Rainbow,              PM_EFFECT_CONFIG__STROBE_RAINBOW);
-  addEffect(EFFECTS_FUNCTION__RAINBOW__ID,         &mAnimatorLight::EffectAnim__Rainbow,                     PM_EFFECT_CONFIG__RAINBOW);
-  addEffect(EFFECTS_FUNCTION__LIGHTNING__ID,       &mAnimatorLight::EffectAnim__Lightning,                   PM_EFFECT_CONFIG__LIGHTNING);
-  addEffect(EFFECTS_FUNCTION__FIRE_2012__ID,       &mAnimatorLight::EffectAnim__Fire_2012,                   PM_EFFECT_CONFIG__FIRE_2012);
-  addEffect(EFFECTS_FUNCTION__RAILWAY__ID,         &mAnimatorLight::EffectAnim__Railway,                     PM_EFFECT_CONFIG__RAILWAY);
-  addEffect(EFFECTS_FUNCTION__HEARTBEAT__ID,       &mAnimatorLight::EffectAnim__Heartbeat,                   PM_EFFECT_CONFIG__HEARTBEAT);
-  #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+  addEffect(EFFECTS_FUNCTION__BLINK__ID,
+            &mAnimatorLight::EffectAnim__Blink,
+            PM_EFFECT_CONFIG__BLINK);
+
+  addEffect(EFFECTS_FUNCTION__BLINK_RAINBOW__ID,
+            &mAnimatorLight::EffectAnim__Blink_Rainbow,
+            PM_EFFECT_CONFIG__BLINK_RAINBOW);
+
+  addEffect(EFFECTS_FUNCTION__STROBE__ID,
+            &mAnimatorLight::EffectAnim__Strobe,
+            PM_EFFECT_CONFIG__STROBE);
+
+  addEffect(EFFECTS_FUNCTION__MULTI_STROBE__ID,
+            &mAnimatorLight::EffectAnim__Strobe_Multi,
+            PM_EFFECT_CONFIG__MULTI_STROBE);
+
+  addEffect(EFFECTS_FUNCTION__STROBE_RAINBOW__ID,
+            &mAnimatorLight::EffectAnim__Strobe_Rainbow,
+            PM_EFFECT_CONFIG__STROBE_RAINBOW);
+
+  addEffect(EFFECTS_FUNCTION__RAINBOW__ID,
+            &mAnimatorLight::EffectAnim__Rainbow,
+            PM_EFFECT_CONFIG__RAINBOW);
+
+  addEffect(EFFECTS_FUNCTION__LIGHTNING__ID,
+            &mAnimatorLight::EffectAnim__Lightning,
+            PM_EFFECT_CONFIG__LIGHTNING);
+
+  addEffect(EFFECTS_FUNCTION__FIRE_2012__ID,
+            &mAnimatorLight::EffectAnim__Fire_2012,
+            PM_EFFECT_CONFIG__FIRE_2012);
+
+  addEffect(EFFECTS_FUNCTION__RAILWAY__ID,
+            &mAnimatorLight::EffectAnim__Railway,
+            PM_EFFECT_CONFIG__RAILWAY);
+
+  addEffect(EFFECTS_FUNCTION__HEARTBEAT__ID,
+            &mAnimatorLight::EffectAnim__Heartbeat,
+            PM_EFFECT_CONFIG__HEARTBEAT);
+  #endif
+
   /**
    * Noise
    **/
   #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-  addEffect(EFFECTS_FUNCTION__FILLNOISE8__ID,      &mAnimatorLight::EffectAnim__FillNoise8,                  PM_EFFECT_CONFIG__FILLNOISE8);
-  addEffect(EFFECTS_FUNCTION__NOISE16_1__ID,       &mAnimatorLight::EffectAnim__Noise16_1,                   PM_EFFECT_CONFIG__NOISE16_1);
-  addEffect(EFFECTS_FUNCTION__NOISE16_2__ID,       &mAnimatorLight::EffectAnim__Noise16_2,                   PM_EFFECT_CONFIG__NOISE16_2);
-  addEffect(EFFECTS_FUNCTION__NOISE16_3__ID,       &mAnimatorLight::EffectAnim__Noise16_3,                   PM_EFFECT_CONFIG__NOISE16_3);
-  addEffect(EFFECTS_FUNCTION__NOISE16_4__ID,       &mAnimatorLight::EffectAnim__Noise16_4,                   PM_EFFECT_CONFIG__NOISE16_4);
-  addEffect(EFFECTS_FUNCTION__NOISEPAL__ID,        &mAnimatorLight::EffectAnim__Noise_Pal,                   PM_EFFECT_CONFIG__NOISEPAL);
-  addEffect(EFFECTS_FUNCTION__PHASEDNOISE__ID,     &mAnimatorLight::EffectAnim__PhasedNoise,                 PM_EFFECT_CONFIG__PHASEDNOISE);
-  addEffect(EFFECTS_FUNCTION__PHASED__ID,          &mAnimatorLight::EffectAnim__Phased,                      PM_EFFECT_CONFIG__PHASED);
-  #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+  addEffect(EFFECTS_FUNCTION__FILLNOISE8__ID,
+            &mAnimatorLight::EffectAnim__FillNoise8,
+            PM_EFFECT_CONFIG__FILLNOISE8);
+
+  addEffect(EFFECTS_FUNCTION__NOISE16_1__ID,
+            &mAnimatorLight::EffectAnim__Noise16_1,
+            PM_EFFECT_CONFIG__NOISE16_1);
+
+  addEffect(EFFECTS_FUNCTION__NOISE16_2__ID,
+            &mAnimatorLight::EffectAnim__Noise16_2,
+            PM_EFFECT_CONFIG__NOISE16_2);
+
+  addEffect(EFFECTS_FUNCTION__NOISE16_3__ID,
+            &mAnimatorLight::EffectAnim__Noise16_3,
+            PM_EFFECT_CONFIG__NOISE16_3);
+
+  addEffect(EFFECTS_FUNCTION__NOISE16_4__ID,
+            &mAnimatorLight::EffectAnim__Noise16_4,
+            PM_EFFECT_CONFIG__NOISE16_4);
+
+  addEffect(EFFECTS_FUNCTION__NOISEPAL__ID,
+            &mAnimatorLight::EffectAnim__Noise_Pal,
+            PM_EFFECT_CONFIG__NOISEPAL);
+
+  addEffect(EFFECTS_FUNCTION__PHASEDNOISE__ID,
+            &mAnimatorLight::EffectAnim__PhasedNoise,
+            PM_EFFECT_CONFIG__PHASEDNOISE);
+
+  addEffect(EFFECTS_FUNCTION__PHASED__ID,
+            &mAnimatorLight::EffectAnim__Phased,
+            PM_EFFECT_CONFIG__PHASED);
+  #endif
+
   /**
    * Scan
    **/
   #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-  addEffect(EFFECTS_FUNCTION__SCAN__ID,                &mAnimatorLight::EffectAnim__Scan,                    PM_EFFECT_CONFIG__SCAN);
-  addEffect(EFFECTS_FUNCTION__DUAL_SCAN__ID,           &mAnimatorLight::EffectAnim__Scan_Dual,               PM_EFFECT_CONFIG__DUAL_SCAN);
-  addEffect(EFFECTS_FUNCTION__LARSON_SCANNER__ID,      &mAnimatorLight::EffectAnim__Larson_Scanner,          PM_EFFECT_CONFIG__LARSON_SCANNER);
-  addEffect(EFFECTS_FUNCTION__DUAL_LARSON_SCANNER__ID, &mAnimatorLight::EffectAnim__Larson_Scanner_Dual,     PM_EFFECT_CONFIG__DUAL_LARSON_SCANNER);
-  addEffect(EFFECTS_FUNCTION__ICU__ID,                 &mAnimatorLight::EffectAnim__ICU,                     PM_EFFECT_CONFIG__ICU);
-  addEffect(EFFECTS_FUNCTION__RIPPLE__ID,              &mAnimatorLight::EffectAnim__Ripple,                  PM_EFFECT_CONFIG__RIPPLE);
-  addEffect(EFFECTS_FUNCTION__RIPPLE_RAINBOW__ID,      &mAnimatorLight::EffectAnim__Ripple_Rainbow,          PM_EFFECT_CONFIG__RIPPLE_RAINBOW);
-  addEffect(EFFECTS_FUNCTION__COMET__ID,               &mAnimatorLight::EffectAnim__Comet,                   PM_EFFECT_CONFIG__COMET);
-  addEffect(EFFECTS_FUNCTION__CHUNCHUN__ID,            &mAnimatorLight::EffectAnim__Chunchun,                PM_EFFECT_CONFIG__CHUNCHUN);
-  addEffect(EFFECTS_FUNCTION__BOUNCINGBALLS__ID,       &mAnimatorLight::EffectAnim__Bouncing_Balls,          PM_EFFECT_CONFIG__BOUNCINGBALLS);
-  addEffect(EFFECTS_FUNCTION__SINELON__ID,             &mAnimatorLight::EffectAnim__Sinelon,                 PM_EFFECT_CONFIG__SINELON);
-  addEffect(EFFECTS_FUNCTION__SINELON_DUAL__ID,        &mAnimatorLight::EffectAnim__Sinelon_Dual,            PM_EFFECT_CONFIG__SINELON_DUAL);
-  addEffect(EFFECTS_FUNCTION__SINELON_RAINBOW__ID,     &mAnimatorLight::EffectAnim__Sinelon_Rainbow,         PM_EFFECT_CONFIG__SINELON_RAINBOW);
-  addEffect(EFFECTS_FUNCTION__DRIP__ID,                &mAnimatorLight::EffectAnim__Drip,                    PM_EFFECT_CONFIG__DRIP);
-  #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__HARDWARE_TESTING
-  addEffect(EFFECTS_FUNCTION__HARDWARE__SHOW_BUS__ID,                      &mAnimatorLight::EffectAnim__Hardware__Show_Bus,                    PM_EFFECT_CONFIG__HARDWARE__SHOW_BUS);
-  addEffect(EFFECTS_FUNCTION__HARDWARE__MANUAL_PIXEL_COUNTING__ID,         &mAnimatorLight::EffectAnim__Hardware__Manual_Pixel_Counting,       PM_EFFECT_CONFIG__HARDWARE__MANUAL_PIXEL_COUNTING);
-  addEffect(EFFECTS_FUNCTION__HARDWARE__VIEW_PIXEL_RANGE__ID,              &mAnimatorLight::EffectAnim__Hardware__View_Pixel_Range,            PM_EFFECT_CONFIG__HARDWARE__VIEW_PIXEL_RANGE);
-  addEffect(EFFECTS_FUNCTION__HARDWARE__LIGHT_SENSOR_PIXEL_INDEXING__ID,   &mAnimatorLight::EffectAnim__Hardware__Light_Sensor_Pixel_Indexing, PM_EFFECT_CONFIG__HARDWARE__LIGHT_SENSOR_PIXEL_INDEXING);  
-  #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__HARDWARE_TESTING
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__SUN_POSITIONS
-  addEffect(EFFECTS_FUNCTION__SUNPOSITIONS_SUNRISE_ALARM_01__ID,                                     &mAnimatorLight::EffectAnim__SunPositions__Sunrise_Alarm_01,                                               PM_EFFECT_CONFIG__SUNPOSITIONS__SUNRISE_ALARM_01); 
-  addEffect(EFFECTS_FUNCTION__SUNPOSITIONS_AZIMUTH_SELECTS_GRADIENT_OF_PALETTE_01__ID,               &mAnimatorLight::EffectAnim__SunPositions__Azimuth_Selects_Gradient_Of_Palette_01,                         PM_EFFECT_CONFIG__SUNPOSITIONS__AZIMUTH_SELECTS_GRADIENT_OF_PALETTE_01); 
-  addEffect(EFFECTS_FUNCTION__SUNPOSITIONS_SUNSET_BLENDED_PALETTES_01__ID,                           &mAnimatorLight::EffectAnim__SunPositions__Sunset_Blended_Palettes_01,                                     PM_EFFECT_CONFIG__SUNPOSITIONS__SUNSET_BLENDED_PALETTES_01); 
-  addEffect(EFFECTS_FUNCTION__SUNPOSITIONS_DRAWSUN_1D_ELEVATION_01__ID,                              &mAnimatorLight::EffectAnim__SunPositions__DrawSun_1D_Elevation_01,                                        PM_EFFECT_CONFIG__SUNPOSITIONS__DRAWSUN_1D_ELEVATION_01); 
-  addEffect(EFFECTS_FUNCTION__SUNPOSITIONS_DRAWSUN_1D_AZIMUTH_01__ID,                                &mAnimatorLight::EffectAnim__SunPositions__DrawSun_1D_Azimuth_01,                                          PM_EFFECT_CONFIG__SUNPOSITIONS__DRAWSUN_1D_AZIMUTH_01); 
-  addEffect(EFFECTS_FUNCTION__SUNPOSITIONS_DRAWSUN_2D_ELEVATION_AND_AZIMUTH_01__ID,                  &mAnimatorLight::EffectAnim__SunPositions__DrawSun_2D_Elevation_And_Azimuth_01,                            PM_EFFECT_CONFIG__SUNPOSITIONS__DRAWSUN_2D_ELEVATION_AND_AZIMUTH_01); 
-  addEffect(EFFECTS_FUNCTION__SUNPOSITIONS_WHITE_COLOUR_TEMPERATURE_CCT_BASED_ON_ELEVATION_01__ID,   &mAnimatorLight::EffectAnim__SunPositions__White_Colour_Temperature_CCT_Based_On_Elevation_01,             PM_EFFECT_CONFIG__SUNPOSITIONS__WHITE_COLOUR_TEMPERATURE_CCT_BASED_ON_ELEVATION_01);   
-  #endif          
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__LED_SEGMENT_CLOCK  
-  addEffect(EFFECTS_FUNCTION__LCD_CLOCK_BASIC_01__ID,            &mAnimatorLight::EffectAnim__7SegmentDisplay__ClockTime_01,                PM_EFFECT_CONFIG__7SEGMENTDISPLAY__CLOCKTIME_01);
-  addEffect(EFFECTS_FUNCTION__LCD_CLOCK_BASIC_02__ID,            &mAnimatorLight::EffectAnim__7SegmentDisplay__ClockTime_02,                PM_EFFECT_CONFIG__7SEGMENTDISPLAY__CLOCKTIME_02);
-  addEffect(EFFECTS_FUNCTION__LCD_DISPLAY_MANUAL_NUMBER_01__ID,  &mAnimatorLight::EffectAnim__7SegmentDisplay__ManualNumber_01,             PM_EFFECT_CONFIG__7SEGMENTDISPLAY__MANUALNUMBER_01); 
-  addEffect(EFFECTS_FUNCTION__LCD_DISPLAY_MANUAL_STRING_01__ID,  &mAnimatorLight::EffectAnim__7SegmentDisplay__ManualString_01,             PM_EFFECT_CONFIG__7SEGMENTDISPLAY__MANUALSTRING_01); 
-  #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__LED_SEGMENT_CLOCK     
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__NOTIFICATIONS 
-  case EFFECTS_FUNCTION__NOTIFICATION_STATIC__ID:
-    SubTask_Segment_Animate_Function__Notification_Static();
-  break;
-  case EFFECTS_FUNCTION__NOTIFICATION_FADE__ID:
-    SubTask_Segment_Animate_Function__Notification_Fade();
-  break;
-  case EFFECTS_FUNCTION__NOTIFICATION_BLINKING__ID:
-    SubTask_Segment_Animate_Function__Notification_Blinking();
-  break;
-  case EFFECTS_FUNCTION__NOTIFICATION_PULSING__ID:
-    SubTask_Segment_Animate_Function__Notification_Pulsing();
-  break;
-  #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__NOTIFICATIONS
+  addEffect(EFFECTS_FUNCTION__SCAN__ID,
+            &mAnimatorLight::EffectAnim__Scan,
+            PM_EFFECT_CONFIG__SCAN);
+
+  addEffect(EFFECTS_FUNCTION__DUAL_SCAN__ID,
+            &mAnimatorLight::EffectAnim__Scan_Dual,
+            PM_EFFECT_CONFIG__DUAL_SCAN);
+
+  addEffect(EFFECTS_FUNCTION__LARSON_SCANNER__ID,
+            &mAnimatorLight::EffectAnim__Larson_Scanner,
+            PM_EFFECT_CONFIG__LARSON_SCANNER);
+
+  addEffect(EFFECTS_FUNCTION__DUAL_LARSON_SCANNER__ID,
+            &mAnimatorLight::EffectAnim__Larson_Scanner_Dual,
+            PM_EFFECT_CONFIG__DUAL_LARSON_SCANNER);
+
+  addEffect(EFFECTS_FUNCTION__ICU__ID,
+            &mAnimatorLight::EffectAnim__ICU,
+            PM_EFFECT_CONFIG__ICU);
+
+  addEffect(EFFECTS_FUNCTION__RIPPLE__ID,
+            &mAnimatorLight::EffectAnim__Ripple,
+            PM_EFFECT_CONFIG__RIPPLE);
+
+  addEffect(EFFECTS_FUNCTION__RIPPLE_RAINBOW__ID,
+            &mAnimatorLight::EffectAnim__Ripple_Rainbow,
+            PM_EFFECT_CONFIG__RIPPLE_RAINBOW);
+
+  addEffect(EFFECTS_FUNCTION__COMET__ID,
+            &mAnimatorLight::EffectAnim__Comet,
+            PM_EFFECT_CONFIG__COMET);
+
+  addEffect(EFFECTS_FUNCTION__CHUNCHUN__ID,
+            &mAnimatorLight::EffectAnim__Chunchun,
+            PM_EFFECT_CONFIG__CHUNCHUN);
+
+  // addEffect(EFFECTS_FUNCTION__DANCING_SHADOWS__ID,
+  //           &mAnimatorLight::EffectAnim__Dancing_Shadows,
+  //           PM_EFFECT_CONFIG__DANCING_SHADOWS);
+
+  // addEffect(EFFECTS_FUNCTION__WASHING_MACHINE__ID,
+  //           &mAnimatorLight::EffectAnim__Washing_Machine,
+  //           PM_EFFECT_CONFIG__WASHING_MACHINE);
+
+  // addEffect(EFFECTS_FUNCTION__BLENDS__ID,
+  //           &mAnimatorLight::EffectAnim__Blends,
+  //           PM_EFFECT_CONFIG__BLENDS);
+
+  // addEffect(EFFECTS_FUNCTION__TV_SIMULATOR__ID,
+  //           &mAnimatorLight::EffectAnim__TV_Simulator,
+  //           PM_EFFECT_CONFIG__TV_SIMULATOR);
+
+  addEffect(EFFECTS_FUNCTION__BOUNCINGBALLS__ID,
+            &mAnimatorLight::EffectAnim__Bouncing_Balls,
+            PM_EFFECT_CONFIG__BOUNCINGBALLS);
+
+  addEffect(EFFECTS_FUNCTION__SINELON__ID,
+            &mAnimatorLight::EffectAnim__Sinelon,
+            PM_EFFECT_CONFIG__SINELON);
+
+  addEffect(EFFECTS_FUNCTION__SINELON_DUAL__ID,
+            &mAnimatorLight::EffectAnim__Sinelon_Dual,
+            PM_EFFECT_CONFIG__SINELON_DUAL);
+
+  addEffect(EFFECTS_FUNCTION__SINELON_RAINBOW__ID,
+            &mAnimatorLight::EffectAnim__Sinelon_Rainbow,
+            PM_EFFECT_CONFIG__SINELON_RAINBOW);
+
+  addEffect(EFFECTS_FUNCTION__DRIP__ID,
+            &mAnimatorLight::EffectAnim__Drip,
+            PM_EFFECT_CONFIG__DRIP);
+  #endif
+
   /**
-   * BorderWallpaper
+   * Hardware Installation Helpers
+   **/
+  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__HARDWARE_TESTING
+  addEffect(EFFECTS_FUNCTION__HARDWARE__SHOW_BUS__ID,
+            &mAnimatorLight::EffectAnim__Hardware__Show_Bus,
+            PM_EFFECT_CONFIG__HARDWARE__SHOW_BUS);
+
+  addEffect(EFFECTS_FUNCTION__HARDWARE__MANUAL_PIXEL_COUNTING__ID,
+            &mAnimatorLight::EffectAnim__Hardware__Manual_Pixel_Counting,
+            PM_EFFECT_CONFIG__HARDWARE__MANUAL_PIXEL_COUNTING);
+
+  addEffect(EFFECTS_FUNCTION__HARDWARE__VIEW_PIXEL_RANGE__ID,
+            &mAnimatorLight::EffectAnim__Hardware__View_Pixel_Range,
+            PM_EFFECT_CONFIG__HARDWARE__VIEW_PIXEL_RANGE);
+
+  addEffect(EFFECTS_FUNCTION__HARDWARE__LIGHT_SENSOR_PIXEL_INDEXING__ID,
+            &mAnimatorLight::EffectAnim__Hardware__Light_Sensor_Pixel_Indexing,
+            PM_EFFECT_CONFIG__HARDWARE__LIGHT_SENSOR_PIXEL_INDEXING);
+  #endif
+
+  /**
+   * Sun Position
+   **/
+  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__SUN_POSITIONS
+  addEffect(EFFECTS_FUNCTION__SUNPOSITIONS_SUNRISE_ALARM_01__ID,
+            &mAnimatorLight::EffectAnim__SunPositions__Sunrise_Alarm_01,
+            PM_EFFECT_CONFIG__SUNPOSITIONS__SUNRISE_ALARM_01);
+
+  addEffect(EFFECTS_FUNCTION__SUNPOSITIONS_AZIMUTH_SELECTS_GRADIENT_OF_PALETTE_01__ID,
+            &mAnimatorLight::EffectAnim__SunPositions__Azimuth_Selects_Gradient_Of_Palette_01,
+            PM_EFFECT_CONFIG__SUNPOSITIONS__AZIMUTH_SELECTS_GRADIENT_OF_PALETTE_01);
+
+  addEffect(EFFECTS_FUNCTION__SUNPOSITIONS_SUNSET_BLENDED_PALETTES_01__ID,
+            &mAnimatorLight::EffectAnim__SunPositions__Sunset_Blended_Palettes_01,
+            PM_EFFECT_CONFIG__SUNPOSITIONS__SUNSET_BLENDED_PALETTES_01);
+
+  addEffect(EFFECTS_FUNCTION__SUNPOSITIONS_DRAWSUN_1D_ELEVATION_01__ID,
+            &mAnimatorLight::EffectAnim__SunPositions__DrawSun_1D_Elevation_01,
+            PM_EFFECT_CONFIG__SUNPOSITIONS__DRAWSUN_1D_ELEVATION_01);
+
+  addEffect(EFFECTS_FUNCTION__SUNPOSITIONS_DRAWSUN_1D_AZIMUTH_01__ID,
+            &mAnimatorLight::EffectAnim__SunPositions__DrawSun_1D_Azimuth_01,
+            PM_EFFECT_CONFIG__SUNPOSITIONS__DRAWSUN_1D_AZIMUTH_01);
+
+  addEffect(EFFECTS_FUNCTION__SUNPOSITIONS_DRAWSUN_2D_ELEVATION_AND_AZIMUTH_01__ID,
+            &mAnimatorLight::EffectAnim__SunPositions__DrawSun_2D_Elevation_And_Azimuth_01,
+            PM_EFFECT_CONFIG__SUNPOSITIONS__DRAWSUN_2D_ELEVATION_AND_AZIMUTH_01);
+
+  addEffect(EFFECTS_FUNCTION__SUNPOSITIONS_WHITE_COLOUR_TEMPERATURE_CCT_BASED_ON_ELEVATION_01__ID,
+            &mAnimatorLight::EffectAnim__SunPositions__White_Colour_Temperature_CCT_Based_On_Elevation_01,
+            PM_EFFECT_CONFIG__SUNPOSITIONS__WHITE_COLOUR_TEMPERATURE_CCT_BASED_ON_ELEVATION_01);
+  #endif
+
+  /**
+   * LED Segment Clock
+   **/
+  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__LED_SEGMENT_CLOCK
+  addEffect(EFFECTS_FUNCTION__LCD_CLOCK_BASIC_01__ID,
+            &mAnimatorLight::EffectAnim__7SegmentDisplay__ClockTime_01,
+            PM_EFFECT_CONFIG__7SEGMENTDISPLAY__CLOCKTIME_01);
+
+  addEffect(EFFECTS_FUNCTION__LCD_CLOCK_BASIC_02__ID,
+            &mAnimatorLight::EffectAnim__7SegmentDisplay__ClockTime_02,
+            PM_EFFECT_CONFIG__7SEGMENTDISPLAY__CLOCKTIME_02);
+
+  addEffect(EFFECTS_FUNCTION__LCD_DISPLAY_MANUAL_NUMBER_01__ID,
+            &mAnimatorLight::EffectAnim__7SegmentDisplay__ManualNumber_01,
+            PM_EFFECT_CONFIG__7SEGMENTDISPLAY__MANUALNUMBER_01);
+
+  addEffect(EFFECTS_FUNCTION__LCD_DISPLAY_MANUAL_STRING_01__ID,
+            &mAnimatorLight::EffectAnim__7SegmentDisplay__ManualString_01,
+            PM_EFFECT_CONFIG__7SEGMENTDISPLAY__MANUALSTRING_01);
+  #endif
+  
+  /**
+   * Notifications
+   **/
+  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__NOTIFICATIONS
+  addEffect(EFFECTS_FUNCTION__NOTIFICATION_STATIC__ID,
+            &mAnimatorLight::SubTask_Segment_Animate_Function__Notification_Static,
+            PM_EFFECT_CONFIG__NOTIFICATION_STATIC);
+
+  addEffect(EFFECTS_FUNCTION__NOTIFICATION_FADE__ID,
+            &mAnimatorLight::SubTask_Segment_Animate_Function__Notification_Fade,
+            PM_EFFECT_CONFIG__NOTIFICATION_FADE);
+
+  addEffect(EFFECTS_FUNCTION__NOTIFICATION_BLINKING__ID,
+            &mAnimatorLight::SubTask_Segment_Animate_Function__Notification_Blinking,
+            PM_EFFECT_CONFIG__NOTIFICATION_BLINKING);
+
+  addEffect(EFFECTS_FUNCTION__NOTIFICATION_PULSING__ID,
+            &mAnimatorLight::SubTask_Segment_Animate_Function__Notification_Pulsing,
+            PM_EFFECT_CONFIG__NOTIFICATION_PULSING);
+  #endif
+
+  /**
+   * Border/Frame/Edge Wallpapers
    **/
   #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__BORDER_WALLPAPERS
-  addEffect(EFFECTS_FUNCTION__BORDER_WALLPAPER__TWOCOLOUR_GRADIENT__ID,     &mAnimatorLight::EffectAnim__BorderWallpaper__TwoColour_Gradient,                     PM_EFFECT_CONFIG__BORDER_WALLPAPER__TWOCOLOUR_GRADIENT);
-  addEffect(EFFECTS_FUNCTION__BORDER_WALLPAPER__FOURCOLOUR_GRADIENT__ID,    &mAnimatorLight::EffectAnim__BorderWallpaper__FourColour_Gradient,                    PM_EFFECT_CONFIG__BORDER_WALLPAPER__FOURCOLOUR_GRADIENT);
-  addEffect(EFFECTS_FUNCTION__BORDER_WALLPAPER__FOURCOLOUR_SOLID__ID,       &mAnimatorLight::EffectAnim__BorderWallpaper__FourColour_Solid,                       PM_EFFECT_CONFIG__BORDER_WALLPAPER__FOURCOLOUR_SOLID);
-  #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__BORDER_WALLPAPERS
+  addEffect(EFFECTS_FUNCTION__BORDER_WALLPAPER__TWOCOLOUR_GRADIENT__ID,
+            &mAnimatorLight::EffectAnim__BorderWallpaper__TwoColour_Gradient,
+            PM_EFFECT_CONFIG__BORDER_WALLPAPER__TWOCOLOUR_GRADIENT);
+
+  addEffect(EFFECTS_FUNCTION__BORDER_WALLPAPER__FOURCOLOUR_GRADIENT__ID,
+            &mAnimatorLight::EffectAnim__BorderWallpaper__FourColour_Gradient,
+            PM_EFFECT_CONFIG__BORDER_WALLPAPER__FOURCOLOUR_GRADIENT);
+
+  addEffect(EFFECTS_FUNCTION__BORDER_WALLPAPER__FOURCOLOUR_SOLID__ID,
+            &mAnimatorLight::EffectAnim__BorderWallpaper__FourColour_Solid,
+            PM_EFFECT_CONFIG__BORDER_WALLPAPER__FOURCOLOUR_SOLID);
+  #endif
+
   /**
-   * Manual Methods (ie basic or limited effect generation, mostly updates output)
+   * Manual Pixel: Keeping as legacy, but mode change to realtime will remove this
    **/
   #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__PIXEL_SET_ELSEWHERE
-  addEffect(EFFECTS_FUNCTION__MANUAL__PIXEL_SET_ELSEWHERE__ID,   &mAnimatorLight::EffectAnim__Manual__PixelSetElsewhere, PM_EFFECT_CONFIG__MANUAL__PIXEL_SET_ELSEWHERE__INDEXING);  
-  #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__PIXEL_SET_ELSEWHERE
+  addEffect(EFFECTS_FUNCTION__MANUAL__PIXEL_SET_ELSEWHERE__ID,
+            &mAnimatorLight::EffectAnim__Manual__PixelSetElsewhere,
+            PM_EFFECT_CONFIG__MANUAL__PIXEL_SET_ELSEWHERE__INDEXING);
+  #endif
+
+  /**
+   * Christmas Multifunction Controller: Replication of vintage 8 function controllers
+   **/
+  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__CHRISTMAS_MULTIFUNCTION_CONTROLLER
+  addEffect(EFFECTS_FUNCTION__CHRISTMAS_MULTIFUNCTION_CONTROLLER__COMBINATION_ID,
+            &mAnimatorLight::EffectAnim__Christmas_Musical__01,
+            PM_EFFECT_CONFIG__CHRISTMAS_MUSICAL_01);  
+            
+  addEffect(EFFECTS_FUNCTION__CHRISTMAS_MULTIFUNCTION_CONTROLLER__IN_WAVES_ID,
+            &mAnimatorLight::EffectAnim__Christmas_Musical__01,
+            PM_EFFECT_CONFIG__CHRISTMAS_MUSICAL_01);
+
+  addEffect(EFFECTS_FUNCTION__CHRISTMAS_MULTIFUNCTION_CONTROLLER__SEQUENTIAL_ID,
+            &mAnimatorLight::EffectAnim__Christmas_Musical__01,
+            PM_EFFECT_CONFIG__CHRISTMAS_MUSICAL_01);
+
+  addEffect(EFFECTS_FUNCTION__CHRISTMAS_MULTIFUNCTION_CONTROLLER__SLO_GLO_ID,
+            &mAnimatorLight::EffectAnim__Christmas_Musical__01,
+            PM_EFFECT_CONFIG__CHRISTMAS_MUSICAL_01);
+
+  addEffect(EFFECTS_FUNCTION__CHRISTMAS_MULTIFUNCTION_CONTROLLER__CHASING_AND_FLASHING__ID,
+            &mAnimatorLight::EffectAnim__Christmas_Musical__01,
+            PM_EFFECT_CONFIG__CHRISTMAS_MUSICAL_01);
+
+  addEffect(EFFECTS_FUNCTION__CHRISTMAS_MULTIFUNCTION_CONTROLLER__SLOW_FADE__ID,
+            &mAnimatorLight::EffectAnim__Christmas_Musical__01,
+            PM_EFFECT_CONFIG__CHRISTMAS_MUSICAL_01);
+
+  addEffect(EFFECTS_FUNCTION__CHRISTMAS_MULTIFUNCTION_CONTROLLER__TWINKLE_AND_FLASH__ID,
+            &mAnimatorLight::EffectAnim__Christmas_Musical__01,
+            PM_EFFECT_CONFIG__CHRISTMAS_MUSICAL_01);
+
+  addEffect(EFFECTS_FUNCTION__CHRISTMAS_MULTIFUNCTION_CONTROLLER__STEADY_ON__ID,
+            &mAnimatorLight::EffectAnim__Christmas_Musical__01,
+            PM_EFFECT_CONFIG__CHRISTMAS_MUSICAL_01);
+  #endif
+
+  /**
+   * 2D (No Audio)
+   **/
+  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
+  addEffect(EFFECTS_FUNCTION__2D__BLACK_HOLE__ID,        
+            &mAnimatorLight::EffectAnim__2D__Blackhole,     
+            PM_EFFECT_CONFIG__2D__BLACK_HOLE__INDEXING);
+
+  // addEffect(EFFECTS_FUNCTION__2D__HIPHOTIC__ID,        
+  //           &mAnimatorLight::EffectAnim__2D__Hiphotic,     
+  //           PM_EFFECT_CONFIG__2D__HIPHOTIC__INDEXING);
   
+  // addEffect(EFFECTS_FUNCTION__2D__COLOURED_BURSTS__ID,   
+  //           &mAnimatorLight::EffectAnim__2D__ColouredBursts,     
+  //           PM_EFFECT_CONFIG__2D__COLOURED_BURSTS__INDEXING);
   
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE_TODO
-  void EffectAnim__1D__Aurora();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE_TODO
-  void EffectAnim__1D__PerlinMove();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE_TODO
-  void EffectAnim__1D__Waveins();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE_TODO
-  void EffectAnim__1D__FlowStripe();
-  #endif
-  /****************************************************************************************************************************************************************************
-  *****************************************************************************************************************************************************************************
-  *****************************************************************************************************************************************************************************
-  *** Specialised: 2D (No Audio) **********************************************************************************************************************************************
-  **  Requires:     ***********************************************************************************************************************************************************
-  *****************************************************************************************************************************************************************************
-  *****************************************************************************************************************************************************************************/
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-  void EffectAnim__2D__Blackhole();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-  void EffectAnim__2D__ColouredBursts();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-  void EffectAnim__2D__DNA();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-  void EffectAnim__2D__DNASpiral();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-  void EffectAnim__2D__Drift();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-  void EffectAnim__2D__FireNoise();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-  void EffectAnim__2D__Frizzles();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-  void EffectAnim__2D__GameOfLife();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-  void EffectAnim__2D__Hipnotic();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-  void EffectAnim__2D__Julia();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-  void EffectAnim__2D__Lissajous();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-  void EffectAnim__2D__Matrix();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-  void EffectAnim__2D__Metaballs();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-  void EffectAnim__2D__Noise();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-  void EffectAnim__2D__PlasmaBall();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-  void EffectAnim__2D__PolarLights();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-  void EffectAnim__2D__Pulser();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-  void EffectAnim__2D__SinDots();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-  void EffectAnim__2D__SqauredSwirl();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-  void EffectAnim__2D__SunRadiation();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-  void EffectAnim__2D__Tartan();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-  void EffectAnim__2D__SpaceShips();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-  void EffectAnim__2D__CrazyBees();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-  void EffectAnim__2D__GhostRider();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-  void EffectAnim__2D__FloatingBlobs();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-  void EffectAnim__2D__DriftRose();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
-  addEffect(EFFECTS_FUNCTION__2D__DISTORTION_WAVES__ID,   &mAnimatorLight::EffectAnim__2D__DistortionWaves, PM_EFFECT_CONFIG__2D__DISTORTION_WAVES__INDEXING);  
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
-  addEffect(EFFECTS_FUNCTION__2D__SOAP__ID,   &mAnimatorLight::EffectAnim__2D__Soap, PM_EFFECT_CONFIG__2D__SOAP__INDEXING);  
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
-  addEffect(EFFECTS_FUNCTION__2D__OCTOPUS__ID,   &mAnimatorLight::EffectAnim__2D__Octopus, PM_EFFECT_CONFIG__2D__OCTOPUS__INDEXING);  
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
-  addEffect(EFFECTS_FUNCTION__2D__WAVING_CELL__ID,   &mAnimatorLight::EffectAnim__2D__WavingCell, PM_EFFECT_CONFIG__2D__WAVING_CELL__INDEXING);  
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
-  addEffect(EFFECTS_FUNCTION__2D__SCROLLING_TEXT__ID,   &mAnimatorLight::EffectAnim__2D__ScrollingText, PM_EFFECT_CONFIG__2D__SCROLLING_TEXT__INDEXING);  
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
-  addEffect(EFFECTS_FUNCTION__2D__DIGITAL_CLOCK__ID,   &mAnimatorLight::EffectAnim__2D__DigitalClock, PM_EFFECT_CONFIG__2D__DIGITAL_CLOCK__INDEXING);  
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
-  addEffect(EFFECTS_FUNCTION__2D__DNA__ID,   &mAnimatorLight::EffectAnim__2D__DNA, PM_EFFECT_CONFIG__2D__DNA__INDEXING);  
-  #endif
-  /****************************************************************************************************************************************************************************
-  *****************************************************************************************************************************************************************************
-  *****************************************************************************************************************************************************************************
-  *** Specialised: 1D (Audio Reactive) ****************************************************************************************************************************************
-  **  Requires:     ***********************************************************************************************************************************************************
-  *****************************************************************************************************************************************************************************
-  *****************************************************************************************************************************************************************************/
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-  void EffectAnim__AudioReactive__1D__Ripple_Peak();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-  void EffectAnim__AudioReactive__1D__GravCenter();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-  void EffectAnim__AudioReactive__1D__GravCentric();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-  void EffectAnim__AudioReactive__1D__GraviMeter();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-  void EffectAnim__AudioReactive__1D__Juggles();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-  void EffectAnim__AudioReactive__1D__Matripix();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-  void EffectAnim__AudioReactive__1D__MidNoise();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-  void EffectAnim__AudioReactive__1D__NoiseFire();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-  void EffectAnim__AudioReactive__1D__NoiseMeter();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-  void EffectAnim__AudioReactive__1D__PixelWave();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-  void EffectAnim__AudioReactive__1D__Plasmoid();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-  void EffectAnim__AudioReactive__1D__PuddlePeak();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-  void EffectAnim__AudioReactive__1D__Puddles();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-  void EffectAnim__AudioReactive__1D__Pixels();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-  void EffectAnim__AudioReactive__1D__FFT_Blurz();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-  void EffectAnim__AudioReactive__1D__FFT_DJLight();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-  void EffectAnim__AudioReactive__1D__FFT_FreqMap();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-  void EffectAnim__AudioReactive__1D__FFT_FreqMatrix();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-  void EffectAnim__AudioReactive__1D__FFT_FreqPixels();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-  void EffectAnim__AudioReactive__1D__FFT_FreqWave();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-  void EffectAnim__AudioReactive__1D__FFT_GravFreq();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-  void EffectAnim__AudioReactive__1D__FFT_NoiseMove();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-  void EffectAnim__AudioReactive__1D__FFT_RockTaves();
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D
-  addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_WATERFALL__ID,   &mAnimatorLight::EffectAnim__AudioReactive__1D__FFT_Waterfall, PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__FFT_WATERFALL); 
-  #endif
-  /****************************************************************************************************************************************************************************
-  *****************************************************************************************************************************************************************************
-  *****************************************************************************************************************************************************************************
-  *** Specialised: 2D (Audio Reactive) ************************************************************************************************************************************************
-  **  Requires:     ***********************************************************************************************************************************************************
-  *****************************************************************************************************************************************************************************
-  *****************************************************************************************************************************************************************************/
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
-  addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__2D__SWIRL__ID,   &mAnimatorLight::EffectAnim__AudioReactive__2D__Swirl, PM_EFFECT_CONFIG__AUDIOREACTIVE__2D__SWIRL__INDEXING); 
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
-  addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__2D__WAVERLY__ID,   &mAnimatorLight::EffectAnim__AudioReactive__2D__Waverly, PM_EFFECT_CONFIG__AUDIOREACTIVE__2D__WAVERLY__INDEXING); 
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
-  addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__2D__FFT_GED__ID,   &mAnimatorLight::EffectAnim__AudioReactive__2D__FFT_GED, PM_EFFECT_CONFIG__AUDIOREACTIVE__2D__FFT_GED__INDEXING); 
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
-  addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__2D__FFT_FUNKY_PLANK__ID,   &mAnimatorLight::EffectAnim__AudioReactive__2D__FFT_FunkyPlank, PM_EFFECT_CONFIG__AUDIOREACTIVE__2D__FFT_FUNKY_PLANK__INDEXING);  
-  #endif
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
-  addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__2D__FFT_AKEMI__ID,   &mAnimatorLight::EffectAnim__AudioReactive__2D__FFT_Akemi, PM_EFFECT_CONFIG__AUDIOREACTIVE__2D__FFT_AKEMI__INDEXING);  
-  #endif
+  addEffect(EFFECTS_FUNCTION__2D__DNA__ID,        
+            &mAnimatorLight::EffectAnim__2D__DNA,     
+            PM_EFFECT_CONFIG__2D__DNA__INDEXING);
 
+  addEffect(EFFECTS_FUNCTION__2D__DNA_SPIRAL__ID,        
+            &mAnimatorLight::EffectAnim__2D__DNASpiral,     
+            PM_EFFECT_CONFIG__2D__DNA_SPIRAL__INDEXING);
+  
+  // addEffect(EFFECTS_FUNCTION__2D__DRIFT__ID,            
+  //           &mAnimatorLight::EffectAnim__2D__Drift,         
+  //           PM_EFFECT_CONFIG__2D__DRIFT__INDEXING);    
+  
+  // addEffect(EFFECTS_FUNCTION__2D__FIRE_NOISE__ID,       
+  //           &mAnimatorLight::EffectAnim__2D__FireNoise,     
+  //           PM_EFFECT_CONFIG__2D__FIRE_NOISE__INDEXING);    
+  
+  // addEffect(EFFECTS_FUNCTION__2D__FRIZZLES__ID,         
+  //           &mAnimatorLight::EffectAnim__2D__Frizzles,      
+  //           PM_EFFECT_CONFIG__2D__FRIZZLES__INDEXING);    
+  
+  // addEffect(EFFECTS_FUNCTION__2D__GAME_OF_LIFE__ID,     
+  //           &mAnimatorLight::EffectAnim__2D__GameOfLife,    
+  //           PM_EFFECT_CONFIG__2D__GAME_OF_LIFE__INDEXING);    
+  
+  // addEffect(EFFECTS_FUNCTION__2D__HIPNOTIC__ID,         
+  //           &mAnimatorLight::EffectAnim__2D__Hipnotic,      
+  //           PM_EFFECT_CONFIG__2D__HIPNOTIC__INDEXING);    
+  
+  // addEffect(EFFECTS_FUNCTION__2D__JULIA__ID,            
+  //           &mAnimatorLight::EffectAnim__2D__Julia,         
+  //           PM_EFFECT_CONFIG__2D__JULIA__INDEXING);    
+  
+  // addEffect(EFFECTS_FUNCTION__2D__LISSAJOUS__ID,        
+  //           &mAnimatorLight::EffectAnim__2D__Lissajous,     
+  //           PM_EFFECT_CONFIG__2D__LISSAJOUS__INDEXING);    
+  
+  // addEffect(EFFECTS_FUNCTION__2D__MATRIX__ID,           
+  //           &mAnimatorLight::EffectAnim__2D__Matrix,        
+  //           PM_EFFECT_CONFIG__2D__MATRIX__INDEXING);    
+            
+  // addEffect(EFFECTS_FUNCTION__2D__METABALLS__ID,        
+  //           &mAnimatorLight::EffectAnim__2D__Metaballs,     
+  //           PM_EFFECT_CONFIG__2D__METABALLS__INDEXING);    
+  
+  // addEffect(EFFECTS_FUNCTION__2D__NOISE__ID,            
+  //           &mAnimatorLight::EffectAnim__2D__Noise,         
+  //           PM_EFFECT_CONFIG__2D__NOISE__INDEXING);    
+  
+  // addEffect(EFFECTS_FUNCTION__2D__PLASMA_BALL__ID,      
+  //           &mAnimatorLight::EffectAnim__2D__PlasmaBall,    
+  //           PM_EFFECT_CONFIG__2D__PLASMA_BALL__INDEXING);   
+  
+  // addEffect(EFFECTS_FUNCTION__2D__POLAR_LIGHTS__ID,     
+  //           &mAnimatorLight::EffectAnim__2D__PolarLights,   
+  //           PM_EFFECT_CONFIG__2D__POLAR_LIGHTS__INDEXING);    
+  
+  // addEffect(EFFECTS_FUNCTION__2D__PULSER__ID,           
+  //           &mAnimatorLight::EffectAnim__2D__Pulser,        
+  //           PM_EFFECT_CONFIG__2D__PULSER__INDEXING);    
+  
+  // addEffect(EFFECTS_FUNCTION__2D__SIN_DOTS__ID,         
+  //           &mAnimatorLight::EffectAnim__2D__SinDots,       
+  //           PM_EFFECT_CONFIG__2D__SIN_DOTS__INDEXING);    
+  
+  // addEffect(EFFECTS_FUNCTION__2D__SQUARED_SWIRL__ID,    
+  //           &mAnimatorLight::EffectAnim__2D__SqauredSwirl,  
+  //           PM_EFFECT_CONFIG__2D__SQUARED_SWIRL__INDEXING);    
+    
+  // addEffect(EFFECTS_FUNCTION__2D__SUN_RADIATION__ID,    
+  //           &mAnimatorLight::EffectAnim__2D__SunRadiation,  
+  //           PM_EFFECT_CONFIG__2D__SUN_RADIATION__INDEXING);    
+    
+  // addEffect(EFFECTS_FUNCTION__2D__TARTAN__ID,           
+  //           &mAnimatorLight::EffectAnim__2D__Tartan,        
+  //           PM_EFFECT_CONFIG__2D__TARTAN__INDEXING);    
+    
+  // addEffect(EFFECTS_FUNCTION__2D__PLASMAROTOZOOM__ID,       
+  //           &mAnimatorLight::EffectAnim__2D__plasmarotozoom,    
+  //           PM_EFFECT_CONFIG__2D__PLASMAROTOZOOM__INDEXING);    
 
-/**
- * @brief Effect X: New effect of "Static Palette Mix"
- * 
- * The aim is to make the "Colour and Warm White Stripe" but in a way I can mix them. 
- * 
- * Palette1 ABCD
- * Palette2 abcde
- * 
- * So mix would be AaBbCcDdAe (notice shorter palettes that mix already)
- * 
- */
-
-
-
-
-
-
-
-
+  // addEffect(EFFECTS_FUNCTION__2D__SPACESHIPS__ID,       
+  //           &mAnimatorLight::EffectAnim__2D__SpaceShips,    
+  //           PM_EFFECT_CONFIG__2D__SPACESHIPS__INDEXING);    
+  
+  // addEffect(EFFECTS_FUNCTION__2D__CRAZY_BEES__ID,       
+  //           &mAnimatorLight::EffectAnim__2D__CrazyBees,     
+  //           PM_EFFECT_CONFIG__2D__CRAZY_BEES__INDEXING); 
+  
+  // addEffect(EFFECTS_FUNCTION__2D__GHOST_RIDER__ID,      
+  //           &mAnimatorLight::EffectAnim__2D__GhostRider,    
+  //           PM_EFFECT_CONFIG__2D__GHOST_RIDER__INDEXING);   
+  
+  // addEffect(EFFECTS_FUNCTION__2D__FLOATING_BLOBS__ID,   
+  //           &mAnimatorLight::EffectAnim__2D__FloatingBlobs, 
+  //           PM_EFFECT_CONFIG__2D__FLOATING_BLOBS__INDEXING);      
+    
+  // addEffect(EFFECTS_FUNCTION__2D__DRIFT_ROSE__ID,       
+  //           &mAnimatorLight::EffectAnim__2D__DriftRose,     
+  //           PM_EFFECT_CONFIG__2D__DRIFT_ROSE__INDEXING);              
+  
+  addEffect(EFFECTS_FUNCTION__2D__DISTORTION_WAVES__ID, 
+            &mAnimatorLight::EffectAnim__2D__DistortionWaves, 
+            PM_EFFECT_CONFIG__2D__DISTORTION_WAVES__INDEXING);    
+  
+  addEffect(EFFECTS_FUNCTION__2D__SOAP__ID,   
+            &mAnimatorLight::EffectAnim__2D__Soap, 
+            PM_EFFECT_CONFIG__2D__SOAP__INDEXING);
+  
+  addEffect(EFFECTS_FUNCTION__2D__OCTOPUS__ID,   
+            &mAnimatorLight::EffectAnim__2D__Octopus, 
+            PM_EFFECT_CONFIG__2D__OCTOPUS__INDEXING);  
+    
+  addEffect(EFFECTS_FUNCTION__2D__WAVING_CELL__ID,   
+            &mAnimatorLight::EffectAnim__2D__WavingCell, 
+            PM_EFFECT_CONFIG__2D__WAVING_CELL__INDEXING);    
+  
+  addEffect(EFFECTS_FUNCTION__2D__SCROLLING_TEXT__ID,   
+            &mAnimatorLight::EffectAnim__2D__ScrollingText, 
+            PM_EFFECT_CONFIG__2D__SCROLLING_TEXT__INDEXING);    
+  
+  addEffect(EFFECTS_FUNCTION__2D__DIGITAL_CLOCK__ID,   
+            &mAnimatorLight::EffectAnim__2D__DigitalClock, 
+            PM_EFFECT_CONFIG__2D__DIGITAL_CLOCK__INDEXING);  
+  #endif
 
 
   /**
-   * Development effects without full code 
-   **/   
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING
-  addEffect(EFFECTS_FUNCTION__CHRISTMAS_MUSICAL__01_ID,                       &mAnimatorLight::EffectAnim__Christmas_Musical__01,                 PM_EFFECT_CONFIG__CHRISTMAS_MUSICAL_01);
-  #endif 
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING
-  case EFFECTS_FUNCTION__TESTER_01__ID:
-    SubTask_Flasher_Animate_Function_Tester_01();
-  break; 
-  case EFFECTS_FUNCTION__TESTER_02__ID:
-    SubTask_Flasher_Animate_Function_Tester_02();
-  break; 
-  #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING
+   * Audio Reactive 1D
+   **/
+  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__RIPPLE_PEAK__ID,
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__Ripple_Peak,
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__RIPPLE_PEAK);
+
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__PERLINE_MOVE__ID,
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__Perline_Move,
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__PERLINE_MOVE);
+
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__GRAV_CENTER__ID,
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__GravCenter,
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__GRAV_CENTER);
+
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__GRAV_CENTRIC__ID,
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__GravCentric,
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__GRAV_CENTRIC);
+
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__GRAVI_METER__ID,
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__GraviMeter,
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__GRAVI_METER);
+
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__JUGGLES__ID,
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__Juggles,
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__JUGGLES);
+
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__MATRIPIX__ID,
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__Matripix,
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__MATRIPIX);
+
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__MID_NOISE__ID,
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__MidNoise,
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__MID_NOISE);
+
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__NOISE_FIRE__ID,
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__NoiseFire,
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__NOISE_FIRE);
+
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__NOISE_METER__ID,
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__NoiseMeter,
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__NOISE_METER);
+
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__PIXEL_WAVE__ID,
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__PixelWave,
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__PIXEL_WAVE);
+            
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__PLASMOID__ID,  
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__Plasmoid, 
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__PLASMOID);
+  
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__PUDDLE_PEAK__ID,  
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__PuddlePeak, 
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__PUDDLE_PEAK);
+  
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__PUDDLES__ID,  
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__Puddles, 
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__PUDDLES);
+  
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__PIXELS__ID,  
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__Pixels, 
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__PIXELS);
+  
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_BLURZ__ID,  
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__FFT_Blurz, 
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__FFT_BLURZ);
+  
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_FLOWSTRIPE__ID,  
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__FFT_FLOWSTRIPE, 
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__FFT_FLOWSTRIPE);
+
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_ROCKTAVES__ID,  
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__FFT_RockTaves, 
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__FFT_ROCKTAVES);
+
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_WAVESINS__ID,  
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__FFT_WaveSins, 
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__FFT_WAVESINS);
+  
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_DJ_LIGHT__ID,  
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__FFT_DJLight, 
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__FFT_DJ_LIGHT);
+  
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_FREQ_MAP__ID,  
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__FFT_FreqMap, 
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__FFT_FREQ_MAP);
+  
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_FREQ_MATRIX__ID,  
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__FFT_FreqMatrix, 
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__FFT_FREQ_MATRIX);
+  
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_FREQ_PIXELS__ID,  
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__FFT_FreqPixels, 
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__FFT_FREQ_PIXELS);
+  
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_FREQ_WAVE__ID,  
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__FFT_FreqWave, 
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__FFT_FREQ_WAVE);
+  
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_GRAV_FREQ__ID,  
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__FFT_GravFreq, 
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__FFT_GRAV_FREQ);
+  
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_NOISE_MOVE__ID,  
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__FFT_NoiseMove, 
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__FFT_NOISE_MOVE);
+  
+  // addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_ROCK_TAVES__ID,  
+  //           &mAnimatorLight::EffectAnim__AudioReactive__1D__FFT_RockTaves, 
+  //           PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__FFT_ROCK_TAVES);
+  
+  addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_WATERFALL__ID,   
+            &mAnimatorLight::EffectAnim__AudioReactive__1D__FFT_Waterfall, 
+            PM_EFFECT_CONFIG__AUDIOREACTIVE__1D__FFT_WATERFALL); 
+  #endif
+
+  /**
+   * Christmas Musical
+   **/
+  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__CHRISTMAS_MULTIFUNCTION_CONTROLLER_WITH_MUSIC
+  addEffect(EFFECTS_FUNCTION__CHRISTMAS_MUSICAL__01_ID,
+            &mAnimatorLight::EffectAnim__Christmas_Musical__01,
+            PM_EFFECT_CONFIG__CHRISTMAS_MUSICAL_01);
+  #endif
+
+  /**
+   * Audio Reactive 2D
+   **/
+  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
+  addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__2D__SWIRL__ID,   
+            &mAnimatorLight::EffectAnim__AudioReactive__2D__Swirl, 
+            PM_EFFECT_CONFIG__AUDIOREACTIVE__2D__SWIRL__INDEXING); 
+  
+  addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__2D__WAVERLY__ID,   
+            &mAnimatorLight::EffectAnim__AudioReactive__2D__Waverly, 
+            PM_EFFECT_CONFIG__AUDIOREACTIVE__2D__WAVERLY__INDEXING);   
+  
+  addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__2D__FFT_GED__ID,   
+            &mAnimatorLight::EffectAnim__AudioReactive__2D__FFT_GED, 
+            PM_EFFECT_CONFIG__AUDIOREACTIVE__2D__FFT_GED__INDEXING); 
+  
+  addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__2D__FFT_FUNKY_PLANK__ID,   
+            &mAnimatorLight::EffectAnim__AudioReactive__2D__FFT_FunkyPlank, 
+            PM_EFFECT_CONFIG__AUDIOREACTIVE__2D__FFT_FUNKY_PLANK__INDEXING);  
+  
+  addEffect(EFFECTS_FUNCTION__AUDIOREACTIVE__2D__FFT_AKEMI__ID,   
+            &mAnimatorLight::EffectAnim__AudioReactive__2D__FFT_Akemi, 
+            PM_EFFECT_CONFIG__AUDIOREACTIVE__2D__FFT_AKEMI__INDEXING);  
+  #endif
+
 }
 
 
@@ -19618,27 +16608,3 @@ void mAnimatorLight::LoadEffects()
 
 
 
-/***
- * 
- * 
- * Conversion mapping for WLED to mine
- * 
- * 
- * 
- * 
- WLED                                  ------->                              PulSar
-
-
-SEGENV                                                                       SEGMENT
-isMatrix                                                               isMatrix
-color_from_palette                                                           c
-SEGMENT.params_internal.aux1                                                                 SEGMENT.params_internal.aux1
-SEGCOLOR                                    SEGCOLOR_U32                                  
-SEGMENT.color_from_palette((band * 35), false, PALETTE_SOLID_WRAP, 0);                       SEGMENT.GetPaletteColour((band * 35), WLED_PALETTE_MAPPING_ARG_FALSE, PALETTE_WRAP_ON, PALETTE_DISCRETE_OFF, NO_ENCODED_VALUE).getU32()      
-
-#define color_from_palette(a,b,c,d)    GetPaletteColour(a,b,c,d).getU32()
-
- * 
- * 
- * 
-*/

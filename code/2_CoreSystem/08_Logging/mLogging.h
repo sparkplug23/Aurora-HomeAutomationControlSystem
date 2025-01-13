@@ -417,6 +417,12 @@ enum LoggingLevels {
 #define ALOG_DBM(...)
 #endif
 
+#ifdef ENABLE_LOG_LEVEL_DEBUG_LOWLEVEL
+#define ALOG_DBL(...) AddLog(LOG_LEVEL_DEBUG_LOWLEVEL,  __VA_ARGS__)
+#else
+#define ALOG_DBL(...)
+#endif
+
 #ifdef ENABLE_LOG_LEVEL__DEBUG_TRACE
 #define ALOG_TRA(...) AddLog(LOG_LEVEL_DEBUG_TRACE, __VA_ARGS__)
 #else

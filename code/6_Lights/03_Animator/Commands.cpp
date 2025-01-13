@@ -764,7 +764,7 @@ brightness = 255;
             ALOG_INF(PSTR("Processed %d pixels in total"), count);
 
             SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-            SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+            SET_DIRECT_MODE();
 
             show();
         }
@@ -917,7 +917,7 @@ if (jtok = obj["MQTTPixelArrays"]) {
         ALOG_INF(PSTR("Processed %d rows in total"), outerCount);
 
         SEGMENT.cycle_time__rate_ms = FRAMETIME_MS;
-        SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR();
+        SET_DIRECT_MODE();
 
         show();
     } else {

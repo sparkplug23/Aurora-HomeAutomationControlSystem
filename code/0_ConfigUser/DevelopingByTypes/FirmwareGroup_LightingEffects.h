@@ -45,10 +45,12 @@
 
         
 //    ;;;;;;;;;;;; PAIRED DEVICES ;;;;;;;;;;;;;;;;  -- Multiple devices that are being tested together, sharing a common build method with slight changes
-// #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SWITCHING__RGBWW_OR_U32__AS_BASE
-#define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SWITCHING__RGBWW_OR_U32__AS_RGBWW
-// #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SWITCHING__RGBWW_OR_U32__AS_WRGB
-
+#define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__BASE // "BASE" this device "60", has the following 3 built/running from it
+    // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__RGBWW // the buswrapper is rgbww enabled, so full 5 r+g+b+ww+cw possible. While most effects stay 32-bit, this enables getting colours from palette in 5 colour size, and some effects are full 5 colour possible
+    // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB  // buswrapper is limited to rgbw, effects may be rgbW or rgb only, 32-bit, white may be created in the effect, or generated automatically by the RGB parts.
+    #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB_MATRIX16X16 // same as previous, but figuring out how to work on 2d 16x16 matrix. So will be getting the matrix setup working, and 2d effects testing
+    //#define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__RGB_PEBBLES  // RGB only, most common type I used, get the 8port tester and make 8 200 led white sections. Aim is to ensure larger "strings" will work as planned
+    
 
 //    ;;;;;;;;;;;; ESP8266 ;;;;;;;;;;;;;;;;
         // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__50__ESP82_1CH                               // ESP8266 - Single Bus - Single Segment - 100 rgb leds
@@ -1649,7 +1651,7 @@
   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
 
-  #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+  // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
 
   #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
 
@@ -3928,11 +3930,11 @@ typedef RgbwwColor ColourBaseType;
 typedef uint32_t ColourBaseType;
 #endif
 
-  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+  // #else
   // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
-  #else
-  #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
-  #endif
+  // #endif
 
   // #define RgbcctColor RgbwwColor 
 
@@ -4303,26 +4305,12 @@ typedef RgbwwColor ColourBaseType;
 typedef uint32_t ColourBaseType;
 #endif
 
-  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-  // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
-  #else
-  // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
-  #endif
+  // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+  // #else
+  // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+  // #endif
 
-  // #define RgbcctColor RgbwwColor 
-
-  #define ENABLE_FEATURE_CONVERT_RGBCCT_TO_RGBWW
-
-
-#define ENABLE_FEATURE_LIGHTING__RGBWW_REPLACING_RGBCCT
-
-  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_REPLACING_RGBCCT
-  #define RgbcctTOwwType RgbwwColor
-  #else
-  #define RgbcctTOwwType RgbcctColor
-  #endif
-
-  // 
 
   #define ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
 
@@ -5480,7 +5468,7 @@ typedef uint32_t ColourBaseType;
 
 #ifdef SUBDEVICE_TESTGROUP__LIGHTING_MULTIPIN__H801_AS_RGB_AND_CCT_SPLIT_CHANNELS2
   #define DEVICENAME_CTR          "testgroup_multipin_h801_rgbsplitcct"
-  #define DEVICENAME_FRIENDLY_CTR "TestGroup H801 RGB Split CCT Channels"
+  #define DEVICENAME_FRIENDLY_CTR "DevelopingByTypes H801 RGB Split CCT Channels"
   #define DEVICENAME_ROOMHINT_CTR "testgroup"
   #define D_MQTTSERVER_IP_ADDRESS_COMMA_DELIMITED   "192.168.1.70"
     #define MQTT_PORT     1883
@@ -5797,7 +5785,7 @@ typedef uint32_t ColourBaseType;
 
 #ifdef SUBDEVICE_TESTGROUP__LIGHTING_MULTIPIN__H801_AS_FIVE_SINGLE_WHITE_CHANNELS
   #define DEVICENAME_CTR          "testgroup_multipin_h801_5white"
-  #define DEVICENAME_FRIENDLY_CTR "TestGroup H801 Five White Channels"
+  #define DEVICENAME_FRIENDLY_CTR "DevelopingByTypes H801 Five White Channels"
   #define DEVICENAME_ROOMHINT_CTR "testgroup"
   #define D_MQTTSERVER_IP_ADDRESS_COMMA_DELIMITED   "192.168.1.70"
     #define MQTT_PORT     1883
@@ -8722,7 +8710,7 @@ typedef uint32_t ColourBaseType;
 //--------------------------------[SWITCHING grouped devices below]-------------------------------------
 
 
-#ifdef DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SWITCHING__RGBWW_OR_U32__AS_BASE 
+#ifdef DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__BASE 
 
 
   #ifndef DEVICENAME_CTR
@@ -8781,7 +8769,7 @@ typedef uint32_t ColourBaseType;
   // #define ENABLE_FREERAM_APPENDING_SERIAL
   
 
-  #define ENABLE_DEBUGFEATURE__OVERIDE_FASTBOOT_DISABLE
+  // #define ENABLE_DEBUGFEATURE__OVERIDE_FASTBOOT_DISABLE
 
   /***********************************
    * SECTION: System Configs
@@ -8848,10 +8836,16 @@ typedef uint32_t ColourBaseType;
     "\"" D_ROOMHINT "\":\"" DEVICENAME_ROOMHINT_CTR "\""
   "}";
 
+  // #define ENABLE_DEVFEATURE_LIGHT__EFFECT_SHOW_TIME_NEW
+  #define WLED_DEBUG
+
 
 #endif
-#ifdef DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SWITCHING__RGBWW_OR_U32__AS_RGBWW 
+#ifdef DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__RGBWW 
   
+
+
+
   
   #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
   // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
@@ -8870,7 +8864,6 @@ typedef uint32_t ColourBaseType;
   // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
   #define ENABLE_DEVFEATURE_LIGHT__PWM_DITHER_V2  
   #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-  #define ENABLE_FEATURE_CONVERT_RGBCCT_TO_RGBWW
 
   
   #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
@@ -8880,11 +8873,6 @@ typedef uint32_t ColourBaseType;
   typedef uint32_t ColourBaseType;
   #endif
 
-  #ifdef ENABLE_FEATURE_CONVERT_RGBCCT_TO_RGBWW
-  #define RgbcctTOwwType RgbwwColor
-  #else
-  #define RgbcctTOwwType RgbcctColor
-  #endif
 
   #define USE_RGBWW_PALETTE
 
@@ -9023,7 +9011,7 @@ typedef uint32_t ColourBaseType;
       "ColourType":5,
       "ColourPalette":"RGBO",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Spanned Palette",
         "RateMs": 1000,
         "Speed":127
       },
@@ -9102,7 +9090,7 @@ typedef uint32_t ColourBaseType;
 #endif
 
 
-#ifdef DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SWITCHING__RGBWW_OR_U32__AS_WRGB 
+#ifdef DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB 
 
 
 
@@ -9136,26 +9124,11 @@ typedef RgbwwColor ColourBaseType;
 typedef uint32_t ColourBaseType;
 #endif
 
-  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-  // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
-  #else
-  // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
-  #endif
-
-  // #define RgbcctColor RgbwwColor 
-
-  #define ENABLE_FEATURE_CONVERT_RGBCCT_TO_RGBWW
-
-
-#define ENABLE_FEATURE_LIGHTING__RGBWW_REPLACING_RGBCCT
-
-  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_REPLACING_RGBCCT
-  #define RgbcctTOwwType RgbwwColor
-  #else
-  #define RgbcctTOwwType RgbcctColor
-  #endif
-
-  // 
+  // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+  // #else
+  // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+  // #endif
 
   #define ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
 
@@ -9186,12 +9159,13 @@ typedef uint32_t ColourBaseType;
         0,
         144
       ],
-      "ColourPalette":"Snowy 02",
+      "ColourPalette":"Candy2",
+      "ColourType":4,
       "Effects": {
-        "Function":"Sweep Random",
+        "Function":"Static Palette",
         "Speed":127,
         "Intensity":127,
-        "Grouping":1,
+        "Grouping":10,
         "RateMs": 20
       },
       "BrightnessRGB": 100,
@@ -9201,6 +9175,231 @@ typedef uint32_t ColourBaseType;
     "BrightnessCCT": 0
   }
   )=====";
+
+#endif
+
+
+#ifdef DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__RGB_PEBBLES
+/***
+ * This subgroup devices will be used to test the more typical string style lights
+ * 200x8 to a red device, powered with a 20A PSU (4 of them are on the one in the attic, get that controller)
+ */
+
+
+
+  
+  #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
+  // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
+
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
+  #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
+
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+
+
+  #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
+
+  // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+
+
+  #define ENABLE_DEVFEATURE_LIGHT__PWM_DITHER_V2
+  
+
+  
+#ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+struct RgbwwColor;  // Forward declaration
+typedef RgbwwColor ColourBaseType;
+#else
+typedef uint32_t ColourBaseType;
+#endif
+
+  // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+  // #else
+  // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+  // #endif
+
+  #define ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
+
+
+
+        // "ColourOrder":"GRBWC",
+        // "BusType":"WS2805_RGBWW",
+
+  #define USE_LIGHTING_TEMPLATE
+  
+  #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 4000
+
+  #define USE_LIGHTING_TEMPLATE
+  DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  R"=====(
+  {
+    "BusConfig":[
+      {
+        "Pin":2,
+        "ColourOrder":"GRBW",
+        "BusType":"SK6812_RGBW",
+        "Start":0,
+        "Length":144
+      }
+    ],
+    "Segment0": {
+      "PixelRange": [
+        0,
+        144
+      ],
+      "ColourPalette":"Candy2",
+      "ColourType":4,
+      "Effects": {
+        "Function":"Static Palette",
+        "Speed":127,
+        "Intensity":127,
+        "Grouping":10,
+        "RateMs": 20
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 0
+    },
+    "BrightnessRGB": 2,
+    "BrightnessCCT": 0
+  }
+  )=====";
+
+#endif
+
+#ifdef DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB_MATRIX16X16 
+
+
+
+  
+  #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
+  // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
+
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
+  #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
+
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+
+
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__HARDWARE_TESTING
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__SUN_POSITIONS
+  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__LED_SEGMENT_CLOCK
+  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__NOTIFICATIONS
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__BORDER_WALLPAPERS
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__PIXEL_SET_ELSEWHERE
+  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__CHRISTMAS_MULTIFUNCTION_CONTROLLER_WITH_MUSIC
+  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__CHRISTMAS_MULTIFUNCTION_CONTROLLER
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
+
+
+
+  #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
+
+  // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+
+
+  #define ENABLE_DEVFEATURE_LIGHT__PWM_DITHER_V2
+  
+
+  
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  struct RgbwwColor;  // Forward declaration
+  typedef RgbwwColor ColourBaseType;
+  #else
+  typedef uint32_t ColourBaseType;
+  #endif
+
+  // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+  // #else
+  // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+  // #endif
+
+  #define ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
+
+
+  #define ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
+
+  #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS  
+    #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
+    #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
+    #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D
+    #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__MATRIX
+    #define ENABLE_DEVFEATURE_LIGHT__HARDCODE_MATRIX_SETUP  
+    #define WLED_DEBUG
+    #define ENABLE_DEVFEATURE_LIGHT__INCLUDE_AUDIOREACTIVE_USERMOD
+    // #define ENABLE_DEVFEATURE_LIGHT__MATRIX_LOAD_PALETTE_PATCH_IN_WEBUI_PALETTE_CHANGE
+  #endif 
+
+  
+
+  // 13, 18, 19, 22, 23, 25, 26, 27       USED
+  // 33, 32, 21, 17, 16, 15*, 14*, 5*, 4, NOTUSED
+  // 21 = on PCB (4 pixels)
+  // 32 = external
+  #define USE_LIGHTING_TEMPLATE
+  DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  R"=====(
+  {
+    "BusConfig":[
+      {
+        "Pin":13,
+        "ColourOrder":"GRB",
+        "BusType":"WS2812_RGB",
+        "Start":0,
+        "Length":256
+      }
+    ],
+    "Segment0": {
+      "PixelRange": [
+        0,
+        256
+      ],
+      "ColourPalette":"Orange & Teal",
+      "PaletteMappingValues":[10,15,20],
+      "SegColour0": {
+        "Hue": 0,
+        "Sat":100,
+        "BrightnessRGB":1
+      },
+      "SegColour1": {
+        "Hue": 120,
+        "Sat":20,
+        "BrightnessRGB":1
+      },
+      "SegColour2": {
+        "Hue": 240,
+        "Sat":100,
+        "BrightnessRGB":1
+      },
+      "Effects": {
+        "Function":"Octopus",
+        "Speed":1,
+        "Intensity":127,
+        "Decimate":0,
+        "Grouping":1,
+        "RateMs": 25
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 0
+    },
+    "BrightnessRGB": 20,
+    "BrightnessCCT": 0
+  }
+  )=====";
+
+
+
 
 #endif
 

@@ -64,21 +64,56 @@
 #define BRIGHTNESS_NOT_YET_SET          false
 #define WITH_BRIGHTNESS_APPLIED         true
 
+#define EFFECT_CONFIG_DEFAULT_OPTION__PALETTE_INDEX_CTR "pal=95" // The default forced palette
+
 /**
  * WLED conversions
  * These are basic defines that remap temporarily from WLED in PulSar. 
  * For optimisation, these will be removed and replaced with the correct values.
  **/
+#define color_from_palette(a,b,c,d)    GetPaletteColour(a,b,c,d)
+
+
+#define RgbwwColorU32(c)  RGBW32(c.R,c.G,c.B,c.WW) 
+
+
+/***
+ * 
+ * 
+ * Conversion mapping for WLED to mine
+ * 
+ * 
+ * 
+ * 
+ WLED                                  ------->                              PulSar
+
+
+SEGENV                                                                       SEGMENT
+isMatrix                                                               isMatrix
+color_from_palette                                                           c
+SEGMENT.params_internal.aux1                                                                 SEGMENT.params_internal.aux1
+SEGCOLOR                                    SEGCOLOR_U32                                  
+SEGMENT.color_from_palette((band * 35), false, PALETTE_SOLID_WRAP, 0);                       SEGMENT.GetPaletteColour((band * 35), WLED_PALETTE_MAPPING_ARG_FALSE, PALETTE_WRAP_ON, PALETTE_DISCRETE_OFF, NO_ENCODED_VALUE).getU32()      
+
 #define color_from_palette(a,b,c,d)    GetPaletteColour(a,b,c,d).getU32()
+
+ * 
+ * 
+ * 
+*/
+
 
 #define MIN(a,b) ((a)<(b)?(a):(b))
 #define MAX(a,b) ((a)>(b)?(a):(b))
 
 /* Not used in all effects yet */
 #define WLED_FPS         42
-#define FRAMETIME_FIXED  (1000/WLED_FPS)
+// #define FRAMETIME_FIXED  (1000/WLED_FPS)
+#define FRAMETIME_FIXED  25//(1000/WLED_FPS)
 #define FRAMETIME_MS     24
 #define FRAMETIME        25
+
+#define FPS_UNLIMITED    0
 
 extern bool realtimeRespectLedMaps; // used in getMappedPixelIndex()
 
@@ -147,6 +182,7 @@ extern bool realtimeRespectLedMaps; // used in getMappedPixelIndex()
 
 #define SEGCOLOR_U32(x)       segments[getCurrSegmentId()].segcol[x].getU32()
 #define SEGCOLOR_RGBCCT(x)    segments[getCurrSegmentId()].segcol[x].WithBrightness()
+#define SEGCOLOR(x)           SEGCOLOR_U32(x) // default
 #define SEGMENT               segments[getCurrSegmentId()]
 #define pSEGMENT              tkr_anim->segments[tkr_anim->getCurrSegmentId()]
 #define SEGMENT_I(X)          segments[X] // can this be changed later to "getSegment(X)" and hence protect against out of bounds
@@ -154,6 +190,9 @@ extern bool realtimeRespectLedMaps; // used in getMappedPixelIndex()
 #define SEGLEN                _virtualSegmentLength // This is still using the function, it just relies on calling the function prior to the effect to set this
 #define SEGPALETTE            SEGMENT.palette_container->CRGB16Palette16_Palette.data
 #define SEGIDX                getCurrSegmentId()
+
+// WLED Conversions
+#define NUM_COLORS RGBCCTCOLOURS_SIZE
 
 #define SPEED_FORMULA_L  5U + (50U*(255U - SEGMENT.speed))/SEGLEN
 
@@ -257,8 +296,14 @@ DEFINE_PGM_CTR(PM_MQTT_HANDLER_POSTFIX_TOPIC__DEBUG_PERFORMANCE__CTR)        "de
 #define ANIM_FUNCTION_SIGNATURE                             std::function<void(const AnimationParam& param)>                              anim_function_callback
 #define ANIMIMATION_DEBUG_MQTT_FUNCTION_SIGNATURE           std::function<void()>                                                         anim_progress_mqtt_function_callback
 #define ANIM_FUNCTION_SIGNATURE_SEGMENT_INDEXED             std::function<void(const uint8_t segment_index, const AnimationParam& param)> anim_function_callback_indexed
-#define SET_ANIMATION_DOES_NOT_REQUIRE_NEOPIXEL_ANIMATOR()  SEGMENT.anim_function_callback = nullptr 
+#define SET_DIRECT_MODE()  SEGMENT.anim_function_callback = nullptr 
 
+#ifdef ESP8266
+#define HW_RND_REGISTER RANDOM_REG32
+#else // ESP32 family
+#include "soc/wdev_reg.h"
+#define HW_RND_REGISTER REG_READ(WDEV_RND_REG)
+#endif
 
 class mAnimatorLight :
   public mTaskerInterface
@@ -320,6 +365,25 @@ class mAnimatorLight :
     /************************************************************************************************
      * SECTION: Internal Functions
      ************************************************************************************************/
+
+    // fast (true) random numbers using hardware RNG, all functions return values in the range lowerlimit to upperlimit-1
+    // note: for true random numbers with high entropy, do not call faster than every 200ns (5MHz)
+    // tests show it is still highly random reading it quickly in a loop (better than fastled PRNG)
+    // for 8bit and 16bit random functions: no limit check is done for best speed
+    // 32bit inputs are used for speed and code size, limits don't work if inverted or out of range
+    // inlining does save code size except for random(a,b) and 32bit random with limits
+    // #define random hw_random // replace arduino random()
+    inline uint32_t hw_random() { return HW_RND_REGISTER; };
+    uint32_t hw_random(uint32_t upperlimit); // not inlined for code size
+    int32_t hw_random(int32_t lowerlimit, int32_t upperlimit);
+    inline uint16_t hw_random16() { return HW_RND_REGISTER; };
+    inline uint16_t hw_random16(uint32_t upperlimit) { return (hw_random16() * upperlimit) >> 16; }; // input range 0-65535 (uint16_t)
+    inline int16_t hw_random16(int32_t lowerlimit, int32_t upperlimit) { int32_t range = upperlimit - lowerlimit; return lowerlimit + hw_random16(range); }; // signed limits, use int16_t ranges
+    inline uint8_t hw_random8() { return HW_RND_REGISTER; };
+    inline uint8_t hw_random8(uint32_t upperlimit) { return (hw_random8() * upperlimit) >> 8; }; // input range 0-255
+    inline uint8_t hw_random8(uint32_t lowerlimit, uint32_t upperlimit) { uint32_t range = upperlimit - lowerlimit; return lowerlimit + hw_random8(range); }; // input range 0-255
+
+
 
     void reset(); // tmp use wled reboot, later make sure to use the system reboot method
             
@@ -402,8 +466,6 @@ class mAnimatorLight :
     #ifdef ENABLE_DEVFEATURE_LIGHTING__COLOURHEATMAP_PALETTE
     void CommandSet_ColourHeatMap_Palette(float* array_val, uint8_t array_length, uint8_t style_index = 0, uint8_t palette_id = 255);
     #endif
-
-    void Set_Segment_ColourType(uint8_t segment_index, uint8_t light_type);
 
     void CommandSet_PaletteID(uint16_t value, uint8_t segment_index = 0);
 
@@ -589,7 +651,7 @@ class mAnimatorLight :
     void EffectAnim__Popping_Decay_Base(bool draw_palette_inorder, bool fade_to_black);
     #endif 
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-    void EffectAnim__Spanned_Static_Palette();
+    void EffectAnim__Spanned_Palette();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
     void EffectAnim__Randomise_Gradient();
@@ -621,6 +683,7 @@ class mAnimatorLight :
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
     // Static
     void EffectAnim__Static_Pattern();
+    void EffectAnim__Static_Interleaved_Pattern();
     void EffectAnim__Tri_Static_Pattern();
     void EffectAnim__Base_Spots(uint16_t threshold);
     #endif
@@ -658,6 +721,7 @@ class mAnimatorLight :
     void EffectAnim__Base_Gradient(bool loading);
     void EffectAnim__Gradient();
     void EffectAnim__Loading();
+    void EffectAnim__Rolling_Balls();
     void EffectAnim__Base_Police(uint32_t color1, uint32_t color2, bool all);
     void EffectAnim__Police();
     void EffectAnim__Polce_All();
@@ -710,6 +774,7 @@ class mAnimatorLight :
     void EffectAnim__Fireworks_Starburst();
     void EffectAnim__Fireworks_Starburst_Glows();
     void EffectAnim__Rain();
+    void EffectAnim__Tetrix();
     void EffectAnim__Exploding_Fireworks_NoLaunch();
     #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
     // Sparkle/Twinkle
@@ -826,16 +891,16 @@ class mAnimatorLight :
     *** Specialised: 2D (No Audio) **********************************************************************************************************************************************
     **  Requires:     ***********************************************************************************************************************************************************
     *****************************************************************************************************************************************************************************/
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
+    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
     void EffectAnim__2D__Blackhole();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
     void EffectAnim__2D__ColouredBursts();
     #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
+    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
     void EffectAnim__2D__DNA();
     #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
+    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
     void EffectAnim__2D__DNASpiral();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
@@ -921,9 +986,6 @@ class mAnimatorLight :
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
     void EffectAnim__2D__DigitalClock();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
-    void EffectAnim__2D__DNA();
     #endif
     /****************************************************************************************************************************************************************************
     *** Specialised: 1D (Audio Reactive) ****************************************************************************************************************************************
@@ -1128,123 +1190,396 @@ class mAnimatorLight :
     ******************************************************************************************************************************************************************************/
 
 
-
     enum EFFECTS_FUNCTION__IDS
     {
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-    EFFECTS_FUNCTION__SOLID_COLOUR__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-    EFFECTS_FUNCTION__STATIC_PALETTE__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-    EFFECTS_FUNCTION__SPANNED_PALETTE__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-    EFFECTS_FUNCTION__FIREFLY__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-    EFFECTS_FUNCTION__CANDLE_SINGLE__ID,
-    EFFECTS_FUNCTION__CANDLE_MULTIPLE__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-    EFFECTS_FUNCTION__RANDOMISE_GRADIENT__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    EFFECTS_FUNCTION__SHIMMERING_PALETTE_DOUBLE__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    EFFECTS_FUNCTION__SHIMMERING_PALETTE_SATURATION__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    EFFECTS_FUNCTION__STATIC_GRADIENT_PALETTE__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    EFFECTS_FUNCTION__ROTATING_PALETTE__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    EFFECTS_FUNCTION__ROTATING_PREVIOUS_ANIMATION__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    EFFECTS_FUNCTION__STEPPING_PALETTE_WITH_BACKGROUND__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    EFFECTS_FUNCTION__STEPPING_PALETTE__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    EFFECTS_FUNCTION__BLEND_PALETTE_BETWEEN_ANOTHER_PALETTE__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    EFFECTS_FUNCTION__TWINKLE_PALETTE_SEC_ON_ORDERED_PALETTE_PRI__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    EFFECTS_FUNCTION__TWINKLE_OFF_PALETTE__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-    EFFECTS_FUNCTION__STATIC_PALETTE_VINTAGE__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    EFFECTS_FUNCTION__TIMEBASED__HOUR_PROGRESS__ID,
-    #endif    
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    EFFECTS_FUNCTION__TWINKLE_DECAYING_PALETTE__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
-    EFFECTS_FUNCTION__POPPING_DECAY_PALETTE_TO_BLACK__ID,
-    EFFECTS_FUNCTION__POPPING_DECAY_RANDOM_TO_BLACK__ID,
-    EFFECTS_FUNCTION__POPPING_DECAY_PALETTE_TO_WHITE__ID,
-    EFFECTS_FUNCTION__POPPING_DECAY_RANDOM_TO_WHITE__ID,
-    #endif
+      // General Level 1 Minimal Home Effects
+      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
+      EFFECTS_FUNCTION__SOLID_COLOUR__ID,
+      EFFECTS_FUNCTION__STATIC_PALETTE__ID,
+      EFFECTS_FUNCTION__SPANNED_PALETTE__ID,
+      EFFECTS_FUNCTION__FIREFLY__ID,
+      EFFECTS_FUNCTION__CANDLE_SINGLE__ID,
+      EFFECTS_FUNCTION__CANDLE_MULTIPLE__ID,
+      EFFECTS_FUNCTION__RANDOMISE_GRADIENT__ID,
+      EFFECTS_FUNCTION__STATIC_PALETTE_VINTAGE__ID,
+      #endif
+
+      // General Level 2 Flashing Basic Effects
+      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
+      EFFECTS_FUNCTION__SHIMMERING_PALETTE_DOUBLE__ID,
+      EFFECTS_FUNCTION__SHIMMERING_PALETTE_SATURATION__ID,
+      EFFECTS_FUNCTION__STATIC_GRADIENT_PALETTE__ID,
+      EFFECTS_FUNCTION__ROTATING_PALETTE__ID,
+      EFFECTS_FUNCTION__ROTATING_PREVIOUS_ANIMATION__ID,
+      EFFECTS_FUNCTION__STEPPING_PALETTE_WITH_BACKGROUND__ID,
+      EFFECTS_FUNCTION__STEPPING_PALETTE__ID,
+      EFFECTS_FUNCTION__BLEND_PALETTE_BETWEEN_ANOTHER_PALETTE__ID,
+      EFFECTS_FUNCTION__TWINKLE_PALETTE_SEC_ON_ORDERED_PALETTE_PRI__ID,
+      EFFECTS_FUNCTION__TWINKLE_OFF_PALETTE__ID,
+      EFFECTS_FUNCTION__TIMEBASED__HOUR_PROGRESS__ID,
+      EFFECTS_FUNCTION__TWINKLE_DECAYING_PALETTE__ID,
+      #endif
+
+      // General Level 3 Flashing Extended Effects
+      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+      EFFECTS_FUNCTION__POPPING_DECAY_PALETTE_TO_BLACK__ID,
+      EFFECTS_FUNCTION__POPPING_DECAY_RANDOM_TO_BLACK__ID,
+      EFFECTS_FUNCTION__POPPING_DECAY_PALETTE_TO_WHITE__ID,
+      EFFECTS_FUNCTION__POPPING_DECAY_RANDOM_TO_WHITE__ID,
+      EFFECTS_FUNCTION__STATIC_PATTERN__ID,
+      EFFECTS_FUNCTION__TRI_STATIC_PATTERN__ID,
+      EFFECTS_FUNCTION__STATIC_INTERLEAVED_PATTERN__ID,
+      #endif
+
+      // General Level 4 Flashing Complete Effects
+      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+      EFFECTS_FUNCTION__SPOTS__ID,
+      EFFECTS_FUNCTION__PERCENT__ID,
+      EFFECTS_FUNCTION__RANDOM_COLOR__ID,       
+      EFFECTS_FUNCTION__TRICOLOR_WIPE__ID,
+      /**
+       * Wipe/Sweep/Runners 
+       **/
+      EFFECTS_FUNCTION__COLOR_WIPE__ID,
+      EFFECTS_FUNCTION__COLOR_WIPE_RANDOM__ID,
+      EFFECTS_FUNCTION__COLOR_WIPE_PALETTE__ID,
+      EFFECTS_FUNCTION__COLOR_SWEEP__ID,
+      EFFECTS_FUNCTION__COLOR_SWEEP_RANDOM__ID,
+      EFFECTS_FUNCTION__COLOR_SWEEP_PALETTE__ID,                
+      EFFECTS_FUNCTION__RUNNING_COLOR__ID,
+      EFFECTS_FUNCTION__RUNNING_RANDOM__ID,      
+      EFFECTS_FUNCTION__ANDROID__ID,               
+      EFFECTS_FUNCTION__GRADIENT__ID,
+      EFFECTS_FUNCTION__LOADING__ID,
+      EFFECTS_FUNCTION__ROLLINGBALLS__ID,
+      EFFECTS_FUNCTION__POLICE__ID,
+      EFFECTS_FUNCTION__POLICE_ALL__ID,
+      EFFECTS_FUNCTION__FAIRY__ID,
+      EFFECTS_FUNCTION__TWO_DOTS__ID,
+      EFFECTS_FUNCTION__TWO_AREAS__ID,                
+      EFFECTS_FUNCTION__FAIRYTWINKLE__ID,                
+      EFFECTS_FUNCTION__RUNNING_DUAL__ID,   
+      EFFECTS_FUNCTION__MULTI_COMET__ID,
+      EFFECTS_FUNCTION__OSCILLATE__ID,
+      EFFECTS_FUNCTION__BPM__ID,
+      EFFECTS_FUNCTION__JUGGLE__ID,
+      EFFECTS_FUNCTION__PALETTE__ID,
+      EFFECTS_FUNCTION__COLORWAVES__ID,
+      EFFECTS_FUNCTION__LAKE__ID,
+      EFFECTS_FUNCTION__GLITTER__ID,
+      EFFECTS_FUNCTION__METEOR__ID,
+      EFFECTS_FUNCTION__METEOR_SMOOTH__ID,
+      EFFECTS_FUNCTION__PRIDE_2015__ID,
+      EFFECTS_FUNCTION__PACIFICA__ID,
+      EFFECTS_FUNCTION__SUNRISE__ID,
+      EFFECTS_FUNCTION__SINEWAVE__ID,
+      EFFECTS_FUNCTION__FLOW__ID,
+      EFFECTS_FUNCTION__RUNNING_LIGHTS__ID,
+      EFFECTS_FUNCTION__RAINBOW_CYCLE__ID,
+      #endif
+
+      /**
+       * Chase
+       **/
+      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+      EFFECTS_FUNCTION__CHASE_COLOR__ID,
+      EFFECTS_FUNCTION__CHASE_RANDOM__ID,
+      EFFECTS_FUNCTION__CHASE_RAINBOW__ID,
+      EFFECTS_FUNCTION__CHASE_FLASH__ID,
+      EFFECTS_FUNCTION__CHASE_FLASH_RANDOM__ID,
+      EFFECTS_FUNCTION__CHASE_RAINBOW_WHITE__ID,
+      EFFECTS_FUNCTION__CHASE_THEATER__ID,
+      EFFECTS_FUNCTION__CHASE_THEATER_RAINBOW__ID,
+      EFFECTS_FUNCTION__CHASE_TRICOLOR__ID,
+      #endif
+
+      /**
+       *  Breathe/Fade/Pulse
+       **/      
+      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+      EFFECTS_FUNCTION__BREATH__ID,
+      EFFECTS_FUNCTION__FADE__ID,
+      EFFECTS_FUNCTION__FADE_TRICOLOR__ID,
+      EFFECTS_FUNCTION__FADE_SPOTS__ID,
+      #endif
+      
+      /**
+       * Sparkle/Twinkle
+       **/
+      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+      EFFECTS_FUNCTION__SOLID_GLITTER__ID,
+      EFFECTS_FUNCTION__POPCORN__ID,
+      EFFECTS_FUNCTION__PLASMA__ID,
+      EFFECTS_FUNCTION__SPARKLE__ID,
+      EFFECTS_FUNCTION__FLASH_SPARKLE__ID,
+      EFFECTS_FUNCTION__HYPER_SPARKLE__ID,
+      EFFECTS_FUNCTION__TWINKLE__ID,
+      EFFECTS_FUNCTION__COLORTWINKLE__ID,
+      EFFECTS_FUNCTION__TWINKLE_FOX__ID,
+      EFFECTS_FUNCTION__TWINKLE_CAT__ID,
+      EFFECTS_FUNCTION__TWINKLE_UP__ID,
+      EFFECTS_FUNCTION__SAW__ID,
+      EFFECTS_FUNCTION__DISSOLVE__ID,
+      EFFECTS_FUNCTION__DISSOLVE_RANDOM__ID,
+      EFFECTS_FUNCTION__COLORFUL__ID,
+      EFFECTS_FUNCTION__TRAFFIC_LIGHT__ID,
+      #endif
+
+      /**
+       * Fireworks
+       **/
+      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+      EFFECTS_FUNCTION__FIREWORKS__ID,                
+      EFFECTS_FUNCTION__FIREWORKS_EXPLODING__ID, 
+      EFFECTS_FUNCTION__FIREWORKS_STARBURST__ID,
+      EFFECTS_FUNCTION__FIREWORKS_STARBURST_GLOWS__ID, 
+      EFFECTS_FUNCTION__RAIN__ID,                       
+      EFFECTS_FUNCTION__TETRIX__ID,                 
+      EFFECTS_FUNCTION__FIRE_FLICKER__ID,                  
+      EFFECTS_FUNCTION__FIREWORKS_EXPLODING_NO_LAUNCH__ID,     
+      #endif
+
+      /**
+       * Blink/Strobe
+       **/
+      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+      EFFECTS_FUNCTION__BLINK__ID,
+      EFFECTS_FUNCTION__BLINK_RAINBOW__ID,
+      EFFECTS_FUNCTION__STROBE__ID,
+      EFFECTS_FUNCTION__MULTI_STROBE__ID,
+      EFFECTS_FUNCTION__STROBE_RAINBOW__ID,
+      EFFECTS_FUNCTION__RAINBOW__ID,
+      EFFECTS_FUNCTION__LIGHTNING__ID,
+      EFFECTS_FUNCTION__FIRE_2012__ID,
+      EFFECTS_FUNCTION__RAILWAY__ID,
+      EFFECTS_FUNCTION__HEARTBEAT__ID,
+      #endif
+
+      /**
+       * Noise
+       **/
+      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+      EFFECTS_FUNCTION__FILLNOISE8__ID,
+      EFFECTS_FUNCTION__NOISE16_1__ID,
+      EFFECTS_FUNCTION__NOISE16_2__ID,
+      EFFECTS_FUNCTION__NOISE16_3__ID,
+      EFFECTS_FUNCTION__NOISE16_4__ID,
+      EFFECTS_FUNCTION__NOISEPAL__ID,
+      EFFECTS_FUNCTION__PHASEDNOISE__ID,
+      EFFECTS_FUNCTION__PHASED__ID,
+      #endif
+
+      /**
+       * Scan
+       **/
+      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+      EFFECTS_FUNCTION__SCAN__ID,
+      EFFECTS_FUNCTION__DUAL_SCAN__ID,
+      EFFECTS_FUNCTION__LARSON_SCANNER__ID,
+      EFFECTS_FUNCTION__DUAL_LARSON_SCANNER__ID,
+      EFFECTS_FUNCTION__ICU__ID,
+      EFFECTS_FUNCTION__RIPPLE__ID,
+      EFFECTS_FUNCTION__RIPPLE_RAINBOW__ID,
+      EFFECTS_FUNCTION__COMET__ID,
+      EFFECTS_FUNCTION__CHUNCHUN__ID,
+      EFFECTS_FUNCTION__DANCING_SHADOWS__ID,
+      EFFECTS_FUNCTION__WASHING_MACHINE__ID,
+      EFFECTS_FUNCTION__BLENDS__ID,
+      EFFECTS_FUNCTION__TV_SIMULATOR__ID,
+      EFFECTS_FUNCTION__BOUNCINGBALLS__ID,
+      EFFECTS_FUNCTION__SINELON__ID,
+      EFFECTS_FUNCTION__SINELON_DUAL__ID,
+      EFFECTS_FUNCTION__SINELON_RAINBOW__ID,
+      EFFECTS_FUNCTION__DRIP__ID,
+      #endif
+
+      /**
+       * Hardware Installation Helpers
+       **/
+      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__HARDWARE_TESTING
+      EFFECTS_FUNCTION__HARDWARE__SHOW_BUS__ID,
+      EFFECTS_FUNCTION__HARDWARE__MANUAL_PIXEL_COUNTING__ID,
+      EFFECTS_FUNCTION__HARDWARE__VIEW_PIXEL_RANGE__ID,
+      EFFECTS_FUNCTION__HARDWARE__LIGHT_SENSOR_PIXEL_INDEXING__ID,
+      #endif
+
+      /**
+       * Sun Position
+       **/
+      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__SUN_POSITIONS
+      EFFECTS_FUNCTION__SUNPOSITIONS_SUNRISE_ALARM_01__ID,
+      EFFECTS_FUNCTION__SUNPOSITIONS_AZIMUTH_SELECTS_GRADIENT_OF_PALETTE_01__ID,
+      EFFECTS_FUNCTION__SUNPOSITIONS_SUNSET_BLENDED_PALETTES_01__ID,
+      EFFECTS_FUNCTION__SUNPOSITIONS_DRAWSUN_1D_ELEVATION_01__ID,
+      EFFECTS_FUNCTION__SUNPOSITIONS_DRAWSUN_1D_AZIMUTH_01__ID,
+      EFFECTS_FUNCTION__SUNPOSITIONS_DRAWSUN_2D_ELEVATION_AND_AZIMUTH_01__ID,
+      EFFECTS_FUNCTION__SUNPOSITIONS_WHITE_COLOUR_TEMPERATURE_CCT_BASED_ON_ELEVATION_01__ID,
+      #endif
+
+      /**
+       * LED Segment Clock
+       **/
+      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__LED_SEGMENT_CLOCK
+      EFFECTS_FUNCTION__LCD_CLOCK_BASIC_01__ID,
+      EFFECTS_FUNCTION__LCD_CLOCK_BASIC_02__ID,
+      EFFECTS_FUNCTION__LCD_DISPLAY_MANUAL_NUMBER_01__ID,
+      EFFECTS_FUNCTION__LCD_DISPLAY_MANUAL_STRING_01__ID,
+      #endif
+      
+      /**
+       * Notifications
+       **/
+      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__NOTIFICATIONS
+      EFFECTS_FUNCTION__NOTIFICATION_STATIC__ID,
+      EFFECTS_FUNCTION__NOTIFICATION_FADE__ID,
+      EFFECTS_FUNCTION__NOTIFICATION_BLINKING__ID,
+      EFFECTS_FUNCTION__NOTIFICATION_PULSING__ID,
+      #endif
+
+      /**
+       * Border/Frame/Edge Wallpapers
+       **/
+      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__BORDER_WALLPAPERS
+      EFFECTS_FUNCTION__BORDER_WALLPAPER__TWOCOLOUR_GRADIENT__ID,
+      EFFECTS_FUNCTION__BORDER_WALLPAPER__FOURCOLOUR_GRADIENT__ID,
+      EFFECTS_FUNCTION__BORDER_WALLPAPER__FOURCOLOUR_SOLID__ID,
+      #endif
+
+      /**
+       * Manual Pixel: Keeping as legacy, but mode change to realtime will remove this
+       **/
+      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__PIXEL_SET_ELSEWHERE
+      EFFECTS_FUNCTION__MANUAL__PIXEL_SET_ELSEWHERE__ID,
+      #endif
+
+      /**
+       * Christmas Multifunction Controller: Replication of vintage 8 function controllers
+       * Replicate how traditional 2/4 ouput controllers and their effects look
+          - Option1: Make the same LEDs maintain colour, as if they are painted glass bulbs. So a sequence of 4 RGBO would mean every 1 pixel in order would be turned off
+          - Option2: Replicate the same effects, but keep as many LEDs on as possible.
+          - These should be an optional flag
+          - Another optional flag should be "instant" vs "filament" when turning on/off, ie keep the added fade on/off of traditional lights by keeping a 0.75 second blending
+          - Another flag will be to limit palette up to only 5 outputs, like the best controllers out there, otherwise extend effect into full length.
+        Palette is drawn "inorder" and animations are drawn with X outputs (4 or 5 like normal lights) to create the effect like real lights
+          1 - Combination (will use param to call the others internally)
+          2 - In Waves
+          3 - Sequentials
+          4 - Slo-Glo
+          5 - Chasing / Flash
+          6 - Slow Fade
+          7 - Twinkle / Flash
+          8 - Steady on
+       **/
+      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__CHRISTMAS_MULTIFUNCTION_CONTROLLER
+      EFFECTS_FUNCTION__CHRISTMAS_MULTIFUNCTION_CONTROLLER__COMBINATION_ID,
+      EFFECTS_FUNCTION__CHRISTMAS_MULTIFUNCTION_CONTROLLER__IN_WAVES_ID,
+      EFFECTS_FUNCTION__CHRISTMAS_MULTIFUNCTION_CONTROLLER__SEQUENTIAL_ID,
+      EFFECTS_FUNCTION__CHRISTMAS_MULTIFUNCTION_CONTROLLER__SLO_GLO_ID,
+      EFFECTS_FUNCTION__CHRISTMAS_MULTIFUNCTION_CONTROLLER__CHASING_AND_FLASHING__ID,
+      EFFECTS_FUNCTION__CHRISTMAS_MULTIFUNCTION_CONTROLLER__SLOW_FADE__ID,
+      EFFECTS_FUNCTION__CHRISTMAS_MULTIFUNCTION_CONTROLLER__TWINKLE_AND_FLASH__ID,
+      EFFECTS_FUNCTION__CHRISTMAS_MULTIFUNCTION_CONTROLLER__STEADY_ON__ID,
+      #endif
+
+      /**
+       * 2D (No Audio)
+       **/
+      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
+      EFFECTS_FUNCTION__2D__BLACK_HOLE__ID,      
+      EFFECTS_FUNCTION__2D__HIPHOTIC__ID,              
+      EFFECTS_FUNCTION__2D__COLOURED_BURSTS__ID,         
+      EFFECTS_FUNCTION__2D__DNA__ID,        
+      EFFECTS_FUNCTION__2D__DNA_SPIRAL__ID,              
+      EFFECTS_FUNCTION__2D__DRIFT__ID,            
+      EFFECTS_FUNCTION__2D__FIRE_NOISE__ID,   
+      EFFECTS_FUNCTION__2D__FRIZZLES__ID,    
+      EFFECTS_FUNCTION__2D__GAME_OF_LIFE__ID, 
+      EFFECTS_FUNCTION__2D__HIPNOTIC__ID,      
+      EFFECTS_FUNCTION__2D__JULIA__ID,       
+      EFFECTS_FUNCTION__2D__LISSAJOUS__ID,   
+      EFFECTS_FUNCTION__2D__MATRIX__ID,      
+      EFFECTS_FUNCTION__2D__METABALLS__ID,    
+      EFFECTS_FUNCTION__2D__NOISE__ID,        
+      EFFECTS_FUNCTION__2D__PLASMA_BALL__ID,   
+      EFFECTS_FUNCTION__2D__POLAR_LIGHTS__ID,  
+      EFFECTS_FUNCTION__2D__PULSER__ID,           
+      EFFECTS_FUNCTION__2D__SIN_DOTS__ID,      
+      EFFECTS_FUNCTION__2D__SQUARED_SWIRL__ID,   
+      EFFECTS_FUNCTION__2D__SUN_RADIATION__ID,    
+      EFFECTS_FUNCTION__2D__TARTAN__ID,          
+      EFFECTS_FUNCTION__2D__PLASMAROTOZOOM__ID,   
+      EFFECTS_FUNCTION__2D__SPACESHIPS__ID,        
+      EFFECTS_FUNCTION__2D__CRAZY_BEES__ID,       
+      EFFECTS_FUNCTION__2D__GHOST_RIDER__ID,            
+      EFFECTS_FUNCTION__2D__FLOATING_BLOBS__ID,    
+      EFFECTS_FUNCTION__2D__DRIFT_ROSE__ID,        
+      EFFECTS_FUNCTION__2D__DISTORTION_WAVES__ID,       
+      EFFECTS_FUNCTION__2D__SOAP__ID,   
+      EFFECTS_FUNCTION__2D__OCTOPUS__ID,    
+      EFFECTS_FUNCTION__2D__WAVING_CELL__ID,  
+      EFFECTS_FUNCTION__2D__SCROLLING_TEXT__ID,         
+      EFFECTS_FUNCTION__2D__DIGITAL_CLOCK__ID,    
+      #endif
+
+
+      /**
+       * Audio Reactive 1D
+       **/
+      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__RIPPLE_PEAK__ID,
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__PERLINE_MOVE__ID,
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__GRAV_CENTER__ID,
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__GRAV_CENTRIC__ID,
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__GRAVI_METER__ID,
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__JUGGLES__ID,
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__MATRIPIX__ID,
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__MID_NOISE__ID,
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__NOISE_FIRE__ID,
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__NOISE_METER__ID,
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__PIXEL_WAVE__ID,
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__PLASMOID__ID, 
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__PUDDLE_PEAK__ID, 
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__PUDDLES__ID,  
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__PIXELS__ID,  
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_BLURZ__ID,  
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_FLOWSTRIPE__ID, 
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_ROCKTAVES__ID,
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_WAVESINS__ID, 
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_DJ_LIGHT__ID,
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_FREQ_MAP__ID, 
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_FREQ_MATRIX__ID,  
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_FREQ_PIXELS__ID,
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_FREQ_WAVE__ID,  
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_GRAV_FREQ__ID,  
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_NOISE_MOVE__ID,  
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_ROCK_TAVES__ID,        
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_WATERFALL__ID,   
+      #endif
+
+      /**
+       * Christmas Musical
+       **/
+      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING
+      EFFECTS_FUNCTION__CHRISTMAS_MUSICAL__01_ID,
+      #endif
+
+      /**
+       * Audio Reactive 2D
+       **/
+      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
+      EFFECTS_FUNCTION__AUDIOREACTIVE__2D__SWIRL__ID,         
+      EFFECTS_FUNCTION__AUDIOREACTIVE__2D__WAVERLY__ID,   
+      EFFECTS_FUNCTION__AUDIOREACTIVE__2D__FFT_GED__ID,         
+      EFFECTS_FUNCTION__AUDIOREACTIVE__2D__FFT_FUNKY_PLANK__ID,         
+      EFFECTS_FUNCTION__AUDIOREACTIVE__2D__FFT_AKEMI__ID,   
+      #endif
+      EFFECTS_FUNCTION__LENGTH__ID
+    };
 
 
 
     
-    // #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__NOTIFICATIONS 
-    // EFFECTS_FUNCTION__NOTIFICATION_STATIC__ID,
-    // EFFECTS_FUNCTION__NOTIFICATION_BLINKING__ID,
-    // EFFECTS_FUNCTION__NOTIFICATION_FADE__ID,
-    // EFFECTS_FUNCTION__NOTIFICATION_PULSING__ID,    
-    // #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__NOTIFICATIONS
-        
-        
-    // #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING
-    // EFFECTS_FUNCTION__CHRISTMAS_MUSICAL__01_ID,
-    // #endif
 
-    /******************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************
-    *** Christmas Multifunction Effects  ***************************************************************************************************************************************************************************
-    **  Replicate how traditional 2/4 ouput controllers and their effects look
-          - Option1: Make the same LEDs maintain colour, as if they are painted glass bulbs. So a sequence of 4 RGBO would mean every 1 pixel in order would be turned off
-          - Option2: Replicate the same effects, but keep as many LEDs on as possible.
-    **************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************/  
-    /**
-     * Palette is drawn "inorder" and animations are drawn with X outputs (4 or 5 like normal lights) to create the effect like real lights
-     *
-      1 - Combination (omited, can be performed using mixer)
-      2 - In Waves
-      3 - Sequentials
-      4 - Slo-Glo
-      5 - Chasing / Flash
-      6 - Slow Fade
-      7 - Twinkle / Flash
-      8 - Steady on (already added)
-     * */
-    // EFFECTS_FUNCTION__CHRISTMAS_TRADITIONAL__FUNCTION_CONTROLLER_IN_WAVES_ID
-    // EFFECTS_FUNCTION__CHRISTMAS_TRADITIONAL__FUNCTION_CONTROLLER__SEQUENTIAL_ID
-    // EFFECTS_FUNCTION__CHRISTMAS_TRADITIONAL__FUNCTION_CONTROLLER__SLO_GLO_ID
-    // EFFECTS_FUNCTION__CHRISTMAS_TRADITIONAL__FUNCTION_CONTROLLER__CHASING_AND_FLASHING_ID
-    // EFFECTS_FUNCTION__CHRISTMAS_TRADITIONAL__FUNCTION_CONTROLLER__SLOW_FADE_ID
-    // EFFECTS_FUNCTION__CHRISTMAS_TRADITIONAL__FUNCTION_CONTROLLER__TWINKLE_AND_FLASH_ID
-    // EFFECTS_FUNCTION__CHRISTMAS_TRADITIONAL____XMAS_INWAVES_SINE_WINE_BLEND_OF_GROUP_ID
-    // EFFECTS_FUNCTION__CHRISTMAS_TRADITIONAL____XMAS_INWAVES_SINE_WINE_BLEND_OF_GROUP_ID
-    // EFFECTS_FUNCTION__CHRISTMAS_TRADITIONAL____XMAS_INWAVES_SINE_WINE_BLEND_OF_GROUP_ID
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-    // EFFECTS_FUNCTION__CHRISTMAS_MULTIFUNCTION_CONTROLLER__  ID,
-    #endif
     /**
      * @brief Turn random Lights off, but when they are off (and hence shunted from in series) the rest of the LEDs in that region should get brighter
      * Note: Part of why these look good is the inherent initial brightness from a cold incandenct bulb turning on, then stabilising. 
@@ -1253,529 +1588,40 @@ class mAnimatorLight :
      * Option2: Divide all LED string into sections of 8 (ie. 24V filament sets) and randomly turn 1 led off in each section, and that section brightness changes
      * 
      */
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-    // EFFECTS_FUNCTION__CHRISTMAS_TRADITIONAL_TWINKLE_LIGHTS_ID,
-    #endif
+    // #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+    // // OLD_EFFECTS_FUNCTION__CHRISTMAS_TRADITIONAL_TWINKLE_LIGHTS_ID,
+    // #endif
 
 
-    /******************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************
-    *** Specialised: WLED Animations converted  ***************************************************************************************************************************************************************************
-    **  Requires:    Based on 3D printed clock, requires pixels in grid formation. In the future, perhaps parts of number could be wled segments with segments added to be number **************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************/  
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
-    /**
-     * Static
-     **/
-    EFFECTS_FUNCTION__STATIC_PATTERN__ID,
-    EFFECTS_FUNCTION__TRI_STATIC_PATTERN__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
-    EFFECTS_FUNCTION__SPOTS__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-    EFFECTS_FUNCTION__PERCENT__ID,
-    #endif
-    /**
-     * One Colour
-     **/
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
-    EFFECTS_FUNCTION__RANDOM_COLOR__ID,
-    #endif
-    /**
-     * Wipe/Sweep/Runners 
-     **/
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-    EFFECTS_FUNCTION__COLOR_WIPE__ID,
-    EFFECTS_FUNCTION__COLOR_WIPE_RANDOM__ID, // 1 direction only
-    EFFECTS_FUNCTION__COLOR_WIPE_PALETTE__ID, // 1 direction only
-    EFFECTS_FUNCTION__COLOR_SWEEP__ID,
-    EFFECTS_FUNCTION__COLOR_SWEEP_RANDOM__ID, //start to end to start again
-    EFFECTS_FUNCTION__COLOR_SWEEP_PALETTE__ID, //start to end to start again
-    #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-    /**
-     * Fireworks
-     **/
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
-    EFFECTS_FUNCTION__FIREWORKS__ID,
-    EFFECTS_FUNCTION__FIREWORKS_EXPLODING__ID,
-    EFFECTS_FUNCTION__FIREWORKS_STARBURST__ID,
-    EFFECTS_FUNCTION__FIREWORKS_STARBURST_GLOWS__ID,
-    EFFECTS_FUNCTION__RAIN__ID,
-    EFFECTS_FUNCTION__FIREWORKS_EXPLODING_NO_LAUNCH__ID,
-    #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-    EFFECTS_FUNCTION__TRICOLOR_WIPE__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
-    EFFECTS_FUNCTION__ANDROID__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-    EFFECTS_FUNCTION__RUNNING_COLOR__ID,
-    EFFECTS_FUNCTION__RUNNING_RANDOM__ID,
-    EFFECTS_FUNCTION__GRADIENT__ID,
-    EFFECTS_FUNCTION__LOADING__ID,
-    EFFECTS_FUNCTION__POLICE__ID,
-    EFFECTS_FUNCTION__POLICE_ALL__ID,
-    EFFECTS_FUNCTION__TWO_DOTS__ID,
-    EFFECTS_FUNCTION__TWO_AREAS__ID,
-    EFFECTS_FUNCTION__MULTI_COMET__ID,
-    EFFECTS_FUNCTION__OSCILLATE__ID,
-    EFFECTS_FUNCTION__BPM__ID,
-    EFFECTS_FUNCTION__JUGGLE__ID,
-    EFFECTS_FUNCTION__PALETTE__ID,
-    EFFECTS_FUNCTION__COLORWAVES__ID,
-    EFFECTS_FUNCTION__LAKE__ID,
-    EFFECTS_FUNCTION__GLITTER__ID,
-    EFFECTS_FUNCTION__METEOR__ID, 
-    EFFECTS_FUNCTION__METEOR_SMOOTH__ID,
-    EFFECTS_FUNCTION__PRIDE_2015__ID,
-    EFFECTS_FUNCTION__PACIFICA__ID,
-    EFFECTS_FUNCTION__SUNRISE__ID,
-    EFFECTS_FUNCTION__SINEWAVE__ID,
-    EFFECTS_FUNCTION__FLOW__ID,
-    EFFECTS_FUNCTION__RUNNING_LIGHTS__ID,
-    EFFECTS_FUNCTION__RAINBOW_CYCLE__ID,
-    #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-    /**
-     * Chase
-     **/
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-    EFFECTS_FUNCTION__CHASE_COLOR__ID,
-    EFFECTS_FUNCTION__CHASE_RANDOM__ID,
-    EFFECTS_FUNCTION__CHASE_RAINBOW__ID, 
-    EFFECTS_FUNCTION__CHASE_FLASH__ID,
-    EFFECTS_FUNCTION__CHASE_FLASH_RANDOM__ID, 
-    EFFECTS_FUNCTION__CHASE_RAINBOW_WHITE__ID,
-    EFFECTS_FUNCTION__CHASE_THEATER__ID,
-    EFFECTS_FUNCTION__CHASE_THEATER_RAINBOW__ID,
-    EFFECTS_FUNCTION__CHASE_TRICOLOR__ID,
-    #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-    /**
-     *  Breathe/Fade/Pulse
-     **/    
-    EFFECTS_FUNCTION__BREATH__ID,
-    EFFECTS_FUNCTION__FADE__ID,
-    EFFECTS_FUNCTION__FADE_TRICOLOR__ID,
-    EFFECTS_FUNCTION__FADE_SPOTS__ID,
-    #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-    /**
-     * Sparkle/Twinkle
-     **/
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
-    EFFECTS_FUNCTION__SOLID_GLITTER__ID,
-    EFFECTS_FUNCTION__POPCORN__ID,
-    EFFECTS_FUNCTION__PLASMA__ID,
-    EFFECTS_FUNCTION__SPARKLE__ID,
-    EFFECTS_FUNCTION__FLASH_SPARKLE__ID,
-    EFFECTS_FUNCTION__HYPER_SPARKLE__ID,
-    EFFECTS_FUNCTION__TWINKLE__ID,
-    EFFECTS_FUNCTION__COLORTWINKLE__ID,
-    EFFECTS_FUNCTION__TWINKLE_FOX__ID,
-    EFFECTS_FUNCTION__TWINKLE_CAT__ID,
-    EFFECTS_FUNCTION__TWINKLE_UP__ID,
-    EFFECTS_FUNCTION__SAW__ID,
-    EFFECTS_FUNCTION__DISSOLVE__ID,
-    EFFECTS_FUNCTION__DISSOLVE_RANDOM__ID,
-    EFFECTS_FUNCTION__COLORFUL__ID,
-    EFFECTS_FUNCTION__TRAFFIC_LIGHT__ID,
-    #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE            
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-    /**
-     * Blink/Strobe
-     **/
-    EFFECTS_FUNCTION__BLINK__ID,
-    EFFECTS_FUNCTION__BLINK_RAINBOW__ID,
-    EFFECTS_FUNCTION__STROBE__ID,
-    EFFECTS_FUNCTION__MULTI_STROBE__ID,
-    EFFECTS_FUNCTION__STROBE_RAINBOW__ID, 
-    EFFECTS_FUNCTION__RAINBOW__ID,
-    EFFECTS_FUNCTION__LIGHTNING__ID,     
-    EFFECTS_FUNCTION__FIRE_2012__ID,
-    EFFECTS_FUNCTION__RAILWAY__ID,
-    EFFECTS_FUNCTION__HEARTBEAT__ID, 
-    #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-    /**
-     * Noise
-     **/
-    EFFECTS_FUNCTION__FILLNOISE8__ID,
-    EFFECTS_FUNCTION__NOISE16_1__ID,
-    EFFECTS_FUNCTION__NOISE16_2__ID,
-    EFFECTS_FUNCTION__NOISE16_3__ID,
-    EFFECTS_FUNCTION__NOISE16_4__ID,
-    EFFECTS_FUNCTION__NOISEPAL__ID,
-    EFFECTS_FUNCTION__PHASEDNOISE__ID,
-    EFFECTS_FUNCTION__PHASED__ID,
-    #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-    /**
-     * Scan
-     **/
-    EFFECTS_FUNCTION__SCAN__ID,
-    EFFECTS_FUNCTION__DUAL_SCAN__ID,
-    EFFECTS_FUNCTION__LARSON_SCANNER__ID,
-    EFFECTS_FUNCTION__DUAL_LARSON_SCANNER__ID,
-    EFFECTS_FUNCTION__ICU__ID,
-    EFFECTS_FUNCTION__RIPPLE__ID,
-    EFFECTS_FUNCTION__RIPPLE_RAINBOW__ID,
-    EFFECTS_FUNCTION__COMET__ID,
-    EFFECTS_FUNCTION__CHUNCHUN__ID,
-    EFFECTS_FUNCTION__BOUNCINGBALLS__ID,
-    EFFECTS_FUNCTION__SINELON__ID,
-    EFFECTS_FUNCTION__SINELON_DUAL__ID,
-    EFFECTS_FUNCTION__SINELON_RAINBOW__ID,
-    EFFECTS_FUNCTION__DRIP__ID,   
-    #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE  
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__HARDWARE_TESTING
-    EFFECTS_FUNCTION__HARDWARE__SHOW_BUS__ID,
-    EFFECTS_FUNCTION__HARDWARE__MANUAL_PIXEL_COUNTING__ID,
-    EFFECTS_FUNCTION__HARDWARE__VIEW_PIXEL_RANGE__ID,
-    EFFECTS_FUNCTION__HARDWARE__LIGHT_SENSOR_PIXEL_INDEXING__ID,
-    #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__HARDWARE_TESTING
-
-    /******************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************
-    *** Specialised: Sun positions to control animation***************************************************************************************************************************************************************************
-    **  Requires:    Internet to know time and location for sun calculations **************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************/
-
-
-    // These should actually be made into palettes, so they can be used with any effect
-
-
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__SUN_POSITIONS
-    /**
-     * @brief  linear palette group colour, changing by triggered and over a period of time (eg an alarm -30 minutes)
-     **/
-    EFFECTS_FUNCTION__SUNPOSITIONS_SUNRISE_ALARM_01__ID,
-    /**
-     * @brief  Azimuth min/max selects 0-255 for index to get from palette (so map(az, az_min, az_max, 0, 255) which is 0-colours_in_palette)
-     **/
-    EFFECTS_FUNCTION__SUNPOSITIONS_AZIMUTH_SELECTS_GRADIENT_OF_PALETTE_01__ID,
-    /**
-     * @brief Daytime: Palette 1
-     *       Nightime: Palette 2
-     *        Option1: 0 means it considers the full daily movement as transition, otherwise it means 0.1-degree of movement is considered transition around horizon (ie. +- 5.5 degrees would be 55)
-     **/
-    EFFECTS_FUNCTION__SUNPOSITIONS_SUNSET_BLENDED_PALETTES_01__ID,
-    /**
-     * @brief  Draw Sun will either draw single pixel, or bloom gradient (ie 1 pixel to 5 pixels blended) on a 1D LED strip
-     * Option1: for background to be drawn (ie. sky)
-     * Option2: background sky colour may be time of day reactive and change colour (ie. blue during day, black at night)
-     **/
-    EFFECTS_FUNCTION__SUNPOSITIONS_DRAWSUN_1D_ELEVATION_01__ID,
-    EFFECTS_FUNCTION__SUNPOSITIONS_DRAWSUN_1D_AZIMUTH_01__ID,    
-    EFFECTS_FUNCTION__SUNPOSITIONS_DRAWSUN_2D_ELEVATION_AND_AZIMUTH_01__ID, // 2D LED matrix, elevation and azimuth
-    /**
-     * @brief  As the traditional solid white light, but reactive to the time of day (lightness outside)
-     *        I will also want a way to pick what these max/min are (ie setting dusk/dawn as limits for transition for CCT colours etc)
-     **/
-    EFFECTS_FUNCTION__SUNPOSITIONS_WHITE_COLOUR_TEMPERATURE_CCT_BASED_ON_ELEVATION_01__ID, // Daywhite in daylight, and warm white at night
-    #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__SUN_POSITIONS
-
-    /******************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************
-    *** Specialised: RGB Segment Clock  ***************************************************************************************************************************************************************************
-    **  Requires:    Based on 3D printed clock, requires pixels in grid formation. In the future, perhaps parts of number could be wled segments with segments added to be number **************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************/
-
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__LED_SEGMENT_CLOCK
-    EFFECTS_FUNCTION__LCD_CLOCK_BASIC_01__ID,
-    EFFECTS_FUNCTION__LCD_CLOCK_BASIC_02__ID,
-    EFFECTS_FUNCTION__LCD_DISPLAY_MANUAL_NUMBER_01__ID,
-    EFFECTS_FUNCTION__LCD_DISPLAY_MANUAL_STRING_01__ID,
-    #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__LED_SEGMENT_CLOCK
-
-    /******************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************
-    *** Specialised: Border Wallpapers i.e. Edge colours for displays or pictures  ***************************************************************************************************************************************************************************
-    **  Requires:     **************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************/
-
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__BORDER_WALLPAPERS
-    EFFECTS_FUNCTION__BORDER_WALLPAPER__TWOCOLOUR_GRADIENT__ID,
-    EFFECTS_FUNCTION__BORDER_WALLPAPER__FOURCOLOUR_GRADIENT__ID,
-    EFFECTS_FUNCTION__BORDER_WALLPAPER__FOURCOLOUR_SOLID__ID,
-    #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__BORDER_WALLPAPERS
-
-
-    /******************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************
-    *** Specialised: Border Wallpapers i.e. Edge colours for displays or pictures  ***************************************************************************************************************************************************************************
-    **  Requires:     **************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************/
-
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__PIXEL_SET_ELSEWHERE
-    EFFECTS_FUNCTION__MANUAL__PIXEL_SET_ELSEWHERE__ID,
-    #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__PIXEL_SET_ELSEWHERE
-
-
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE_TODO
-    EFFECTS_FUNCTION__1D__AURORA__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE_TODO
-    void EffectAnim__1D__PerlinMove();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE_TODO
-    void EffectAnim__1D__Waveins();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE_TODO
-    void EffectAnim__1D__FlowStripe();
-    #endif
-    /****************************************************************************************************************************************************************************
-    *****************************************************************************************************************************************************************************
-    *****************************************************************************************************************************************************************************
-    *** Specialised: 2D (No Audio) **********************************************************************************************************************************************
-    **  Requires:     ***********************************************************************************************************************************************************
-    *****************************************************************************************************************************************************************************
-    *****************************************************************************************************************************************************************************/
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__Blackhole();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__ColouredBursts();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__DNA();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__DNASpiral();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__Drift();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__FireNoise();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__Frizzles();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__GameOfLife();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__Hipnotic();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__Julia();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__Lissajous();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__Matrix();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__Metaballs();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__Noise();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__PlasmaBall();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__PolarLights();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__Pulser();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__SinDots();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__SqauredSwirl();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__SunRadiation();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__Tartan();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__SpaceShips();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__CrazyBees();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__GhostRider();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__FloatingBlobs();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__DriftRose();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
-    EFFECTS_FUNCTION__2D__DISTORTION_WAVES__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
-    EFFECTS_FUNCTION__2D__SOAP__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
-    EFFECTS_FUNCTION__2D__OCTOPUS__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
-    EFFECTS_FUNCTION__2D__WAVING_CELL__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
-    EFFECTS_FUNCTION__2D__SCROLLING_TEXT__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
-    EFFECTS_FUNCTION__2D__DIGITAL_CLOCK__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
-    EFFECTS_FUNCTION__2D__DNA__ID,
-    #endif
-    /****************************************************************************************************************************************************************************
-    *****************************************************************************************************************************************************************************
-    *****************************************************************************************************************************************************************************
-    *** Specialised: 1D (Audio Reactive) ****************************************************************************************************************************************
-    **  Requires:     ***********************************************************************************************************************************************************
-    *****************************************************************************************************************************************************************************
-    *****************************************************************************************************************************************************************************/
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__Ripple_Peak();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__GravCenter();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__GravCentric();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__GraviMeter();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__Juggles();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__Matripix();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__MidNoise();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__NoiseFire();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__NoiseMeter();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__PixelWave();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__Plasmoid();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__PuddlePeak();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__Puddles();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__Pixels();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__FFT_Blurz();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__FFT_DJLight();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__FFT_FreqMap();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__FFT_FreqMatrix();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__FFT_FreqPixels();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__FFT_FreqWave();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__FFT_GravFreq();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__FFT_NoiseMove();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__FFT_RockTaves();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D
-    EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_WATERFALL__ID,
-    #endif
-    /****************************************************************************************************************************************************************************
-    *****************************************************************************************************************************************************************************
-    *****************************************************************************************************************************************************************************
-    *** Specialised: 2D (Audio Reactive) ************************************************************************************************************************************************
-    **  Requires:     ***********************************************************************************************************************************************************
-    *****************************************************************************************************************************************************************************
-    *****************************************************************************************************************************************************************************/
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
-    EFFECTS_FUNCTION__AUDIOREACTIVE__2D__SWIRL__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
-    EFFECTS_FUNCTION__AUDIOREACTIVE__2D__WAVERLY__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
-    EFFECTS_FUNCTION__AUDIOREACTIVE__2D__FFT_GED__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
-    EFFECTS_FUNCTION__AUDIOREACTIVE__2D__FFT_FUNKY_PLANK__ID,
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
-    EFFECTS_FUNCTION__AUDIOREACTIVE__2D__FFT_AKEMI__ID,
-    #endif
-
-    
-    /******************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************
-    *** Specialised: Border Wallpapers i.e. Edge colours for displays or pictures  ***************************************************************************************************************************************************************************
-    **  Requires:     **************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************
-    ******************************************************************************************************************************************************************************/
-
-
-
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING
-    /**
-     * Palette developing
-     * */
-    /**
-     * Designing and quick test of animations before creating its own animaiton profile
-     * */
-    EFFECTS_FUNCTION__TESTER_01__ID,
-    EFFECTS_FUNCTION__TESTER_02__ID,
-    EFFECTS_FUNCTION__STATIC_PALETTE_NEW__ID,
-    EFFECTS_FUNCTION__SLOW_GLOW_NEW__ID,
-    /**
-     * @brief Testing can animation_colours be moved into the dynamic data array
-     * 
-     */
-    // EFFECTS_FUNCTION__STATIC_PALETTE_DYNAMIC_METHOD__ID,
-    // EFFECTS_FUNCTION__SLOW_GLOW_DYNAMIC_METHOD__ID,
-    #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING
-
-    // Length
-    EFFECTS_FUNCTION__LENGTH__ID
-  };         
-
+    // #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__SUN_POSITIONS
+    // /**
+    //  * @brief  linear palette group colour, changing by triggered and over a period of time (eg an alarm -30 minutes)
+    //  **/
+    // OLD_EFFECTS_FUNCTION__SUNPOSITIONS_SUNRISE_ALARM_01__ID,
+    // /**
+    //  * @brief  Azimuth min/max selects 0-255 for index to get from palette (so map(az, az_min, az_max, 0, 255) which is 0-colours_in_palette)
+    //  **/
+    // OLD_EFFECTS_FUNCTION__SUNPOSITIONS_AZIMUTH_SELECTS_GRADIENT_OF_PALETTE_01__ID,
+    // /**
+    //  * @brief Daytime: Palette 1
+    //  *       Nightime: Palette 2
+    //  *        Option1: 0 means it considers the full daily movement as transition, otherwise it means 0.1-degree of movement is considered transition around horizon (ie. +- 5.5 degrees would be 55)
+    //  **/
+    // OLD_EFFECTS_FUNCTION__SUNPOSITIONS_SUNSET_BLENDED_PALETTES_01__ID,
+    // /**
+    //  * @brief  Draw Sun will either draw single pixel, or bloom gradient (ie 1 pixel to 5 pixels blended) on a 1D LED strip
+    //  * Option1: for background to be drawn (ie. sky)
+    //  * Option2: background sky colour may be time of day reactive and change colour (ie. blue during day, black at night)
+    //  **/
+    // OLD_EFFECTS_FUNCTION__SUNPOSITIONS_DRAWSUN_1D_ELEVATION_01__ID,
+    // OLD_EFFECTS_FUNCTION__SUNPOSITIONS_DRAWSUN_1D_AZIMUTH_01__ID,    
+    // OLD_EFFECTS_FUNCTION__SUNPOSITIONS_DRAWSUN_2D_ELEVATION_AND_AZIMUTH_01__ID, // 2D LED matrix, elevation and azimuth
+    // /**
+    //  * @brief  As the traditional solid white light, but reactive to the time of day (lightness outside)
+    //  *        I will also want a way to pick what these max/min are (ie setting dusk/dawn as limits for transition for CCT colours etc)
+    //  **/
+    // OLD_EFFECTS_FUNCTION__SUNPOSITIONS_WHITE_COLOUR_TEMPERATURE_CCT_BASED_ON_ELEVATION_01__ID, // Daywhite in daylight, and warm white at night
+    // #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__SUN_POSITIONS
 
   // NEw effect idea, lava lamp, both 1D and matrix. Have lgihting "gravity" then also "heating" for uplifting of random colours.
 
@@ -1834,13 +1680,6 @@ class mAnimatorLight :
       case ColourType::COLOUR_TYPE__RGBWW__ID:  return 5;
     }
   }
-
-
-  /**
-   * @brief New method that allows getting WLED basic 3 colours, but also applying the colour when getting, the same as my palette method
-   * 
-   */
-  RgbwwColor GetSegmentColour(uint8_t colour_index, uint8_t segment_index = 0);
 
 
   mAnimatorLight& SetSegment_AnimFunctionCallback(uint8_t segment_index, ANIM_FUNCTION_SIGNATURE);
@@ -2522,13 +2361,13 @@ typedef struct Segment
 
 
     // #define RGBCCTCOLOURS_SIZE 5
-    // RgbcctTOwwType segcol[5] = {RgbcctTOwwType(255,0,0,0,0), RgbcctTOwwType(0,255,0,0,0), RgbcctTOwwType(0,0,255,0,0), RgbcctTOwwType(255,0,255,0,0), RgbcctTOwwType(255,255,0,0,0)};
+    // RgbwwColor segcol[5] = {RgbwwColor(255,0,0,0,0), RgbwwColor(0,255,0,0,0), RgbwwColor(0,0,255,0,0), RgbwwColor(255,0,255,0,0), RgbwwColor(255,255,0,0,0)};
 
     // void set_colors(uint8_t index, uint8_t r, uint8_t g, uint8_t b, uint8_t w )
     // {
     //   uint8_t index_t = index<RGBCCTCOLOURS_SIZE?index:0;
     //   if(index>RGBCCTCOLOURS_SIZE){ Serial.println("ERROR"); }
-    //   segcol[index_t] = RgbcctTOwwType(r,g,b,w,w);
+    //   segcol[index_t] = RgbwwColor(r,g,b,w,w);
     // }
 
     void set_colors(uint8_t index, uint8_t r, uint8_t g, uint8_t b, uint8_t ww, uint8_t cw, uint8_t br_rgb = 255, uint8_t br_ww = 255) {
@@ -2569,6 +2408,8 @@ typedef struct Segment
      **/
     uint8_t _brightness_rgb = 255;
     uint8_t _brightness_cct = 255;
+
+    #define _segBri _brightness_rgb //wled fix
 
     uint8_t _brightness_rgb_combined = 255;
     uint8_t _brightness_cct_combined = 255;
@@ -2740,15 +2581,15 @@ typedef struct Segment
     byte* data;     // effect data pointer
     uint16_t _dataLen;
     static uint16_t _usedSegmentData;
-    // inline uint16_t DataLength(){ return _dataLen; };
     // inline byte* Data(){ return data; };
+    // inline uint16_t DataLength(){ return _dataLen; };
     /***
      * dynamic colour byte buffer
      ***/
     byte* coldata;     // buffer to be used when leds needed stored in out dynamic colour methods
     uint16_t _coldataLen;
-    // inline uint16_t ColourDataLength(){ return _dataLen; };
-    // inline byte* ColourData(){ return data; };
+    inline byte* ColourData(){ return coldata; };
+    inline uint16_t ColourDataLength(){ return _coldataLen; };
 
 
 
@@ -2914,7 +2755,7 @@ typedef struct Segment
     static void     addUsedSegmentData(int len) { _usedSegmentData += len; }
 
     bool    setColor(uint8_t slot, uint32_t c); //returns true if changed
-    bool    setColor(uint8_t slot, RgbcctTOwwType c); //returns true if changed
+    bool    setColor(uint8_t slot, RgbwwColor c); //returns true if changed
     void    setCCT(uint16_t k);
     void    setOption(uint8_t n, bool val);
     void    setMode(uint8_t fx, bool loadDefaults = false);
@@ -3025,7 +2866,7 @@ typedef struct Segment
     [[gnu::hot]] RgbwwColor getPixelColorRgbww(int i) const;
     
     // 1D support functions (some implement 2D as well)
-    void blur(uint8_t blur_amount, bool smear);
+    void blur(uint8_t blur_amount, bool smear = false);
     void fill(uint32_t c);
     void fade_out(uint8_t r);
     void fadeToBlackBy(uint8_t fadeBy);
@@ -3175,7 +3016,9 @@ typedef struct Segment
         setPixelColorXY(x, y, RGBW32(c.r,c.g,c.b,0), aa); 
       }
 
-    uint32_t getPixelColorXY(uint16_t x, uint16_t y);
+    uint32_t getPixelColorXY(uint16_t x, uint16_t y) const;
+    
+    void blur2D(uint8_t blur_x, uint8_t blur_y, bool smear);
 
     // 2D support functions
     void blendPixelColorXY(uint16_t x, uint16_t y, uint32_t color, uint8_t blend);
@@ -3207,7 +3050,7 @@ typedef struct Segment
   
     void wu_pixel(uint32_t x, uint32_t y, CRGB c);
     void blur1d(fract8 blur_amount); // blur all rows in 1 dimension
-    void blur2d(fract8 blur_amount) { blur(blur_amount); }
+    void blur2d(fract8 blur_amount) { blur((uint8_t)blur_amount); }
     void fill_solid(CRGB c) { fill(RGBW32(c.r,c.g,c.b,0)); }
     void nscale8(uint8_t scale);
   #else
@@ -3507,6 +3350,54 @@ inline void AnimationProcess_LinearBlend_Dynamic_BufferU32_FillSegment(const Ani
 
 
 
+#include <stdint.h>
+
+inline uint32_t HueSatBrt(uint16_t hue, uint8_t sat, uint8_t brt, bool white_from_sat = false) {
+  // Normalize hue to 0-360 range
+  hue %= 360;
+
+  // Scale hue to 0-255 for conversion to RGB (divide 360 into 256 steps)
+  uint8_t hue_8bit = (hue * 255) / 360;
+
+  // Calculate RGB components from Hue
+  uint8_t region = hue_8bit / 43;
+  uint8_t remainder = (hue_8bit - (region * 43)) * 6;
+
+  uint8_t p = (brt * (255 - sat)) >> 8;
+  uint8_t q = (brt * (255 - ((sat * remainder) >> 8))) >> 8;
+  uint8_t t = (brt * (255 - ((sat * (255 - remainder)) >> 8))) >> 8;
+
+  uint8_t r, g, b;
+  switch (region) {
+    case 0:
+      r = brt; g = t; b = p;
+      break;
+    case 1:
+      r = q; g = brt; b = p;
+      break;
+    case 2:
+      r = p; g = brt; b = t;
+      break;
+    case 3:
+      r = p; g = q; b = brt;
+      break;
+    case 4:
+      r = t; g = p; b = brt;
+      break;
+    default:
+      r = brt; g = p; b = q;
+      break;
+  }
+
+  // Calculate white channel based on brightness and saturation
+  uint8_t w = 0;
+  if (white_from_sat) {
+    w = brt * (255 - sat) / 255;
+  }
+
+  // Pack into RGBW32 format (WWWWRRRRGGGGBBBB)
+  return (w << 24) | (r << 16) | (g << 8) | b;
+}
 
 
 
@@ -3516,7 +3407,7 @@ inline void AnimationProcess_LinearBlend_Dynamic_BufferU32_FillSegment(const Ani
 
 
 
-  RgbcctTOwwType ColourBlend(RgbcctTOwwType color1, RgbcctTOwwType color2, uint8_t blend);
+  RgbwwColor ColourBlend(RgbwwColor color1, RgbwwColor color2, uint8_t blend);
 
   typedef void (*mode_ptr)(void); // pointer to mode function
 
@@ -3672,7 +3563,7 @@ inline void AnimationProcess_LinearBlend_Dynamic_BufferU32_FillSegment(const Ani
       return index;
     };
 
-    uint32_t millis_at_start_of_effect_update; // WLED "now"
+    uint32_t effect_start_time; // WLED "now", strip.now
     uint32_t timebase;
     uint32_t currentColor(uint32_t colorNew, uint8_t tNr);
 
@@ -4106,7 +3997,8 @@ typedef enum mapping1D2D {
   M12_Pixels = 0,
   M12_pBar = 1,
   M12_pArc = 2,
-  M12_pCorner = 3
+  M12_pCorner = 3,
+  M12_sPinwheel = 4
 } mapping1D2D_t;
 
 // Settings sub page IDs

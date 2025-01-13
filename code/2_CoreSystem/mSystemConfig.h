@@ -18,7 +18,7 @@ enum FIRMWARE_VERSION_BRANCH_TYPE_IDS{
 #define FIRMWARE_VERSION_MAJOR    0 // Reserved for webserver working, settings saving, and being able to export (as json AND bytes) that settings
 
 /**@@@@@ Minor Changes - aim to make these quarterly
- * #127 : Converting back to U32 methods for improving speed
+ * #127 : Jan25 Switched to RgbwwColor, removed Rgbcct and reverted to latest unedited neopixelbus. Added new dynamic colourbuffer to segments.
  * #126 : During Colorado
  * #125 : Rework of MQTT
  * #124 : 11Aug24, optimising starting and partial NPB update but using older methods with double buffer.
