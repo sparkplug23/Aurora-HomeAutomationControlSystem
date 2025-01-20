@@ -648,9 +648,10 @@ static RgbwwColor getPixelColor(void* busPtr, uint8_t busType, uint16_t pix, uin
     uint8_t g = c >> 8;
     uint8_t b = c >> 0;
     uint8_t w = c >> 24;
-    RgbwColor col;
-    uint8_t cctWW = wwcw & 0xFF, cctCW = (wwcw>>8) & 0xFF;
+    uint8_t cctWW =  wwcw     & 0xFF;
+    uint8_t cctCW = (wwcw>>8) & 0xFF;
 
+    RgbwColor col;
 
     // reorder channels to selected order
     switch (co & COLOUR_ORDER_RGB_MASK) {
@@ -661,7 +662,7 @@ static RgbwwColor getPixelColor(void* busPtr, uint8_t busType, uint16_t pix, uin
       case  4: col.G = b; col.R = g; col.B = r; break; //4 = BGR
       case  5: col.G = g; col.R = b; col.B = r; break; //5 = GBR
     }
-    // // upper nibble contains W swap information
+    // upper nibble contains W swap information
     // switch (co >> COLOUR_ORDER_WHITE_MASK) {
     //   default: col.W = w;                break; // no swapping
     //   case  1: col.W = col.B; col.B = w; break; // swap W & B
@@ -669,12 +670,16 @@ static RgbwwColor getPixelColor(void* busPtr, uint8_t busType, uint16_t pix, uin
     //   case  3: col.W = col.R; col.R = w; break; // swap W & R
     //   case  4: std::swap(cctWW, cctCW);  break; // swap WW & CW
     // }
+    col.W = w; 
    
     #ifdef ENABLE_DEVFEATURE__PIXEL_COLOUR_VALUE_IN_MULTIPIN_SHOW_LOGS // Debug pixel color value log
     if (pix < 1) { // Just log for the first pixel
         Serial.printf("setPixelColor%d[%d] R=%d, G=%d, B=%d, W=%d\n\r", busType, pix, col.R, col.G, col.B, col.W);
     }
     #endif
+
+    // if(pix==52)
+    //   col = RgbwColor(0,255,0,0);
     
     switch (busType) {
       case BUSTYPE__NONE__ID: break;
@@ -768,19 +773,20 @@ static uint32_t getPixelColor(void* busPtr, uint8_t busType, uint16_t pix, uint8
     #endif
     }
 
-    // #ifdef ENABLE_DEVFEATURE__PIXEL_COLOUR_ORDER_IN_MULTIPIN_SHOW_LOGS
+    #ifdef ENABLE_DEVFEATURE__PIXEL_COLOUR_ORDER_IN_MULTIPIN_SHOW_LOGS
     if (pix < 1) { // Just first few pixels
       Serial.printf("get colour_order R=%d, G=%d, B=%d, W=%d\n\r",col.R,col.G,col.B,col.W);
     }
-    // #endif // ENABLE_DEVFEATURE__PIXEL_COLOUR_ORDER_IN_MULTIPIN_SHOW_LOGS
+    #endif // ENABLE_DEVFEATURE__PIXEL_COLOUR_ORDER_IN_MULTIPIN_SHOW_LOGS
 
-    // // upper nibble contains W swap information
-    // uint8_t w = col.W;
+    // upper nibble contains W swap information
+    uint8_t w = col.W;
     // switch (co >> COLOUR_ORDER_WHITE_MASK) {
     //   case 1: col.W = col.B; col.B = w; break; // swap W & B
     //   case 2: col.W = col.G; col.G = w; break; // swap W & G
     //   case 3: col.W = col.R; col.R = w; break; // swap W & R
     // }
+
     switch (co & COLOUR_ORDER_RGB_MASK) {
       //                    W               G              R               B
       default: return ((col.W << 24) | (col.G << 8) | (col.R << 16) | (col.B)); //0 = GRB, default

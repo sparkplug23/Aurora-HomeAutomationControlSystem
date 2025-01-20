@@ -2561,22 +2561,31 @@ void mAnimatorLight::serializeNetworks(JsonObject root)
 // deserializes mode data string into JsonArray
 void mAnimatorLight::serializeModeData(JsonArray fxdata)
 {
-
   char lineBuffer[256];
   for (size_t i = 0; i < getModeCount(); i++) {
-    strncpy_P(lineBuffer, getModeData_Config(i), sizeof(lineBuffer)/sizeof(char)-1);
-    lineBuffer[sizeof(lineBuffer)/sizeof(char)-1] = '\0'; // terminate string
+    strncpy_P(lineBuffer, getModeData_Config(i), sizeof(lineBuffer) - 1);
+    lineBuffer[sizeof(lineBuffer) - 1] = '\0'; // terminate string
 
     ALOG_DBM(PSTR("lineBuffer %d %s"), i, lineBuffer);
 
     if (lineBuffer[0] != 0) {
-      char* dataPtr = strchr(lineBuffer,'@');
-      if (dataPtr) fxdata.add(dataPtr+1);
-      else         fxdata.add("");
+      char* dataPtr = strchr(lineBuffer, '@');
+      if (dataPtr) {
+#ifdef ENABLE_DEVFEATURE_LIGHTING__ADD_EFFECT_DEVSTAGE_TO_WEBUI
+        // Append development stage directly to the string if within bounds
+        if (i < effects.development_stage.size()) {
+          uint8_t devStage = effects.development_stage[i];
+          snprintf(lineBuffer + strlen(lineBuffer), sizeof(lineBuffer) - strlen(lineBuffer), "~%u", devStage);
+        }
+#endif
+        fxdata.add(dataPtr + 1); // Add data after '@' to the JsonArray
+      } else {
+        fxdata.add("");
+      }
     }
   }
-
 }
+
 
 
 // deserializes mode names string into JsonArray also removes effect data extensions (@...) from deserialised names

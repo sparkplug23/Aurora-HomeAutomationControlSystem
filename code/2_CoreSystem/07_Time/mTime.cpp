@@ -194,7 +194,6 @@ String mTime::GetSyslogDate(char* mxtime) {
   return String(dt);
 }
 
-
 String mTime::GetDate(void) {
   // yyyy-mm-ddT
   char dt[12];
@@ -980,6 +979,29 @@ Serial.print("Final NTP result (nanoseconds): "); Serial.println(result);
 /**
  * Breaking time to return parts of time
  * */
+
+uint8_t mTime::day(uint32_t time)
+{
+  datetime_t time_temp;
+  BreakTime(time, time_temp);
+  return time_temp.day_of_week;
+}
+
+uint8_t mTime::month(uint32_t time)
+{
+  datetime_t time_temp;
+  BreakTime(time, time_temp);
+  return time_temp.month;
+}
+
+uint16_t mTime::year(uint32_t time)
+{
+  datetime_t time_temp;
+  BreakTime(time, time_temp);
+  return time_temp.year;
+}
+
+
 uint8_t mTime::hour(uint32_t time)
 {
   datetime_t time_temp;

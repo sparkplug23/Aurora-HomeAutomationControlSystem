@@ -234,9 +234,31 @@ class mTime :
     static String GetTimeStrFromTimeShort(const time_short_t& time, bool include_day_of_week = false); 
     #endif
 
+    #define dt_SHORT_STR_LEN 3
+    char* monthShortStr(uint8_t month)
+    {
+      static char buffer[dt_SHORT_STR_LEN + 1]; // +1 for null terminator
+      if (month < 1 || month > 12) { // Ensure the month is valid
+        strcpy(buffer, "Err"); // Return "Err" for invalid months
+        return buffer;
+      }
+
+      // Calculate the starting index in the kMonthNamesEnglish array
+      uint8_t startIndex = (month - 1) * dt_SHORT_STR_LEN;
+
+      // Copy the month name from PROGMEM to the buffer
+      for (uint8_t i = 0; i < dt_SHORT_STR_LEN; i++) {
+        buffer[i] = pgm_read_byte(&(kMonthNamesEnglish[startIndex + i]));
+      }
+      buffer[dt_SHORT_STR_LEN] = '\0'; // Null-terminate the string
+      return buffer;
+    }
 
 
 
+    uint8_t day(uint32_t time);
+    uint8_t month(uint32_t time);
+    uint16_t year(uint32_t time);
     uint8_t hour(uint32_t time);
     uint8_t minute(uint32_t time);
     uint8_t second(uint32_t time);

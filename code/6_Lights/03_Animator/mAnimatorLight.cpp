@@ -678,7 +678,7 @@ void mAnimatorLight::Init(void)
   _length = DEFAULT_LED_COUNT;
   _brightness = DEFAULT_BRIGHTNESS;
   _targetFps = WLED_FPS;
-  _frametime = FRAMETIME_FIXED;
+  _frametime = FRAMETIME;
   _cumulativeFps = 2;
   _isServicing = false;
   _isOffRefreshRequired = false;
@@ -1064,7 +1064,7 @@ void IRAM_ATTR mAnimatorLight::Segment::LoadPalette(uint8_t palette_id, mPalette
         */
         uint32_t new_colour_rate_ms = 1000 + (((uint32_t)(255-intensity))*100);
         // ALOG_INF(PSTR("new_colour_rate_ms=%d"),new_colour_rate_ms);
-        if (millis() - params_internal.aux3 > new_colour_rate_ms)        
+        if (millis() - aux3 > new_colour_rate_ms)        
         {
           palette_container->CRGB16Palette16_Palette.data = CRGBPalette16(
                           CHSV(random8(), 255, random8(128, 255)),
@@ -1073,8 +1073,8 @@ void IRAM_ATTR mAnimatorLight::Segment::LoadPalette(uint8_t palette_id, mPalette
                           CHSV(random8(), 255, random8(128, 255))
           );
           ALOG_INF(PSTR("new_colour_rate_ms=%d"), new_colour_rate_ms);
-          // ALOG_INF(PSTR("new_colour_rate_ms=%d - %d > %d"), millis() , params_internal.aux3 , new_colour_rate_ms);
-          params_internal.aux3 = millis();
+          // ALOG_INF(PSTR("new_colour_rate_ms=%d - %d > %d"), millis() , aux3 , new_colour_rate_ms);
+          aux3 = millis();
         }
       }
       break;
@@ -1082,7 +1082,7 @@ void IRAM_ATTR mAnimatorLight::Segment::LoadPalette(uint8_t palette_id, mPalette
       {        
         uint32_t new_colour_rate_ms = 1000 + (((uint32_t)(255-intensity))*100);
         // ALOG_INF(PSTR("new_colour_rate_ms=%d"),new_colour_rate_ms);
-        if (millis() - params_internal.aux3 > new_colour_rate_ms)        
+        if (millis() - aux3 > new_colour_rate_ms)        
         {
           palette_container->CRGB16Palette16_Palette.data = CRGBPalette16(  // currentPalette needs moved into the segment? not palette, since each segment needs its own. 
                           CHSV(random8(), random8(204, 255), 255),
@@ -1090,7 +1090,7 @@ void IRAM_ATTR mAnimatorLight::Segment::LoadPalette(uint8_t palette_id, mPalette
                           CHSV(random8(), random8(204, 255), 255),
                           CHSV(random8(), random8(204, 255), 255)
           );                          
-          params_internal.aux3 = millis();
+          aux3 = millis();
         }
       }
       break;
@@ -1098,7 +1098,7 @@ void IRAM_ATTR mAnimatorLight::Segment::LoadPalette(uint8_t palette_id, mPalette
       {        
         uint32_t new_colour_rate_ms = 1000 + (((uint32_t)(255-intensity))*100);
         // ALOG_INF(PSTR("new_colour_rate_ms=%d"),new_colour_rate_ms);
-        if (millis() - params_internal.aux3 > new_colour_rate_ms)        
+        if (millis() - aux3 > new_colour_rate_ms)        
         {
           palette_container->CRGB16Palette16_Palette.data = CRGBPalette16(
                           CHSV(random8(), random8(153, 255), 255),
@@ -1106,7 +1106,7 @@ void IRAM_ATTR mAnimatorLight::Segment::LoadPalette(uint8_t palette_id, mPalette
                           CHSV(random8(), random8(153, 255), 255),
                           CHSV(random8(), random8(153, 255), 255)
           );                          
-          params_internal.aux3 = millis();
+          aux3 = millis();
         }
       }
       break;
@@ -1114,7 +1114,7 @@ void IRAM_ATTR mAnimatorLight::Segment::LoadPalette(uint8_t palette_id, mPalette
       {        
         uint32_t new_colour_rate_ms = 1000 + (((uint32_t)(255-intensity))*100);
         // ALOG_INF(PSTR("new_colour_rate_ms=%d"),new_colour_rate_ms);
-        if (millis() - params_internal.aux3 > new_colour_rate_ms)        
+        if (millis() - aux3 > new_colour_rate_ms)        
         {
           palette_container->CRGB16Palette16_Palette.data = CRGBPalette16(
                           CHSV(random8(), random8(153, 217), 255),
@@ -1122,7 +1122,7 @@ void IRAM_ATTR mAnimatorLight::Segment::LoadPalette(uint8_t palette_id, mPalette
                           CHSV(random8(), random8(153, 217), 255),
                           CHSV(random8(), random8(153, 217), 255)
           );                          
-          params_internal.aux3 = millis();
+          aux3 = millis();
         }
       }
       break;
@@ -1130,7 +1130,7 @@ void IRAM_ATTR mAnimatorLight::Segment::LoadPalette(uint8_t palette_id, mPalette
       {        
         uint32_t new_colour_rate_ms = 1000 + (((uint32_t)(255-intensity))*100);
         // ALOG_INF(PSTR("new_colour_rate_ms=%d"),new_colour_rate_ms);
-        if (millis() - params_internal.aux3 > new_colour_rate_ms)        
+        if (millis() - aux3 > new_colour_rate_ms)        
         {
           palette_container->CRGB16Palette16_Palette.data = CRGBPalette16(
                           CHSV(random8(), random8(0, 255), 255),
@@ -1139,7 +1139,7 @@ void IRAM_ATTR mAnimatorLight::Segment::LoadPalette(uint8_t palette_id, mPalette
                           CHSV(random8(), random8(0, 255), 255)
                           );
                           
-          params_internal.aux3 = millis();
+          aux3 = millis();
         }
       }
       break;    
@@ -1419,7 +1419,7 @@ void mAnimatorLight::SetSegment_AnimFunctionCallback_WithoutAnimator(uint8_t seg
  * @param effect_config 
  * @param development_stage Added to allow for effects to be added but not shown in the UI. 0 = normal, 1 = beta, 2 = alpha, 3 = dev
  */
-void mAnimatorLight:: addEffect(uint8_t id, RequiredFunction function, const char* effect_config, uint8_t development_stage)
+void mAnimatorLight::addEffect(uint8_t id, EffectFunction function, const char* effect_config, uint8_t development_stage)
 {
 
   if (id < effects.function.size()) {
@@ -1485,10 +1485,12 @@ void mAnimatorLight::SubTask_Effects()
       #ifdef ENABLE_EFFECTS_TIMING_DEBUG_GPIO
       DEBUG_PIN1_SET(LOW);
       #endif
+
+      seg.animation_has_anim_callback = false; // Any animations required will reset this to true in the effect call
         
-      ALOG_DBL(PSTR("seg.effect_id %d/%d"), seg.effect_id, effects.function.size());
+      ALOG_DBM(PSTR("seg.effect_id %d/%d"), seg.effect_id, effects.function.size());
       
-      (this->*effects.function[seg.effect_id])(); // Call Effect Function (passes and returns nothing)
+      frameDelay = (this->*effects.function[seg.effect_id])(); // Call Effect Function (passes and returns nothing)
       
       #ifdef ENABLE_EFFECTS_TIMING_DEBUG_GPIO
       DEBUG_PIN1_SET(HIGH);
@@ -1497,21 +1499,52 @@ void mAnimatorLight::SubTask_Effects()
       #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PERFORMANCE_METRICS_SAFE_IN_RELEASE_MODE
       seg.performance.effect_build_us = micros() - seg.performance.effect_build_us;
       #endif
+      
+      seg.next_time = nowUp + frameDelay; 
 
-      frameDelay = seg.get_transition_rate_ms();
-      
-      seg.next_time = nowUp + frameDelay;  
-      
-      /**
-       * @brief Only calls Animator if effects are not directly handled
-       **/
-      if(seg.anim_function_callback == nullptr) // assumes direct update
-      {
-        seg.flags.animator_first_run = false; // Animator not used, so reset first_run here
-      }
-      else
+      #ifndef ENABLE_DEVFEATURE_LIGHT__EFFECT_SHOW_TIME_NEW
+      // Tmp fix
+      if(
+        (seg.animation_has_anim_callback==false)&&   // WLED method
+        (1)
+      ){
+        seg.cycle_time__rate_ms = frameDelay; // use returned timing to ensure next call
+      } 
+      #endif
+
+//       /**
+//        * @brief Temporary fix to enable phasing out of animator
+//        **/
+//       if(frameDelay != USE_ANIMATOR) //assume we do not want animator
+//       {
+//         seg.anim_function_callback = nullptr;
+//         Serial.println("DISABLE ANIM");
+//       }else{
+//         Serial.println("A---");
+//         // Temp, cycle time needs to be set here? or is assumed set elsewhere
+        
+// // #define DIRECT_MODE(x)  SEGMENT.anim_function_callback = nullptr; SEGMENT.cycle_time__rate_ms = x;
+
+//       }
+
+//       /**
+//        * @brief Only calls Animator if effects are not directly handled
+//        **/
+//       if(seg.anim_function_callback == nullptr) // assumes direct update
+//       {
+//         seg.flags.animator_first_run = false; // Animator not used, so reset first_run here
+//       }
+//       else
+
+      if(seg.animation_has_anim_callback)
       { 
         StartSegmentAnimation_AsAnimUpdateMemberFunction(segment_current_index); // First run must be reset after StartAnimation is first called 
+        Serial.println("ANIM CALLED");
+      }
+      
+      if(!seg.animation_has_anim_callback)  // Direct method, which the effect has ran above once so can be reset here
+      {
+        SEGMENT.flags.animator_first_run = RESET_FLAG; // if not
       }
       
       seg.call++; // Used as progress counter for animations eg rainbow across all hues
@@ -1522,9 +1555,12 @@ void mAnimatorLight::SubTask_Effects()
       
     /**
      * @brief If animator is used, then the animation will be called from the animator
+     * TODO: Animator should be totally phased out
      **/    
     if(seg.animator->IsAnimating())
     {
+      Serial.println("ISAnimating");
+
       seg.animator->UpdateAnimations();
       doShow = true; // Animator updated, so trigger SHOW
       SEGMENT.flags.animator_first_run = RESET_FLAG;     // CHANGE to function: reset here for all my methods
@@ -1559,6 +1595,7 @@ void mAnimatorLight::SubTask_Effects()
   #endif  
   if(doShow)
   {
+    // Serial.println("SHOW");
     yield();
     show();
     _lastShow = nowUp;
@@ -1905,7 +1942,7 @@ void mAnimatorLight::CommandSet_Flasher_FunctionID(uint8_t value, uint8_t segmen
     SEGMENT_I(segment_index).markForReset();
     SEGMENT_I(segment_index).effect_id = value;      //make function "changeFlasherFunction" so then the region is automatically updated internally
   }
-  SEGMENT_I(segment_index).params_internal.aux0 = 0;//EFFECTS_REGION_COLOUR_SELECT_ID;
+  SEGMENT_I(segment_index).aux0 = 0;//EFFECTS_REGION_COLOUR_SELECT_ID;
   SEGMENT_I(segment_index).flags.animator_first_run= true; // first run, so do extra things
 
   ALOG_DBM(PSTR("segments[segment_index].effect_id=%d"),segments[segment_index].effect_id);
@@ -1924,29 +1961,32 @@ void mAnimatorLight::CommandSet_Flasher_FunctionID(uint8_t value, uint8_t segmen
 
 int16_t mAnimatorLight::GetFlasherFunctionIDbyName(const char* f)
 {
-      
-  if(f==0) return -2;
+  if (f == nullptr) return -2;
 
   char lineBuffer[256];
   for (size_t i = 0; i < getModeCount(); i++) {
-    strncpy_P(lineBuffer, getModeData_Config(i), sizeof(lineBuffer)/sizeof(char)-1);
-    lineBuffer[sizeof(lineBuffer)/sizeof(char)-1] = '\0'; // terminate string
+    strncpy_P(lineBuffer, getModeData_Config(i), sizeof(lineBuffer) - 1);
+    lineBuffer[sizeof(lineBuffer) - 1] = '\0'; // terminate string
 
     ALOG_DBM(PSTR("lineBuffer %d %s"), i, lineBuffer);
-    
-    char* dataPtr = strchr(lineBuffer,'@');
-    if (dataPtr) *dataPtr = 0; // replace name dividor with null termination. Escape "name@data"
 
-    if(strcmp(f,lineBuffer)==0)
-    {   
-      ALOG_INF(PSTR("GetFlasherFunctionIDbyName %s %d"),f,i);
-      return i; 
+    char* dataPtr = strchr(lineBuffer, '@');
+    if (dataPtr) *dataPtr = '\0'; // replace name divider with null termination. Escape "name@data"
+
+    // Check for a match with the provided name
+    if (strcmp(f, lineBuffer) == 0
+#ifdef ENABLE_DEVFEATURE_LIGHTING__SLOW_GLOW_LEGACY_FIX
+        || (strcmp(lineBuffer, "Firefly") == 0 && strcmp(f, "Slow Glow") == 0)
+#endif
+    ) {
+      ALOG_INF(PSTR("GetFlasherFunctionIDbyName %s %d"), f, i);
+      return i;
     }
   }
 
   return -1;
-
 }
+
 
 
 const char* mAnimatorLight::GetFlasherFunctionName(char* buffer, uint8_t buflen, uint8_t segment_index )
@@ -2409,7 +2449,7 @@ void mAnimatorLight::Segment::resetIfRequired() {
      * @brief Potential issue with WLED effects, but removing aux options from reset since they may be used as config options
      * 
      */
-    params_internal.aux0 = 0; params_internal.aux1 = 0;  params_internal.aux2 = 0;  params_internal.aux3 = 0; 
+    aux0 = 0; aux1 = 0;  aux2 = 0;  aux3 = 0; 
     
     
     reset = false; // setOption(SEG_OPTION_RESET, false);
@@ -5105,13 +5145,24 @@ uint32_t mAnimatorLight::Segment::GetPaletteColour(
    * ** [false] : Apply brightness to the colour
    * ** [true]  : Get the "full" 255 range colour object
    */
-  bool apply_brightness
+  bool apply_brightness,
+  
+      uint8_t pbri,
+
+      uint8_t mcol
 ){
   
   if(palette_id != palette_container->loaded_palette_id)
   {
     LoadPalette(palette_id);  //loadPalette perhaps needs to be a segment instance instead. Though this will block unloaded methods
   }
+
+
+  // uint32_t color = SEGCOLOR(mcol < NUM_COLORS ? mcol : 0);
+  // // default palette or no RGB support on segment
+  // if ((palette == 0 && mcol < NUM_COLORS) || !_isRGB) {
+  //   return color_fade(color, pbri, true);
+  // }
   
   /**
    * @brief These functions always need called as they are dynamic
@@ -5246,9 +5297,10 @@ RgbwwColor IRAM_ATTR mAnimatorLight::GetColourFromUnloadedPalette3(
 void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(int i, uint32_t col)//, bool flag_brightness_already_applied)
 {
 
-  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
-  Serial.printf("::Segment::setPixelColor(int i, RgbwwColor col %d,%d,%d\n\r", col.R, col.G, col.B);
-  #endif
+  // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+  // if(i<10)
+  // Serial.printf("Segment::setPixelColor(%d, col %d,%d,%d\n\r", i, R(col), G(col), B(col));
+  // #endif
 
   DEBUG_LINE_HERE;
   if (!isActive() || i < 0) return; // not active or invalid index
@@ -6027,6 +6079,41 @@ uint32_t mAnimatorLight::NeoGammaWLEDMethod::Correct32(uint32_t color)
   return RGBW32(r, g, b, w);
 }
 
+uint8_t mAnimatorLight::sin_gap(uint16_t in) {
+  if (in & 0x100) return 0;
+  return sin8_t(in + 192); // correct phase shift of sine so that it starts and stops at 0
+}
+uint16_t mAnimatorLight::triwave16(uint16_t in)
+{
+  if (in < 0x8000) return in *2;
+  return 0xFFFF - (in - 0x8000)*2;
+}
+
+/*
+ * Generates a tristate square wave w/ attac & decay
+ * @param x input value 0-255
+ * @param pulsewidth 0-127
+ * @param attdec attack & decay, max. pulsewidth / 2
+ * @returns signed waveform value
+ */
+int8_t mAnimatorLight::tristate_square8(uint8_t x, uint8_t pulsewidth, uint8_t attdec) {
+  int8_t a = 127;
+  if (x > 127) {
+    a = -127;
+    x -= 127;
+  }
+
+  if (x < attdec) { //inc to max
+    return (int16_t) x * a / attdec;
+  }
+  else if (x < pulsewidth - attdec) { //max
+    return a;
+  }
+  else if (x < pulsewidth) { //dec to 0
+    return (int16_t) (pulsewidth - x) * a / attdec;
+  }
+  return 0;
+}
 
 
 

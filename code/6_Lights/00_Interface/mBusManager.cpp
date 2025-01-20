@@ -437,6 +437,7 @@ void BusDigital::show() {
     ALOG_INF(PSTR("direct method active %d %d %d"), _len, getNumberOfChannels(), _colorOrder);
     #endif
     if (newBri < _bri) {
+      Serial.println("I dont want this");
       unsigned hwLen = _len;
       if (_type == BUSTYPE_WS2812_1CH_X3) hwLen = NUM_ICS_WS2812_1CH_3X(_len); // only needs a third of "RGB" LEDs for NeoPixelBus
       for (unsigned i = 0; i < hwLen; i++) {

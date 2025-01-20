@@ -167,12 +167,14 @@ void mAnimatorLight::setUpMatrix() {
 #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
 
 // XY(x,y) - gets pixel index within current segment (often used to reference leds[] array element)
-uint16_t IRAM_ATTR mAnimatorLight::Segment::XY(uint16_t x, uint16_t y)
+uint16_t IRAM_ATTR mAnimatorLight::Segment::XY(int x, int y)
 {
   uint16_t width  = virtualWidth();   // segment width in logical pixels (can be 0 if segment is inactive)
   uint16_t height = virtualHeight();  // segment height in logical pixels (is always >= 1)
   return isActive() ? (x%width) + (y%height) * width : 0;
 }
+
+
 
 void 
 // IRAM_ATTR 
@@ -648,44 +650,105 @@ void mAnimatorLight::Segment::move(uint8_t dir, uint8_t delta, bool wrap) {
   }
 }
 
-void mAnimatorLight::Segment::draw_circle(uint16_t cx, uint16_t cy, uint8_t radius, CRGB col) {
+
+// Update 2025
+void mAnimatorLight::Segment::drawCircle(uint16_t cx, uint16_t cy, uint8_t radius, uint32_t col, bool soft) {
   if (!isActive() || radius == 0) return; // not active
-  // Bresenham’s Algorithm
-  int d = 3 - (2*radius);
-  int y = radius, x = 0;
-  while (y >= x) {
-    setPixelColorXY(cx+x, cy+y, col);
-    setPixelColorXY(cx-x, cy+y, col);
-    setPixelColorXY(cx+x, cy-y, col);
-    setPixelColorXY(cx-x, cy-y, col);
-    setPixelColorXY(cx+y, cy+x, col);
-    setPixelColorXY(cx-y, cy+x, col);
-    setPixelColorXY(cx+y, cy-x, col);
-    setPixelColorXY(cx-y, cy-x, col);
-    x++;
-    if (d > 0) {
-      y--;
-      d += 4 * (x - y) + 10;
-    } else {
-      d += 4 * x + 6;
+  if (soft) {
+    // Xiaolin Wu’s algorithm
+    const int rsq = radius*radius;
+    int x = 0;
+    int y = radius;
+    unsigned oldFade = 0;
+    while (x < y) {
+      float yf = sqrtf(float(rsq - x*x)); // needs to be floating point
+      uint8_t fade = float(0xFF) * (ceilf(yf) - yf); // how much color to keep
+      if (oldFade > fade) y--;
+      oldFade = fade;
+      int px, py;
+      for (uint8_t i = 0; i < 16; i++) {
+          int swaps = (i & 0x4 ? 1 : 0); // 0,  0,  0,  0,  1,  1,  1,  1,  0,  0,  0,  0,  1,  1,  1,  1
+          int adj =  (i < 8) ? 0 : 1;    // 0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  1,  1,  1
+          int dx = (i & 1) ? -1 : 1;     // 1, -1,  1, -1,  1, -1,  1, -1,  1, -1,  1, -1,  1, -1,  1, -1
+          int dy = (i & 2) ? -1 : 1;     // 1,  1, -1, -1,  1,  1, -1, -1,  1,  1, -1, -1,  1,  1, -1, -1
+          if (swaps) {
+              px = cx + (y - adj) * dx;
+              py = cy + x * dy;
+          } else {
+              px = cx + x * dx;
+              py = cy + (y - adj) * dy;
+          }
+          uint32_t pixCol = getPixelColorXY(px, py);
+          setPixelColorXY(px, py, adj ?
+              color_blend(pixCol, col, fade) :
+              color_blend(col, pixCol, fade));
+      }
+      x++;
     }
+  } else {
+    // pre-scale color for all pixels
+    col = color_fade(col, _segBri);
+    _colorScaled = true;
+    // Bresenham’s Algorithm
+    int d = 3 - (2*radius);
+    int y = radius, x = 0;
+    while (y >= x) {
+    for (int i = 0; i < 4; i++) {
+        int dx = (i & 1) ? -x : x;
+        int dy = (i & 2) ? -y : y;
+        setPixelColorXY(cx + dx, cy + dy, col);
+        setPixelColorXY(cx + dy, cy + dx, col);
+    }
+      x++;
+      if (d > 0) {
+        y--;
+        d += 4 * (x - y) + 10;
+      } else {
+        d += 4 * x + 6;
+      }
+    }
+    _colorScaled = false;
   }
 }
 
+
+// // by stepko, taken from https://editor.soulmatelights.com/gallery/573-blobs
+// void mAnimatorLight::Segment::fill_circle(uint16_t cx, uint16_t cy, uint8_t radius, CRGB col) {
+//   if (!isActive() || radius == 0) return; // not active
+//   const uint16_t cols = virtualWidth();
+//   const uint16_t rows = virtualHeight();
+//   for (int16_t y = -radius; y <= radius; y++) {
+//     for (int16_t x = -radius; x <= radius; x++) {
+//       if (x * x + y * y <= radius * radius &&
+//           int16_t(cx)+x>=0 && int16_t(cy)+y>=0 &&
+//           int16_t(cx)+x<cols && int16_t(cy)+y<rows)
+//         setPixelColorXY(cx + x, cy + y, col);
+//     }
+//   }
+// }
+
 // by stepko, taken from https://editor.soulmatelights.com/gallery/573-blobs
-void mAnimatorLight::Segment::fill_circle(uint16_t cx, uint16_t cy, uint8_t radius, CRGB col) {
+void mAnimatorLight::Segment::fillCircle(uint16_t cx, uint16_t cy, uint8_t radius, uint32_t col, bool soft) {
   if (!isActive() || radius == 0) return; // not active
-  const uint16_t cols = virtualWidth();
-  const uint16_t rows = virtualHeight();
-  for (int16_t y = -radius; y <= radius; y++) {
-    for (int16_t x = -radius; x <= radius; x++) {
+  const int vW = vWidth();   // segment width in logical pixels (can be 0 if segment is inactive)
+  const int vH = vHeight();  // segment height in logical pixels (is always >= 1)
+  // draw soft bounding circle
+  if (soft) drawCircle(cx, cy, radius, col, soft);
+  // pre-scale color for all pixels
+  col = color_fade(col, _segBri);
+  _colorScaled = true;
+  // fill it
+  for (int y = -radius; y <= radius; y++) {
+    for (int x = -radius; x <= radius; x++) {
       if (x * x + y * y <= radius * radius &&
-          int16_t(cx)+x>=0 && int16_t(cy)+y>=0 &&
-          int16_t(cx)+x<cols && int16_t(cy)+y<rows)
+          int(cx)+x >= 0 && int(cy)+y >= 0 &&
+          int(cx)+x < vW && int(cy)+y < vH)
         setPixelColorXY(cx + x, cy + y, col);
     }
   }
+  _colorScaled = false;
 }
+
 
 void mAnimatorLight::Segment::nscale8(uint8_t scale) {
   if (!isActive()) return; // not active
@@ -720,18 +783,19 @@ void mAnimatorLight::Segment::drawLine(uint16_t x0, uint16_t y0, uint16_t x1, ui
 #include "font/console_font_6x8.h"
 #include "font/console_font_7x9.h"
 
+
+
 // draws a raster font character on canvas
 // only supports: 4x6=24, 5x8=40, 5x12=60, 6x8=48 and 7x9=63 fonts ATM
-void mAnimatorLight::Segment::drawCharacter(unsigned char chr, int16_t x, int16_t y, uint8_t w, uint8_t h, uint32_t color, uint32_t col2, int8_t rotate) {
+void mAnimatorLight::Segment::drawCharacter(unsigned char chr, int16_t x, int16_t y, uint8_t w, uint8_t h, uint32_t color, uint32_t col2, int8_t rotate, bool usePalGrad) {
   if (!isActive()) return; // not active
   if (chr < 32 || chr > 126) return; // only ASCII 32-126 supported
   chr -= 32; // align with font table entries
-  const uint16_t cols = virtualWidth();
-  const uint16_t rows = virtualHeight();
   const int font = w*h;
 
   CRGB col = CRGB(color);
   CRGBPalette16 grad = CRGBPalette16(col, col2 ? CRGB(col2) : col);
+  if(usePalGrad) grad = pSEGPALETTE; // selected palette as gradient
 
   //if (w<5 || w>6 || h!=8) return;
   for (int i = 0; i<h; i++) { // character height
@@ -744,7 +808,10 @@ void mAnimatorLight::Segment::drawCharacter(unsigned char chr, int16_t x, int16_
       case 60: bits = pgm_read_byte_near(&console_font_5x12[(chr * h) + i]); break; // 5x12 font
       default: return;
     }
-    col = ColorFromPalette(grad, (i+1)*255/h, 255, NOBLEND);
+    uint32_t c = ColorFromPalette(grad, (i+1)*255/h, 255, NOBLEND);
+    // pre-scale color for all pixels
+    c = color_fade(c, _segBri);
+    _colorScaled = true;
     for (int j = 0; j<w; j++) { // character width
       int x0, y0;
       switch (rotate) {
@@ -754,14 +821,59 @@ void mAnimatorLight::Segment::drawCharacter(unsigned char chr, int16_t x, int16_
         case  1: x0 = x + i;         y0 = y + j;         break; // +90 deg
         default: x0 = x + (w-1) - j; y0 = y + i;         break; // no rotation
       }
-      if (x0 < 0 || x0 >= cols || y0 < 0 || y0 >= rows) continue; // drawing off-screen
+      if (x0 < 0 || x0 >= (int)vWidth() || y0 < 0 || y0 >= (int)vHeight()) continue; // drawing off-screen
       if (((bits>>(j+(8-w))) & 0x01)) { // bit set
-        // DEBUG_LINE_HERE_MARKER;
-        setPixelColorXY_CRGB(x0, y0, col);
+        setPixelColorXY(x0, y0, c);
       }
     }
+    _colorScaled = false;
   }
 }
+
+
+
+// // draws a raster font character on canvas
+// // only supports: 4x6=24, 5x8=40, 5x12=60, 6x8=48 and 7x9=63 fonts ATM
+// void mAnimatorLight::Segment::drawCharacter(unsigned char chr, int16_t x, int16_t y, uint8_t w, uint8_t h, uint32_t color, uint32_t col2, int8_t rotate) {
+//   if (!isActive()) return; // not active
+//   if (chr < 32 || chr > 126) return; // only ASCII 32-126 supported
+//   chr -= 32; // align with font table entries
+//   const uint16_t cols = virtualWidth();
+//   const uint16_t rows = virtualHeight();
+//   const int font = w*h;
+
+//   CRGB col = CRGB(color);
+//   CRGBPalette16 grad = CRGBPalette16(col, col2 ? CRGB(col2) : col);
+
+//   //if (w<5 || w>6 || h!=8) return;
+//   for (int i = 0; i<h; i++) { // character height
+//     uint8_t bits = 0;
+//     switch (font) {
+//       case 24: bits = pgm_read_byte_near(&console_font_4x6[(chr * h) + i]); break;  // 5x8 font
+//       case 40: bits = pgm_read_byte_near(&console_font_5x8[(chr * h) + i]); break;  // 5x8 font
+//       case 48: bits = pgm_read_byte_near(&console_font_6x8[(chr * h) + i]); break;  // 6x8 font
+//       case 63: bits = pgm_read_byte_near(&console_font_7x9[(chr * h) + i]); break;  // 7x9 font
+//       case 60: bits = pgm_read_byte_near(&console_font_5x12[(chr * h) + i]); break; // 5x12 font
+//       default: return;
+//     }
+//     col = ColorFromPalette(grad, (i+1)*255/h, 255, NOBLEND);
+//     for (int j = 0; j<w; j++) { // character width
+//       int x0, y0;
+//       switch (rotate) {
+//         case -1: x0 = x + (h-1) - i; y0 = y + (w-1) - j; break; // -90 deg
+//         case -2:
+//         case  2: x0 = x + j;         y0 = y + (h-1) - i; break; // 180 deg
+//         case  1: x0 = x + i;         y0 = y + j;         break; // +90 deg
+//         default: x0 = x + (w-1) - j; y0 = y + i;         break; // no rotation
+//       }
+//       if (x0 < 0 || x0 >= cols || y0 < 0 || y0 >= rows) continue; // drawing off-screen
+//       if (((bits>>(j+(8-w))) & 0x01)) { // bit set
+//         // DEBUG_LINE_HERE_MARKER;
+//         setPixelColorXY_CRGB(x0, y0, col);
+//       }
+//     }
+//   }
+// }
 
 /**
  * @brief Need to move the segment.custom1 etc out of here, and into the effect itself so this function can be more generic. 

@@ -114,9 +114,9 @@ void mAnimatorLight::LoadEffects()
             &mAnimatorLight::EffectAnim__Popping_Decay_Random_To_White,
             PM_EFFECT_CONFIG__POPPING_DECAY_RANDOM_TO_WHITE);
 
-  addEffect(EFFECTS_FUNCTION__STATIC_PATTERN__ID,
-            &mAnimatorLight::EffectAnim__Static_Pattern,
-            PM_EFFECT_CONFIG__STATIC_PATTERN);
+  addEffect(EFFECTS_FUNCTION__LIT_PATTERN__ID,
+            &mAnimatorLight::EffectAnim__Lit_Pattern,
+            PM_EFFECT_CONFIG__LIT_PATTERN);
 
   addEffect(EFFECTS_FUNCTION__TRI_STATIC_PATTERN__ID,
             &mAnimatorLight::EffectAnim__Tri_Static_Pattern,
@@ -196,7 +196,7 @@ void mAnimatorLight::LoadEffects()
             PM_EFFECT_CONFIG__POLICE);
 
   addEffect(EFFECTS_FUNCTION__POLICE_ALL__ID,
-            &mAnimatorLight::EffectAnim__Polce_All,
+            &mAnimatorLight::EffectAnim__Police_All,
             PM_EFFECT_CONFIG__POLICE_ALL);
 
   addEffect(EFFECTS_FUNCTION__TWO_DOTS__ID,

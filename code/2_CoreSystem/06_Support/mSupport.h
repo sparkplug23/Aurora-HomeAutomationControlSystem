@@ -566,6 +566,7 @@ class mSupport :
     static uint16_t NumCtr2Num(char* numctr, uint8_t numberlength);
     static float roundfloat(float in, uint8_t dec);
     static float mapfloat(float x, float in_min, float in_max, float out_min, float out_max);
+    #define mapf mSupport::mapfloat // used by WLED
         
     /**
      * @brief Timing for main loop

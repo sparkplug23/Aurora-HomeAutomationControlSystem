@@ -48,8 +48,8 @@
 #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__BASE // "BASE" this device "60", has the following 3 built/running from it
     // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__RGBWW // the buswrapper is rgbww enabled, so full 5 r+g+b+ww+cw possible. While most effects stay 32-bit, this enables getting colours from palette in 5 colour size, and some effects are full 5 colour possible
     // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB  // buswrapper is limited to rgbw, effects may be rgbW or rgb only, 32-bit, white may be created in the effect, or generated automatically by the RGB parts.
-    #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB_MATRIX16X16 // same as previous, but figuring out how to work on 2d 16x16 matrix. So will be getting the matrix setup working, and 2d effects testing
-    //#define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__RGB_PEBBLES  // RGB only, most common type I used, get the 8port tester and make 8 200 led white sections. Aim is to ensure larger "strings" will work as planned
+    // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB_MATRIX16X16 // same as previous, but figuring out how to work on 2d 16x16 matrix. So will be getting the matrix setup working, and 2d effects testing
+    #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__RGB_PEBBLES  // RGB only, most common type I used, get the 8port tester and make 8 200 led white sections. Aim is to ensure larger "strings" will work as planned
     
 
 //    ;;;;;;;;;;;; ESP8266 ;;;;;;;;;;;;;;;;
@@ -1643,7 +1643,7 @@
   #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
   #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
 
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
   #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
 
   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
@@ -3904,7 +3904,7 @@ Left to right
   #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
   // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
 
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
   #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
 
   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
@@ -4279,7 +4279,7 @@ typedef uint32_t ColourBaseType;
   #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
   // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
 
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
   #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
 
   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
@@ -8850,7 +8850,7 @@ typedef uint32_t ColourBaseType;
   #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
   // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
 
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
   #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
 
   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
@@ -9098,13 +9098,20 @@ typedef uint32_t ColourBaseType;
   #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
   // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
 
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
+  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
   #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
 
   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D
+  #define ENABLE_DEVFEATURE_LIGHT__INCLUDE_AUDIOREACTIVE_USERMOD
+
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
+  #define ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
+  // #define WLED_DISABLE_2D
 
 
   #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
@@ -9131,6 +9138,10 @@ typedef uint32_t ColourBaseType;
   // #endif
 
   #define ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
+
+  #define ENABLE_DEVFEATURE_LIGHTING__ADD_EFFECT_DEVSTAGE_TO_WEBUI
+
+  // #define ENABLE__DEBUG_POINT__ANIMATION_EFFECTS
 
 
 
@@ -9162,14 +9173,19 @@ typedef uint32_t ColourBaseType;
       "ColourPalette":"Candy2",
       "ColourType":4,
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Rain",
         "Speed":127,
         "Intensity":127,
-        "Grouping":10,
+        "Grouping":1,
         "RateMs": 20
       },
       "BrightnessRGB": 100,
-      "BrightnessCCT": 0
+      "BrightnessCCT": 0,
+      "SegColour1": {
+        "Hue": 30,
+        "Sat":100,
+        "BrightnessRGB":1
+      }
     },
     "BrightnessRGB": 2,
     "BrightnessCCT": 0
@@ -9191,7 +9207,7 @@ typedef uint32_t ColourBaseType;
   #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
   // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
 
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
   #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
 
   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
@@ -9208,6 +9224,8 @@ typedef uint32_t ColourBaseType;
 
   #define ENABLE_DEVFEATURE_LIGHT__PWM_DITHER_V2
   
+  #define ENABLE_DEVFEATURE_LIGHTING__ADD_EFFECT_DEVSTAGE_TO_WEBUI
+
 
   
 #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
@@ -9234,6 +9252,8 @@ typedef uint32_t ColourBaseType;
   
   #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 4000
 
+  //colourtype going forward should be detected with bustype and set there
+
   #define USE_LIGHTING_TEMPLATE
   DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
   R"=====(
@@ -9241,24 +9261,24 @@ typedef uint32_t ColourBaseType;
     "BusConfig":[
       {
         "Pin":2,
-        "ColourOrder":"GRBW",
-        "BusType":"SK6812_RGBW",
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
         "Start":0,
-        "Length":144
+        "Length":200
       }
     ],
     "Segment0": {
       "PixelRange": [
         0,
-        144
+        200
       ],
-      "ColourPalette":"Candy2",
-      "ColourType":4,
+      "ColourPalette":"RGBO",
+      "ColourType":3,
       "Effects": {
         "Function":"Static Palette",
         "Speed":127,
         "Intensity":127,
-        "Grouping":10,
+        "Grouping":1,
         "RateMs": 20
       },
       "BrightnessRGB": 100,
@@ -9279,7 +9299,7 @@ typedef uint32_t ColourBaseType;
   #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
   // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
 
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
   #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
 
   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME

@@ -349,7 +349,8 @@ typedef enum {
 #define RGB_HOTPINK_SATURATION20        255,204,213,
 #define RGB_HOTPINK_SATURATION10        255,230,234,
 #define RGB_HOTPINK_SATURATION0         255,255,255,
-#define RGB_WARMWHITE                     255,128,0, // Hue=30
+// #define RGB_WARMWHITE                     255,128,0, // Hue=30 /////original, perhaos good on ws2811
+#define RGB_WARMWHITE                     255,114,38, // New for pebbbles
 #define RGB_WARMWHITE_SATURATION95        255,134,13,
 #define RGB_WARMWHITE_SATURATION90        255,140,25,
 #define RGB_WARMWHITE_SATURATION80        255,153,51,

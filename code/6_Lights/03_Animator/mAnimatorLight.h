@@ -11,7 +11,6 @@
 
 #include "2_CoreSystem/07_Time/Toki.h"
 
-#define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
 // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING            // Development and testing only
 // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME             // Should nearly always be enabled as default/minimal cases
 // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC        // ie shimmering. Used around house all year
@@ -28,6 +27,9 @@
 #else
 #define PIXEL_RANGE_LIMIT 1000
 #endif 
+
+
+#define ENABLE_DEVFEATURE_LIGHTING__SLOW_GLOW_LEGACY_FIX
 
 
 #ifdef ENABLE_DEVFEATURE_CREATE_MINIMAL_BUSSES_SINGLE_OUTPUT
@@ -55,7 +57,8 @@
 #define PALETTE_DISCRETE_ON             true
 #define PALETTE_DISCRETE_DEFAULT        2 // Use the prefered method depending on the palette. Gradients will be shown across the segment, discrete will be shown as a single colours sequenced
 #define PALETTE_INDEX_SPANS_SEGLEN_ON   true
-#define PALETTE_SPAN_OFF                false
+#define PALETTE_INDEX_IS_INDEX_IN_PALETTE   false
+#define PALETTE_SPAN_OFF                false // PALETTE_INDEX_IS_INDEX_IN_PALETTE
 #define WLED_PALETTE_MAPPING_ARG_FALSE  false
 #define NO_ENCODED_VALUE                nullptr
 #define PALETTE_SOLID_WRAP              (paletteBlend == 1 || paletteBlend == 3)
@@ -70,8 +73,22 @@
  * WLED conversions
  * These are basic defines that remap temporarily from WLED in PulSar. 
  * For optimisation, these will be removed and replaced with the correct values.
+ * 
+ * Since these are different maps, I should use this name to enable conversion from my method to WLED method, and hence, enable the "d" which is mcol work as expected
+ * 
+ * Gets a single color from the currently selected palette.
+ * @param i Palette Index (if mapping is true, the full palette will be _virtualSegmentLength long, if false, 255). Will wrap around automatically.
+ * @param mapping if true, LED position in segment is considered for color
+ * @param wrap FastLED palettes will usually wrap back to the start smoothly. Set false to get a hard edge
+ * @param mcol If the default palette 0 is selected, return the standard color 0, 1 or 2 instead. If >2, Party palette is used instead
+ * @param pbri Value to scale the brightness of the returned color by. Default is 255. (no scaling)
+ * @returns Single color from palette
+ * 
+ * 
  **/
-#define color_from_palette(a,b,c,d)    GetPaletteColour(a,b,c,d)
+// #define color_from_palette(i,mapping,wrap,mcol)    GetPaletteColour(i,mapping,wrap,mcol)inline uint32_t color_from_palette(uint16_t i, bool mapping, bool wrap, uint8_t mcol, uint8_t pbri = 255) {
+//   return GetPaletteColour(i, mapping, wrap, mcol, pbri);
+// }
 
 
 #define RgbwwColorU32(c)  RGBW32(c.R,c.G,c.B,c.WW) 
@@ -109,9 +126,10 @@ SEGMENT.color_from_palette((band * 35), false, PALETTE_SOLID_WRAP, 0);          
 /* Not used in all effects yet */
 #define WLED_FPS         42
 // #define FRAMETIME_FIXED  (1000/WLED_FPS)
-#define FRAMETIME_FIXED  25//(1000/WLED_FPS)
-#define FRAMETIME_MS     24
+// #define FRAMETIME_FIXED  25//(1000/WLED_FPS)
+// #define FRAMETIME_MS     24
 #define FRAMETIME        25
+#define USE_ANIMATOR 0 // tmp fix to return as zero, to enable the effect call to keep the animator running
 
 #define FPS_UNLIMITED    0
 
@@ -130,6 +148,23 @@ extern bool realtimeRespectLedMaps; // used in getMappedPixelIndex()
 #endif
 
 #define IBN 5100
+
+/* How much data bytes each segment should max allocate to leave enough space for other segments,
+  assuming each segment uses the same amount of data. 256 for ESP8266, 640 for ESP32. */
+#define FAIR_DATA_PER_SEG (MAX_SEGMENT_DATA / getMaxSegments())
+
+#define indexToVStrip(index, stripNr) ((index) | (int((stripNr)+1)<<16))
+
+// a few constants needed for AudioReactive effects
+// for 22Khz sampling
+#define MAX_FREQUENCY   11025    // sample frequency / 2 (as per Nyquist criterion)
+#define MAX_FREQ_LOG10  4.04238f // log10(MAX_FREQUENCY)
+// for 20Khz sampling
+//#define MAX_FREQUENCY   10240
+//#define MAX_FREQ_LOG10  4.0103f
+// for 10Khz sampling
+//#define MAX_FREQUENCY   5120
+//#define MAX_FREQ_LOG10  3.71f
 
 /* How much data bytes each segment should max allocate to leave enough space for other segments,
   assuming each segment uses the same amount of data. 256 for ESP8266, 640 for ESP32. */
@@ -185,20 +220,33 @@ extern bool realtimeRespectLedMaps; // used in getMappedPixelIndex()
 #define SEGCOLOR(x)           SEGCOLOR_U32(x) // default
 #define SEGMENT               segments[getCurrSegmentId()]
 #define pSEGMENT              tkr_anim->segments[tkr_anim->getCurrSegmentId()]
+#define pSEGCOLOR(x)          pSEGMENT.segcol[x].getU32()
 #define SEGMENT_I(X)          segments[X] // can this be changed later to "getSegment(X)" and hence protect against out of bounds
 #define pSEGMENT_I(X)         tkr_anim->segments[X]
 #define SEGLEN                _virtualSegmentLength // This is still using the function, it just relies on calling the function prior to the effect to set this
+#define pSEGLEN               tkr_anim->_virtualSegmentLength // This is still using the function, it just relies on calling the function prior to the effect to set this
+#define SEG_W            segments[getCurrSegmentId()].vWidth()
+#define SEG_H            segments[getCurrSegmentId()].vHeight()
 #define SEGPALETTE            SEGMENT.palette_container->CRGB16Palette16_Palette.data
+#define pSEGPALETTE            pSEGMENT.palette_container->CRGB16Palette16_Palette.data
 #define SEGIDX                getCurrSegmentId()
 
 // WLED Conversions
 #define NUM_COLORS RGBCCTCOLOURS_SIZE
+
+#ifndef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
+  #define WLED_DISABLE_2D // fix for WLED
+#endif
+
+
+
 
 #define SPEED_FORMULA_L  5U + (50U*(255U - SEGMENT.speed))/SEGLEN
 
 #include "6_Lights/02_Palette/mPalette_Progmem.h"
 #include "6_Lights/02_Palette/mPalette.h"
 #include "6_Lights/02_Palette/mPaletteLoaded.h"
+
 #include "6_Lights/00_Interface/mInterfaceLight.h"
 
 #ifdef ESP32
@@ -291,12 +339,33 @@ DEFINE_PGM_CTR(PM_MQTT_HANDLER_POSTFIX_TOPIC__DEBUG_PERFORMANCE__CTR)        "de
   #include "webpages_generated/html_cpal.h"
 #endif // ENABLE_WEBSERVER_LIGHTING_WEBUI
 
+//wled_math.cpp
+//float cos_t(float phi); // use float math
+//float sin_t(float phi);
+//float tan_t(float x);
+int16_t sin16_t(uint16_t theta);
+int16_t cos16_t(uint16_t theta);
+uint8_t sin8_t(uint8_t theta);
+uint8_t cos8_t(uint8_t theta);
+float sin_approx(float theta); // uses integer math (converted to float), accuracy +/-0.0015 (compared to sinf())
+float cos_approx(float theta);
+float tan_approx(float x);
+float atan2_t(float y, float x);
+float acos_t(float x);
+float asin_t(float x);
+template <typename T> T atan_t(T x);
+float floor_t(float x);
+float fmod_t(float num, float denom);
+#define sin_t sin_approx
+#define cos_t cos_approx
+#define tan_t tan_approx
 
 #include <functional>
 #define ANIM_FUNCTION_SIGNATURE                             std::function<void(const AnimationParam& param)>                              anim_function_callback
 #define ANIMIMATION_DEBUG_MQTT_FUNCTION_SIGNATURE           std::function<void()>                                                         anim_progress_mqtt_function_callback
 #define ANIM_FUNCTION_SIGNATURE_SEGMENT_INDEXED             std::function<void(const uint8_t segment_index, const AnimationParam& param)> anim_function_callback_indexed
 #define SET_DIRECT_MODE()  SEGMENT.anim_function_callback = nullptr 
+#define DIRECT_MODE(x)  SEGMENT.anim_function_callback = nullptr; SEGMENT.cycle_time__rate_ms = x;
 
 #ifdef ESP8266
 #define HW_RND_REGISTER RANDOM_REG32
@@ -304,6 +373,8 @@ DEFINE_PGM_CTR(PM_MQTT_HANDLER_POSTFIX_TOPIC__DEBUG_PERFORMANCE__CTR)        "de
 #include "soc/wdev_reg.h"
 #define HW_RND_REGISTER REG_READ(WDEV_RND_REG)
 #endif
+
+#define EFFECT_DEFAULT() EffectAnim__Static_Palette__NoBlend()
 
 class mAnimatorLight :
   public mTaskerInterface
@@ -506,8 +577,8 @@ class mAnimatorLight :
     void fill(RgbwwColor c);
     void fill_ranged(uint32_t c);
 
-    [[gnu::hot]] uint32_t color_wheel(uint8_t pos) const;
     static uint32_t ColourBlend(uint32_t color1, uint32_t color2, uint8_t blend);
+    #define color_blend ColourBlend
 
     void Init_Segments();
 
@@ -609,478 +680,347 @@ class mAnimatorLight :
     *******************************************************************************************************************************************************************************
     ******************************************************************************************************************************************************************************/
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-    void EffectAnim__Solid_Colour(); 
+    uint16_t EffectAnim__Solid_Colour(); 
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-    void EffectAnim__Static_Palette();
+    uint16_t EffectAnim__Static_Palette();
+    uint16_t EffectAnim__Static_Palette__NoBlend();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-    void EffectAnim__Firefly();
+    uint16_t EffectAnim__Firefly();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-    void EffectAnim__Flicker_Base(bool use_multi = false, uint16_t flicker_palette = 0);
-    void EffectAnim__Candle_Single();
-    void EffectAnim__Candle_Multiple();
+    uint16_t EffectAnim__Flicker_Base(bool use_multi = false, uint16_t flicker_palette = 0);
+    uint16_t EffectAnim__Candle_Single();
+    uint16_t EffectAnim__Candle_Multiple();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    void EffectAnim__Shimmering_Two_Palette();
+    uint16_t EffectAnim__Shimmering_Two_Palette();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    void EffectAnim__Shimmering_Palette_Saturation();
+    uint16_t EffectAnim__Shimmering_Palette_Saturation();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    void EffectAnim__Static_Gradient_Palette();
+    uint16_t EffectAnim__Static_Gradient_Palette();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    void EffectAnim__Stepping_Palette();
+    uint16_t EffectAnim__Stepping_Palette();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    void EffectAnim__TimeBased__HourProgress();
+    uint16_t EffectAnim__TimeBased__HourProgress();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-    void EffectAnim__Static_Palette_Vintage();
+    uint16_t EffectAnim__Static_Palette_Vintage();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    void EffectAnim__Stepping_Palette_With_Background();
+    uint16_t EffectAnim__Stepping_Palette_With_Background();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
-    void EffectAnim__Popping_Decay_Palette_To_Black();
-    void EffectAnim__Popping_Decay_Random_To_Black();
-    void EffectAnim__Popping_Decay_Palette_To_White();
-    void EffectAnim__Popping_Decay_Random_To_White();
-    void EffectAnim__Popping_Decay_Base(bool draw_palette_inorder, bool fade_to_black);
+    uint16_t EffectAnim__Popping_Decay_Palette_To_Black();
+    uint16_t EffectAnim__Popping_Decay_Random_To_Black();
+    uint16_t EffectAnim__Popping_Decay_Palette_To_White();
+    uint16_t EffectAnim__Popping_Decay_Random_To_White();
+    uint16_t EffectAnim__Popping_Decay_Base(bool draw_palette_inorder, bool fade_to_black);
     #endif 
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-    void EffectAnim__Spanned_Palette();
+    uint16_t EffectAnim__Spanned_Palette();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-    void EffectAnim__Randomise_Gradient();
+    uint16_t EffectAnim__Randomise_Gradient();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    void EffectAnim__Rotating_Palette();
+    uint16_t EffectAnim__Rotating_Palette();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    void EffectAnim__Rotating_Previous_Animation();
+    uint16_t EffectAnim__Rotating_Previous_Animation();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    void Segments_RotateDesiredColour(uint8_t pixels_amount_to_shift, uint8_t direction);
+    uint16_t Segments_RotateDesiredColour(uint8_t pixels_amount_to_shift, uint8_t direction);
     #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
     // #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    // void EffectAnim__Palette_Colour_Fade_Saturation();
+    // uint16_t EffectAnim__Palette_Colour_Fade_Saturation();
     // #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    void EffectAnim__Blend_Two_Palettes();
+    uint16_t EffectAnim__Blend_Two_Palettes();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    void EffectAnim__Twinkle_Palette_Onto_Palette();
+    uint16_t EffectAnim__Twinkle_Palette_Onto_Palette();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    void EffectAnim__Twinkle_Out_Palette();
+    uint16_t EffectAnim__Twinkle_Out_Palette();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    void EffectAnim__Twinkle_Decaying_Palette();
+    uint16_t EffectAnim__Twinkle_Decaying_Palette();
     #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
     // Static
-    void EffectAnim__Static_Pattern();
-    void EffectAnim__Static_Interleaved_Pattern();
-    void EffectAnim__Tri_Static_Pattern();
-    void EffectAnim__Base_Spots(uint16_t threshold);
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-    void EffectAnim__Spots();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-    void EffectAnim__Percent();
-    #endif
+    uint16_t EffectAnim__Palette_Lit_Pattern();
+    uint16_t EffectAnim__TriSegCol_Lit_Pattern();
+    uint16_t EffectAnim__Palettes_Interleaved_Lit_Pattern();
+    uint16_t EffectAnim__Palettes_Interleaved();
+    uint16_t EffectAnim__Base_Spots(uint16_t threshold);
+    uint16_t EffectAnim__Spots();
+    uint16_t EffectAnim__Percent();
     // One colour changes
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
-    void EffectAnim__Random_Colour();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+    uint16_t EffectAnim__Random_Colour();
     // Wipe/Sweep/Runners 
-    void BaseEffectAnim__Base_Colour_Wipe(bool rev, bool useRandomColors, bool useIterateOverPalette = false);
-    void EffectAnim__Colour_Wipe();
-    void EffectAnim__Colour_Wipe_Random();
-    void EffectAnim__Colour_Wipe_Palette();
-    void EffectAnim__Colour_Sweep();
-    void EffectAnim__Colour_Sweep_Random();
-    void EffectAnim__Colour_Sweep_Palette();
-    void EffectAnim__TriColour();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL00_32BIT
-    void EffectAnim__Android();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
-    void EffectAnim__Base_Running(bool saw);
-    void EffectAnim__Base_Running(uint32_t color1, uint32_t color2);
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-    void EffectAnim__Running_Colour();
-    void EffectAnim__Running_Random();
-    void EffectAnim__Base_Gradient(bool loading);
-    void EffectAnim__Gradient();
-    void EffectAnim__Loading();
-    void EffectAnim__Rolling_Balls();
-    void EffectAnim__Base_Police(uint32_t color1, uint32_t color2, bool all);
-    void EffectAnim__Police();
-    void EffectAnim__Polce_All();
-    void EffectAnim__Two_Dots();
-    void EffectAnim__Two_Areas();
-    void EffectAnim__Multi_Comet();
-    void EffectAnim__Oscillate();
-    void EffectAnim__BPM();
-    void EffectAnim__Juggle();
-    void EffectAnim__Palette();
-    void EffectAnim__ColourWaves();
-    void EffectAnim__Lake();
-    void EffectAnim__Glitter();
-    void EffectAnim__Meteor();
-    void EffectAnim__Metoer_Smooth();    
-    void EffectAnim__Pride_2015();    
-    CRGB pacifica_one_layer(uint16_t i, CRGBPalette16& p, uint16_t cistart, uint16_t wavescale, uint8_t bri, uint16_t ioff);   
-    void EffectAnim__Pacifica();    
-    void EffectAnim__Sunrise();    
-    void EffectAnim__Sinewave();    
-    void EffectAnim__Flow();    
-    void EffectAnim__Base_Phased(uint8_t moder);
-    void EffectAnim__PhasedNoise();    
-    void EffectAnim__Phased();    
-    void EffectAnim__Running_Lights();    
-    void EffectAnim__Rainbow_Cycle();    
+    uint16_t BaseEffectAnim__Base_Colour_Wipe(bool rev, bool useRandomColors, bool useIterateOverPalette = false);
+    uint16_t EffectAnim__Colour_Wipe();
+    uint16_t EffectAnim__Colour_Wipe_Random();
+    uint16_t EffectAnim__Colour_Wipe_Palette();
+    uint16_t EffectAnim__Colour_Sweep();
+    uint16_t EffectAnim__Colour_Sweep_Random();
+    uint16_t EffectAnim__Colour_Sweep_Palette();
+    uint16_t EffectAnim__Dynamic();
+    uint16_t EffectAnim__Dynamic_Smooth();
+    uint16_t EffectAnim__TriColour_Wipe();
+    uint16_t EffectAnim__Android();
+    uint16_t EffectAnim__Base_Running(bool saw, bool dual=false);
+    uint16_t EffectAnim__Base_Running(uint32_t color1, uint32_t color2, bool theatre = false);
+    uint16_t EffectAnim__Running_Colour();
+    uint16_t EffectAnim__Running_Random();
+    uint16_t EffectAnim__Base_Gradient(bool loading);
+    uint16_t EffectAnim__Gradient();
+    uint16_t EffectAnim__Loading();
+    uint16_t EffectAnim__Rolling_Balls();
+    uint16_t EffectAnim__Base_Police(uint32_t color1, uint32_t color2, bool all);
+    uint16_t EffectAnim__Police();
+    uint16_t EffectAnim__Police_All();
+    uint16_t EffectAnim__Fairy();
+    uint16_t EffectAnim__Fairy_Twinkle();
+    uint16_t EffectAnim__Running_Dual();
+    uint16_t EffectAnim__Two_Dots();
+    uint16_t EffectAnim__Two_Areas();
+    uint16_t EffectAnim__Multi_Comet();
+    uint16_t EffectAnim__Oscillate();
+    uint16_t EffectAnim__BPM();
+    uint16_t EffectAnim__Juggle();
+    uint16_t EffectAnim__Palette();
+    uint16_t EffectAnim__ColourWaves();
+    uint16_t EffectAnim__Lake();
+    void EffectAnim__Glitter_Base(uint8_t intensity, uint32_t col = ULTRAWHITE);
+    uint16_t EffectAnim__Glitter();
+    uint16_t EffectAnim__Meteor(); 
+    uint16_t EffectAnim__Pride_2015();    
+    CRGB EffectAnim__Pacifica_Base_OneLayer(uint16_t i, CRGBPalette16& p, uint16_t cistart, uint16_t wavescale, uint8_t bri, uint16_t ioff);   
+    uint16_t EffectAnim__Pacifica();    
+    uint16_t EffectAnim__Sunrise();    
+    uint16_t EffectAnim__Sinewave();    
+    uint16_t EffectAnim__Flow();    
+    uint16_t EffectAnim__Base_Phased(uint8_t moder);
+    uint16_t EffectAnim__PhasedNoise();    
+    uint16_t EffectAnim__Phased();    
+    uint16_t EffectAnim__Running_Lights();    
+    uint16_t EffectAnim__Rainbow_Cycle();    
     // Chase    
-    void EffectAnim__Base_Chase(uint32_t color1, uint32_t color2, uint32_t color3, bool do_palette);
-    void EffectAnim__Chase_Colour();
-    void EffectAnim__Chase_Random();
-    void EffectAnim__Chase_Rainbow();
-    void EffectAnim__Base_Chase_Theater(uint32_t color1, uint32_t color2, bool do_palette);
-    void EffectAnim__Chase_Flash();
-    void EffectAnim__Chase_Flash_Random();
-    void EffectAnim__Chase_Rainbow_White();
-    void EffectAnim__Chase_Theater();
-    void EffectAnim__Chase_Theatre_Rainbow();
-    void EffectAnim__Base_Chase_TriColour(uint32_t color1, uint32_t color2);
-    void EffectAnim__Chase_TriColour();
+    uint16_t EffectAnim__Base_Chase(uint32_t color1, uint32_t color2, uint32_t color3, bool do_palette);
+    uint16_t EffectAnim__Chase_Colour();
+    uint16_t EffectAnim__Chase_Random();
+    uint16_t EffectAnim__Chase_Rainbow();
+    uint16_t EffectAnim__Base_Chase_Theater(uint32_t color1, uint32_t color2, bool do_palette);
+    uint16_t EffectAnim__Chase_Flash();
+    uint16_t EffectAnim__Chase_Flash_Random();
+    uint16_t EffectAnim__Chase_Rainbow_White();
+    uint16_t EffectAnim__Chase_Theater();
+    uint16_t EffectAnim__Chase_Theatre_Rainbow();
+    uint16_t EffectAnim__Base_Chase_TriColour(uint32_t color1, uint32_t color2);
+    uint16_t EffectAnim__Chase_TriColour();
     // Breathe/Fade/Pulse
-    void EffectAnim__Breath();
-    void EffectAnim__Fade();
-    void EffectAnim__Fade_TriColour();
-    void EffectAnim__Fade_Spots();
-    #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+    uint16_t EffectAnim__Breath();
+    uint16_t EffectAnim__Fade();
+    uint16_t EffectAnim__Fade_TriColour();
+    uint16_t EffectAnim__Fade_Spots();
     // Fireworks
-    void EffectAnim__Fireworks();
-    void EffectAnim__Exploding_Fireworks();
-    void EffectAnim__Fireworks_Starburst();
-    void EffectAnim__Fireworks_Starburst_Glows();
-    void EffectAnim__Rain();
-    void EffectAnim__Tetrix();
-    void EffectAnim__Exploding_Fireworks_NoLaunch();
-    #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+    uint16_t EffectAnim__Fireworks();
+    uint16_t EffectAnim__Exploding_Fireworks();
+    uint16_t EffectAnim__Fireworks_Starburst();
+    uint16_t EffectAnim__Rain();
+    uint16_t EffectAnim__Tetrix();
+    uint16_t EffectAnim__Fire_Flicker();
+    uint16_t EffectAnim__Exploding_Fireworks_NoLaunch();
     // Sparkle/Twinkle
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-    void EffectAnim__Solid_Glitter();
-    void EffectAnim__Popcorn();
-    void EffectAnim__Plasma();
-    void EffectAnim__Sparkle();
-    void EffectAnim__Sparkle_Flash();
-    void EffectAnim__Sparkle_Hyper();
-    void EffectAnim__Twinkle();
+    uint16_t EffectAnim__Solid_Glitter();
+    uint16_t EffectAnim__Popcorn();
+    uint16_t EffectAnim__Plasma();
+    uint16_t EffectAnim__Sparkle();
+    uint16_t EffectAnim__Sparkle_Flash();
+    uint16_t EffectAnim__Sparkle_Hyper();
+    uint16_t EffectAnim__Twinkle();
     CRGB EffectAnim__Base_Twinkle_Fox_One_Twinkle(uint32_t ms, uint8_t salt, bool cat);
-    void EffectAnim__Base_Twinkle_Fox(bool cat);
-    void EffectAnim__Twinkle_Colour();
-    void EffectAnim__Twinkle_Fox();
-    void EffectAnim__Twinkle_Cat();
-    void EffectAnim__Twinkle_Up();
-    void EffectAnim__Saw();
-    void EffectAnim__Base_Dissolve(uint32_t color);
-    void EffectAnim__Dissolve();
-    void EffectAnim__Dissolve_Random();
-    void EffectAnim__ColourFul();
-    void EffectAnim__Traffic_Light();
-    #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE  
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+    uint16_t EffectAnim__Base_Twinkle_Fox(bool cat);
+    uint16_t EffectAnim__Twinkle_Colour();
+    uint16_t EffectAnim__Twinkle_Fox();
+    uint16_t EffectAnim__Twinkle_Cat();
+    uint16_t EffectAnim__Twinkle_Up();
+    uint16_t EffectAnim__Halloween_Eyes();
+    uint16_t EffectAnim__Saw();
+    uint16_t EffectAnim__Base_Dissolve(uint32_t color);
+    uint16_t EffectAnim__Dissolve();
+    uint16_t EffectAnim__Dissolve_Random();
+    uint16_t EffectAnim__ColourFul();
+    uint16_t EffectAnim__Traffic_Light();
     // Blink/Strobe
-    void EffectAnim__Base_Blink(uint32_t color1, uint32_t color2, bool strobe, bool do_palette);
-    void EffectAnim__Blink();
-    void EffectAnim__Blink_Rainbow();
-    void EffectAnim__Strobe();
-    void EffectAnim__Strobe_Multi();
-    void EffectAnim__Strobe_Rainbow();
-    void EffectAnim__Rainbow();
-    void EffectAnim__Lightning();
-    void EffectAnim__Fire_2012();
-    void EffectAnim__Railway();
-    void EffectAnim__Heartbeat();
+    uint16_t EffectAnim__Base_Blink(uint32_t color1, uint32_t color2, bool strobe, bool do_palette);
+    uint16_t EffectAnim__Blink();
+    uint16_t EffectAnim__Blink_Rainbow();
+    uint16_t EffectAnim__Strobe();
+    uint16_t EffectAnim__Strobe_Multi();
+    uint16_t EffectAnim__Strobe_Rainbow();
+    uint16_t EffectAnim__Rainbow();
+    uint16_t EffectAnim__Lightning();
+    uint16_t EffectAnim__Fire_2012();
+    uint16_t EffectAnim__Railway();
+    uint16_t EffectAnim__Heartbeat();
     //Noise
-    void EffectAnim__FillNoise8();
-    void EffectAnim__Noise16_1();
-    void EffectAnim__Noise16_2();
-    void EffectAnim__Noise16_3();
-    void EffectAnim__Noise16_4();
-    void EffectAnim__Noise_Pal();
+    uint16_t EffectAnim__FillNoise8();
+    uint16_t EffectAnim__Noise16_1();
+    uint16_t EffectAnim__Noise16_2();
+    uint16_t EffectAnim__Noise16_3();
+    uint16_t EffectAnim__Noise16_4();
+    uint16_t EffectAnim__Noise_Pal();
     // Scan
-    void EffectAnim__Base_Scan(bool dual);
-    void EffectAnim__Scan();
-    void EffectAnim__Scan_Dual();
-    void EffectAnim__Base_Larson_Scanner(bool dual);
-    void EffectAnim__Larson_Scanner();
-    void EffectAnim__Larson_Scanner_Dual();
-    void EffectAnim__ICU();
-    void EffectAnim__Base_Ripple(bool rainbow);
-    void EffectAnim__Ripple();
-    void EffectAnim__Ripple_Rainbow(); 
-    void EffectAnim__Comet();
-    void EffectAnim__Chunchun();
-    void EffectAnim__Bouncing_Balls();
-    void EffectAnim__Base_Sinelon(bool dual, bool rainbow=false);
-    void EffectAnim__Sinelon();
-    void EffectAnim__Sinelon_Dual();
-    void EffectAnim__Sinelon_Rainbow();
-    void EffectAnim__Drip();
+    uint16_t EffectAnim__Base_Scan(bool dual);
+    uint16_t EffectAnim__Scan();
+    uint16_t EffectAnim__Scan_Dual();
+    uint16_t EffectAnim__Larson_Scanner();
+    uint16_t EffectAnim__Larson_Scanner_Dual();
+    uint16_t EffectAnim__ICU();
+    uint16_t EffectAnim__Base_Ripple(uint8_t blurAmount = 0);
+    uint16_t EffectAnim__Ripple();
+    uint16_t EffectAnim__Ripple_Rainbow(); 
+    uint16_t EffectAnim__Comet();
+    uint16_t EffectAnim__Chunchun();
+    uint16_t EffectAnim__Dancing_Shadows();
+    uint16_t EffectAnim__Washing_Machine();
+    uint16_t EffectAnim__Blends();
+    uint16_t EffectAnim__TV_Simulator();
+    uint16_t EffectAnim__Bouncing_Balls();
+    uint16_t EffectAnim__Base_Sinelon(bool dual, bool rainbow=false);
+    uint16_t EffectAnim__Sinelon();
+    uint16_t EffectAnim__Sinelon_Dual();
+    uint16_t EffectAnim__Sinelon_Rainbow();
+    uint16_t EffectAnim__Drip();
+    uint16_t EffectAnim__FlowStripe();
+    uint16_t EffectAnim__WaveSins();
     #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__HARDWARE_TESTING
-    void EffectAnim__Hardware__Show_Bus();
-    void EffectAnim__Hardware__Manual_Pixel_Counting();
-    void EffectAnim__Hardware__View_Pixel_Range();
-    void EffectAnim__Hardware__Light_Sensor_Pixel_Indexing();
+    uint16_t EffectAnim__Hardware__Show_Bus();
+    uint16_t EffectAnim__Hardware__Manual_Pixel_Counting();
+    uint16_t EffectAnim__Hardware__View_Pixel_Range();
+    uint16_t EffectAnim__Hardware__Light_Sensor_Pixel_Indexing();
     #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__HARDWARE_TESTING
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__SUN_POSITIONS
-    void EffectAnim__SunPositions__Sunrise_Alarm_01();
-    void EffectAnim__SunPositions__Azimuth_Selects_Gradient_Of_Palette_01();
-    void EffectAnim__SunPositions__Sunset_Blended_Palettes_01();
-    void EffectAnim__SunPositions__DrawSun_1D_Elevation_01();
-    void EffectAnim__SunPositions__DrawSun_1D_Azimuth_01();
-    void EffectAnim__SunPositions__DrawSun_2D_Elevation_And_Azimuth_01();
-    void EffectAnim__SunPositions__White_Colour_Temperature_CCT_Based_On_Elevation_01();
+    uint16_t EffectAnim__SunPositions__Sunrise_Alarm_01();
+    uint16_t EffectAnim__SunPositions__Azimuth_Selects_Gradient_Of_Palette_01();
+    uint16_t EffectAnim__SunPositions__Sunset_Blended_Palettes_01();
+    uint16_t EffectAnim__SunPositions__DrawSun_1D_Elevation_01();
+    uint16_t EffectAnim__SunPositions__DrawSun_1D_Azimuth_01();
+    uint16_t EffectAnim__SunPositions__DrawSun_2D_Elevation_And_Azimuth_01();
+    uint16_t EffectAnim__SunPositions__White_Colour_Temperature_CCT_Based_On_Elevation_01();
     #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__SUN_POSITIONS
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__PIXEL_SET_ELSEWHERE
-    void EffectAnim__Manual__PixelSetElsewhere();
+    uint16_t EffectAnim__Manual__PixelSetElsewhere();
     #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__PIXEL_SET_ELSEWHERE
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING
     void SubTask_Flasher_Animate_Function_Tester_01();
     void SubTask_Flasher_Animate_Function_Tester_02();
     #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__BORDER_WALLPAPERS
-    void EffectAnim__BorderWallpaper__TwoColour_Gradient();
-    void EffectAnim__BorderWallpaper__FourColour_Gradient();
-    void EffectAnim__BorderWallpaper__FourColour_Solid();
+    uint16_t EffectAnim__BorderWallpaper__TwoColour_Gradient();
+    uint16_t EffectAnim__BorderWallpaper__FourColour_Gradient();
+    uint16_t EffectAnim__BorderWallpaper__FourColour_Solid();
     #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__BORDER_WALLPAPERS
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__SUN_TRACKING
-    void EffectAnim__SolarTriggers__Sunrise_01();
+    uint16_t EffectAnim__SolarTriggers__Sunrise_01();
     #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__SUN_TRACKING
     
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING
-    void EffectAnim__Christmas_Musical__01();
+    uint16_t EffectAnim__Christmas_Musical__01();
     #endif 
-    
-
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE_TODO
-    void EffectAnim__1D__Aurora();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE_TODO
-    void EffectAnim__1D__PerlinMove();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE_TODO
-    void EffectAnim__1D__Waveins();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE_TODO
-    void EffectAnim__1D__FlowStripe();
-    #endif
+        
     /****************************************************************************************************************************************************************************
     *** Specialised: 2D (No Audio) **********************************************************************************************************************************************
     **  Requires:     ***********************************************************************************************************************************************************
     *****************************************************************************************************************************************************************************/
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
-    void EffectAnim__2D__Blackhole();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__ColouredBursts();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
-    void EffectAnim__2D__DNA();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
-    void EffectAnim__2D__DNASpiral();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__Drift();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__FireNoise();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__Frizzles();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__GameOfLife();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__Hipnotic();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__Julia();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__Lissajous();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__Matrix();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__Metaballs();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__Noise();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__PlasmaBall();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__PolarLights();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__Pulser();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__SinDots();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__SqauredSwirl();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__SunRadiation();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__Tartan();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__SpaceShips();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__CrazyBees();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__GhostRider();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__FloatingBlobs();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D_TODO
-    void EffectAnim__2D__DriftRose();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
-    void EffectAnim__2D__DistortionWaves();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
-    void EffectAnim__2D__Soap();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
-    void EffectAnim__2D__Octopus();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
-    void EffectAnim__2D__WavingCell();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
-    void EffectAnim__2D__ScrollingText();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
-    void EffectAnim__2D__DigitalClock();
+    uint16_t EffectAnim__2D__Blackhole();
+    uint16_t EffectAnim__2D__ColouredBursts();
+    uint16_t EffectAnim__2D__DNA();
+    uint16_t EffectAnim__2D__DNASpiral();
+    uint16_t EffectAnim__2D__Drift();
+    uint16_t EffectAnim__2D__FireNoise();
+    uint16_t EffectAnim__2D__Frizzles();
+    uint16_t EffectAnim__2D__GameOfLife();
+    uint16_t EffectAnim__2D__Hipnotic();
+    uint16_t EffectAnim__2D__Julia();
+    uint16_t EffectAnim__2D__Lissajous();
+    uint16_t EffectAnim__2D__Matrix();
+    uint16_t EffectAnim__2D__Metaballs();
+    uint16_t EffectAnim__2D__Noise();
+    uint16_t EffectAnim__2D__PlasmaBall();
+    uint16_t EffectAnim__2D__PolarLights();
+    uint16_t EffectAnim__2D__Pulser();
+    uint16_t EffectAnim__2D__SinDots();
+    uint16_t EffectAnim__2D__SqauredSwirl();
+    uint16_t EffectAnim__2D__SunRadiation();
+    uint16_t EffectAnim__2D__Tartan();
+    uint16_t EffectAnim__2D__SpaceShips();
+    uint16_t EffectAnim__2D__CrazyBees();
+    uint16_t EffectAnim__2D__GhostRider();
+    uint16_t EffectAnim__2D__FloatingBlobs();
+    uint16_t EffectAnim__2D__DriftRose();
+    uint16_t EffectAnim__2D__DistortionWaves();
+    uint16_t EffectAnim__2D__Soap();
+    uint16_t EffectAnim__2D__Octopus();
+    uint16_t EffectAnim__2D__WavingCell();
+    uint16_t EffectAnim__2D__ScrollingText();
+    uint16_t EffectAnim__2D__DigitalClock();
+    uint16_t EffectAnim__2D__PlasmaRotoZoom();
     #endif
     /****************************************************************************************************************************************************************************
     *** Specialised: 1D (Audio Reactive) ****************************************************************************************************************************************
     **  Requires:     ***********************************************************************************************************************************************************
     *****************************************************************************************************************************************************************************/
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__Ripple_Peak();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__GravCenter();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__GravCentric();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__GraviMeter();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__Juggles();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__Matripix();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__MidNoise();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__NoiseFire();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__NoiseMeter();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__PixelWave();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__Plasmoid();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__PuddlePeak();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__Puddles();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__Pixels();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__FFT_Blurz();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__FFT_DJLight();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__FFT_FreqMap();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__FFT_FreqMatrix();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__FFT_FreqPixels();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__FFT_FreqWave();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__FFT_GravFreq();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__FFT_NoiseMove();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D_TODO
-    void EffectAnim__AudioReactive__1D__FFT_RockTaves();
-    #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D
-    void EffectAnim__AudioReactive__1D__FFT_Waterfall();
+    uint16_t EffectAnim__AudioReactive__1D__FFT_Ripple_Peak();
+    uint16_t EffectAnim__AudioReactive__1D__FFT_Perline_Move();
+    uint16_t EffectAnim__AudioReactive__1D__FFT_Aurora();
+    uint16_t EffectAnim__AudioReactive__1D__FFT_Juggles();
+    uint16_t EffectAnim__AudioReactive__1D__FFT_Matripix();
+    uint16_t EffectAnim__AudioReactive__1D__FFT_MidNoise();
+    uint16_t EffectAnim__AudioReactive__1D__FFT_NoiseFire();
+    uint16_t EffectAnim__AudioReactive__1D__FFT_NoiseMeter();
+    uint16_t EffectAnim__AudioReactive__1D__FFT_PixelWave();
+    uint16_t EffectAnim__AudioReactive__1D__FFT_Plasmoid();
+    uint16_t EffectAnim__AudioReactive__1D__FFT_Puddle__Base(bool peakdetect);
+    uint16_t EffectAnim__AudioReactive__1D__FFT_PuddlePeak();
+    uint16_t EffectAnim__AudioReactive__1D__FFT_Puddles();
+    uint16_t EffectAnim__AudioReactive__1D__FFT_Pixels();
+    uint16_t EffectAnim__AudioReactive__1D__FFT_Blurz();
+    uint16_t EffectAnim__AudioReactive__1D__FFT_DJLight();
+    uint16_t EffectAnim__AudioReactive__1D__FFT_FreqMap();
+    uint16_t EffectAnim__AudioReactive__1D__FFT_FreqMatrix();
+    uint16_t EffectAnim__AudioReactive__1D__FFT_FreqPixels();
+    uint16_t EffectAnim__AudioReactive__1D__FFT_Grav__Base(unsigned mode);
+    uint16_t EffectAnim__AudioReactive__1D__FFT_GravCenter();
+    uint16_t EffectAnim__AudioReactive__1D__FFT_GravCentric();
+    uint16_t EffectAnim__AudioReactive__1D__FFT_GravMeter();
+    uint16_t EffectAnim__AudioReactive__1D__FFT_GravFreq();
+    uint16_t EffectAnim__AudioReactive__1D__FFT_NoiseMove();
+    uint16_t EffectAnim__AudioReactive__1D__FFT_RockTaves();
+    uint16_t EffectAnim__AudioReactive__1D__FFT_FreqWave();
+    uint16_t EffectAnim__AudioReactive__1D__FFT_Waterfall();
     #endif
     /****************************************************************************************************************************************************************************
     *** Specialised: 2D (Audio Reactive) ****************************************************************************************************************************************
     **  Requires:     ***********************************************************************************************************************************************************
     *****************************************************************************************************************************************************************************/
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
-    void EffectAnim__AudioReactive__2D__Swirl();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
-    void EffectAnim__AudioReactive__2D__Waverly();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
-    void EffectAnim__AudioReactive__2D__FFT_GED();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
-    void EffectAnim__AudioReactive__2D__FFT_FunkyPlank();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
-    void EffectAnim__AudioReactive__2D__FFT_Akemi();
+    uint16_t EffectAnim__AudioReactive__2D__Swirl();
+    uint16_t EffectAnim__AudioReactive__2D__Waverly();
+    uint16_t EffectAnim__AudioReactive__2D__FFT_GED();
+    uint16_t EffectAnim__AudioReactive__2D__FFT_FunkyPlank();
+    uint16_t EffectAnim__AudioReactive__2D__FFT_Akemi();
     #endif
     /****************************************************************************************************************************************************************************
     *** Specialised: Notifcations ****************************************************************************************************************************************
@@ -1170,10 +1110,10 @@ class mAnimatorLight :
     void LCDDisplay_showSegment(byte segment, byte color, byte segDisplay);
     void LCDDisplay_showDots(byte dots, byte color);
 
-    void EffectAnim__7SegmentDisplay__ClockTime_01();
-    void EffectAnim__7SegmentDisplay__ClockTime_02();
-    void EffectAnim__7SegmentDisplay__ManualNumber_01();
-    void EffectAnim__7SegmentDisplay__ManualString_01();
+    uint16_t EffectAnim__7SegmentDisplay__ClockTime_01();
+    uint16_t EffectAnim__7SegmentDisplay__ClockTime_02();
+    uint16_t EffectAnim__7SegmentDisplay__ManualNumber_01();
+    uint16_t EffectAnim__7SegmentDisplay__ManualString_01();
     void ConstructJSONBody_Animation_Progress__LCD_Clock_Time_Basic_01();
     void ConstructJSONBody_Animation_Progress__LCD_Clock_Time_Basic_02();
 
@@ -1226,13 +1166,15 @@ class mAnimatorLight :
       EFFECTS_FUNCTION__POPPING_DECAY_RANDOM_TO_BLACK__ID,
       EFFECTS_FUNCTION__POPPING_DECAY_PALETTE_TO_WHITE__ID,
       EFFECTS_FUNCTION__POPPING_DECAY_RANDOM_TO_WHITE__ID,
-      EFFECTS_FUNCTION__STATIC_PATTERN__ID,
-      EFFECTS_FUNCTION__TRI_STATIC_PATTERN__ID,
-      EFFECTS_FUNCTION__STATIC_INTERLEAVED_PATTERN__ID,
+      EFFECTS_FUNCTION__PALETTE_LIT_PATTERN__ID,
+      EFFECTS_FUNCTION__TRISEGCOL_LIT_PATTERN__ID,
+      EFFECTS_FUNCTION__PALETTES_INTERLEAVED_LIT_PATTERN__ID,
+      EFFECTS_FUNCTION__PALETTES_INTERLEAVED__ID,
       #endif
 
-      // General Level 4 Flashing Complete Effects
       #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+
+      // General Level 4 Flashing Complete Effects
       EFFECTS_FUNCTION__SPOTS__ID,
       EFFECTS_FUNCTION__PERCENT__ID,
       EFFECTS_FUNCTION__RANDOM_COLOR__ID,       
@@ -1245,7 +1187,9 @@ class mAnimatorLight :
       EFFECTS_FUNCTION__COLOR_WIPE_PALETTE__ID,
       EFFECTS_FUNCTION__COLOR_SWEEP__ID,
       EFFECTS_FUNCTION__COLOR_SWEEP_RANDOM__ID,
-      EFFECTS_FUNCTION__COLOR_SWEEP_PALETTE__ID,                
+      EFFECTS_FUNCTION__COLOR_SWEEP_PALETTE__ID,       
+      EFFECTS_FUNCTION__DYNAMIC__ID,                  
+      EFFECTS_FUNCTION__DYNAMIC_SMOOTH__ID,                
       EFFECTS_FUNCTION__RUNNING_COLOR__ID,
       EFFECTS_FUNCTION__RUNNING_RANDOM__ID,      
       EFFECTS_FUNCTION__ANDROID__ID,               
@@ -1268,7 +1212,6 @@ class mAnimatorLight :
       EFFECTS_FUNCTION__LAKE__ID,
       EFFECTS_FUNCTION__GLITTER__ID,
       EFFECTS_FUNCTION__METEOR__ID,
-      EFFECTS_FUNCTION__METEOR_SMOOTH__ID,
       EFFECTS_FUNCTION__PRIDE_2015__ID,
       EFFECTS_FUNCTION__PACIFICA__ID,
       EFFECTS_FUNCTION__SUNRISE__ID,
@@ -1276,12 +1219,10 @@ class mAnimatorLight :
       EFFECTS_FUNCTION__FLOW__ID,
       EFFECTS_FUNCTION__RUNNING_LIGHTS__ID,
       EFFECTS_FUNCTION__RAINBOW_CYCLE__ID,
-      #endif
 
       /**
        * Chase
        **/
-      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
       EFFECTS_FUNCTION__CHASE_COLOR__ID,
       EFFECTS_FUNCTION__CHASE_RANDOM__ID,
       EFFECTS_FUNCTION__CHASE_RAINBOW__ID,
@@ -1291,22 +1232,18 @@ class mAnimatorLight :
       EFFECTS_FUNCTION__CHASE_THEATER__ID,
       EFFECTS_FUNCTION__CHASE_THEATER_RAINBOW__ID,
       EFFECTS_FUNCTION__CHASE_TRICOLOR__ID,
-      #endif
 
       /**
        *  Breathe/Fade/Pulse
        **/      
-      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
       EFFECTS_FUNCTION__BREATH__ID,
       EFFECTS_FUNCTION__FADE__ID,
       EFFECTS_FUNCTION__FADE_TRICOLOR__ID,
       EFFECTS_FUNCTION__FADE_SPOTS__ID,
-      #endif
       
       /**
        * Sparkle/Twinkle
        **/
-      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
       EFFECTS_FUNCTION__SOLID_GLITTER__ID,
       EFFECTS_FUNCTION__POPCORN__ID,
       EFFECTS_FUNCTION__PLASMA__ID,
@@ -1318,17 +1255,16 @@ class mAnimatorLight :
       EFFECTS_FUNCTION__TWINKLE_FOX__ID,
       EFFECTS_FUNCTION__TWINKLE_CAT__ID,
       EFFECTS_FUNCTION__TWINKLE_UP__ID,
+      EFFECTS_FUNCTION__HALLOWEEN_EYES__ID,
       EFFECTS_FUNCTION__SAW__ID,
       EFFECTS_FUNCTION__DISSOLVE__ID,
       EFFECTS_FUNCTION__DISSOLVE_RANDOM__ID,
       EFFECTS_FUNCTION__COLORFUL__ID,
       EFFECTS_FUNCTION__TRAFFIC_LIGHT__ID,
-      #endif
 
       /**
        * Fireworks
        **/
-      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
       EFFECTS_FUNCTION__FIREWORKS__ID,                
       EFFECTS_FUNCTION__FIREWORKS_EXPLODING__ID, 
       EFFECTS_FUNCTION__FIREWORKS_STARBURST__ID,
@@ -1337,12 +1273,10 @@ class mAnimatorLight :
       EFFECTS_FUNCTION__TETRIX__ID,                 
       EFFECTS_FUNCTION__FIRE_FLICKER__ID,                  
       EFFECTS_FUNCTION__FIREWORKS_EXPLODING_NO_LAUNCH__ID,     
-      #endif
 
       /**
        * Blink/Strobe
        **/
-      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
       EFFECTS_FUNCTION__BLINK__ID,
       EFFECTS_FUNCTION__BLINK_RAINBOW__ID,
       EFFECTS_FUNCTION__STROBE__ID,
@@ -1353,12 +1287,10 @@ class mAnimatorLight :
       EFFECTS_FUNCTION__FIRE_2012__ID,
       EFFECTS_FUNCTION__RAILWAY__ID,
       EFFECTS_FUNCTION__HEARTBEAT__ID,
-      #endif
 
       /**
        * Noise
        **/
-      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
       EFFECTS_FUNCTION__FILLNOISE8__ID,
       EFFECTS_FUNCTION__NOISE16_1__ID,
       EFFECTS_FUNCTION__NOISE16_2__ID,
@@ -1367,12 +1299,10 @@ class mAnimatorLight :
       EFFECTS_FUNCTION__NOISEPAL__ID,
       EFFECTS_FUNCTION__PHASEDNOISE__ID,
       EFFECTS_FUNCTION__PHASED__ID,
-      #endif
 
       /**
        * Scan
        **/
-      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
       EFFECTS_FUNCTION__SCAN__ID,
       EFFECTS_FUNCTION__DUAL_SCAN__ID,
       EFFECTS_FUNCTION__LARSON_SCANNER__ID,
@@ -1391,7 +1321,10 @@ class mAnimatorLight :
       EFFECTS_FUNCTION__SINELON_DUAL__ID,
       EFFECTS_FUNCTION__SINELON_RAINBOW__ID,
       EFFECTS_FUNCTION__DRIP__ID,
-      #endif
+      EFFECTS_FUNCTION__FLOWSTRIPE__ID, 
+      EFFECTS_FUNCTION__WAVESINS__ID, 
+
+      #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
 
       /**
        * Hardware Installation Helpers
@@ -1526,25 +1459,24 @@ class mAnimatorLight :
        * Audio Reactive 1D
        **/
       #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D
-      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__RIPPLE_PEAK__ID,
-      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__PERLINE_MOVE__ID,
-      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__GRAV_CENTER__ID,
-      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__GRAV_CENTRIC__ID,
-      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__GRAVI_METER__ID,
-      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__JUGGLES__ID,
-      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__MATRIPIX__ID,
-      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__MID_NOISE__ID,
-      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__NOISE_FIRE__ID,
-      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__NOISE_METER__ID,
-      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__PIXEL_WAVE__ID,
-      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__PLASMOID__ID, 
-      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__PUDDLE_PEAK__ID, 
-      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__PUDDLES__ID,  
-      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__PIXELS__ID,  
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_RIPPLE_PEAK__ID,
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_PERLINE_MOVE__ID,
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_AURORA__ID,
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_GRAV_CENTER__ID,
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_GRAV_CENTRIC__ID,
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_GRAVI_METER__ID,
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_JUGGLES__ID,
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_MATRIPIX__ID,
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_MID_NOISE__ID,
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_NOISE_FIRE__ID,
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_NOISE_METER__ID,
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_PIXEL_WAVE__ID,
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_PLASMOID__ID, 
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_PUDDLE_PEAK__ID, 
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_PUDDLES__ID,  
+      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_PIXELS__ID,  
       EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_BLURZ__ID,  
-      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_FLOWSTRIPE__ID, 
       EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_ROCKTAVES__ID,
-      EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_WAVESINS__ID, 
       EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_DJ_LIGHT__ID,
       EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_FREQ_MAP__ID, 
       EFFECTS_FUNCTION__AUDIOREACTIVE__1D__FFT_FREQ_MATRIX__ID,  
@@ -1588,9 +1520,6 @@ class mAnimatorLight :
      * Option2: Divide all LED string into sections of 8 (ie. 24V filament sets) and randomly turn 1 led off in each section, and that section brightness changes
      * 
      */
-    // #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-    // // OLD_EFFECTS_FUNCTION__CHRISTMAS_TRADITIONAL_TWINKLE_LIGHTS_ID,
-    // #endif
 
 
     // #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__SUN_POSITIONS
@@ -1626,7 +1555,7 @@ class mAnimatorLight :
   // NEw effect idea, lava lamp, both 1D and matrix. Have lgihting "gravity" then also "heating" for uplifting of random colours.
 
   
-  #define WLED_GROUP_IDS_FIRST  EFFECTS_FUNCTION__STATIC_PATTERN__ID
+  #define WLED_GROUP_IDS_FIRST  EFFECTS_FUNCTION__PALETTE_LIT_PATTERN__ID
   #define WLED_GROUP_IDS_LAST   EFFECTS_FUNCTION__DRIP__ID
 
 
@@ -1829,6 +1758,7 @@ inline static uint32_t FadeU32(uint32_t colour32, uint8_t fade) {
   } um_data_t;
   const unsigned int um_data_size = sizeof(um_data_t);  // 12 bytes
   um_data_t* simulateSound(uint8_t simulationId);
+  static um_data_t* getAudioData();
       
   //Usermod IDs
   #define USERMOD_ID_RESERVED               0     //Unused. Might indicate no usermod present
@@ -2034,15 +1964,62 @@ inline static uint32_t FadeU32(uint32_t colour32, uint8_t fade) {
     ************************************************************************************************************************************************************************************
     **********************************************************************************************************************************************************************
     ******************************************************************************************************************************************************************************/
+    
+    inline uint16_t crc16(const unsigned char* data_p, size_t length) {
+      uint8_t x;
+      uint16_t crc = 0xFFFF;
+      if (!length) return 0x1D0F;
+      while (length--) {
+        x = crc >> 8 ^ *data_p++;
+        x ^= x>>4;
+        crc = (crc << 8) ^ ((uint16_t)(x << 12)) ^ ((uint16_t)(x <<5)) ^ ((uint16_t)x);
+      }
+      return crc;
+    }
 
+    // fastled beatsin: 1:1 replacements to remove the use of fastled sin16()
+    // Generates a 16-bit sine wave at a given BPM that oscillates within a given range. see fastled for details.
+    inline uint16_t beatsin88_t(accum88 beats_per_minute_88, uint16_t lowest = 0, uint16_t highest = 65535, uint32_t timebase = 0, uint16_t phase_offset = 0)
+    {
+        uint16_t beat = beat88( beats_per_minute_88, timebase);
+        uint16_t beatsin (sin16_t( beat + phase_offset) + 32768);
+        uint16_t rangewidth = highest - lowest;
+        uint16_t scaledbeat = scale16( beatsin, rangewidth);
+        uint16_t result = lowest + scaledbeat;
+        return result;
+    }
+
+    // Generates a 16-bit sine wave at a given BPM that oscillates within a given range. see fastled for details.
+    inline uint16_t beatsin16_t(accum88 beats_per_minute, uint16_t lowest = 0, uint16_t highest = 65535, uint32_t timebase = 0, uint16_t phase_offset = 0)
+    {
+        uint16_t beat = beat16( beats_per_minute, timebase);
+        uint16_t beatsin = (sin16_t( beat + phase_offset) + 32768);
+        uint16_t rangewidth = highest - lowest;
+        uint16_t scaledbeat = scale16( beatsin, rangewidth);
+        uint16_t result = lowest + scaledbeat;
+        return result;
+    }
+
+    // Generates an 8-bit sine wave at a given BPM that oscillates within a given range. see fastled for details.
+    inline uint8_t beatsin8_t(accum88 beats_per_minute, uint8_t lowest = 0, uint8_t highest = 255, uint32_t timebase = 0, uint8_t phase_offset = 0)
+    {
+        uint8_t beat = beat8( beats_per_minute, timebase);
+        uint8_t beatsin = sin8_t( beat + phase_offset);
+        uint8_t rangewidth = highest - lowest;
+        uint8_t scaledbeat = scale8( beatsin, rangewidth);
+        uint8_t result = lowest + scaledbeat;
+        return result;
+    }
 
     // Temporary helper functions to be cleaned up and converted
     uint32_t crgb_to_col(CRGB crgb);
     CRGB col_to_crgb(uint32_t);
 
     uint8_t get_random_wheel_index(uint8_t pos);
+    uint8_t sin_gap(uint16_t in);
     uint16_t triwave16(uint16_t in);
-    uint16_t mode_palette();
+    int8_t tristate_square8(uint8_t x, uint8_t pulsewidth, uint8_t attdec);
+    
     // void colorFromUint32(uint32_t in, bool secondary = false);
     // void colorFromUint24(uint32_t in, bool secondary = false);
     // void relativeChangeWhite(int8_t amount, byte lowerBoundary = 0);
@@ -2393,7 +2370,7 @@ typedef struct Segment
       #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
       if(effect_id >= WLED_GROUP_IDS_FIRST)
       {
-        return FRAMETIME_MS;
+        return FRAMETIME;
       }
       else
         return cycle_time__rate_ms;
@@ -2543,13 +2520,13 @@ typedef struct Segment
      * Internal multi-use variables
      * Keep at least one U32 for millis storage
      */
-    struct INTERNAL_MULTIUSE_PARAMETERS
-    {
+    // struct INTERNAL_MULTIUSE_PARAMETERS
+    // {
       uint16_t aux0 = 0;  // custom var
       uint16_t aux1 = 0;  // custom var
       uint16_t aux2 = 0;
       uint32_t aux3 = 0; // Also used for random CRGBPALETTE16 timing
-    }params_internal;
+    // }params_internal;
 
     Decounter<uint16_t> auto_timeoff = Decounter<uint16_t>();
 
@@ -2651,10 +2628,10 @@ typedef struct Segment
       
       refreshLightCapabilities();
 
-      params_internal.aux0 = 0;
-      params_internal.aux1 = 0;
-      params_internal.aux2 = 0;
-      params_internal.aux3 = 0;
+      aux0 = 0;
+      aux1 = 0;
+      aux2 = 0;
+      aux3 = 0;
 
       palette_container = new mPaletteLoaded(); // duplicate of above, but needed for each segment
       
@@ -2963,11 +2940,39 @@ typedef struct Segment
        * ** [false] : Apply brightness to the colour
        * ** [true]  : Get the "full" 255 range colour object
        */
-      bool apply_brightness = false
+      bool apply_brightness = false,
+
+      uint8_t pbri = 255,
+
+      uint8_t mcol = 0
     );
+    
+    /**
+     * WLED Palette Conversion
+     * 
+     * Gets a single color from the currently selected palette.
+     * @param i Palette Index (if mapping is true, the full palette will be _virtualSegmentLength long, if false, 255). Will wrap around automatically.
+     * @param mapping if true, LED position in segment is considered for color
+     * @param wrap FastLED palettes will usually wrap back to the start smoothly. Set false to get a hard edge
+     * @param mcol If the default palette 0 is selected, return the standard color 0, 1 or 2 instead. If >2, Party palette is used instead
+     * @param pbri Value to scale the brightness of the returned color by. Default is 255. (no scaling)
+     * @returns Single color from palette
+     * Since inline functions are expanded at compile time and do not incur runtime overhead, you can use an inline function in a header file
+    */
+    inline uint32_t color_from_palette(uint16_t i, bool mapping, bool wrap, uint8_t mcol, uint8_t pbri = 255) {
+      return GetPaletteColour(i, mapping, wrap, /*crgb exact skip arg*/false, /*encoded value skip arg*/nullptr, /*apply brightness skip arg*/true, pbri, mcol);
+    }
+
 
     uint8_t GetPaletteDiscreteWidth(); // Rename to colours in palette
 
+    // 2D Blur: shortcuts for bluring columns or rows only (50% faster than full 2D blur)
+    inline void blurCols(fract8 blur_amount, bool smear = false) { // blur all columns
+      blur2D(0, blur_amount, smear);
+    }
+    inline void blurRows(fract8 blur_amount, bool smear = false) { // blur all rows
+      blur2D(blur_amount, 0, smear);
+    }
     /** SECTION start ****************************************************************************************************************
     * * Matrix : Inside each segment  *********************************************************************************
     * *****************************************************************************************************************
@@ -2984,7 +2989,7 @@ typedef struct Segment
 
     #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
 
-    uint16_t XY(uint16_t x, uint16_t y); // support function to get relative index within segment
+    [[gnu::hot]] uint16_t XY(int x, int y);      // support function to get relative index within segment
 
 
     void setPixelColorXY(int x, int y, uint32_t c); // set relative pixel within segment with color
@@ -3003,14 +3008,15 @@ typedef struct Segment
         // Serial.println(__LINE__);
         setPixelColorXY(x, y, RGBW32(c.r,c.g,c.b,0)); 
       } // automatically inline
-    void setPixelColorXY(float x, float y, uint32_t c, bool aa = true);
+      
+      void setPixelColorXY(float x, float y, uint32_t c, bool aa = true);
 
       void setPixelColorXY(float x, float y, byte r, byte g, byte b, byte w = 0, bool aa = true)
       { 
         // Serial.println(__LINE__);
         setPixelColorXY(x, y, RGBW32(r,g,b,w), aa); 
       }
-      void setPixelColorXY(float x, float y, CRGB c, bool aa = true)
+      void setPixelColorXY_CRGB(float x, float y, CRGB c, bool aa = true)
       { 
         // Serial.println(__LINE__);
         setPixelColorXY(x, y, RGBW32(c.r,c.g,c.b,0), aa); 
@@ -3033,13 +3039,19 @@ typedef struct Segment
     void moveX(int8_t delta, bool wrap = false);
     void moveY(int8_t delta, bool wrap = false);
     void move(uint8_t dir, uint8_t delta, bool wrap = false);
-    void draw_circle(uint16_t cx, uint16_t cy, uint8_t radius, CRGB c);
-    void fill_circle(uint16_t cx, uint16_t cy, uint8_t radius, CRGB c);
+    
+    void drawCircle(uint16_t cx, uint16_t cy, uint8_t radius, uint32_t c, bool soft = false);
+    inline void drawCircle(uint16_t cx, uint16_t cy, uint8_t radius, CRGB c, bool soft = false) { drawCircle(cx, cy, radius, RGBW32(c.r,c.g,c.b,0), soft); }
+    
+void fillCircle(uint16_t cx, uint16_t cy, uint8_t radius, uint32_t c, bool soft = false);
+    inline void fillCircle(uint16_t cx, uint16_t cy, uint8_t radius, CRGB c, bool soft = false) { fillCircle(cx, cy, radius, RGBW32(c.r,c.g,c.b,0), soft); }
+    
     void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint32_t c);
     void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, CRGB c) { drawLine(x0, y0, x1, y1, RGBW32(c.r,c.g,c.b,0)); } // automatic inline
-    void drawCharacter(unsigned char chr, int16_t x, int16_t y, uint8_t w, uint8_t h, uint32_t color, uint32_t col2 = 0, int8_t rotate = 0);
-    void drawCharacter(unsigned char chr, int16_t x, int16_t y, uint8_t w, uint8_t h, CRGB c) { drawCharacter(chr, x, y, w, h, RGBW32(c.r,c.g,c.b,0)); } // automatic inline
-    void drawCharacter(unsigned char chr, int16_t x, int16_t y, uint8_t w, uint8_t h, CRGB c, CRGB c2, int8_t rotate = 0) { drawCharacter(chr, x, y, w, h, RGBW32(c.r,c.g,c.b,0), RGBW32(c2.r,c2.g,c2.b,0), rotate); } // automatic inline
+    
+    void drawCharacter(unsigned char chr, int16_t x, int16_t y, uint8_t w, uint8_t h, uint32_t color, uint32_t col2 = 0, int8_t rotate = 0, bool usePalGrad = false);
+    inline void drawCharacter(unsigned char chr, int16_t x, int16_t y, uint8_t w, uint8_t h, CRGB c) { drawCharacter(chr, x, y, w, h, RGBW32(c.r,c.g,c.b,0)); } // automatic inline
+    inline void drawCharacter(unsigned char chr, int16_t x, int16_t y, uint8_t w, uint8_t h, CRGB c, CRGB c2, int8_t rotate = 0, bool usePalGrad = false) { drawCharacter(chr, x, y, w, h, RGBW32(c.r,c.g,c.b,0), RGBW32(c2.r,c2.g,c2.b,0), rotate, usePalGrad); } // automatic inline
     
     
     void drawCharacter_UsingGradientPalletes(
@@ -3054,6 +3066,8 @@ typedef struct Segment
     void fill_solid(CRGB c) { fill(RGBW32(c.r,c.g,c.b,0)); }
     void nscale8(uint8_t scale);
   #else
+
+
     uint16_t XY(uint16_t x, uint16_t y)                                    { return x; }
     void setPixelColorXY(int x, int y, uint32_t c)                         { setPixelColor(x, c); }
     void setPixelColorXY(int x, int y, byte r, byte g, byte b, byte w = 0) { setPixelColor(x, RGBW32(r,g,b,w)); }
@@ -3071,12 +3085,16 @@ typedef struct Segment
     void addPixelColorXY(int x, int y, CRGB c)                             { addPixelColor(x, RGBW32(c.r,c.g,c.b,0)); }
     void fadePixelColorXY(uint16_t x, uint16_t y, uint8_t fade)            { fadePixelColor(x, fade); }
     void box_blur(uint16_t i, bool vertical, fract8 blur_amount) {}
+    inline void blur2D(uint8_t blur_x, uint8_t blur_y, bool smear = false) {}
     void blurRow(uint16_t row, fract8 blur_amount) {}
     void blurCol(uint16_t col, fract8 blur_amount) {}
-    void moveX(int8_t delta) {}
-    void moveY(int8_t delta) {}
-    void move(uint8_t dir, uint8_t delta) {}
-    void fill_circle(uint16_t cx, uint16_t cy, uint8_t radius, CRGB c) {}
+    inline void moveX(int delta, bool wrap = false) {}
+    inline void moveY(int delta, bool wrap = false) {}
+    inline void move(uint8_t dir, uint8_t delta, bool wrap = false) {}
+    inline void drawCircle(uint16_t cx, uint16_t cy, uint8_t radius, uint32_t c, bool soft = false) {}
+    inline void drawCircle(uint16_t cx, uint16_t cy, uint8_t radius, CRGB c, bool soft = false) {}
+    inline void fillCircle(uint16_t cx, uint16_t cy, uint8_t radius, uint32_t c, bool soft = false) {}
+    inline void fillCircle(uint16_t cx, uint16_t cy, uint8_t radius, CRGB c, bool soft = false) {}
     void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint32_t c) {}
     void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, CRGB c) {}
     void drawCharacter(unsigned char chr, int16_t x, int16_t y, uint8_t w, uint8_t h, uint32_t color) {}
@@ -3482,6 +3500,10 @@ inline uint32_t HueSatBrt(uint16_t hue, uint8_t sat, uint8_t brt, bool white_fro
   void fill2(uint32_t c) { for (int i = 0; i < _length; i++) setPixelColor(i, c); } // fill whole strip with color (inline)
 
 
+  /**
+   * @brief I need to add a way to either only transmit these to the webui based on a level, or add a selector for it. Just to be used for testing
+   * 
+   */
   enum Effect_DevStage
   {
     Release=0,
@@ -3492,13 +3514,13 @@ inline uint32_t HueSatBrt(uint16_t hue, uint8_t sat, uint8_t brt, bool white_fro
   };
 
 
-    typedef void (mAnimatorLight::*RequiredFunction)();        
-    void addEffect(uint8_t id, RequiredFunction function, const char* config = nullptr, uint8_t development_stage = Effect_DevStage::Dev); // add effect to the list; defined in FX.cpp
+    typedef uint16_t (mAnimatorLight::*EffectFunction)();        
+    void addEffect(uint8_t id, EffectFunction function, const char* config = nullptr, uint8_t development_stage = Effect_DevStage::Dev); // add effect to the list; defined in FX.cpp
 
     struct EFFECTS
     {
       uint8_t                         count = 0;
-      std::vector<RequiredFunction>   function;     // SRAM footprint: 4 bytes per element
+      std::vector<EffectFunction>     function;     // SRAM footprint: 4 bytes per element
       std::vector<const char*>        config;     // 
       std::vector<uint8_t>            development_stage; // 0:stable, 1:beta, 2:alpha, 3:dev
     }effects;
@@ -3715,6 +3737,9 @@ inline uint32_t HueSatBrt(uint16_t hue, uint8_t sat, uint8_t brt, bool white_fro
     WiFiUDP notifierUdp, rgbUdp, notifier2Udp;
     bool e131NewData = false;
     byte currentPreset = 0;
+
+
+
 
     class NeoGammaWLEDMethod {
       public:
