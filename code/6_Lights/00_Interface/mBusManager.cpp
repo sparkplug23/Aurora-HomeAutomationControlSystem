@@ -365,8 +365,16 @@ uint8_t BusDigital::estimateCurrentAndLimitBri() {
   return newBri;
 }
 
+#define ENABLE_DEVFEATURE_LIGHTING__SHOW_FALLBACK_MINIMAL_2024
+
 
 void BusDigital::show() {
+
+  #ifdef ENABLE_DEVFEATURE_LIGHTING__SHOW_FALLBACK_MINIMAL_2024
+
+  PolyBus::show(_busPtr, _iType);
+
+  #else
   
   #ifdef ENABLE_DEBUGFEATURE_LIGHT__MULTIPIN_JUNE28
   ALOG_INF(PSTR("*********************************************************BusDigital::show"));
@@ -479,6 +487,8 @@ void BusDigital::show() {
   if (newBri < _bri) PolyBus::setBrightness(_busPtr, _iType, _bri);
   
       DEBUG_LINE_HERE
+
+      #endif
 }
 
 

@@ -173,6 +173,8 @@ class Bus {
     virtual uint16_t getLEDCurrent() const                     { return 0; }
     virtual uint16_t getUsedCurrent() const                    { return 0; }
     virtual uint16_t getMaxCurrent() const                     { return 0; }
+    virtual uint8_t  getInterfaceType() const                   { return 0; } // Only digital bus will override
+    
 
     inline  bool     hasRGB() const                            { return _hasRgb; }
     inline  bool     hasWhite() const                          { return _hasWhite; }
@@ -391,6 +393,7 @@ class BusDigital : public Bus {
     uint16_t getLEDCurrent() const override  { return _milliAmpsPerLed; }
     uint16_t getUsedCurrent() const override { return _milliAmpsTotal; }
     uint16_t getMaxCurrent() const override  { return _milliAmpsMax; }
+    uint8_t  getInterfaceType() const override  { return _iType; }
     void reinit();
     void cleanup();
 
@@ -548,7 +551,7 @@ class BusManager
 
     //do not call this method from system context (network callback)
     void removeAll();
-    void show();
+    static void show();
     
     static Bus* busses[WLED_MAX_BUSSES+WLED_MIN_VIRTUAL_BUSSES];// = {nullptr};
 
@@ -573,6 +576,8 @@ class BusManager
 
     inline const ColorOrderMap& getColorOrderMap(){ return colorOrderMap; }
     static inline uint8_t getNumBusses(){return numBusses; }
+
+    
 
   private:
     static uint8_t numBusses;

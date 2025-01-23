@@ -722,7 +722,7 @@ void mAnimatorLight::LoadEffects()
   /**
    * 2D (No Audio)
    **/
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
+  #ifdef ENABLE_FEATURE_LIGHTING__2D_MATRIX
   addEffect(EFFECTS_FUNCTION__2D__BLACK_HOLE__ID,        
             &mAnimatorLight::EffectAnim__2D__Blackhole,     
             PM_EFFECT_CONFIG__2D__BLACK_HOLE__INDEXING);

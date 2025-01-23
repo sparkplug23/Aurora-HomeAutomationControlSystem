@@ -50,6 +50,31 @@
   #include "3_Network/21_WebServer/ArduinoJson-v6.h"
 #endif // ENABLE_DEVFEATURE_JSON__ASYNCJSON_V6
 
+// ESP32-WROVER features SPI RAM (aka PSRAM) which can be allocated using ps_malloc()
+// we can create custom PSRAMDynamicJsonDocument to use such feature (replacing DynamicJsonDocument)
+// The following is a construct to enable code to compile without it.
+// There is a code that will still not use PSRAM though:
+//    AsyncJsonResponse is a derived class that implements DynamicJsonDocument (AsyncJson-v6.h)
+#if defined(ARDUINO_ARCH_ESP32)
+extern bool psramSafe;
+struct PSRAM_Allocator {
+  void* allocate(size_t size) {
+    if (psramSafe && psramFound()) return ps_malloc(size); // use PSRAM if it exists
+    else                           return malloc(size);    // fallback
+  }
+  void* reallocate(void* ptr, size_t new_size) {
+    if (psramSafe && psramFound()) return ps_realloc(ptr, new_size); // use PSRAM if it exists
+    else                           return realloc(ptr, new_size);    // fallback
+  }
+  void deallocate(void* pointer) {
+    free(pointer);
+  }
+};
+using PSRAMDynamicJsonDocument = BasicJsonDocument<PSRAM_Allocator>;
+#else
+#define PSRAMDynamicJsonDocument DynamicJsonDocument
+#endif
+
 
 #define FILE_EXTENSION_JSON ".json"
 
@@ -107,6 +132,10 @@ class mFileSystem :
     void JSONFile_Load(char* filename_With_extension, char* buffer, uint16_t buflen);
 
     void SystemTask__Execute_Module_Data_Save();
+
+    
+    bool psramSafe = true;         // is it safe to use PSRAM (on ESP32 rev.1; compiler fix used "-mfix-esp32-psram-cache-issue")
+
 
     /*********************************************************************************************\
     This driver adds universal file system support for

@@ -11,6 +11,8 @@
 
 #include "2_CoreSystem/07_Time/Toki.h"
 
+#include "DynamicBuffer.h"
+
 // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING            // Development and testing only
 // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME             // Should nearly always be enabled as default/minimal cases
 // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC        // ie shimmering. Used around house all year
@@ -27,6 +29,13 @@
 #else
 #define PIXEL_RANGE_LIMIT 1000
 #endif 
+
+
+// Temporary fixing for neopixelbusLg issue
+#ifndef ANIM_BRIGHTNESS_REQUIRED
+#define  false
+#error "dont be default yet"
+#endif
 
 
 #define ENABLE_DEVFEATURE_LIGHTING__SLOW_GLOW_LEGACY_FIX
@@ -465,6 +474,9 @@ class mAnimatorLight :
     uint32_t colorBalanceFromKelvin(uint16_t kelvin, uint32_t rgb);
     uint16_t approximateKelvinFromRGB(uint32_t rgb);
     #endif // ENABLE_DEVFEATURE_CREATE_MINIMAL_BUSSES_SINGLE_OUTPUT
+
+    unsigned long presetsModifiedTime = 0;
+    const char *getPresetsFileName(bool persistent = true);
 
     void EveryLoop();    
      
@@ -942,7 +954,7 @@ class mAnimatorLight :
     *** Specialised: 2D (No Audio) **********************************************************************************************************************************************
     **  Requires:     ***********************************************************************************************************************************************************
     *****************************************************************************************************************************************************************************/
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
+    #ifdef ENABLE_FEATURE_LIGHTING__2D_MATRIX
     uint16_t EffectAnim__2D__Blackhole();
     uint16_t EffectAnim__2D__ColouredBursts();
     uint16_t EffectAnim__2D__DNA();
@@ -1417,7 +1429,7 @@ class mAnimatorLight :
       /**
        * 2D (No Audio)
        **/
-      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
+      #ifdef ENABLE_FEATURE_LIGHTING__2D_MATRIX
       EFFECTS_FUNCTION__2D__BLACK_HOLE__ID,      
       EFFECTS_FUNCTION__2D__HIPHOTIC__ID,              
       EFFECTS_FUNCTION__2D__COLOURED_BURSTS__ID,         
@@ -3138,6 +3150,12 @@ inline void Set_DynamicBuffer_StartingColour(uint16_t pixelIndex, uint32_t color
     }
 }
 
+inline void Update_DynamicBuffer_DesiredColour_FullBrightness() {
+    // Restore full brightness (255)
+    Update_DynamicBuffer_DesiredColour_Brightness(255);
+}
+
+
 #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
 inline void Set_DynamicBuffer_DesiredColour_RgbwwColor(uint16_t pixelIndex, const RgbwwColor& color) {
     size_t offset = pixelIndex * 10; // Desired is the first part of the pair (5 bytes * 2)
@@ -3215,6 +3233,28 @@ inline RgbwwColor Get_DynamicBuffer_StartingColour_RgbwwColor(uint16_t pixelInde
     );
 }
 #endif
+
+
+inline void Update_DynamicBuffer_DesiredColour_Brightness(uint8_t bri_rgb, uint8_t bri_ww = 255) {
+    for (uint16_t pixelIndex = 0; pixelIndex < virtualLength(); pixelIndex++) {
+        size_t offset = pixelIndex * colour_width__used_in_effect_generate * 2; // Desired is the first part of the pair
+
+        // Apply brightness adjustment to RGB channels
+        coldata[offset + 0] = (coldata[offset + 0] * bri_rgb) / 255; // Red
+        coldata[offset + 1] = (coldata[offset + 1] * bri_rgb) / 255; // Green
+        coldata[offset + 2] = (coldata[offset + 2] * bri_rgb) / 255; // Blue
+
+        
+        if (colour_width__used_in_effect_generate > 3) { // Adjust white (W) if RGBW
+            coldata[offset + 3] = (coldata[offset + 3] * bri_ww) / 255; // White for RGBW or Warm White (WW)
+        }        
+        if (colour_width__used_in_effect_generate > 4) { // Adjust warm white (WW) and cool white (CW) if RGBWW
+            coldata[offset + 4] = (coldata[offset + 4] * bri_ww) / 255; // Cool White (CW)
+        }
+    }
+}
+
+
 
 /************************************************************************************
  ****** Higher Level Ops ********************************************************************* 
@@ -3299,7 +3339,8 @@ inline void AnimationProcess_LinearBlend_Dynamic_BufferU32(const AnimationParam&
 
             // Blend RGB/WRGB colors and write the result
             uint32_t blendedColor = ColourBlend(startColor, desiredColor, blendFactor);
-            // SERIAL_DEBUG_COL32i("anim----------------------", blendedColor, i);
+            if(i==0)
+            SERIAL_DEBUG_COL32i("anim----------------------", blendedColor, i);
             setPixelColor(i, blendedColor);
         }
     }
@@ -3841,10 +3882,15 @@ void sappend(char stype, const char* key, int val);
 #ifdef USE_MODULE_NETWORK_WEBSERVER
 void serveSettingsJS(AsyncWebServerRequest* request);
 void serveSettings(AsyncWebServerRequest* request, bool post = false);
-bool handleIfNoneMatchCacheHeader(AsyncWebServerRequest* request);
-void setStaticContentCacheHeaders(AsyncWebServerResponse *response);
+// bool handleIfNoneMatchCacheHeader(AsyncWebServerRequest* request);
+// void setStaticContentCacheHeaders(AsyncWebServerResponse *response);
 void serveIndex(AsyncWebServerRequest* request);
-void getSettingsJS(byte subPage, char* dest);
+
+#ifdef ENABLE_FEATURE_LIGHTING__XML_REQUESTS
+void getSettingsJS(byte subPage, Print& settingsScript);
+#else
+void getSettingsJS(byte subPage, char* dest); // phase out
+#endif
 void WebPage_Root_AddHandlers();
 #endif // USE_MODULE_NETWORK_WEBSERVER
 
@@ -3887,7 +3933,7 @@ bool serveLiveLeds(AsyncWebServerRequest* request, uint32_t wsClient = 0);
 void serveJson(AsyncWebServerRequest* request);
 
 bool  captivePortal(AsyncWebServerRequest *request);
-void  notFound(AsyncWebServerRequest *request);
+// void  notFound(AsyncWebServerRequest *request);
 
 
 #endif // ENABLE_WEBSERVER_LIGHTING_WEBUI
@@ -3977,7 +4023,6 @@ char serverDescription[40];
 
 bool syncToggleReceive     _INIT(false);   // UIs which only have a single button for sync should toggle send+receive if this is true, only send otherwise
 bool simplifiedUI          _INIT(false);   // enable simplified UI
-byte cacheInvalidate       _INIT(0);       // used to invalidate browser cache when switching from regular to simplified UI
 
 #ifndef WLED_DISABLE_ESPNOW
 bool enable_espnow_remote _INIT(false);
@@ -4017,7 +4062,6 @@ bool noWifiSleep _INIT(true);                          // disabling modem sleep 
 #else
 bool noWifiSleep _INIT(false);
 #endif
-
 typedef enum mapping1D2D {
   M12_Pixels = 0,
   M12_pBar = 1,
@@ -4025,6 +4069,17 @@ typedef enum mapping1D2D {
   M12_pCorner = 3,
   M12_sPinwheel = 4
 } mapping1D2D_t;
+
+
+
+#ifdef ENABLE_FEATURE_LIGHTING__XML_REQUESTS
+
+void XML_response(Print& dest);
+static void fillUMPins(Print& settingsScript, JsonObject &mods);
+void appendGPIOinfo(Print& settingsScript);
+void getSettingsJS(byte subPage, Print& settingsScript);
+
+#endif
 
 // Settings sub page IDs
 #define SUBPAGE_MENU              0
@@ -4158,7 +4213,7 @@ bool arlsForceMaxBri _INIT(false);                    // enable to force max bri
 #define DMX_MODE_MULTIPLE_DRGB    5            //every LED is addressed with its own RGB and share a master dimmer (ledCount * 3 + 1 channels)
 #define DMX_MODE_MULTIPLE_RGBW    6            //every LED is addressed with its own RGBW (ledCount * 4 channels)
 
-#ifdef WLED_ENABLE_DMX
+#ifdef ENABLE_FEATURE_LIGHTING__DMX
  #ifdef ESP8266
   DMXESPSerial dmx;
  #else //ESP32
@@ -4223,7 +4278,7 @@ bool useAMPM _INIT(false);       // 12h/24h clock format
 #define FLASH_COUNT 4 
 #define LED_SKIP_AMOUNT  0
 // #define MIN_SHOW_DELAY  15
-#define MIN_SHOW_DELAY   1 //(_frametime < 16 ? 8 : 15)
+#define MIN_SHOW_DELAY   2 //(_frametime < 16 ? 8 : 15)
 #define DEFAULT_LED_COUNT 30
 
 
@@ -4262,7 +4317,7 @@ bool useAMPM _INIT(false);       // 12h/24h clock format
 
 // // uint16_t userVar0 _INIT(0), userVar1 _INIT(0); //available for use in usermod
 
-// #ifdef WLED_ENABLE_DMX
+// #ifdef ENABLE_FEATURE_LIGHTING__DMX
 //   // dmx CONFIG
 //   byte DMXChannels _INIT(7);        // number of channels per fixture
 //   byte DMXFixtureMap[15] _INIT_N(({ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }));

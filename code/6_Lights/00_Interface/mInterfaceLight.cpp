@@ -389,6 +389,7 @@ void mInterfaceLight::Save_Module()
         JBI->Add("Length", bus_manager->busses[bus_i]->getLength());
         JBI->Add_P("BusType", bus_manager->busses[bus_i]->getTypeName());
 
+
         // JBI->Add_P("ColourOrder", bus_manager->getColourOrderName(bus_manager->busses[bus_i]->getColorOrder(), buffer, sizeof(buffer)) );
 
       JBI->Object_End();
@@ -1459,7 +1460,10 @@ uint8_t mInterfaceLight::ConstructJSON_Debug__BusConfig(uint8_t json_level, bool
 
       JBI->Add("getTypeName", bus_manager->busses[bus_i]->getTypeName());
 
-      
+      if(IS_BUSTYPE_DIGITAL(bus_manager->busses[bus_i]->getType()))
+      {
+        JBI->Add("interfaceType", bus_manager->busses[bus_i]->getInterfaceType()); 
+      }
 
       uint8_t pins[5] = {0};
       uint8_t pin_count = 0;

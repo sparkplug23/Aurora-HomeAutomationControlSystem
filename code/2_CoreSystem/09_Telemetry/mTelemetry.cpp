@@ -42,8 +42,8 @@ int8_t mTelemetry::Tasker(uint8_t function, JsonParserObject obj)
           JBI->GetBuffer());
       }    
     break;
-    case TASK_UPTIME_30_SECONDS:
-      // serial_messages_remaining_to_send = mqtthandler_list.size();
+    case TASK_UPTIME_1_MINUTES:
+      serial_messages_remaining_to_send = mqtthandler_list.size();
     break;
     /************
      * MQTT SECTION * 

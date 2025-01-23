@@ -1333,7 +1333,6 @@ public mTaskerInterface{
     PGM_P GetModuleName(){          return PM_MODULE_NETWORK_WEBSERVER_CTR; }
     uint16_t GetModuleUniqueID(){ return D_UNIQUE_MODULE_NETWORK_WEBSERVER_ID; }
 
-    AsyncWebServer* server = nullptr; //(80);
 
 void createEditHandler(bool enable);
 static String msgProcessor(const String& var);
@@ -1346,6 +1345,11 @@ void initServer();
     
     int8_t Tasker(uint8_t function, JsonParserObject obj = 0);
     void init(void);
+
+    #ifndef MDNS_NAME
+      #define MDNS_NAME DEFAULT_MDNS_NAME
+    #endif
+    char cmDNS[33] = MDNS_NAME;                // mDNS address (*.local, replaced by wledXXXXXX if default is used)
 
 
 
@@ -1360,11 +1364,19 @@ void initServer();
 
     const char* GetContentTypeCtrP_By_ID(uint8_t id);
 
+
+// server library objects
+AsyncWebServer* server = nullptr; //(80);
+#ifdef ENABLE_DEVFEATURE_LIGHTING__JSONLIVE_WEBSOCKETS
+AsyncWebSocket* ws = nullptr;
+#endif
 AsyncWebHandler *editHandler = nullptr;
 
 
 void serveMessage(AsyncWebServerRequest* request, uint16_t code, const String& headl, const String& subl, byte optionT);
 
+
+void handleStaticContent(AsyncWebServerRequest *request, const String &path, int code, const String &contentType, const uint8_t *content, size_t len, bool gzip = true, uint16_t eTagSuffix = 0);
 
 
 
@@ -1478,8 +1490,13 @@ void serveMessage(AsyncWebServerRequest* request, uint16_t code, const String& h
 
 #ifdef ENABLE_DEVFEATURE_NETWORK__MOVE_LIGHTING_WEBUI_INTO_SHARED_MODULE
 bool captivePortal(AsyncWebServerRequest *request);
+byte cacheInvalidate       = 0;       // used to invalidate browser cache when switching from regular to simplified UI
 
-void setStaticContentCacheHeaders(AsyncWebServerResponse *response);
+void setStaticContentCacheHeaders(AsyncWebServerResponse *response); //old
+void setStaticContentCacheHeaders(AsyncWebServerResponse *response, int code, uint16_t eTagSuffix = 0); // new
+void generateEtag(char *etag, uint16_t eTagSuffix);
+
+bool handleIfNoneMatchCacheHeader(AsyncWebServerRequest *request, int code, uint16_t eTagSuffix = 0);
 
 bool isIp(String str);
 

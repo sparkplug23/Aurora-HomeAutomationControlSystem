@@ -285,8 +285,8 @@ void mAnimatorLight::serializeInfo(JsonObject root)
     root[F("lip")] = realtimeIP.toString();
   }
 
-  #ifdef WLED_ENABLE_WEBSOCKETS
-  root[F("ws")] = ws.count();
+  #ifdef ENABLE_DEVFEATURE_LIGHTING__JSONLIVE_WEBSOCKETS
+  root[F("ws")] = pCONT_web->ws->count();
   #else
   root[F("ws")] = -1;
   #endif
@@ -1022,7 +1022,7 @@ bool mAnimatorLight::deserializeConfig(JsonObject doc, bool fromFS) {
   CJSON(arlsDisableGammaCorrection, if_live[F("no-gc")]); // false
   CJSON(arlsOffset, if_live[F("offset")]); // 0
 
-  #ifdef WLED_ENABLE_DMX
+  #ifdef ENABLE_FEATURE_LIGHTING__DMX
   JsonObject dmx = doc["dmx"];
   CJSON(DMXChannels, dmx[F("chan")]);
   CJSON(DMXGap,dmx[F("gap")]);
@@ -1532,31 +1532,31 @@ bool mAnimatorLight::deserializeSegment(JsonObject elem, byte it, byte presetId)
 #ifdef ENABLE_WEBSERVER_LIGHTING_WEBUI
 
 
-bool mAnimatorLight::handleIfNoneMatchCacheHeader(AsyncWebServerRequest* request)
-{
-  AsyncWebHeader* header = request->getHeader("If-None-Match");
-  if (header && header->value() == String(PROJECT_VERSION)) {
-    request->send(304);
-    return true;
-  }
-  return false;
-}
+// bool mAnimatorLight::handleIfNoneMatchCacheHeader(AsyncWebServerRequest* request)
+// {
+//   AsyncWebHeader* header = request->getHeader("If-None-Match");
+//   if (header && header->value() == String(PROJECT_VERSION)) {
+//     request->send(304);
+//     return true;
+//   }
+//   return false;
+// }
 
-void mAnimatorLight::setStaticContentCacheHeaders(AsyncWebServerResponse *response)
-{
-  char tmp[40];
-  // https://medium.com/@codebyamir/a-web-developers-guide-to-browser-caching-cc41f3b73e7c
-  #ifdef ENABLE_DEVFEATURE_WEBPAGE__FORCE_NO_CACHE_WITH_RELOAD_ON_WEB_REFRESH
-  response->addHeader(F("Cache-Control"),"no-store,max-age=0"); // prevent caching if debug build
-  #else
-  // This header name is misleading, "no-cache" will not disable cache,
-  // it just revalidates on every load using the "If-None-Match" header with the last ETag value
-  response->addHeader(F("Cache-Control"),"no-cache");
-  #endif
+// void mAnimatorLight::setStaticContentCacheHeaders(AsyncWebServerResponse *response)
+// {
+//   char tmp[40];
+//   // https://medium.com/@codebyamir/a-web-developers-guide-to-browser-caching-cc41f3b73e7c
+//   #ifdef ENABLE_DEVFEATURE_WEBPAGE__FORCE_NO_CACHE_WITH_RELOAD_ON_WEB_REFRESH
+//   response->addHeader(F("Cache-Control"),"no-store,max-age=0"); // prevent caching if debug build
+//   #else
+//   // This header name is misleading, "no-cache" will not disable cache,
+//   // it just revalidates on every load using the "If-None-Match" header with the last ETag value
+//   response->addHeader(F("Cache-Control"),"no-cache");
+//   #endif
 
-  snprintf_P(tmp, sizeof(tmp), PSTR("%d-%02x"), PROJECT_VERSION, cacheInvalidate);
-  response->addHeader(F("ETag"), tmp);
-}
+//   snprintf_P(tmp, sizeof(tmp), PSTR("%d-%02x"), PROJECT_VERSION, pCONT_web->cacheInvalidate);
+//   response->addHeader(F("ETag"), tmp);
+// }
 
 
 #ifndef ENABLE_DEVFEATURE_LIGHTING__PRESET_LOAD_FROM_FILE
@@ -1595,7 +1595,7 @@ void mAnimatorLight::serveIndex(AsyncWebServerRequest* request)
     return;
   }
 
-  if (handleIfNoneMatchCacheHeader(request))
+  if (pCONT_web->handleIfNoneMatchCacheHeader(request, 200)) //tmp fix of 200, phasing out
   {
     return;
   }
@@ -1609,9 +1609,13 @@ void mAnimatorLight::serveIndex(AsyncWebServerRequest* request)
     response = request->beginResponse_P(200, "text/html", PAGE_index, PAGE_index_L);
 
   response->addHeader(FPSTR(s_content_enc),"gzip");
-  setStaticContentCacheHeaders(response);
+  pCONT_web->setStaticContentCacheHeaders(response);
   request->send(response);
 }
+
+
+
+#ifndef ENABLE_FEATURE_LIGHTING__XML_REQUESTS  // phase out
 
 //get values for settings form in javascript
 void mAnimatorLight::getSettingsJS(byte subPage, char* dest)
@@ -1629,7 +1633,7 @@ void mAnimatorLight::getSettingsJS(byte subPage, char* dest)
   #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS // include only if 2D is compiled in
     oappend(PSTR("gId('2dbtn').style.display='';"));
   #endif
-  #ifdef WLED_ENABLE_DMX // include only if DMX is enabled
+  #ifdef ENABLE_FEATURE_LIGHTING__DMX // include only if DMX is enabled
     oappend(PSTR("gId('dmxbtn').style.display='';"));
   #endif
   }
@@ -2042,7 +2046,7 @@ void mAnimatorLight::getSettingsJS(byte subPage, char* dest)
   //   oappend(SET_F("\";"));
   // }
 
-  // #ifdef WLED_ENABLE_DMX // include only if DMX is enabled
+  // #ifdef ENABLE_FEATURE_LIGHTING__DMX // include only if DMX is enabled
   // if (subPage == SUBPAGE_DMX)
   // {
   //   sappend('v',SET_F("PU"),e131ProxyUniverse);
@@ -2144,6 +2148,8 @@ void mAnimatorLight::getSettingsJS(byte subPage, char* dest)
   }
 }
 
+#endif // ENABLE_FEATURE_LIGHTING__XML_REQUESTS
+
 
 
 
@@ -2182,7 +2188,7 @@ void mAnimatorLight::handleUpload(AsyncWebServerRequest *request, const String& 
       }
       request->send(200, "text/plain", F("File Uploaded!"));
     }
-    cacheInvalidate++;
+    pCONT_web->cacheInvalidate++;
   }
 }
 
@@ -2614,6 +2620,82 @@ void mAnimatorLight::serializeModeNames(JsonArray arr, bool flag_get_first_name_
 }
 
 
+// New ifdef to test out websockets
+#ifdef ENABLE_DEVFEATURE_LIGHTING__JSONLIVE_WEBSOCKETS
+
+
+#define MAX_LIVE_LEDS 256
+
+bool mAnimatorLight::serveLiveLeds(AsyncWebServerRequest* request, uint32_t wsClient)
+{
+  #ifdef WLED_ENABLE_WEBSOCKETS2
+  AsyncWebSocketClient * wsc = nullptr;
+  if (!request) { //not HTTP, use Websockets
+    wsc = pCONT_web->ws->client(wsClient);
+    if (!wsc || wsc->queueLength() > 0) return false; //only send if queue free
+  }
+  #endif
+
+  unsigned used = getLengthTotal();
+  unsigned n = (used -1) /MAX_LIVE_LEDS +1; //only serve every n'th LED if count over MAX_LIVE_LEDS
+#ifndef WLED_DISABLE_2D
+  if (isMatrix) {
+    // ignore anything behid matrix (i.e. extra strip)
+    used = Segment::maxWidth*Segment::maxHeight; // always the size of matrix (more or less than strip.getLengthTotal())
+    n = 1;
+    if (used > MAX_LIVE_LEDS) n = 2;
+    if (used > MAX_LIVE_LEDS*4) n = 4;
+  }
+#endif
+
+  DynamicBuffer buffer(9 + (9*(1+(used/n))) + 7 + 5 + 6 + 5 + 6 + 5 + 2);  
+  char* buf = buffer.data();      // assign buffer for oappnd() functions
+  strncpy_P(buffer.data(), PSTR("{\"leds\":["), buffer.size());
+  buf += 9; // sizeof(PSTR()) from last line
+
+  for (size_t i = 0; i < used; i += n)
+  {
+#ifndef WLED_DISABLE_2D
+    if (isMatrix && n>1 && (i/Segment::maxWidth)%n) i += Segment::maxWidth * (n-1);
+#endif
+    uint32_t c = getPixelColor(i);
+    uint8_t r = R(c);
+    uint8_t g = G(c);
+    uint8_t b = B(c);
+    uint8_t w = W(c);
+    r = scale8(qadd8(w, r), getBrightness()); //R, add white channel to RGB channels as a simple RGBW -> RGB map
+    g = scale8(qadd8(w, g), getBrightness()); //G
+    b = scale8(qadd8(w, b), getBrightness()); //B
+    buf += sprintf_P(buf, PSTR("\"%06X\","), RGBW32(r,g,b,0));
+  }
+  buf--;  // remove last comma
+  buf += sprintf_P(buf, PSTR("],\"n\":%d"), n);
+#ifndef WLED_DISABLE_2D
+  if (isMatrix) {
+    buf += sprintf_P(buf, PSTR(",\"w\":%d"), Segment::maxWidth/n);
+    buf += sprintf_P(buf, PSTR(",\"h\":%d"), Segment::maxHeight/n);
+  }
+#endif
+  (*buf++) = '}';
+  (*buf++) = 0;
+  
+  if (request) {
+    request->send(200, "application/json", toString(std::move(buffer)));
+  }
+  #ifdef WLED_ENABLE_WEBSOCKETS2
+  else {
+    wsc->text(toString(std::move(buffer)));
+  }
+  #endif  
+  return true;
+}
+
+
+#else
+
+
+
+
 #define MAX_LIVE_LEDS 180
 
 bool mAnimatorLight::serveLiveLeds(AsyncWebServerRequest* request, uint32_t wsClient)
@@ -2675,6 +2757,9 @@ bool mAnimatorLight::serveLiveLeds(AsyncWebServerRequest* request, uint32_t wsCl
 }
 
 
+#endif
+
+
 void mAnimatorLight::serveJson(AsyncWebServerRequest* request)
 {
 
@@ -2688,10 +2773,12 @@ void mAnimatorLight::serveJson(AsyncWebServerRequest* request)
   else if (url.indexOf("palx")  > 0) subJson = JSON_PATH_PALETTES;
   else if (url.indexOf("fxda")  > 0) subJson = JSON_PATH_FXDATA;
   else if (url.indexOf("net")   > 0) subJson = JSON_PATH_NETWORKS;
+  #ifdef WLED_ENABLE_JSONLIVE
   else if (url.indexOf("live")  > 0) { 
     serveLiveLeds(request);
     return;
   }
+  #endif
   else if (url.indexOf("pal") > 0) { // "/json/palettes"
 
     JBI->Start();
@@ -2807,9 +2894,35 @@ void mAnimatorLight::serveJson(AsyncWebServerRequest* request)
 
 void mAnimatorLight::serveSettingsJS(AsyncWebServerRequest* request)
 {
+  // if (request->url().indexOf(FPSTR(_common_js)) > 0) {
+  //   pCONT_web->handleStaticContent(request, FPSTR(_common_js), 200, FPSTR(CONTENT_TYPE_JAVASCRIPT), JS_common, JS_common_length);
+  //   return;
+  // }
+  
+  byte subPage = request->arg(F("p")).toInt();
+  if (subPage > 10) {
+    request->send_P(501, FPSTR(CONTENT_TYPE_JAVASCRIPT), PSTR("alert('Settings for this request are not implemented.');"));
+    return;
+  }
+  // if (subPage > 0 && !correctPIN && strlen(settingsPIN)>0) {
+  //   request->send_P(401, FPSTR(CONTENT_TYPE_JAVASCRIPT), PSTR("alert('PIN incorrect.');"));
+  //   return;
+  // }
+  
+  #ifdef ENABLE_FEATURE_LIGHTING__XML_REQUESTS
+  AsyncResponseStream *response = request->beginResponseStream(FPSTR(CONTENT_TYPE_JAVASCRIPT));
+  response->addHeader(F("Cache-Control"), F("no-store"));
+  response->addHeader(F("Expires"), F("0"));
+
+  response->print(F("function GetV(){var d=document;"));
+  getSettingsJS(subPage, *response);
+  response->print(F("}"));
+  request->send(response);
+  #else // old way to be replaced
+
   char buf[SETTINGS_STACK_BUF_SIZE+37];
   buf[0] = 0;
-  byte subPage = request->arg(F("p")).toInt();
+  subPage = request->arg(F("p")).toInt();
   if (subPage > 10) {
     strcpy_P(buf, PSTR("alert('Settings for this request are not implemented.');"));
     request->send(501, "application/javascript", buf);
@@ -2824,6 +2937,7 @@ void mAnimatorLight::serveSettingsJS(AsyncWebServerRequest* request)
   getSettingsJS(subPage, buf+strlen(buf));  // this may overflow by 35bytes!!!
   strcat_P(buf,PSTR("}"));
   request->send(200, "application/javascript", buf);
+  #endif
 }
 
 
@@ -2842,22 +2956,41 @@ void mAnimatorLight::serveSettings(AsyncWebServerRequest* request, bool post)
     else if (url.indexOf("sync") > 0) subPage = SUBPAGE_SYNC;
     else if (url.indexOf("time") > 0) subPage = SUBPAGE_TIME;
     else if (url.indexOf("sec")  > 0) subPage = SUBPAGE_SEC;
+    #ifdef ENABLE_FEATURE_LIGHTING__DMX
     else if (url.indexOf("dmx")  > 0) subPage = SUBPAGE_DMX;
+    #endif
     else if (url.indexOf("um")   > 0) subPage = SUBPAGE_UM;
+    #ifdef ENABLE_FEATURE_LIGHTING__2D_MATRIX
     else if (url.indexOf("2D")   > 0) subPage = SUBPAGE_2D;
+    #endif
     else if (url.indexOf("lock") > 0) subPage = SUBPAGE_LOCK;
   }
   else if (url.indexOf("/update") >= 0) subPage = SUBPAGE_UPDATE; // update page, for PIN check
   else subPage = SUBPAGE_WELCOME;
 
-  // if (!correctPIN && strlen(settingsPIN) > 0 && 
-  if((subPage > 0 && subPage < 11)) {
+  if(
+  #ifdef ENABLE_FEATURE_WEBSERVER__PIN_PROTECTION
+  !correctPIN && strlen(settingsPIN) > 0 && 
+  #endif
+  (subPage > 0 && subPage < 11))
+  {
     originalSubPage = subPage;
-    // subPage = SUBPAGE_PINREQ; // require PIN
+    #ifdef ENABLE_FEATURE_WEBSERVER__PIN_PROTECTION
+    subPage = SUBPAGE_PINREQ; // require PIN
+    #endif
   }
 
+  #ifdef ENABLE_FEATURE_WEBSERVER__PIN_PROTECTION
+  // if OTA locked or too frequent PIN entry requests fail hard
+  if ((subPage == SUBPAGE_WIFI && wifiLock && otaLock) || (post && !correctPIN && millis()-lastEditTime < PIN_RETRY_COOLDOWN))
+  {
+    serveMessage(request, 401, FPSTR(s_accessdenied), FPSTR(s_unlock_ota), 254); return;
+  }
+  #endif
+
   if (post) { //settings/set POST request, saving
-    // if (subPage != SUBPAGE_WIFI || !(wifiLock && otaLock)) handleSettingsSet(request, subPage);
+
+    // if (subPage != SUBPAGE_WIFI || !(wifiLock && otaLock)) handleSettingsSet(request, subPage);   // I should have this?
 
     char s[32];
     char s2[45] = "";
@@ -2897,7 +3030,7 @@ void mAnimatorLight::serveSettings(AsyncWebServerRequest* request, bool post)
     case SUBPAGE_SYNC    : response = request->beginResponse_P(200, "text/html", PAGE_settings_sync, PAGE_settings_sync_length); break;
     case SUBPAGE_TIME    : response = request->beginResponse_P(200, "text/html", PAGE_settings_time, PAGE_settings_time_length); break;
     case SUBPAGE_SEC     : response = request->beginResponse_P(200, "text/html", PAGE_settings_sec,  PAGE_settings_sec_length);  break;
-    #ifdef WLED_ENABLE_DMX
+    #ifdef ENABLE_FEATURE_LIGHTING__DMX
     case SUBPAGE_DMX     : response = request->beginResponse_P(200, "text/html", PAGE_settings_dmx,  PAGE_settings_dmx_length);  break;
     #endif
     case SUBPAGE_UM      : response = request->beginResponse_P(200, "text/html", PAGE_settings_um,   PAGE_settings_um_length);   break;
@@ -2905,12 +3038,14 @@ void mAnimatorLight::serveSettings(AsyncWebServerRequest* request, bool post)
     #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
     case SUBPAGE_2D      : response = request->beginResponse_P(200, "text/html", PAGE_settings_2D,   PAGE_settings_2D_length);   break;
     #endif
-    // case SUBPAGE_LOCK    : {
-    //   correctPIN = !strlen(settingsPIN); // lock if a pin is set
-    //   pCONT_web->createEditHandler(true);
-    //   pCONT_web->serveMessage(request, 200, strlen(settingsPIN) > 0 ? PSTR("Settings locked") : PSTR("No PIN set"), FPSTR(s_redirecting), 1);
-    //   return;
-    // }
+    #ifdef ENABLE_FEATURE_WEBSERVER__PIN_PROTECTION
+    case SUBPAGE_LOCK    : {
+      correctPIN = !strlen(settingsPIN); // lock if a pin is set
+      createEditHandler(correctPIN);
+      serveMessage(request, 200, strlen(settingsPIN) > 0 ? PSTR("Settings locked") : PSTR("No PIN set"), FPSTR(s_redirecting), 1);
+      return;
+    }
+    #endif
     case SUBPAGE_PINREQ  : response = request->beginResponse_P(200, "text/html", PAGE_settings_pin,  PAGE_settings_pin_length);  break;
     case SUBPAGE_CSS     : response = request->beginResponse_P(200, "text/css",  PAGE_settingsCss,   PAGE_settingsCss_length);   break;
     case SUBPAGE_JS      : serveSettingsJS(request); return;
@@ -2918,7 +3053,7 @@ void mAnimatorLight::serveSettings(AsyncWebServerRequest* request, bool post)
     default:  response = request->beginResponse_P(200, "text/html", PAGE_settings,      PAGE_settings_length);      break;
   }
   response->addHeader(FPSTR(s_content_enc),"gzip");
-  setStaticContentCacheHeaders(response);
+  pCONT_web->setStaticContentCacheHeaders(response);
   request->send(response);
 }
 
@@ -2934,18 +3069,14 @@ bool mAnimatorLight::isIp(String str) {
 }
 
 
-
-
-
 bool  mAnimatorLight::captivePortal(AsyncWebServerRequest *request)
 {
-  if (ON_STA_FILTER(request)) return false; //only serve captive in AP mode
-  String hostH;
-  if (!request->hasHeader("Host")) return false;
-  hostH = request->getHeader("Host")->value();
+  if (!apActive) return false; //only serve captive in AP mode
+  if (!request->hasHeader(F("Host"))) return false;
 
-  if (!isIp(hostH) && hostH.indexOf("wled.me") < 0 && hostH.indexOf(tkr_set->Settings.system_name.device) < 0) {
-    DEBUG_PRINTLN("Captive portal");
+  String hostH = request->getHeader(F("Host"))->value();
+  if (!isIp(hostH) && hostH.indexOf(F("wled.me")) < 0 && hostH.indexOf(pCONT_web->cmDNS) < 0 && hostH.indexOf(':') < 0) {
+    DEBUG_PRINTLN(F("Captive portal"));
     AsyncWebServerResponse *response = request->beginResponse(302);
     response->addHeader(F("Location"), F("http://4.3.2.1"));
     request->send(response);
@@ -2955,40 +3086,26 @@ bool  mAnimatorLight::captivePortal(AsyncWebServerRequest *request)
 }
 
 
-void  mAnimatorLight::notFound(AsyncWebServerRequest *request) 
-{
-    request->send(404, "text/plain", "Not found");
-}
-
-
 void mAnimatorLight::WebPage_Root_AddHandlers()
 {
-  // //CORS compatiblity
-  // DefaultHeaders::Instance().addHeader(F("Access-Control-Allow-Origin"), "*");
-  // DefaultHeaders::Instance().addHeader(F("Access-Control-Allow-Methods"), "*");
-  // DefaultHeaders::Instance().addHeader(F("Access-Control-Allow-Headers"), "*");
 
   releaseJSONBufferLock();
 
-  #ifdef WLED_ENABLE_WEBSOCKETS
+  #ifdef ENABLE_FEATURE_LIGHTING__WEBSOCKETS
   #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
   pCONT_web->server->on("/liveview2D", HTTP_GET, [](AsyncWebServerRequest *request){
-    if (handleIfNoneMatchCacheHeader(request)) return;
-    AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", PAGE_liveviewws2D, PAGE_liveviewws2D_length);
-    response->addHeader(FPSTR(s_content_enc),"gzip");
-    setStaticContentCacheHeaders(response);
-    request->send(response);
+    pCONT_web->handleStaticContent(request, "", 200, FPSTR(CONTENT_TYPE_HTML), PAGE_liveviewws2D, PAGE_liveviewws2D_length);
   });
   #endif
   #endif
-  
-  pCONT_web->server->on("/liveview", HTTP_GET, [this](AsyncWebServerRequest *request){
-    if (this->handleIfNoneMatchCacheHeader(request)) return;
-    AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", PAGE_liveview, PAGE_liveview_length);
-    response->addHeader(FPSTR(s_content_enc),"gzip");
-    this->setStaticContentCacheHeaders(response);
-    request->send(response);
+
+  pCONT_web->server->on("/liveview", HTTP_GET, [](AsyncWebServerRequest *request){
+    pCONT_web->handleStaticContent(request, "", 200, FPSTR(CONTENT_TYPE_HTML), PAGE_liveview, PAGE_liveview_length);
   });
+
+  // pCONT_web->server->on(_common_js, HTTP_GET, [this](AsyncWebServerRequest *request){    
+  //   pCONT_web->handleStaticContent(request, FPSTR(_common_js), 200, FPSTR(CONTENT_TYPE_JAVASCRIPT), JS_common, JS_common_length);
+  // });
 
   //settings page
   pCONT_web->server->on("/settings", HTTP_GET, [this](AsyncWebServerRequest *request){
@@ -2996,30 +3113,27 @@ void mAnimatorLight::WebPage_Root_AddHandlers()
   });
 
   // "/settings/settings.js&p=x" request also handled by serveSettings()
-
+  static const char _style_css[] PROGMEM = "/style.css";
   pCONT_web->server->on("/style.css", HTTP_GET, [this](AsyncWebServerRequest *request){
-    if (handleIfNoneMatchCacheHeader(request)) return;
-    AsyncWebServerResponse *response = request->beginResponse_P(200, "text/css", PAGE_settingsCss, PAGE_settingsCss_length);
-    response->addHeader(FPSTR(s_content_enc),"gzip");
-    this->setStaticContentCacheHeaders(response);
-    request->send(response);
+    pCONT_web->handleStaticContent(request, FPSTR(_style_css), 200, FPSTR(CONTENT_TYPE_CSS), PAGE_settingsCss, PAGE_settingsCss_length);
   });
 
-  pCONT_web->server->on("/favicon.ico", HTTP_GET, [this](AsyncWebServerRequest *request){
-    if(!pCONT_mfile->handleFileRead(request, "/favicon.ico"))
-    {
-      request->send_P(200, "image/x-icon", favicon, 156);
-    }
+  static const char _favicon_ico[] PROGMEM = "/favicon.ico";
+  pCONT_web->server->on(_favicon_ico, HTTP_GET, [](AsyncWebServerRequest *request){
+    pCONT_web->handleStaticContent(request, FPSTR(_favicon_ico), 200, F("image/x-icon"), favicon, favicon_length, false);
+  });
+
+  static const char _skin_css[] PROGMEM = "/skin.css";
+  pCONT_web->server->on(_skin_css, HTTP_GET, [](AsyncWebServerRequest *request){
+    if (pCONT_mfile->handleFileRead(request, FPSTR(_skin_css))) return;
+    AsyncWebServerResponse *response = request->beginResponse(200, FPSTR(CONTENT_TYPE_CSS));
+    request->send(response);
   });
 
   pCONT_web->server->on("/welcome", HTTP_GET, [this](AsyncWebServerRequest *request){
     this->serveSettings(request);
   });
 
-  pCONT_web->server->on("/reset", HTTP_GET, [this](AsyncWebServerRequest *request){
-    pCONT_web->serveMessage(request, 200,F("Rebooting now..."),F("Please wait ~10 seconds..."),129);
-    doReboot = true;
-  });
 
   pCONT_web->server->on("/settings", HTTP_POST, [this](AsyncWebServerRequest *request){
     this->serveSettings(request, true);
@@ -3145,25 +3259,29 @@ void mAnimatorLight::WebPage_Root_AddHandlers()
 
     if (verboseResponse) {
       if (!isConfig) {
+        lastInterfaceUpdate = millis(); // prevent WS update until cooldown
+        interfaceUpdateCallMode = CALL_MODE_WS_SEND; // schedule WS update
         this->serveJson(request); return; //if JSON contains "v"
       } else {
         doSerializeConfig = true; //serializeConfig(); //Save new settings to FS
       }
     }
-    request->send(200, "application/json", F("{\"success\":true}"));
+    request->send(200, CONTENT_TYPE_JSON, F("{\"success\":true}"));
   }, JSON_BUFFER_SIZE);
   pCONT_web->server->addHandler(handler);
 
+
+
   pCONT_web->server->on("/version", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(200, "text/plain", (String)PROJECT_VERSION);
+    request->send(200, FPSTR(CONTENT_TYPE_PLAIN), (String)PROJECT_VERSION);
   });
 
   pCONT_web->server->on("/uptime", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(200, "text/plain", (String)millis());
+    request->send(200, FPSTR(CONTENT_TYPE_PLAIN), (String)millis());
   });
 
   pCONT_web->server->on("/freeheap", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(200, "text/plain", (String)ESP.getFreeHeap());
+    request->send(200, FPSTR(CONTENT_TYPE_PLAIN), (String)ESP.getFreeHeap());
   });
 
 #ifdef WLED_ENABLE_USERMOD_PAGE
@@ -3200,7 +3318,7 @@ void mAnimatorLight::WebPage_Root_AddHandlers()
     Serial.println("/iro.js");
     AsyncWebServerResponse *response = request->beginResponse_P(200, "application/javascript", iroJs, iroJs_length);
     response->addHeader(FPSTR(s_content_enc),"gzip");
-    this->setStaticContentCacheHeaders(response);
+    pCONT_web->setStaticContentCacheHeaders(response);
     request->send(response);
   });
 
@@ -3208,12 +3326,12 @@ void mAnimatorLight::WebPage_Root_AddHandlers()
     Serial.println("/rangetouch.js");
     AsyncWebServerResponse *response = request->beginResponse_P(200, "application/javascript", rangetouchJs, rangetouchJs_length);
     response->addHeader(FPSTR(s_content_enc),"gzip");
-    this->setStaticContentCacheHeaders(response);
+    pCONT_web->setStaticContentCacheHeaders(response);
     request->send(response);
   });
 
 
-  #ifdef WLED_ENABLE_DMX
+  #ifdef ENABLE_FEATURE_LIGHTING__DMX
   pCONT_web->server->on("/dmxmap", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send_P(200, "text/html", PAGE_dmxmap     , dmxProcessor);
   });
@@ -3225,47 +3343,34 @@ void mAnimatorLight::WebPage_Root_AddHandlers()
 
   pCONT_web->server->on("/", HTTP_GET, [this](AsyncWebServerRequest *request){
     if (captivePortal(request)) return;
-    bool showWelcomePage = false;
-    if (!showWelcomePage || request->hasArg(F("sliders"))){
-      this->serveIndex(request);
+    if (!showWelcomePage || request->hasArg(F("sliders"))) {
+      pCONT_web->handleStaticContent(request, F("/index.htm"), 200, FPSTR(CONTENT_TYPE_HTML), PAGE_index, PAGE_index_L);
     } else {
-      this->serveSettings(request);
+      serveSettings(request);
     }
   });
 
   #ifdef WLED_ENABLE_PIXART
-  pCONT_web->server->on("/pixart.htm", HTTP_GET, [](AsyncWebServerRequest *request){
-    if (handleFileRead(request, "/pixart.htm")) return;
-    if (handleIfNoneMatchCacheHeader(request)) return;
-    AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", PAGE_pixart, PAGE_pixart_L);
-    response->addHeader(FPSTR(s_content_enc),"gzip");
-    setStaticContentCacheHeaders(response);
-    request->send(response);
+  static const char _pixart_htm[] PROGMEM = "/pixart.htm";
+  pCONT_web->server->on(_pixart_htm, HTTP_GET, [](AsyncWebServerRequest *request){
+    pCONT_web->handleStaticContent(request, FPSTR(_pixart_htm), 200, FPSTR(CONTENT_TYPE_HTML), PAGE_pixart, PAGE_pixart_L);
   });
   #endif
 
   #ifndef WLED_DISABLE_PXMAGIC
-  pCONT_web->server->on("/pxmagic.htm", HTTP_GET, [this](AsyncWebServerRequest *request){
-    if (pCONT_mfile->handleFileRead(request, "/pxmagic.htm")) return;
-    if (this->handleIfNoneMatchCacheHeader(request)) return;
-    AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", PAGE_pxmagic, PAGE_pxmagic_L);
-    response->addHeader(FPSTR(s_content_enc),"gzip");
-    this->setStaticContentCacheHeaders(response);
-    request->send(response);
+  static const char _pxmagic_htm[] PROGMEM = "/pxmagic.htm";
+  pCONT_web->server->on(_pxmagic_htm, HTTP_GET, [](AsyncWebServerRequest *request){
+    pCONT_web->handleStaticContent(request, FPSTR(_pxmagic_htm), 200, FPSTR(CONTENT_TYPE_HTML), PAGE_pxmagic, PAGE_pxmagic_L);
   });
   #endif
 
-  pCONT_web->server->on("/cpal.htm", HTTP_GET, [this](AsyncWebServerRequest *request){
-    if (pCONT_mfile->handleFileRead(request, "/cpal.htm")) return;
-    if (this->handleIfNoneMatchCacheHeader(request)) return;
-    AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", PAGE_cpal, PAGE_cpal_L);
-    response->addHeader(FPSTR(s_content_enc),"gzip");
-    this->setStaticContentCacheHeaders(response);
-    request->send(response);
+  static const char _cpal_htm[] PROGMEM = "/cpal.htm";
+  pCONT_web->server->on(_cpal_htm, HTTP_GET, [](AsyncWebServerRequest *request){
+    pCONT_web->handleStaticContent(request, FPSTR(_cpal_htm), 200, FPSTR(CONTENT_TYPE_HTML), PAGE_cpal, PAGE_cpal_L);
   });
 
-  #ifdef WLED_ENABLE_WEBSOCKETS
-  pCONT_web->server->addHandler(&ws); // keep, not sure what it does
+  #ifdef ENABLE_FEATURE_LIGHTING__WEBSOCKETS
+  pCONT_web->server->addHandler(pCONT_web->ws); // keep, not sure what it does
   #endif
 
   #ifdef ENABLE_DEVFEATURE_LIGHTING__PRESET_LOAD_FROM_FILE
@@ -3273,12 +3378,7 @@ void mAnimatorLight::WebPage_Root_AddHandlers()
   //called when the url is not defined here, ajax-in; get-settings
   pCONT_web->server->onNotFound([this](AsyncWebServerRequest *request)
   {
-  
-    #ifdef ESP32
-    ALOG_ERR(PSTR("HTTP URI Not-Found: %s"), request->url());
-    #endif 
-
-    
+    ALOG_ERR(PSTR("HTTP URI Not-Found: %s"), request->url());    
     if (this->captivePortal(request)) return;
 
     //make API CORS compatible
@@ -3289,19 +3389,16 @@ void mAnimatorLight::WebPage_Root_AddHandlers()
       request->send(response);
       return;
     }
-
-    if(pCONT_mfile->handleFileRead(request, request->url())) return;
-    AsyncWebServerResponse *response = request->beginResponse_P(404, "text/html", PAGE_404, PAGE_404_length);
-    response->addHeader(FPSTR(s_content_enc),"gzip");
-    this->setStaticContentCacheHeaders(response);
-    request->send(response);
+    #ifdef ENABLE_FEATURE_LIGHTING__SETTINGS_URL_QUERY_PARAMETERS
+    if(handleSet(request, request->url())) return;
+    #endif
+    pCONT_web->handleStaticContent(request, request->url(), 404, FPSTR(CONTENT_TYPE_HTML), PAGE_404, PAGE_404_length);
   });
 
   #endif // ENABLE_DEVFEATURE_LIGHTING__PRESET_LOAD_FROM_FILE
 
   
 }
-
 
 
 #endif // ENABLE_WEBSERVER_LIGHTING_WEBUI

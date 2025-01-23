@@ -9,8 +9,8 @@
 
 #include <NeoPixelBusLg.h> // instead of NeoPixelBus.h
 
-const uint16_t PixelCount = 96; // set to the number of pixels in your strip
-const uint8_t PixelPin = 14;  // make sure to set this to the correct pin, ignored for Esp8266
+const uint16_t PixelCount = 256; // set to the number of pixels in your strip
+const uint8_t PixelPin = 2;  // make sure to set this to the correct pin, ignored for Esp8266
 
 RgbColor red(255, 0, 0);
 RgbColor green(0, 255, 0);
@@ -63,7 +63,7 @@ void loop()
     Serial.print("  ");
     Serial.println(luminance);
 
-    delay(200);
+    delay(20);
 
     // swap direction of luminance when limits are reached
     //

@@ -17,11 +17,25 @@
 static char *tmpRAMbuffer = nullptr;
 #endif
 
+static volatile byte presetToApply = 0;
+static volatile byte callModeToApply = 0;
+static volatile byte presetToSave = 0;
+static volatile int8_t saveLedmap = -1;
+static char *quickLoad = nullptr;
+static char *saveName = nullptr;
+static bool includeBri = true, segBounds = true, selectedOnly = false, playlistSave = false;;
 
+static const char presets_json[] PROGMEM = "/presets.json";
+static const char tmp_json[] PROGMEM = "/tmp.json";
+
+const char *mAnimatorLight::getPresetsFileName(bool persistent) {
+  return persistent ? presets_json : tmp_json;
+}
 const char *mAnimatorLight::getFileName(bool persist) 
 {
   return persist ? "/presets.json" : "/tmp.json";
 }
+
 
 
 void mAnimatorLight::doSaveState() 
@@ -31,6 +45,9 @@ void mAnimatorLight::doSaveState()
   ALOG_INF(PSTR("doSaveState() START"));
   // CommandSet_ReadFile("/presets.json");
   #endif
+  
+  unsigned long start = millis();
+  while (isUpdating() && millis()-start < (2*FRAMETIME)+1) yield(); // wait 2 frames
 
   bool persist = (presetToSave < 251);
   const char *filename = getFileName(persist);
@@ -245,14 +262,22 @@ bool mAnimatorLight::getPresetName(byte index, String& name)
 }
 
 
+
+
+
 void mAnimatorLight::initPresetsFile()
 {
   
-  if (FILE_SYSTEM.exists(getFileName()))
-  {
-    ALOG_INF(PSTR("initPresetsFile() -- already exists, exiting"));   
-    return;
-  }
+  // if (FILE_SYSTEM.exists(getFileName()))
+  // {
+  //   ALOG_INF(PSTR("initPresetsFile() -- already exists, exiting"));   
+  //   return;
+  // }
+  
+  char fileName[33]; strncpy_P(fileName, getPresetsFileName(), 32); fileName[32] = 0; //use PROGMEM safe copy as FS.open() does not
+  if (FILE_SYSTEM.exists(fileName)) return;
+
+
 
   StaticJsonDocument<64> doc;
   JsonObject sObj = doc.to<JsonObject>();

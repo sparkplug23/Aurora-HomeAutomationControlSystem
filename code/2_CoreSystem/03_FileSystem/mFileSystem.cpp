@@ -461,19 +461,82 @@ String mFileSystem::getContentType(AsyncWebServerRequest* request, String filena
 }
 
 
+#ifdef ARDUINO_ARCH_ESP32
+// caching presets in PSRAM may prevent occasional flashes seen when HomeAssitant polls WLED
+// original idea by @akaricchi (https://github.com/Akaricchi)
+// returns a pointer to the PSRAM buffer, updates size parameter
+static const uint8_t *getPresetCache(size_t &size) {
+  static unsigned long presetsCachedTime = 0;
+  static uint8_t *presetsCached = nullptr;
+  static size_t presetsCachedSize = 0;
+  static byte presetsCachedValidate = 0;
+
+  //if (presetsModifiedTime != presetsCachedTime) DEBUG_PRINTLN(F("getPresetCache(): presetsModifiedTime changed."));
+  //if (presetsCachedValidate != cacheInvalidate) DEBUG_PRINTLN(F("getPresetCache(): cacheInvalidate changed."));
+
+  if ((tkr_anim->presetsModifiedTime != presetsCachedTime) || (presetsCachedValidate != pCONT_web->cacheInvalidate)) {
+    if (presetsCached) {
+      free(presetsCached);
+      presetsCached = nullptr;
+    }
+  }
+
+  if (!presetsCached) {
+    File file = FILE_SYSTEM.open(FPSTR( tkr_anim->getPresetsFileName() ), "r");
+    if (file) {
+      presetsCachedTime = tkr_anim->presetsModifiedTime;
+      presetsCachedValidate = pCONT_web->cacheInvalidate;
+      presetsCachedSize = 0;
+      presetsCached = (uint8_t*)ps_malloc(file.size() + 1);
+      if (presetsCached) {
+        presetsCachedSize = file.size();
+        file.read(presetsCached, presetsCachedSize);
+        presetsCached[presetsCachedSize] = 0;
+        file.close();
+      }
+    }
+  }
+
+  size = presetsCachedSize;
+  return presetsCached;
+}
+#endif
+
 bool mFileSystem::handleFileRead(AsyncWebServerRequest* request, String path){
   
   ALOG_DBG(PSTR("WS FileRead: %s"), path);
-  
   if(path.endsWith("/")) path += "index.htm";
-  if(path.indexOf("sec") > -1) return false;
-  String contentType = getContentType(request, path);
-  if(FILE_SYSTEM.exists(path)) {
-    ALOG_INF(PSTR("Sending file %s from FILE_SYSTEM"), path.c_str());
-    request->send(FILE_SYSTEM, path, contentType);
+  if(path.indexOf(F("sec")) > -1) return false;
+  #ifdef ARDUINO_ARCH_ESP32
+  if (psramSafe && psramFound() && path.endsWith(FPSTR(  tkr_anim->getPresetsFileName() ))) {
+    size_t psize;
+    const uint8_t *presets = getPresetCache(psize);
+    if (presets) {
+      AsyncWebServerResponse *response = request->beginResponse_P(200, FPSTR(CONTENT_TYPE_JSON), presets, psize);
+      request->send(response);
+      return true;
+    }
+  }
+  #endif
+  if(FILE_SYSTEM.exists(path) || FILE_SYSTEM.exists(path + ".gz")) {
+    request->send(request->beginResponse(FILE_SYSTEM, path, {}, request->hasArg(F("download")), {}));
     return true;
   }
   return false;
+
+
+
+  // ALOG_DBG(PSTR("WS FileRead: %s"), path);
+  
+  // if(path.endsWith("/")) path += "index.htm";
+  // if(path.indexOf("sec") > -1) return false;
+  // String contentType = getContentType(request, path);
+  // if(FILE_SYSTEM.exists(path)) {
+  //   ALOG_INF(PSTR("Sending file %s from FILE_SYSTEM"), path.c_str());
+  //   request->send(FILE_SYSTEM, path, contentType);
+  //   return true;
+  // }
+  // return false;
   
 }
 

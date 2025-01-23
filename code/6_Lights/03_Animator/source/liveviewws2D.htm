@@ -20,10 +20,12 @@
 		function setCanvas() {
 			c.width  = window.innerWidth * 0.98; //remove scroll bars
 			c.height = window.innerHeight * 0.98; //remove scroll bars
+			console.log("Canvas size set to: ",c.width,"x",c.height);
 		}
 		setCanvas();
 		// Check for canvas support
 		var ctx = c.getContext('2d');
+		console.log("Canvas context: ",ctx);
 		if (ctx) { // Access the rendering context
 			// use parent WS or open new
 			var ws;
@@ -43,6 +45,7 @@
 				ws = new WebSocket(url+"/ws");
 				ws.onopen = ()=>{
 					ws.send("{'lv':true}");
+					console.log("WS opened");
 				}
 			}
 			ws.binaryType = "arraybuffer";
@@ -50,6 +53,7 @@
 				try {
 					if (toString.call(e.data) === '[object ArrayBuffer]') {
 						let leds = new Uint8Array(event.data);
+						console.log(leds);
 						if (leds[0] != 76 || leds[1] != 2 || !ctx) return; //'L', set in ws.cpp
 						let mW = leds[2]; // matrix width
 						let mH = leds[3]; // matrix height

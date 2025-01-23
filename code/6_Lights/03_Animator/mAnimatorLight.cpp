@@ -220,6 +220,252 @@ void mAnimatorLight::Save_Module()
 
 }
 
+// #include "wled.h"
+
+/*
+ * WebSockets server for bidirectional communication
+ */
+#ifdef WLED_ENABLE_WEBSOCKETS2
+
+uint16_t wsLiveClientId = 0;
+unsigned long wsLastLiveTime = 0;
+//uint8_t* wsFrameBuffer = nullptr;
+
+#define WS_LIVE_INTERVAL 40
+
+void sendDataWs(AsyncWebSocketClient * client)
+{
+  if (!pCONT_web->ws->count()) return;
+
+  if (!tkr_anim->requestJSONBufferLock(12)) {
+    const char* error = PSTR("{\"error\":3}");
+    if (client) {
+      client->text(FPSTR(error)); // ERR_NOBUF
+    } else {
+      pCONT_web->ws->textAll(FPSTR(error)); // ERR_NOBUF
+    }
+    return;
+  }
+
+  JsonObject state = tkr_anim->pDoc->createNestedObject("state");
+  tkr_anim->serializeState(state);
+  JsonObject info  = tkr_anim->pDoc->createNestedObject("info");
+  tkr_anim->serializeInfo(info);
+
+  size_t len = measureJson(*tkr_anim->pDoc);
+  DEBUG_PRINTF_P(PSTR("JSON buffer size: %u for WS request (%u).\n"), tkr_anim->pDoc->memoryUsage(), len);
+
+  // the following may no longer be necessary as heap management has been fixed by @willmmiles in AWS
+  size_t heap1 = ESP.getFreeHeap();
+  DEBUG_PRINTF_P(PSTR("heap %u\n"), ESP.getFreeHeap());
+  #ifdef ESP8266
+  if (len>heap1) {
+    DEBUG_PRINTLN(F("Out of memory (WS)!"));
+    return;
+  }
+  #endif
+  AsyncWebSocketBuffer buffer(len);
+  #ifdef ESP8266
+  size_t heap2 = ESP.getFreeHeap();
+  DEBUG_PRINTF_P(PSTR("heap %u\n"), ESP.getFreeHeap());
+  #else
+  size_t heap2 = 0; // ESP32 variants do not have the same issue and will work without checking heap allocation
+  #endif
+  if (!buffer || heap1-heap2<len) {
+    tkr_anim->releaseJSONBufferLock();
+    DEBUG_PRINTLN(F("WS buffer allocation failed."));
+    pCONT_web->ws->closeAll(1013); //code 1013 = temporary overload, try again later
+    pCONT_web->ws->cleanupClients(0); //disconnect all clients to release memory
+    return; //out of memory
+  }
+  serializeJson(*tkr_anim->pDoc, (char *)buffer.data(), len);
+
+  DEBUG_PRINT(F("Sending WS data "));
+  if (client) {
+    DEBUG_PRINTLN(F("to a single client."));
+    client->text(std::move(buffer));
+  } else {
+    DEBUG_PRINTLN(F("to multiple clients."));
+    pCONT_web->ws->textAll(std::move(buffer));
+  }
+
+  tkr_anim->releaseJSONBufferLock();
+}
+
+
+void wsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len)
+{
+  if(type == WS_EVT_CONNECT){
+    //client connected
+    DEBUG_PRINTLN(F("WS client connected."));
+    sendDataWs(client);
+  } else if(type == WS_EVT_DISCONNECT){
+    //client disconnected
+    if (client->id() == wsLiveClientId) wsLiveClientId = 0;
+    DEBUG_PRINTLN(F("WS client disconnected."));
+  } else if(type == WS_EVT_DATA){
+    // data packet
+    AwsFrameInfo * info = (AwsFrameInfo*)arg;
+    if(info->final && info->index == 0 && info->len == len){
+      // the whole message is in a single frame and we got all of its data (max. 1450 bytes)
+      if(info->opcode == WS_TEXT)
+      {
+        if (len > 0 && len < 10 && data[0] == 'p') {
+          // application layer ping/pong heartbeat.
+          // client-side socket layer ping packets are unanswered (investigate)
+          client->text(F("pong"));
+          return;
+        }
+
+        bool verboseResponse = false;
+        if (!tkr_anim->requestJSONBufferLock(11)) {
+          client->text(F("{\"error\":3}")); // ERR_NOBUF
+          return;
+        }
+
+        DeserializationError error = deserializeJson(*tkr_anim->pDoc, data, len);
+        JsonObject root = tkr_anim->pDoc->as<JsonObject>();
+        if (error || root.isNull()) {
+          tkr_anim->releaseJSONBufferLock();
+          return;
+        }
+        if (root["v"] && root.size() == 1) {
+          //if the received value is just "{"v":true}", send only to this client
+          verboseResponse = true;
+        } else if (root.containsKey("lv")) {
+          wsLiveClientId = root["lv"] ? client->id() : 0;
+        } else {
+          verboseResponse = tkr_anim->deserializeState(root);
+        }
+        tkr_anim->releaseJSONBufferLock();
+
+        if (!tkr_anim->interfaceUpdateCallMode) { // individual client response only needed if no WS broadcast soon
+          if (verboseResponse) {
+            sendDataWs(client);
+          } else {
+            // we have to send something back otherwise WS connection closes
+            client->text(F("{\"success\":true}"));
+          }
+          // force broadcast in 500ms after updating client
+          //lastInterfaceUpdate = millis() - (INTERFACE_UPDATE_COOLDOWN -500); // ESP8266 does not like this
+        }
+      }
+    } else {
+      //message is comprised of multiple frames or the frame is split into multiple packets
+      //if(info->index == 0){
+        //if (!wsFrameBuffer && len < 4096) wsFrameBuffer = new uint8_t[4096];
+      //}
+
+      //if (wsFrameBuffer && len < 4096 && info->index + info->)
+      //{
+
+      //}
+
+      if((info->index + len) == info->len){
+        if(info->final){
+          if(info->message_opcode == WS_TEXT) {
+            client->text(F("{\"error\":9}")); // ERR_JSON we do not handle split packets right now
+          }
+        }
+      }
+      DEBUG_PRINTLN(F("WS multipart message."));
+    }
+  } else if(type == WS_EVT_ERROR){
+    //error was received from the other end
+    DEBUG_PRINTLN(F("WS error."));
+
+  } else if(type == WS_EVT_PONG){
+    //pong message was received (in response to a ping request maybe)
+    DEBUG_PRINTLN(F("WS pong."));
+
+  } else {
+    DEBUG_PRINTLN(F("WS unknown event."));
+  }
+}
+
+bool sendLiveLedsWs(uint32_t wsClient)
+{
+  AsyncWebSocketClient * wsc = pCONT_web->ws->client(wsClient);
+  if (!wsc || wsc->queueLength() > 0) return false; //only send if queue free
+
+  size_t used = tkr_anim->getLengthTotal();
+#ifdef ESP8266
+  const size_t MAX_LIVE_LEDS_WS = 256U;
+#else
+  const size_t MAX_LIVE_LEDS_WS = 1024U;
+#endif
+  size_t n = ((used -1)/MAX_LIVE_LEDS_WS) +1; //only serve every n'th LED if count over MAX_LIVE_LEDS_WS
+  size_t pos = 2;  // start of data
+#ifndef WLED_DISABLE_2D
+  if (tkr_anim->isMatrix) {
+    // ignore anything behid matrix (i.e. extra strip)
+    used = mAnimatorLight::Segment::maxWidth*mAnimatorLight::Segment::maxHeight; // always the size of matrix (more or less than strip.getLengthTotal())
+    n = 1;
+    if (used > MAX_LIVE_LEDS_WS) n = 2;
+    if (used > MAX_LIVE_LEDS_WS*4) n = 4;
+    pos = 4;
+  }
+#endif
+  size_t bufSize = pos + (used/n)*3;
+
+  AsyncWebSocketBuffer wsBuf(bufSize);
+  if (!wsBuf) return false; //out of memory
+  uint8_t* buffer = reinterpret_cast<uint8_t*>(wsBuf.data());
+  if (!buffer) return false; //out of memory
+  buffer[0] = 'L';
+  buffer[1] = 1; //version
+
+#ifndef WLED_DISABLE_2D
+  if (tkr_anim->isMatrix) {
+    buffer[1] = 2; //version
+    buffer[2] = mAnimatorLight::Segment::maxWidth/n;
+    buffer[3] = mAnimatorLight::Segment::maxHeight/n;
+  }
+#endif
+
+  Serial.println("Sending live data to WS client");
+  for (size_t i = 0; pos < bufSize -2; i += n)
+  {
+#ifndef WLED_DISABLE_2D
+    if (tkr_anim->isMatrix && n>1 && (i/mAnimatorLight::Segment::maxWidth)%n) i += mAnimatorLight::Segment::maxWidth * (n-1);
+#endif
+    uint32_t c = tkr_anim->getPixelColor(i);
+    uint8_t r = R(c);
+    uint8_t g = G(c);
+    uint8_t b = B(c);
+    uint8_t w = W(c);
+    buffer[pos++] = r;//pCONT_iLight->_briRGB_Global ? qadd8(w, r) : 0; //R, add white channel to RGB channels as a simple RGBW -> RGB map
+    buffer[pos++] = g;//pCONT_iLight->_briRGB_Global ? qadd8(w, g) : 0; //G
+    buffer[pos++] = b;//pCONT_iLight->_briRGB_Global ? qadd8(w, b) : 0; //B
+    Serial.println(r);
+  }
+
+
+  wsc->binary(std::move(wsBuf));
+  return true;
+}
+
+void handleWs()
+{
+  if (millis() - wsLastLiveTime > WS_LIVE_INTERVAL)
+  {
+    #ifdef ESP8266
+    pCONT_web->ws->cleanupClients(3);
+    #else
+    pCONT_web->ws->cleanupClients();
+    #endif
+    bool success = true;
+    if (wsLiveClientId) success = sendLiveLedsWs(wsLiveClientId);
+    wsLastLiveTime = millis();
+    if (!success) wsLastLiveTime -= 20; //try again in 20ms if failed due to non-empty WS queue
+  }
+}
+
+#else
+void handleWs() {}
+void sendDataWs(AsyncWebSocketClient * client) {}
+#endif
+
 
 
 
@@ -508,6 +754,9 @@ void mAnimatorLight::EveryLoop()
   yield();
   #endif // ENABLE_DEVFEATURE_LIGHT__HARDCODE_MATRIX_SETUP
   
+  #ifdef WLED_ENABLE_WEBSOCKETS2
+  handleWs();
+  #endif
   
   // if (doSerializeConfig) serializeConfig();
 
@@ -623,6 +872,8 @@ void mAnimatorLight::Pre_Init(void)
 }
 
 
+
+
 void mAnimatorLight::Init(void)
 { 
   
@@ -660,6 +911,9 @@ void mAnimatorLight::Init(void)
 
   Reset_CustomPalette_NamesDefault();  
 
+  #ifdef WLED_ENABLE_WEBSOCKETS2
+  pCONT_web->ws->onEvent(wsEvent);
+  #endif
   
   #ifdef ENABLE_DEVFEATURE_LIGHT__HARDCODE_MATRIX_SETUP
   loadLedmap = 0; // To enable it to load once
@@ -1539,7 +1793,7 @@ void mAnimatorLight::SubTask_Effects()
       if(seg.animation_has_anim_callback)
       { 
         StartSegmentAnimation_AsAnimUpdateMemberFunction(segment_current_index); // First run must be reset after StartAnimation is first called 
-        Serial.println("ANIM CALLED");
+        // Serial.println("ANIM CALLED");
       }
       
       if(!seg.animation_has_anim_callback)  // Direct method, which the effect has ran above once so can be reset here
@@ -1559,7 +1813,7 @@ void mAnimatorLight::SubTask_Effects()
      **/    
     if(seg.animator->IsAnimating())
     {
-      Serial.println("ISAnimating");
+      // Serial.println("ISAnimating");
 
       seg.animator->UpdateAnimations();
       doShow = true; // Animator updated, so trigger SHOW
@@ -1597,6 +1851,7 @@ void mAnimatorLight::SubTask_Effects()
   {
     // Serial.println("SHOW");
     yield();
+    // Segment::handleRandomPalette(); NOTE THIS IS RANDOMISE, NOW MOVED OUT OF THE PALETTE // slowly transition random palette; move it into for loop when each segment has individual random palette
     show();
     _lastShow = nowUp;
   }   
@@ -1894,6 +2149,17 @@ void mAnimatorLight::StartSegmentAnimation_AsAnimUpdateMemberFunction(uint8_t se
 
   uint16_t time_tmp = 0;    
   time_tmp = SEGMENT_I(segment_index).animator_blend_time_ms();//    SEGMENT_I(segment_index).time_ms; 
+
+  /**
+   * @brief Testing as a temp solution, if neopixelbus gamma is not being used 
+   * then to avoid needing complex apply brightness is the effects, the brightness is applied here
+   * once to the starting position
+   * 
+   */
+  #ifdef ENABLE_FEATURE_LIGHTING__USE_NEOPIXELBUS_LIGHT_GAMMA_LG_BRIGHTNESS_ON_START_OF_ANIMATION //does nto work for firefly
+  ALOG_INF(PSTR("Adjusting Brightness %d %d"), SEGMENT.getBrightnessRGB_WithGlobalApplied(), SEGMENT.getBrightnessCCT_WithGlobalApplied());
+  SEGMENT.Update_DynamicBuffer_DesiredColour_Brightness( SEGMENT.getBrightnessRGB_WithGlobalApplied(), SEGMENT.getBrightnessCCT_WithGlobalApplied() );
+  #endif
 
   /**
    * @brief Before starting animation, check the override states to see if they are active
@@ -4357,8 +4623,8 @@ void mAnimatorLight::estimateCurrentAndLimitBri() {
 void mAnimatorLight::reset()
 {
   // briT = 0;
-  #ifdef WLED_ENABLE_WEBSOCKETS
-  ws.closeAll(1012);
+  #ifdef WLED_ENABLE_WEBSOCKETS2
+  pCONT_web->ws->closeAll(1012);
   #endif
   long dly = millis();
   while (millis() - dly < 450) {
@@ -4377,10 +4643,10 @@ void mAnimatorLight::show(void)
   show_callback callback = _callback;
   if (callback) callback();
 
-  // estimateCurrentAndLimitBri();
-  
-  pCONT_iLight->ShowInterface();
   unsigned long now = millis();
+
+  BusManager::show();
+
   unsigned long diff = now - _lastShow;
   uint16_t fpsCurr = 200;
   if (diff > 0) fpsCurr = 1000 / diff;
@@ -4401,7 +4667,7 @@ void mAnimatorLight::show(void)
  * On some hardware (ESP32), strip updates are done asynchronously.
  */
 bool mAnimatorLight::isUpdating() {
-  // return !busses.canAllShow();
+  return !pCONT_iLight->bus_manager->canAllShow();
 }
 
 /**
@@ -5192,6 +5458,7 @@ uint32_t mAnimatorLight::Segment::GetPaletteColour(
   // Apply brightness if needed
   if (apply_brightness) {
     uint8_t brightness = scale8(_brightness_rgb, pCONT_iLight->getBriRGB_Global());
+    // ALOG_INF(PSTR("brightness getpal %d"),brightness);
     uint16_t scale = brightness + 1;  // Avoid division by zero and maintain full range
 
     // Extract, scale, and repack in one step
@@ -5321,8 +5588,9 @@ void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(int i, uint32_t col)//, bo
     #endif
   }
 
-  // // Apply brightness if needed
-  // if (!flag_brightness_already_applied) {
+  // #ifndef ENABLE_FEATURE_LIGHTING__USE_NEOPIXELBUS_LIGHT_GAMMA_LG
+  // // // Apply brightness if needed
+  // // if (!flag_brightness_already_applied) {
   //   uint8_t brightness = scale8(_brightness_rgb, pCONT_iLight->getBriRGB_Global());
   //   uint16_t scale = brightness + 1;  // Avoid division by zero and maintain full range
   //   // Extract, scale, and repack in one step
@@ -5332,7 +5600,8 @@ void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(int i, uint32_t col)//, bo
   //     (B(col) * scale) >> 8,  // Blue
   //     (W(col) * scale) >> 8   // White
   //   );
-  // }
+  // // }
+  // #endif
 
 
 #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS

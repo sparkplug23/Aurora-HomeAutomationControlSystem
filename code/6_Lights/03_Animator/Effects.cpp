@@ -120,7 +120,7 @@ Serial.println(SEGMENT.colour_width__used_in_effect_generate);
     #endif
   } else {
     // Handle RGB/WRGB cases
-    uint32_t desiredColour  = SEGMENT.GetPaletteColour();
+    uint32_t desiredColour  = SEGMENT.GetPaletteColour(0, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE, ANIM_BRIGHTNESS_REQUIRED);
     uint32_t startingColour = SEGMENT.getPixelColor(0);
 
     // SERIAL_DEBUG_COL32i("des", desiredColour, 0);
@@ -180,7 +180,7 @@ uint16_t mAnimatorLight::EffectAnim__Static_Palette()
     uint32_t colour;
     for(uint16_t pixel = 0; pixel < SEGLEN; pixel++)
     {
-      colour = SEGMENT.GetPaletteColour(pixel, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE, false);
+      colour = SEGMENT.GetPaletteColour(pixel, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE, ANIM_BRIGHTNESS_REQUIRED);
       SEGMENT.setPixelColor(pixel, colour);
     }
 
@@ -200,7 +200,7 @@ uint16_t mAnimatorLight::EffectAnim__Static_Palette()
     uint32_t colour;
     for(uint16_t pixel = 0; pixel < SEGLEN; pixel++)
     {
-      colour = SEGMENT.GetPaletteColour(pixel, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE, false);
+      colour = SEGMENT.GetPaletteColour(pixel, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE, ANIM_BRIGHTNESS_REQUIRED);
       SEGMENT.Set_DynamicBuffer_DesiredColour(pixel, colour);
       #ifdef ENABLE_DEBUGFEATURE_LIGHTING__EFFECT_COLOURS    
       Serial.printf("Static Colour --------------------------------------------------%d,%d,%d,%d\n\r", R(colour), G(colour), B(colour), W(colour));
@@ -258,7 +258,7 @@ uint16_t mAnimatorLight::EffectAnim__Static_Palette_Vintage()
     uint32_t colour;
     for(uint16_t pixel = 0; pixel < SEGLEN; pixel++)
     {
-      colour = SEGMENT.GetPaletteColour(pixel, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE);
+      colour = SEGMENT.GetPaletteColour(pixel, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE, ANIM_BRIGHTNESS_REQUIRED);
 
       // Using uint8_t, overflow will ensure it wraps around within limits
       r = R(colour) + random(-variance, variance);
@@ -314,7 +314,7 @@ uint16_t mAnimatorLight::EffectAnim__Spanned_Palette()
     // Adjust the pixel index with the offset and wrap around using % SEGLEN
     uint16_t adjusted_index = (pixel + offset_shift) % SEGLEN;
     // Retrieve the palette colour for the adjusted index
-    colour = SEGMENT.GetPaletteColour(adjusted_index, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_OFF, NO_ENCODED_VALUE);
+    colour = SEGMENT.GetPaletteColour(adjusted_index, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_OFF, NO_ENCODED_VALUE, ANIM_BRIGHTNESS_REQUIRED);
     // Set the desired colour in the dynamic buffer
     SEGMENT.Set_DynamicBuffer_DesiredColour(pixel, colour);
   }
@@ -431,7 +431,7 @@ uint16_t mAnimatorLight::EffectAnim__Firefly()
       uint16_t desired_pixel = random_palette_indices[iter];
 
       // Get the WRGB from palette
-      uint32_t colour = SEGMENT.GetPaletteColour(desired_pixel, PALETTE_SPAN_OFF, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE);
+      uint32_t colour = SEGMENT.GetPaletteColour(desired_pixel, PALETTE_SPAN_OFF, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE, ANIM_BRIGHTNESS_REQUIRED);
       SEGMENT.Set_DynamicBuffer_DesiredColour(pixel_index, colour);
     }
 
@@ -10896,7 +10896,7 @@ static const char PM_EFFECT_CONFIG__MANUAL__PIXEL_SET_ELSEWHERE__INDEXING[] PROG
 
 
 //***************************  2D routines  ***********************************
-#ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D //////////////////////////////////////////////////////////////////////////////////////////////////////
+#ifdef ENABLE_FEATURE_LIGHTING__2D_MATRIX //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define XY(x,y) SEGMENT.XY(x,y)
 
@@ -15092,7 +15092,7 @@ void mAnimatorLight::LoadEffects()
   /**
    * 2D (No Audio)
    **/
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__MATRIX_2D
+  #ifdef ENABLE_FEATURE_LIGHTING__2D_MATRIX
   addEffect(EFFECTS_FUNCTION__2D__BLACK_HOLE__ID,        
             &mAnimatorLight::EffectAnim__2D__Blackhole,     
             PM_EFFECT_CONFIG__2D__BLACK_HOLE__INDEXING);
@@ -15371,6 +15371,11 @@ void mAnimatorLight::LoadEffects()
             PM_EFFECT_CONFIG__AUDIOREACTIVE__2D__FFT_AKEMI__INDEXING);  
   #endif
 
+  uint16_t effectCount = effects.function.size();
+  uint16_t effects_in_header_length = EFFECTS_FUNCTION__LENGTH__ID;
+
+  ALOG_INF(PSTR(DEBUG_INSERT_PAGE_BREAK "AnimatorLight: Effects %d/%d"),effectCount, effects_in_header_length);  
+
 }
 
 
@@ -15379,3 +15384,8 @@ void mAnimatorLight::LoadEffects()
 
 
 
+/**
+ * @brief 
+ * Create effect like Luminance example, only use three colour method for it. Ie to replicate, the centre would be black. The linearbelnd from edge to centre is the thing that will change, using a sinwave so its nonlinear. will look good.
+ * 
+ */

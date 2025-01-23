@@ -39,7 +39,7 @@ class NeoBitsSpeedWs2812x : public NeoBitsSpeedBase
 {
 public:
     const static uint16_t BitSendTimeNs = 1250;
-    const static uint16_t ResetTimeUs = 300;
+    const static uint16_t ResetTimeUs = 300;//from 300
 };
 
 class NeoBitsSpeedWs2805 : public NeoBitsSpeedBase

@@ -2642,13 +2642,15 @@ Bathroom
   #define USE_MODULE_NETWORK_WEBSERVER
   #define ENABLE_WEBSERVER_LIGHTING_WEBUI  
 
+  #define WLED_DEBUG
+
   /***********************************
    * SECTION: Sensor Configs
   ************************************/  
 
-  #define USE_MODULE_SENSORS_INTERFACE  
-  #define USE_MODULE_SENSORS_BUTTONS
-    #define ENABLE_DEVFEATURE_BUTTON__V2
+  // #define USE_MODULE_SENSORS_INTERFACE  
+  // #define USE_MODULE_SENSORS_BUTTONS
+  //   #define ENABLE_DEVFEATURE_BUTTON__V2
     /**
      * @brief 
      * Button 1: Single button installs, means {"short":"iter over nice palettes", "long": "iter over 4 brightness levels"}
@@ -2659,10 +2661,18 @@ Bathroom
    * SECTION: Lighting Configs
   ************************************/  
 
-  #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
-  #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
+  // #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
+  // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
 
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
+  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
+  // #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
+
+  
+
+  #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
+  // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
+
+  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
   #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
 
   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
@@ -2670,25 +2680,217 @@ Bathroom
   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
 
-  #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D
+
+  // #define ENABLE_DEVFEATURE_LIGHT__INCLUDE_AUDIOREACTIVE_USERMOD
+
+  // #define ENABLE_FEATURE_LIGHTING__2D_MATRIX
+  // #define ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
+  // #define WLED_DISABLE_2D
+
 
   #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
 
   // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+
+
+  #define ENABLE_DEVFEATURE_LIGHT__PWM_DITHER_V2
+  
+  
+
+  #define ANIM_BRIGHTNESS_REQUIRED true
 
   
-#ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-#define ColourBaseType RgbwwColor
-#else
-#define ColourBaseType uint32_t
-#endif
+  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  struct RgbwwColor;  // Forward declaration
+  typedef RgbwwColor ColourBaseType;
+  #else
+  typedef uint32_t ColourBaseType;
+  #endif
+
+  // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+  // #else
+  // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+  // #endif
+
+  #define ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
+
+  // #define ENABLE_DEVFEATURE_LIGHTING__ADD_EFFECT_DEVSTAGE_TO_WEBUI
+
+  // #define ENABLE__DEBUG_POINT__ANIMATION_EFFECTS
+
+  // #define ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
+  #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS  
+    #define ENABLE_FEATURE_LIGHTING__2D_MATRIX
+    #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__MATRIX
+    #define ENABLE_DEVFEATURE_LIGHT__HARDCODE_MATRIX_SETUP  
+    #define WLED_DEBUG
+    #define ENABLE_FEATURE_LIGHTING__2D_MATRIX
+    // #define ENABLE_DEVFEATURE_LIGHT__MATRIX_LOAD_PALETTE_PATCH_IN_WEBUI_PALETTE_CHANGE
+    #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
+  #endif 
+  #if defined(ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D) || defined(ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D)
+    #define ENABLE_DEVFEATURE_LIGHT__INCLUDE_AUDIOREACTIVE_USERMOD
+  #endif
+
+
+  // #define WLED_ENABLE_WEBSOCKETS
+  #define WLED_ENABLE_WEBSOCKETS2
+  #define ENABLE_DEVFEATURE_LIGHTING__JSONLIVE_WEBSOCKETS
+  #define WLED_ENABLE_JSONLIVE
+  
+//   #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
+//   // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
+
+//   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
+//   #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
+
+//   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
+//   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
+//   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+//   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+
+
+//   #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
+
+//   // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+//   // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+
+
+//   #define ENABLE_DEVFEATURE_LIGHT__PWM_DITHER_V2
+  
+//   #define ENABLE_DEVFEATURE_LIGHTING__ADD_EFFECT_DEVSTAGE_TO_WEBUI
+
+
+  
+// #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+// struct RgbwwColor;  // Forward declaration
+// typedef RgbwwColor ColourBaseType;
+// #else
+// typedef uint32_t ColourBaseType;
+// #endif
+
+//   // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+//   // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+//   // #else
+//   // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+//   // #endif
+
+//   #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
+
+//   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D
+
+//   #define ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
+
+// // #define ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
+//   #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS  
+//     #define ENABLE_FEATURE_LIGHTING__2D_MATRIX
+//     #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__MATRIX
+//     #define ENABLE_DEVFEATURE_LIGHT__HARDCODE_MATRIX_SETUP  
+//     #define WLED_DEBUG
+//     #define ENABLE_FEATURE_LIGHTING__2D_MATRIX
+//     // #define ENABLE_DEVFEATURE_LIGHT__MATRIX_LOAD_PALETTE_PATCH_IN_WEBUI_PALETTE_CHANGE
+//     #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
+//   #endif 
+//   #if defined(ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D) || defined(ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D)
+//     #define ENABLE_DEVFEATURE_LIGHT__INCLUDE_AUDIOREACTIVE_USERMOD
+//   #endif
+
+//   // #define WLED_ENABLE_WEBSOCKETS
+//   #define WLED_ENABLE_WEBSOCKETS2
+//   #define ENABLE_DEVFEATURE_LIGHTING__JSONLIVE_WEBSOCKETS
+//   #define WLED_ENABLE_JSONLIVE
+
+//         // "ColourOrder":"GRBWC",
+//         // "BusType":"WS2805_RGBWW",
+
+//   #define USE_LIGHTING_TEMPLATE
+  
+//   #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 4000
+
+
+// //   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
+// //   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
+// //   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+// //   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+
+// //   #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+
+// //   #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
+
+// //   // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+
+  
+// // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+// // #define ColourBaseType RgbwwColor
+// // #else
+// // #define ColourBaseType uint32_t
+// // #endif
+
+
+// //   // #define WLED_ENABLE_WEBSOCKETS
+// //   #define WLED_ENABLE_WEBSOCKETS2
+// //   #define ENABLE_DEVFEATURE_LIGHTING__JSONLIVE_WEBSOCKETS
+// //   #define WLED_ENABLE_JSONLIVE
+  
+
+  
+// //   #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
+// //   // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
+
+// //   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
+// //   #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
+
+// //   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
+// //   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
+// //   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+// //   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+
+
+// //   #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
+
+// //   // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+// //   // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+
+
+// //   #define ENABLE_DEVFEATURE_LIGHT__PWM_DITHER_V2
+  
+// //   #define ENABLE_DEVFEATURE_LIGHTING__ADD_EFFECT_DEVSTAGE_TO_WEBUI
+
+
+  
+// // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+// // struct RgbwwColor;  // Forward declaration
+// // typedef RgbwwColor ColourBaseType;
+// // #else
+// // typedef uint32_t ColourBaseType;
+// // #endif
+
+// //   // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+// //   // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+// //   // #else
+// //   // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+// //   // #endif
+
+// //   #define ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
+
+
+
+// //         // "ColourOrder":"GRBWC",
+// //         // "BusType":"WS2805_RGBWW",
+
+// //   #define USE_LIGHTING_TEMPLATE
+  
+// //   #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 4000
 
 
   /***********************************
    * SECTION: Controller Configs
   ************************************/  
 
-  #define USE_MODULE_CONTROLLER_CUSTOM__LIGHTNEO_MOTION_ALERTS
+  // #define USE_MODULE_CONTROLLER_CUSTOM__LIGHTNEO_MOTION_ALERTS
 
 
   /***********************************
@@ -2705,7 +2907,10 @@ Bathroom
   // #define ENABLE_BUSCONFIG_16X_2400_200
   // #define ENABLE_BUSCONFIG_16X_2000_200
   // #define ENABLE_BUSCONFIG_16X_1800_200
-  #define ENABLE_BUSCONFIG_2X_200
+  #define ENABLE_BUSCONFIG_1X_1S_SEGMENT // getting strip length
+  // #define ENABLE_BUSCONFIG_2X_THREE_SEGMENTS // towards the planned output
+
+  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__HARDWARE_TESTING
 
 
   #ifdef ENABLE_BUSCONFIG_1X_16
@@ -2773,7 +2978,7 @@ Bathroom
 
   #endif // ENABLE_BUSCONFIG_8X_2400
 
-  #ifdef ENABLE_BUSCONFIG_2X_200
+  #ifdef ENABLE_BUSCONFIG_2X_THREE_SEGMENTS
 
   #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 4000
 
@@ -2783,31 +2988,67 @@ Bathroom
   {
     "BusConfig":[
       {
-        "Pin":14,
-        "ColourOrder":"GRBW",
-        "BusType":"SK6812_RGBW",
-        "Start":0,
-        "Length":127
-      },
-      {
-        "Pin":12,
-        "ColourOrder":"GRBW",
-        "BusType":"SK6812_RGBW",
-        "Start":127,
-        "Length":100
-      },
-      {
         "Pin":13,
         "ColourOrder":"GRB",
         "BusType":"WS2812_RGB",
-        "Start":227,
-        "Length":100
+        "Start":0,
+        "Length":310
+      },
+      {
+        "Pin":14,
+        "ColourOrder":"GRBW",
+        "BusType":"SK6812_RGBW",
+        "Start":310,
+        "Length":127
       }
     ],
     "Segment0": {
+      "Name":"Door Edge",
       "PixelRange": [
         0,
-        327
+        310
+      ],
+      "ColourPalette":"Snowy 02",
+      "Effects": {
+        "Function":"Sweep Random",
+        "Speed":127,
+        "Intensity":127,
+        "Grouping":1,
+        "RateMs": 20
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 100
+    },
+    "Segment1": {
+      "Name":"Door Top",
+      "PixelRange": [
+        310,
+        437
+      ],
+      "ColourPalette":"Rainbow 16",
+      "Effects": {
+        "Function":"Spanned Palette",
+        "Speed":127,
+        "Intensity":0,
+        "Grouping":1,
+        "RateMs": 1000
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 0
+    },
+    "BrightnessRGB": 100,
+    "BrightnessCCT": 0
+  }
+  )=====";
+
+/*
+
+
+    "Segment2": {
+      "Name":"Door Top",
+      "PixelRange": [
+        427,
+        437
       ],
       "ColourPalette":"Snowy 02",
       "Effects": {
@@ -2820,10 +3061,92 @@ Bathroom
       "BrightnessRGB": 100,
       "BrightnessCCT": 0
     },
-    "BrightnessRGB": 10,
+
+    */
+  #define USE_MODULE_TEMPLATE
+  DEFINE_PGM_CTR(MODULE_TEMPLATE) 
+  "{"
+    "\"" D_NAME         "\":\"" DEVICENAME_CTR "\","
+    "\"" D_FRIENDLYNAME "\":\"" DEVICENAME_FRIENDLY_CTR "\","
+    "\"" D_GPIO_NUMBER "\":{"    
+      "\"12\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","       // 3 pin out not being used
+      // "\"12\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      // "\"26\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      // "\"32\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      // "\"14\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      // "\"27\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      // "\"25\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      // "\"33\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      // "\"28\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\"," // Bus8
+      #ifdef USE_MODULE_SENSORS_BUTTONS
+      "\"35\":\"" D_GPIO_FUNCTION_KEY1_INV_CTR  "\","
+      "\"34\":\"" D_GPIO_FUNCTION_KEY2_INV_CTR  "\","
+      "\"0\":\"" D_GPIO_FUNCTION_KEY3_INV_CTR  "\""
+      #endif
+    "},"
+    "\"" D_BASE     "\":\"" D_MODULE_NAME_USERMODULE_CTR "\","
+    "\"" D_ROOMHINT "\":\"" DEVICENAME_ROOMHINT_CTR "\""
+  "}";
+
+  #endif // ENABLE_BUSCONFIG_7X_2100
+
+  
+  #ifdef ENABLE_BUSCONFIG_1X_1S_SEGMENT
+
+  #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 4000
+
+  #define USE_LIGHTING_TEMPLATE
+  DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  R"=====(
+  {
+    "BusConfig":[
+      {
+        "Pin":13,
+        "ColourOrder":"GRB",
+        "BusType":"WS2812_RGB",
+        "Start":0,
+        "Length":350
+      }
+    ],
+    "Segment0": {
+      "Name":"Door Edge",
+      "PixelRange": [
+        0,
+        302
+      ],
+      "ColourPalette":"Pink White Purple Grad",
+      "Effects": {
+        "Function":"Spanned Palette",
+        "Speed":127,
+        "Intensity":0,
+        "Grouping":1,
+        "RateMs": 1000
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 100
+    },
+    "Segment1": {
+      "Name":"Door Edge",
+      "PixelRange": [
+        302,
+        350
+      ],
+      "ColourPalette":"Pink Splash",
+      "Effects": {
+        "Function":"Wipe Over",
+        "Speed":200,
+        "Intensity":127,
+        "Grouping":1,
+        "RateMs": 20
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 100
+    },
+    "BrightnessRGB": 100,
     "BrightnessCCT": 0
   }
   )=====";
+
 
   #define USE_MODULE_TEMPLATE
   DEFINE_PGM_CTR(MODULE_TEMPLATE) 
@@ -2831,8 +3154,8 @@ Bathroom
     "\"" D_NAME         "\":\"" DEVICENAME_CTR "\","
     "\"" D_FRIENDLYNAME "\":\"" DEVICENAME_FRIENDLY_CTR "\","
     "\"" D_GPIO_NUMBER "\":{"    
-      // "\"13\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
-      // "\"12\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      "\"12\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","       // 3 pin out not being used
+      "\"14\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\""         // unused top door
       // "\"26\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
       // "\"32\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
       // "\"14\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","

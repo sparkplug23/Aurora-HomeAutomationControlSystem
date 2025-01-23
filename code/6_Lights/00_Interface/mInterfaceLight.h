@@ -188,8 +188,6 @@ class mInterfaceLight :
     
     void EveryLoop();
     
-    inline void ShowInterface(){ if(bus_manager) bus_manager->show(); }   
-
     void LightCalcPWMRange();
     void parseJSONObject__BusConfig(JsonParserObject obj); 
         

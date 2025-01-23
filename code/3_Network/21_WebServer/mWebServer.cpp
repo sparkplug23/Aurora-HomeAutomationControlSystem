@@ -1249,7 +1249,20 @@ int8_t mWebServer::Tasker(uint8_t function, JsonParserObject obj)
   {
     case TASK_INIT:
      
-     server = new AsyncWebServer(80);
+      server = new AsyncWebServer(80);
+
+      #ifdef ENABLE_DEVFEATURE_LIGHTING__JSONLIVE_WEBSOCKETS
+      ws = new AsyncWebSocket("/ws");
+      #endif
+
+      // generate module IDs must be done before AP setup
+      String escapedMac;
+      escapedMac = WiFi.macAddress();
+      escapedMac.replace(":", "");
+      escapedMac.toLowerCase();
+      if (strcmp(cmDNS, "pulsar") == 0) sprintf_P(cmDNS, PSTR("pulsar-%*s"), 6, escapedMac.c_str() + 6);
+
+
       
     break;
   }
@@ -1394,6 +1407,48 @@ int8_t mWebServer::Tasker(uint8_t function, JsonParserObject obj)
 #ifdef ENABLE_DEVFEATURE_NETWORK__MOVE_LIGHTING_WEBUI_INTO_SHARED_MODULE
 
 
+bool mWebServer::handleIfNoneMatchCacheHeader(AsyncWebServerRequest *request, int code, uint16_t eTagSuffix) {
+  // Only send 304 (Not Modified) if response code is 200 (OK)
+  if (code != 200) return false;
+
+  AsyncWebHeader *header = request->getHeader(F("If-None-Match"));
+  char etag[32];
+  pCONT_web->generateEtag(etag, eTagSuffix);
+  if (header && header->value() == etag) {
+    AsyncWebServerResponse *response = request->beginResponse(304);
+    pCONT_web->setStaticContentCacheHeaders(response, code, eTagSuffix);
+    request->send(response);
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Handles the request for a static file.
+ * If the file was found in the filesystem, it will be sent to the client.
+ * Otherwise it will be checked if the browser cached the file and if so, a 304 response will be sent.
+ * If the file was not found in the filesystem and not in the browser cache, the request will be handled as a 200 response with the content of the page.
+ *
+ * @param request The request object
+ * @param path If a file with this path exists in the filesystem, it will be sent to the client. Set to "" to skip this check.
+ * @param code The HTTP status code
+ * @param contentType The content type of the web page
+ * @param content Content of the web page
+ * @param len Length of the content
+ * @param gzip Optional. Defaults to true. If false, the gzip header will not be added.
+ * @param eTagSuffix Optional. Defaults to 0. A suffix that will be added to the ETag header. This can be used to invalidate the cache for a specific page.
+ */
+void mWebServer::handleStaticContent(AsyncWebServerRequest *request, const String &path, int code, const String &contentType, const uint8_t *content, size_t len, bool gzip, uint16_t eTagSuffix) {
+  if (path != "" && pCONT_mfile->handleFileRead(request, path)) return;
+  if (handleIfNoneMatchCacheHeader(request, code, eTagSuffix)) return;
+  AsyncWebServerResponse *response = request->beginResponse_P(code, contentType, content, len);
+  if (gzip) response->addHeader(FPSTR(s_content_enc), F("gzip"));
+  setStaticContentCacheHeaders(response, code, eTagSuffix);
+  request->send(response);
+}
+
+
+
 void mWebServer::initServer()
 {
   //CORS compatiblity
@@ -1535,6 +1590,10 @@ void mWebServer::initServer()
   pCONT_web->server->on("/reboot", HTTP_GET, [this](AsyncWebServerRequest *request){
     this->webHandleReboot(request);
   });
+  pCONT_web->server->on("/reset", HTTP_GET, [this](AsyncWebServerRequest *request){
+    pCONT_web->serveMessage(request, 200,F("Rebooting now..."),F("Please wait ~10 seconds..."),129);
+    tkr_anim->doReboot = true;
+  });
 
 // #ifdef WLED_ENABLE_USERMOD_PAGE
 //   pCONT_web->server->on("/u", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -1634,7 +1693,7 @@ void mWebServer::initServer()
 // #endif
 
 
-//   #ifdef WLED_ENABLE_DMX
+//   #ifdef ENABLE_FEATURE_LIGHTING__DMX
 //   pCONT_web->server->on("/dmxmap", HTTP_GET, [](AsyncWebServerRequest *request){
 //     request->send_P(200, "text/html", PAGE_dmxmap     , dmxProcessor);
 //   });
@@ -1685,9 +1744,9 @@ void mWebServer::initServer()
 //     request->send(response);
 //   });
 
-//   #ifdef WLED_ENABLE_WEBSOCKETS
-//   pCONT_web->server->addHandler(&ws);
-//   #endif
+  #ifdef WLED_ENABLE_WEBSOCKETS2
+  pCONT_web->server->addHandler(ws);
+  #endif
 
 
   // pCONT->Tasker_Interface(TASK_WEB_ADD_HANDLER);/
@@ -1771,6 +1830,11 @@ bool  mWebServer::captivePortal(AsyncWebServerRequest *request)
   return false;
 }
 
+// cacheInvalidate this causes the presets to reload!!
+void mWebServer::generateEtag(char *etag, uint16_t eTagSuffix) {
+  sprintf_P(etag, PSTR("%7d-%02x-%04x"), PROJECT_VERSION, cacheInvalidate, eTagSuffix);
+}
+
 void mWebServer::setStaticContentCacheHeaders(AsyncWebServerResponse *response)
 {
   char tmp[40];
@@ -1785,6 +1849,54 @@ void mWebServer::setStaticContentCacheHeaders(AsyncWebServerResponse *response)
   snprintf_P(tmp, sizeof(tmp), PSTR("%d-%02x"), PROJECT_VERSION, false);// tkr_anim->cacheInvalidate);
   response->addHeader(F("ETag"), tmp);
 }
+
+
+void mWebServer::setStaticContentCacheHeaders(AsyncWebServerResponse *response, int code, uint16_t eTagSuffix ) 
+{
+
+  // Only send ETag for 200 (OK) responses
+  if (code != 200) return;
+
+  // https://medium.com/@codebyamir/a-web-developers-guide-to-browser-caching-cc41f3b73e7c
+  #ifndef WLED_DEBUG
+  // this header name is misleading, "no-cache" will not disable cache,
+  // it just revalidates on every load using the "If-None-Match" header with the last ETag value
+  response->addHeader(F("Cache-Control"), F("no-cache"));
+  #else
+  response->addHeader(F("Cache-Control"), F("no-store,max-age=0"));  // prevent caching if debug build
+  #endif
+  char etag[32];
+  pCONT_web->generateEtag(etag, eTagSuffix);
+  response->addHeader(F("ETag"), etag);
+}
+
+
+
+
+
+
+/*
+ * Integrated HTTP web server page declarations
+ */
+
+
+// static void setStaticContentCacheHeaders(AsyncWebServerResponse *response, int code, uint16_t eTagSuffix = 0) {
+//   // Only send ETag for 200 (OK) responses
+//   if (code != 200) return;
+
+//   // https://medium.com/@codebyamir/a-web-developers-guide-to-browser-caching-cc41f3b73e7c
+//   #ifndef WLED_DEBUG
+//   // this header name is misleading, "no-cache" will not disable cache,
+//   // it just revalidates on every load using the "If-None-Match" header with the last ETag value
+//   response->addHeader(F("Cache-Control"), F("no-cache"));
+//   #else
+//   response->addHeader(F("Cache-Control"), F("no-store,max-age=0"));  // prevent caching if debug build
+//   #endif
+//   char etag[32];
+//   generateEtag(etag, eTagSuffix);
+//   response->addHeader(F("ETag"), etag);
+// }
+
 
 
 //Is this an IP?

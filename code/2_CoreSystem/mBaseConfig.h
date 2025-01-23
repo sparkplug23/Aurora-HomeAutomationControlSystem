@@ -347,6 +347,8 @@ With latest version, all longer term shared debug features should be added here 
 #define MDNS_MQTT_HOSTNAME2   "rasbpi.local" 
 #endif // #ifdef USE_NETWORK_MDNS
 
+#define DEFAULT_MDNS_NAME "pulsar"
+
 #define MQTT_TOPIC             "PulSar_%06X"   // [Topic] unique MQTT device topic including (part of) device MAC address
 #define MQTT_BUTTON_TOPIC      "0"               // [ButtonTopic] MQTT button topic, "0" = same as MQTT_TOPIC, set to 'PROJECT "_BTN_%06X"' for unique topic including device MAC address
 #define MQTT_SWITCH_TOPIC      "0"               // [SwitchTopic] MQTT button topic, "0" = same as MQTT_TOPIC, set to 'PROJECT "_SW_%06X"' for unique topic including device MAC address
