@@ -275,14 +275,14 @@ void mPulseCounter::WebAppend_Root_Status_Table_Draw(){
   //     char name_buffer_tmp[25];
   //     pCONT_sup->GetTextIndexed_P(name_buffer_tmp, sizeof(name_buffer_tmp), ii, name_buffer);
 
-  //   pCONT_web->AppendBuffer_PI2(PM_WEBAPPEND_TABLE_ROW_START_0V);
-  //     pCONT_web->AppendBuffer_PI2(PSTR("<td>DHT%s Temperature %s</td>"), "22",name_buffer_tmp);//pCONT_sup->GetTextIndexed_P(listheading, sizeof(listheading), ii, kTitle_TableTitles_Root));//"Animation List Tester");      //titles are fixed, so send them here using getindex
-  //     pCONT_web->AppendBuffer_PI2(PM_WEBAPPEND_TABLE_ROW_CLASS_TYPE_2V,"tab_dht","?");   
-  //   pCONT_web->AppendBuffer_PI2(PM_WEBAPPEND_TABLE_ROW_END_0V);
-  //   pCONT_web->AppendBuffer_PI2(PM_WEBAPPEND_TABLE_ROW_START_0V);
-  //     pCONT_web->AppendBuffer_PI2(PSTR("<td>DHT%s Humidity %s</td>"), "22", name_buffer_tmp);//pCONT_sup->GetTextIndexed_P(listheading, sizeof(listheading), ii, kTitle_TableTitles_Root));//"Animation List Tester");      //titles are fixed, so send them here using getindex
-  //     pCONT_web->AppendBuffer_PI2(PM_WEBAPPEND_TABLE_ROW_CLASS_TYPE_2V,"tab_dht","?");   
-  //   pCONT_web->AppendBuffer_PI2(PM_WEBAPPEND_TABLE_ROW_END_0V);
+  //   tkr_web->AppendBuffer_PI2(PM_WEBAPPEND_TABLE_ROW_START_0V);
+  //     tkr_web->AppendBuffer_PI2(PSTR("<td>DHT%s Temperature %s</td>"), "22",name_buffer_tmp);//pCONT_sup->GetTextIndexed_P(listheading, sizeof(listheading), ii, kTitle_TableTitles_Root));//"Animation List Tester");      //titles are fixed, so send them here using getindex
+  //     tkr_web->AppendBuffer_PI2(PM_WEBAPPEND_TABLE_ROW_CLASS_TYPE_2V,"tab_dht","?");   
+  //   tkr_web->AppendBuffer_PI2(PM_WEBAPPEND_TABLE_ROW_END_0V);
+  //   tkr_web->AppendBuffer_PI2(PM_WEBAPPEND_TABLE_ROW_START_0V);
+  //     tkr_web->AppendBuffer_PI2(PSTR("<td>DHT%s Humidity %s</td>"), "22", name_buffer_tmp);//pCONT_sup->GetTextIndexed_P(listheading, sizeof(listheading), ii, kTitle_TableTitles_Root));//"Animation List Tester");      //titles are fixed, so send them here using getindex
+  //     tkr_web->AppendBuffer_PI2(PM_WEBAPPEND_TABLE_ROW_CLASS_TYPE_2V,"tab_dht","?");   
+  //   tkr_web->AppendBuffer_PI2(PM_WEBAPPEND_TABLE_ROW_END_0V);
   // }
 }
 
@@ -292,7 +292,7 @@ void mPulseCounter::WebAppend_Root_Status_Table_Data(){
   
   // uint8_t sensor_counter = 0;
 
-  // pCONT_web->AppendBuffer_PI2(PSTR("\"%s\":["),PSTR("tab_dht")); 
+  // tkr_web->AppendBuffer_PI2(PSTR("\"%s\":["),PSTR("tab_dht")); 
   // for(int row=0;row<(2*fSensorCount);row++){
   //   switch(row%2){
   //     default:
@@ -316,7 +316,7 @@ void mPulseCounter::WebAppend_Root_Status_Table_Data(){
   //         sprintf(colour_ctr,"%s","#ffffff");
   //       }
     
-  //       pCONT_web->AppendBuffer_PI2(PSTR("{\"id\":%d,\"ih\":\"%s\",\"fc\":\"%s\"},"),row,
+  //       tkr_web->AppendBuffer_PI2(PSTR("{\"id\":%d,\"ih\":\"%s\",\"fc\":\"%s\"},"),row,
   //         table_row, colour_ctr
   //       );
   //     }break;
@@ -338,15 +338,15 @@ void mPulseCounter::WebAppend_Root_Status_Table_Data(){
   //         sprintf(colour_ctr,"%s","#ffffff");
   //       }
     
-  //       pCONT_web->AppendBuffer_PI2(PSTR("{\"id\":%d,\"ih\":\"%s\",\"fc\":\"%s\"},"),row,
+  //       tkr_web->AppendBuffer_PI2(PSTR("{\"id\":%d,\"ih\":\"%s\",\"fc\":\"%s\"},"),row,
   //         table_row, colour_ctr
   //       );
   //       sensor_counter++;
   //     }break;
   //   }
   // }
-  // *pCONT_web->buffer_writer_internal = (*pCONT_web->buffer_writer_internal) - 1;// remove extra comma
-  // pCONT_web->AppendBuffer_PI2(PSTR("],")); 
+  // *tkr_web->buffer_writer_internal = (*tkr_web->buffer_writer_internal) - 1;// remove extra comma
+  // tkr_web->AppendBuffer_PI2(PSTR("],")); 
 
 }
 

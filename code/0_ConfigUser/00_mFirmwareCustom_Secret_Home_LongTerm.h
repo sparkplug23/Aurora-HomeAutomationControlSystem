@@ -1612,7 +1612,7 @@ Bathroom
           "BrightnessRGB":5
         },
         "Effects": {
-          "Function":"Static Palette",
+          "Function":"Static",
           "Speed":127,
           "Intensity":255,
           "Decimate":0,
@@ -3027,7 +3027,7 @@ Bathroom
       ],
       "ColourPalette":"Rainbow 16",
       "Effects": {
-        "Function":"Spanned Palette",
+        "Function":"Gradient",
         "Speed":127,
         "Intensity":0,
         "Grouping":1,
@@ -3116,7 +3116,7 @@ Bathroom
       ],
       "ColourPalette":"Pink White Purple Grad",
       "Effects": {
-        "Function":"Spanned Palette",
+        "Function":"Gradient",
         "Speed":127,
         "Intensity":0,
         "Grouping":1,
@@ -3393,7 +3393,7 @@ Bathroom
       ],
       "ColourPalette":"Snowy 02",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":1,
@@ -4933,7 +4933,7 @@ Bathroom
   //     ],
   //     "ColourPalette":"Snowy 02",
   //     "Effects": {
-  //       "Function":"Static Palette",
+  //       "Function":"Static",
   //       "Speed":127,
   //       "Intensity":127,
   //       "Grouping":1
@@ -4989,7 +4989,7 @@ Bathroom
   //     ],
   //     "ColourPalette":"Sweetpea",
   //     "Effects": {
-  //       "Function":"Static Palette",
+  //       "Function":"Static",
   //       "Speed":127,
   //       "Intensity":127,
   //       "Grouping":1
@@ -5007,7 +5007,7 @@ Bathroom
   //     ],
   //     "ColourPalette":"IceCream Floats",
   //     "Effects": {
-  //       "Function":"Static Palette",
+  //       "Function":"Static",
   //       "Speed":127,
   //       "Intensity":127,
   //       "Grouping":1
@@ -5026,7 +5026,7 @@ Bathroom
   //     "ColourPalette":172,
   //     "CustomPalette":{"Encoding":"RGB","Index":9,"Data":[255,255,255,255,0,43]},
   //     "Effects": {
-  //       "Function":"Static Palette",
+  //       "Function":"Static",
   //       "Speed":127,
   //       "Intensity":127,
   //       "Grouping":1
@@ -5083,7 +5083,7 @@ Bathroom
       ],
       "ColourPalette":"Sweetpea",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":1,
@@ -5114,7 +5114,7 @@ Bathroom
       "ColourPalette":172,
       "CustomPalette":{"Encoding":"RGB","Index":9,"Data":[255,255,255,255,0,43]},
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":1,
@@ -5167,7 +5167,7 @@ Bathroom
   //     ],
   //     "ColourPalette":"Snowy 02",
   //     "Effects": {
-  //       "Function":"Static Palette",
+  //       "Function":"Static",
   //       "Speed":127,
   //       "Intensity":127,
   //       "Grouping":1

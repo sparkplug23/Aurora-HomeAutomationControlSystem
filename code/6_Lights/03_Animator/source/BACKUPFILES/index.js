@@ -2538,7 +2538,7 @@ function setIntensity()
 
 function setEffectTimePeriod()
 {
-	var obj = {"seg": {"etp": parseInt(gId('sliderEffectTimePeriod').value)}};
+	var obj = {"seg": {"ep": parseInt(gId('sliderEffectTimePeriod').value)}};
 	requestJson(obj);
 }
 function setGrouping()

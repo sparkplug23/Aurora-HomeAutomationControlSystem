@@ -6,7 +6,7 @@
 #ifdef USE_MODULE_LIGHTS_ANIMATOR
 
 
-// #define ENABLE_FEATURE_LIGHTING__USE_NEOPIXELBUS_LIGHT_GAMMA_LG
+#define ENABLE_FEATURE_LIGHTING__USE_NEOPIXELBUS_LIGHT_GAMMA_LG
 #define DISABLE_RMT_METHODS
 
 
@@ -245,12 +245,24 @@ class PolyBus
      */
     static bool useParallelI2S;
     static uint8_t required_channels;
+    
+    static uint8_t _bri_rgb;
+
 
   public:
   
     static inline void useParallelOutput(bool b = true) { useParallelI2S = b; }
     static inline bool isParallelOutput(void) { return useParallelI2S; }
     static inline void setRequiredChannels(uint8_t channels){ required_channels = channels; }
+
+    // inline static uint8_t _elementDim(uint8_t value, uint8_t ratio)
+    // {
+    //   return (static_cast<uint16_t>(value) * (static_cast<uint16_t>(ratio) + 1)) >> 8;
+    // }
+
+
+
+
 
   static void begin(void* busPtr, uint8_t busType, uint8_t* pins) 
   {
@@ -750,10 +762,18 @@ static RgbwwColor getPixelColor(void* busPtr, uint8_t busType, uint16_t pix, uin
     //   case  4: std::swap(cctWW, cctCW);  break; // swap WW & CW
     // }
     col.W = w; 
+
+    /**
+     * @brief Testing, that brightness should be applied here
+     * 
+     */
+    #ifndef ENABLE_FEATURE_LIGHTING__USE_NEOPIXELBUS_LIGHT_GAMMA_LG
+    col = col.Dim(_bri_rgb);
+    #endif
    
-    #ifdef ENABLE_DEVFEATURE__PIXEL_COLOUR_VALUE_IN_MULTIPIN_SHOW_LOGS // Debug pixel color value log
-    if (pix < 1) { // Just log for the first pixel
-        Serial.printf("setPixelColor%d[%d] R=%d, G=%d, B=%d, W=%d\n\r", busType, pix, col.R, col.G, col.B, col.W);
+    #ifdef ENABLE_DEBUGFEATURE_LIGHTING__TRACE_PIXEL_SET_GET_SHOW_FIRST_NUMBER_LOGGED_WITH_VALUE
+    if (pix < ENABLE_DEBUGFEATURE_LIGHTING__TRACE_PIXEL_SET_GET_SHOW_FIRST_NUMBER_LOGGED_WITH_VALUE) { // Just first few pixels
+      Serial.printf("wrap:Set%d[%d] pixel \t\t%d,%d,%d,%d\n\r", busType, pix,col.R,col.G,col.B,col.W);
     }
     #endif
 
@@ -852,11 +872,11 @@ static uint32_t getPixelColor(void* busPtr, uint8_t busType, uint16_t pix, uint8
     #endif
     }
 
-    #ifdef ENABLE_DEVFEATURE__PIXEL_COLOUR_ORDER_IN_MULTIPIN_SHOW_LOGS
-    if (pix < 1) { // Just first few pixels
-      Serial.printf("get colour_order R=%d, G=%d, B=%d, W=%d\n\r",col.R,col.G,col.B,col.W);
+    #ifdef ENABLE_DEBUGFEATURE_LIGHTING__TRACE_PIXEL_SET_GET_SHOW_FIRST_NUMBER_LOGGED_WITH_VALUE
+    if (pix < ENABLE_DEBUGFEATURE_LIGHTING__TRACE_PIXEL_SET_GET_SHOW_FIRST_NUMBER_LOGGED_WITH_VALUE) { // Just first few pixels
+      Serial.printf("wrap:get pixel \t\t\t%d,%d,%d,%d\n\r",col.R,col.G,col.B,col.W);
     }
-    #endif // ENABLE_DEVFEATURE__PIXEL_COLOUR_ORDER_IN_MULTIPIN_SHOW_LOGS
+    #endif
 
     // upper nibble contains W swap information
     uint8_t w = col.W;
@@ -924,6 +944,9 @@ static uint32_t getPixelColor(void* busPtr, uint8_t busType, uint16_t pix, uint8
       #endif
     #endif
     }
+
+    #else
+    _bri_rgb = b;
 
     #endif // ENABLE_FEATURE_LIGHTING__USE_NEOPIXELBUS_LIGHT_GAMMA_LG
 

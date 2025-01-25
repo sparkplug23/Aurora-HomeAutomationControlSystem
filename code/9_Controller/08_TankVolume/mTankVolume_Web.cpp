@@ -14,7 +14,7 @@
 //   //   WebAppend_Root_Draw_RGBPalette();
 //   // // }
 //   // WebAppend_Root_Draw_PaletteSelect_Placeholder();
-//   pCONT_web->WebAppend_Root_Draw_Table_dList(8,"oil_table", kTitle_TableTitles_Root);
+//   tkr_web->WebAppend_Root_Draw_Table_dList(8,"oil_table", kTitle_TableTitles_Root);
   
 // }
 
@@ -130,7 +130,7 @@
 //    * Styles
 //    * */
 
-//   // pCONT_web->pWebServer->on(WEB_HANDLER_STYLE_TOPBAR, HTTP_GET, [this](AsyncWebServerRequest *request){ 
+//   // tkr_web->pWebServer->on(WEB_HANDLER_STYLE_TOPBAR, HTTP_GET, [this](AsyncWebServerRequest *request){ 
 //   //   Handle_Style_TopBar(request);
 //   // });
 
@@ -145,10 +145,10 @@
 //   // });
 
 //   // Root page listeners
-//   // pCONT_web->pWebServer->on(WEB_HANDLE_JSON_LIVEPIXELS, [this](AsyncWebServerRequest *request){
+//   // tkr_web->pWebServer->on(WEB_HANDLE_JSON_LIVEPIXELS, [this](AsyncWebServerRequest *request){
 //   //   WebSend_JSON_RootPage_LiveviewPixels(request); 
 //   // });
-//   // pCONT_web->pWebServer->on("/fetch/rgb_palette.json", [this](AsyncWebServerRequest *request){  //works
+//   // tkr_web->pWebServer->on("/fetch/rgb_palette.json", [this](AsyncWebServerRequest *request){  //works
 //   //   Serial.println("/fetch/rgb/palette.json"); Serial.flush();
 //   //   WebSend_JSON_RootPage_Palette_AJ(request); 
 //   // });
@@ -158,7 +158,7 @@
 //    * JSON data refresh
 //    * */
 
-//   // pCONT_web->pWebServer->on(WEB_HANDLE_JSON_OIL_SENSOR_TABLE, HTTP_GET, [this](AsyncWebServerRequest *request){ 
+//   // tkr_web->pWebServer->on(WEB_HANDLE_JSON_OIL_SENSOR_TABLE, HTTP_GET, [this](AsyncWebServerRequest *request){ 
 //   //   WebSend_JSON_Table(request);    
 //   // });
 
@@ -178,7 +178,7 @@
 //  * */
 // void mTankVolume::WebSend_JSON_Table(AsyncWebServerRequest *request){
     
-//   if(pCONT_web->RespondWebSendFreeMemoryTooLow(request,WEBSEND_FREEMEMORY_START_LIMIT)){return;}  
+//   if(tkr_web->RespondWebSendFreeMemoryTooLow(request,WEBSEND_FREEMEMORY_START_LIMIT)){return;}  
 //   uint16_t freemem_start = ESP.getFreeHeap();  
 //   DynamicJsonDocument doc(400);  
 

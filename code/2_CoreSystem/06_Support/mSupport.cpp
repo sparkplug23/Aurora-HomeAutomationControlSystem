@@ -563,7 +563,7 @@ void mSupport::ArduinoOTAInit(void)
     #ifdef ENABLE_DEVFEATURE_ARDUINOOTA__ADVANCED
       tkr_set->SettingsSave(1);    // Free flash for OTA update
       #ifdef USE_MODULE_NETWORK_WEBSERVER
-        if (tkr_set->Settings.webserver) { pCONT_web->StopWebserver(); }
+        if (tkr_set->Settings.webserver) { tkr_web->StopWebserver(); }
       #endif  // USE_MODULE_NETWORK_WEBSERVER
       AllowInterrupts(0);
       if (tkr_set->Settings.flag_system.mqtt_enabled) {

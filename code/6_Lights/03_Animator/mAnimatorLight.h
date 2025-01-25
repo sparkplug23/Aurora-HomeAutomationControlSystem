@@ -138,6 +138,7 @@ SEGMENT.color_from_palette((band * 35), false, PALETTE_SOLID_WRAP, 0);          
 // #define FRAMETIME_FIXED  25//(1000/WLED_FPS)
 // #define FRAMETIME_MS     24
 #define FRAMETIME        25
+#define FRAMETIME_STATIC        1000 // Static effects with minimal update time
 #define USE_ANIMATOR 0 // tmp fix to return as zero, to enable the effect call to keep the animator running
 
 #define FPS_UNLIMITED    0
@@ -251,6 +252,14 @@ extern bool realtimeRespectLedMaps; // used in getMappedPixelIndex()
 
 
 #define SPEED_FORMULA_L  5U + (50U*(255U - SEGMENT.speed))/SEGLEN
+
+// Macro to calculate frametime based on SEGLEN and max time in milliseconds (speed = 0 gives max time)
+#define FRAMETIME_WITH_SPEED_MAX_MS(max_ms) (5U + (max_ms * (255U - SEGMENT.speed)) / SEGLEN)
+
+// Macro to calculate frametime with a speed-dependent range between min and max times (in milliseconds)
+#define FRAMETIME_WITH_SPEED(min_ms, max_ms) \
+    (min_ms + ((max_ms - min_ms) * (255U - SEGMENT.speed)) / 255U)
+
 
 #include "6_Lights/02_Palette/mPalette_Progmem.h"
 #include "6_Lights/02_Palette/mPalette.h"
@@ -446,6 +455,8 @@ class mAnimatorLight :
      * SECTION: Internal Functions
      ************************************************************************************************/
 
+
+
     // fast (true) random numbers using hardware RNG, all functions return values in the range lowerlimit to upperlimit-1
     // note: for true random numbers with high entropy, do not call faster than every 200ns (5MHz)
     // tests show it is still highly random reading it quickly in a loop (better than fastled PRNG)
@@ -589,8 +600,28 @@ class mAnimatorLight :
     void fill(RgbwwColor c);
     void fill_ranged(uint32_t c);
 
+// legacy to remove
     static uint32_t ColourBlend(uint32_t color1, uint32_t color2, uint8_t blend);
-    #define color_blend ColourBlend
+    // #define color_blend ColourBlend
+
+    
+
+/*
+ * color blend function, based on FastLED blend function
+ * the calculation for each color is: result = (A*(amountOfA) + A + B*(amountOfB) + B) / 256 with amountOfA = 255 - amountOfB
+ 
+ 2025 version
+ */
+inline uint32_t color_blend(uint32_t color1, uint32_t color2, uint8_t blend) {
+  // min / max blend checking is omitted: calls with 0 or 255 are rare, checking lowers overall performance
+  uint32_t rb1 = color1 & 0x00FF00FF;
+  uint32_t wg1 = (color1>>8) & 0x00FF00FF;
+  uint32_t rb2 = color2 & 0x00FF00FF;
+  uint32_t wg2 = (color2>>8) & 0x00FF00FF;
+  uint32_t rb3 = ((((rb1 << 8) | rb2) + (rb2 * blend) - (rb1 * blend)) >> 8) & 0x00FF00FF;
+  uint32_t wg3 = ((((wg1 << 8) | wg2) + (wg2 * blend) - (wg1 * blend))) & 0xFF00FF00;
+  return rb3 | wg3;
+}
 
     void Init_Segments();
 
@@ -713,7 +744,7 @@ class mAnimatorLight :
     uint16_t EffectAnim__Shimmering_Palette_Saturation();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-    uint16_t EffectAnim__Static_Gradient_Palette();
+    uint16_t EffectAnim__Gradient_Palette_SegWidth();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
     uint16_t EffectAnim__Stepping_Palette();
@@ -722,7 +753,7 @@ class mAnimatorLight :
     uint16_t EffectAnim__TimeBased__HourProgress();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-    uint16_t EffectAnim__Static_Palette_Vintage();
+    uint16_t EffectAnim__Static_Palette_Varied();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
     uint16_t EffectAnim__Stepping_Palette_With_Background();
@@ -735,15 +766,14 @@ class mAnimatorLight :
     uint16_t EffectAnim__Popping_Decay_Base(bool draw_palette_inorder, bool fade_to_black);
     #endif 
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-    uint16_t EffectAnim__Spanned_Palette();
+    uint16_t EffectAnim__Split_Palette_SegWidth();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-    uint16_t EffectAnim__Randomise_Gradient();
+    uint16_t EffectAnim__Randomise_Gradient_Palette_SegWidth();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
+    uint16_t EffectAnim__Rotate_Base(uint16_t movement_amount=1, bool direction=false);
     uint16_t EffectAnim__Rotating_Palette();
-    #endif
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
     uint16_t EffectAnim__Rotating_Previous_Animation();
     #endif
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
@@ -1148,19 +1178,19 @@ class mAnimatorLight :
       #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
       EFFECTS_FUNCTION__SOLID_COLOUR__ID,
       EFFECTS_FUNCTION__STATIC_PALETTE__ID,
-      EFFECTS_FUNCTION__SPANNED_PALETTE__ID,
+      EFFECTS_FUNCTION__SPLIT_PALETTE_SEGWIDTH__ID,
       EFFECTS_FUNCTION__FIREFLY__ID,
       EFFECTS_FUNCTION__CANDLE_SINGLE__ID,
       EFFECTS_FUNCTION__CANDLE_MULTIPLE__ID,
-      EFFECTS_FUNCTION__RANDOMISE_GRADIENT__ID,
-      EFFECTS_FUNCTION__STATIC_PALETTE_VINTAGE__ID,
+      EFFECTS_FUNCTION__RANDOMISE_GRADIENT_PALETTE_SEGWIDTH__ID,
+      EFFECTS_FUNCTION__STATIC_PALETTE_VARIED__ID,
       #endif
 
       // General Level 2 Flashing Basic Effects
       #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
       EFFECTS_FUNCTION__SHIMMERING_PALETTE_DOUBLE__ID,
       EFFECTS_FUNCTION__SHIMMERING_PALETTE_SATURATION__ID,
-      EFFECTS_FUNCTION__STATIC_GRADIENT_PALETTE__ID,
+      EFFECTS_FUNCTION__GRADIENT_PALETTE_SEGWIDTH__ID,
       EFFECTS_FUNCTION__ROTATING_PALETTE__ID,
       EFFECTS_FUNCTION__ROTATING_PREVIOUS_ANIMATION__ID,
       EFFECTS_FUNCTION__STEPPING_PALETTE_WITH_BACKGROUND__ID,
@@ -2064,7 +2094,11 @@ inline static uint32_t FadeU32(uint32_t colour32, uint8_t fade) {
   void setAllLeds();
   void setLedsStandard(bool justColors = false);
   bool colorChanged();
-  void colorUpdated(int callMode);
+
+  void colorUpdated(byte callMode);
+  void stateUpdated(byte callMode);
+  void updateInterfaces(uint8_t callMode);
+
   void handleTransitions();
 
   
@@ -2076,6 +2110,7 @@ inline static uint32_t FadeU32(uint32_t colour32, uint8_t fade) {
   void SetSegment_AnimFunctionCallback_WithoutAnimator(uint8_t seg_i = 0);
 
   int16_t extractModeDefaults(uint8_t mode, const char *segVar);
+  bool extractModeDefaults(uint8_t mode, const char *segVar, char *outBuffer, size_t bufferSize);
 
     void Reset_CustomPalette_NamesDefault();
 
@@ -3271,6 +3306,11 @@ inline void DynamicBuffer_StartingColour_GetAllSegment() {
         } else {
         #endif
             Set_DynamicBuffer_StartingColour(pixel, getPixelColor(pixel));
+            #ifdef ENABLE_DEBUGFEATURE_LIGHTING__TRACE_PIXEL_SET_GET_SHOW_FIRST_NUMBER_LOGGED_WITH_VALUE
+            if(pixel < ENABLE_DEBUGFEATURE_LIGHTING__TRACE_PIXEL_SET_GET_SHOW_FIRST_NUMBER_LOGGED_WITH_VALUE) {
+              SERIAL_DEBUG_COL32i("StartingColour",  getPixelColor(pixel), pixel);
+            }
+            #endif
         #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
         }
         #endif
@@ -3339,9 +3379,15 @@ inline void AnimationProcess_LinearBlend_Dynamic_BufferU32(const AnimationParam&
 
             // Blend RGB/WRGB colors and write the result
             uint32_t blendedColor = ColourBlend(startColor, desiredColor, blendFactor);
-            if(i==0)
-            SERIAL_DEBUG_COL32i("anim----------------------", blendedColor, i);
+            // uint32_t blendedColor = desiredColor; // When debugging without a blend
+
             setPixelColor(i, blendedColor);
+
+            #ifdef ENABLE_DEBUGFEATURE_LIGHTING__TRACE_PIXEL_SET_GET_SHOW_FIRST_NUMBER_LOGGED_WITH_VALUE
+            if(i < ENABLE_DEBUGFEATURE_LIGHTING__TRACE_PIXEL_SET_GET_SHOW_FIRST_NUMBER_LOGGED_WITH_VALUE) {
+              SERIAL_DEBUG_COL32i("blendedColor", blendedColor, i);
+            }
+            #endif
         }
     }
 }
@@ -3547,11 +3593,11 @@ inline uint32_t HueSatBrt(uint16_t hue, uint8_t sat, uint8_t brt, bool white_fro
    */
   enum Effect_DevStage
   {
-    Release=0,
-    Beta=1,
-    Alpha=2,
-    Dev=3,
-    Unstable=4
+    Release=0, // Full working for all string types (RGB, WRGB, RGBWW, 1D and 2D), should be used for production
+    Beta=1,    // Working in most cases, but not  tested fully, bug fixing only
+    Alpha=2,   // Works in some exact cases, still under modifications
+    Dev=3,     // Incomplete and not working, for development only
+    Unstable=4 // Likely will crash, has some issue that needs to be fixed
   };
 
 

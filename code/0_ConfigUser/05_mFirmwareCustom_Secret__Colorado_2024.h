@@ -694,7 +694,7 @@ USE 2A BLACK WITH BLACK SONOFF FOR WREATH
       ],
       "ColourPalette":"Snowy 02",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":1,
@@ -885,7 +885,7 @@ USE 2A BLACK WITH BLACK SONOFF FOR WREATH
       ],
       "ColourPalette":"Christmas Snowy 02",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":1,
         "Intensity":127,
         "Grouping":1,
@@ -1036,7 +1036,7 @@ USE 2A BLACK WITH BLACK SONOFF FOR WREATH
       ],
       "ColourPalette":"Snowy 02",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":1,
@@ -1188,7 +1188,7 @@ USE 2A BLACK WITH BLACK SONOFF FOR WREATH
       ],
       "ColourPalette":"Snowy 02",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":1,
@@ -2678,7 +2678,7 @@ USE 2A BLACK WITH BLACK SONOFF FOR WREATH
     "n": "Static,Snowy02,S127,R4000,G1,D0",
     "ColourPalette":"Snowy 02",
     "Effects": {
-      "Function":"Static Palette",
+      "Function":"Static",
       "Intensity":127,
       "Speed":127,
       "Grouping":1,
@@ -2731,7 +2731,7 @@ USE 2A BLACK WITH BLACK SONOFF FOR WREATH
     "n": "Static,Snowy02,S200,R4000,G10,D0",
     "ColourPalette":"Snowy 02",
     "Effects": {
-      "Function":"Static Palette",
+      "Function":"Static",
       "Intensity":20,
       "Speed":200,
       "Grouping":10,
@@ -2757,7 +2757,7 @@ USE 2A BLACK WITH BLACK SONOFF FOR WREATH
     "n":"SpannedPalette,Random01,S126,R2000,G1,D0",    
     "ColourPalette":"Random 01",
     "Effects": {
-      "Function":"Spanned Palette",
+      "Function":"Gradient",
       "Intensity":255,
       "Speed":126,
       "Grouping":1,

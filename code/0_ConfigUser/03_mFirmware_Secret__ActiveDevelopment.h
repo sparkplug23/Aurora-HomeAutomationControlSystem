@@ -602,7 +602,7 @@ May need to add two power connections too, so its not just the cat5e wire to let
           "BrightnessRGB":5
         },
         "Effects": {
-          "Function":"Spanned Palette",
+          "Function":"Gradient",
           "Speed":127,
           "Intensity":255,
           "Decimate":0,
@@ -625,7 +625,7 @@ May need to add two power connections too, so its not just the cat5e wire to let
           "BrightnessRGB":5
         },
         "Effects": {
-          "Function":"Static Palette",
+          "Function":"Static",
           "Speed":127,
           "Intensity":255,
           "Decimate":0,
@@ -649,7 +649,7 @@ May need to add two power connections too, so its not just the cat5e wire to let
           "BrightnessRGB":5
         },
         "Effects": {
-          "Function":"Static Palette",
+          "Function":"Static",
           "Speed":127,
           "Intensity":255,
           "Decimate":0,
@@ -673,7 +673,7 @@ May need to add two power connections too, so its not just the cat5e wire to let
           "BrightnessRGB":5
         },
         "Effects": {
-          "Function":"Static Palette",
+          "Function":"Static",
           "Speed":127,
           "Intensity":255,
           "Decimate":0,
@@ -1336,7 +1336,7 @@ new 26GHz radar sensor
           "BrightnessRGB":5
         },
         "Effects": {
-          "Function":"Spanned Palette",
+          "Function":"Gradient",
           "Speed":127,
           "Intensity":255,
           "Decimate":0,
@@ -1359,7 +1359,7 @@ new 26GHz radar sensor
           "BrightnessRGB":5
         },
         "Effects": {
-          "Function":"Static Palette",
+          "Function":"Static",
           "Speed":127,
           "Intensity":255,
           "Decimate":0,
@@ -1383,7 +1383,7 @@ new 26GHz radar sensor
           "BrightnessRGB":5
         },
         "Effects": {
-          "Function":"Static Palette",
+          "Function":"Static",
           "Speed":127,
           "Intensity":255,
           "Decimate":0,
@@ -1407,7 +1407,7 @@ new 26GHz radar sensor
           "BrightnessRGB":5
         },
         "Effects": {
-          "Function":"Static Palette",
+          "Function":"Static",
           "Speed":127,
           "Intensity":255,
           "Decimate":0,
@@ -2047,7 +2047,7 @@ new 26GHz radar sensor
           "BrightnessRGB":5
         },
         "Effects": {
-          "Function":"Spanned Palette",
+          "Function":"Gradient",
           "Speed":127,
           "Intensity":255,
           "Decimate":0,
@@ -2857,7 +2857,7 @@ new 26GHz radar sensor
           "BrightnessRGB":5
         },
         "Effects": {
-          "Function":"Spanned Palette",
+          "Function":"Gradient",
           "Speed":127,
           "Intensity":255,
           "Decimate":0,
@@ -2879,7 +2879,7 @@ new 26GHz radar sensor
           118
         ],
         "Effects": {
-          "Function":"Spanned Palette"
+          "Function":"Gradient"
         },
         "ColourType":3,
         "BrightnessRGB": 2,
@@ -2893,7 +2893,7 @@ new 26GHz radar sensor
         ],
         "ColourPalette":2,
         "Effects": {
-          "Function":"Spanned Palette"
+          "Function":"Gradient"
         },
         "ColourType":3,
         "Transition": {
@@ -2911,7 +2911,7 @@ new 26GHz radar sensor
         ],
         "ColourPalette":3,
         "Effects": {
-          "Function":"Spanned Palette"
+          "Function":"Gradient"
         },
         "ColourType":3,
         "Transition": {
@@ -2957,7 +2957,7 @@ new 26GHz radar sensor
     //     ],
     //     "ColourPalette":"Rainbow 16",
     //     "Effects": {
-    //       "Function":"Spanned Palette"
+    //       "Function":"Gradient"
     //     },
     //     "ColourType":3,
     //     "Transition": {
@@ -3009,7 +3009,7 @@ new 26GHz radar sensor
           "BrightnessRGB":5
         },
         "Effects": {
-          "Function":"Spanned Palette",
+          "Function":"Gradient",
           "Speed":127,
           "Intensity":255,
           "Decimate":0,
@@ -3122,7 +3122,7 @@ new 26GHz radar sensor
           "BrightnessRGB":5
         },
         "Effects": {
-          "Function":"Spanned Palette",
+          "Function":"Gradient",
           "Speed":127,
           "Intensity":255,
           "Decimate":0,
@@ -3259,7 +3259,7 @@ new 26GHz radar sensor
           "BrightnessRGB":5
         },
         "Effects": {
-          "Function":"Spanned Palette",
+          "Function":"Gradient",
           "Speed":127,
           "Intensity":255,
           "Decimate":0,
@@ -3279,7 +3279,7 @@ new 26GHz radar sensor
           118
         ],
         "Effects": {
-          "Function":"Spanned Palette"
+          "Function":"Gradient"
         },
         "ColourType":3
       },
@@ -3290,7 +3290,7 @@ new 26GHz radar sensor
         ],
         "ColourPalette":"IceCream Floats",
         "Effects": {
-          "Function":"Spanned Palette"
+          "Function":"Gradient"
         },
         "ColourType":3,
         "Transition": {
@@ -3901,7 +3901,7 @@ new 26GHz radar sensor
           "BrightnessRGB":5
         },
         "Effects": {
-          "Function":"Static Palette",
+          "Function":"Static",
           "Speed":127,
           "Intensity":255,
           "Decimate":0,
@@ -5430,7 +5430,7 @@ new 26GHz radar sensor
 //         "BrightnessRGB":1
 //       },
 //       "Effects": {
-//         "Function":"Spanned Palette",
+//         "Function":"Gradient",
 //         "Speed":127,
 //         "Intensity":127,
 //         "Decimate":0,
@@ -6927,7 +6927,7 @@ new 26GHz radar sensor
 //       ],
 //       "ColourPalette":"RGPBO",
 //       "Effects": {
-//         "Function":"Static Palette",
+//         "Function":"Static",
 //         "Speed":127,
 //         "Intensity":127,
 //         "Grouping":10,
@@ -7181,7 +7181,7 @@ new 26GHz radar sensor
       "PixelRange": [0,16],
       "ColourPalette":"Rainbow 16",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "RateMs": 1000
       }
     },
@@ -7189,7 +7189,7 @@ new 26GHz radar sensor
       "PixelRange": [16,32],
       "ColourPalette":"Snowy 02",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Reverse":1,
         "RateMs": 1000
       }
@@ -7244,7 +7244,7 @@ new 26GHz radar sensor
       "PixelRange": [96,112],
       "ColourPalette":"RGPBO",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":229,
         "Intensity":127,
         "RateMs": 100
@@ -7254,7 +7254,7 @@ new 26GHz radar sensor
       "PixelRange": [112,128],
       "ColourPalette":"Blue and White",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":229,
         "Intensity":127,
         "Reverse":1,
@@ -7358,7 +7358,7 @@ new 26GHz radar sensor
       "PixelRange": [240,256],
       "ColourPalette":"Random 01",
       "Effects": {
-        "Function":"Spanned Palette",
+        "Function":"Gradient",
         "Speed":229,
         "Intensity":20,
         "Reverse":1,
@@ -7391,7 +7391,7 @@ new 26GHz radar sensor
   //     ],
   //     "ColourPalette":"RGPBY",
   //     "Effects": {
-  //       "Function":"Static Palette",
+  //       "Function":"Static",
   //       "Speed":1,
   //       "Intensity":127,
   //       "Decimate":0,
@@ -7409,7 +7409,7 @@ new 26GHz radar sensor
   //     ],
   //     "ColourPalette":"RGPBY",
   //     "Effects": {
-  //       "Function":"Static Palette",
+  //       "Function":"Static",
   //       "Speed":1,
   //       "Intensity":127,
   //       "Decimate":0,
@@ -7583,7 +7583,7 @@ new 26GHz radar sensor
       ],
       "ColourPalette":"Snowy 01",
       "Effects": {
-        "Function":"Spanned Palette",
+        "Function":"Gradient",
         "Speed":127,
         "Intensity":127,
         "Grouping":1

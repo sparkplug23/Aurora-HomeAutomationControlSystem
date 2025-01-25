@@ -146,7 +146,7 @@ void mUpdates::WebPage_Root_AddHandlers()
   
 #ifndef WLED_DISABLE_OTA
   //init ota page
-  pCONT_web->server->on("/update", HTTP_GET, [this](AsyncWebServerRequest *request){
+  tkr_web->server->on("/update", HTTP_GET, [this](AsyncWebServerRequest *request){
     ALOG_INF(PSTR("URL HTTP_GET \"/update\""));
     // if (otaLock) {
     //   serveMessage(request, 500, "Access Denied", FPSTR(s_unlock_ota), 254);
@@ -156,16 +156,16 @@ void mUpdates::WebPage_Root_AddHandlers()
 #endif // USE_MODULE_LIGHTS_ANIMATOR
   });
 
-  pCONT_web->server->on("/update", HTTP_POST, [this](AsyncWebServerRequest *request){
+  tkr_web->server->on("/update", HTTP_POST, [this](AsyncWebServerRequest *request){
     ALOG_INF(PSTR("URL HTTP_POST \"/update\""));
     // if (!correctPIN) {
     //   serveSettings(request, true); // handle PIN page POST request
     //   return;
     // }
     if (Update.hasError() ) {
-      pCONT_web->serveMessage(request, 500, F("Update failed!"), F("Please check your file and retry!"), 254);
+      tkr_web->serveMessage(request, 500, F("Update failed!"), F("Please check your file and retry!"), 254);
     } else {
-      pCONT_web->serveMessage(request, 200, F("Update successful!"), F("Rebooting..."), 131);
+      tkr_web->serveMessage(request, 200, F("Update successful!"), F("Rebooting..."), 131);
       // doReboot = true;
     }
   },[this](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final){
@@ -192,7 +192,7 @@ void mUpdates::WebPage_Root_AddHandlers()
     }
   });
 #else
-  pCONT_web->server->on("/update", HTTP_GET, [](AsyncWebServerRequest *request){
+  tkr_web->server->on("/update", HTTP_GET, [](AsyncWebServerRequest *request){
     serveMessage(request, 501, "Not implemented", F("OTA updating is disabled in this build."), 254);
   });
 #endif

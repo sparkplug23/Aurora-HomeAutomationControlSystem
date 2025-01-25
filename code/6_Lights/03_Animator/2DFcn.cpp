@@ -212,35 +212,35 @@ mAnimatorLight::Segment::setPixelColorXY(int x, int y, uint32_t col)
   // }
 
 
-    RgbwwColor c = RgbwwColor(R(col), G(col), B(col), W(col), W(col));
+  //   RgbwwColor c = RgbwwColor(R(col), G(col), B(col), W(col), W(col));
 
-    /**
-     * @brief Apply "GLOBAL" brightness to the colour
-     * 
-     */
-    uint8_t bri_master = pCONT_iLight->getBriRGB_Global(); 
-    uint8_t bri_segment = getBrightnessRGB();
+  //   /**
+  //    * @brief Apply "GLOBAL" brightness to the colour
+  //    * 
+  //    */
+  //   uint8_t bri_master = pCONT_iLight->getBriRGB_Global(); 
+  //   uint8_t bri_segment = getBrightnessRGB();
 
-    /**
-     * @brief Apply "SEGMENT" _brightness_rgb to the colour ALSO (rescale global brightness value, this is similar to WLED opacity)
-     * 
-     */
-    if(bri_segment!=255)
-    {
-      bri_master = scale8(bri_master, bri_segment); // adjust master by segment
-    }
+  //   /**
+  //    * @brief Apply "SEGMENT" _brightness_rgb to the colour ALSO (rescale global brightness value, this is similar to WLED opacity)
+  //    * 
+  //    */
+  //   if(bri_segment!=255)
+  //   {
+  //     bri_master = scale8(bri_master, bri_segment); // adjust master by segment
+  //   }
 
-    // Apply global bri_master
-    c.R  = scale8(c.R,  bri_master);
-    c.G  = scale8(c.G,  bri_master);
-    c.B  = scale8(c.B,  bri_master);
-    c.WW = scale8(c.WW, bri_master);
-    c.CW = scale8(c.CW, bri_master);
+  //   // Apply global bri_master
+  //   c.R  = scale8(c.R,  bri_master);
+  //   c.G  = scale8(c.G,  bri_master);
+  //   c.B  = scale8(c.B,  bri_master);
+  //   c.WW = scale8(c.WW, bri_master);
+  //   c.CW = scale8(c.CW, bri_master);
 
   
-  // This function bypassing the 1D to 2D set function that applies brightness, so we need to apply here before calling the busmanager
+  // // This function bypassing the 1D to 2D set function that applies brightness, so we need to apply here before calling the busmanager
 
-    col = RgbwwColorU32(c);
+  //   col = RgbwwColorU32(c);
 
   // DEBUG_LINE_HERE;
   if (reverse  ) x = virtualWidth()  - x - 1;

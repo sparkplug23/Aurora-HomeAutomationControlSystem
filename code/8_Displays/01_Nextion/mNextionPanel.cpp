@@ -2310,19 +2310,19 @@ void mNextionPanel::MQTTHandler_Sender()
 void mNextionPanel::WebPage_AddHandlers()
 {
     
-  pCONT_web->server->on("/nextion_update", HTTP_GET, [this](AsyncWebServerRequest *request){
+  tkr_web->server->on("/nextion_update", HTTP_GET, [this](AsyncWebServerRequest *request){
     this->WebPage_LCD_Update_TFT(request);
   });
 
-  pCONT_web->server->on("/firmware", HTTP_GET, [this](AsyncWebServerRequest *request){
+  tkr_web->server->on("/firmware", HTTP_GET, [this](AsyncWebServerRequest *request){
     this->webHandleFirmware(request);
   });
           
-  pCONT_web->server->on("/tftFileSize", HTTP_GET, [this](AsyncWebServerRequest *request){
+  tkr_web->server->on("/tftFileSize", HTTP_GET, [this](AsyncWebServerRequest *request){
     this->webHandleTftFileSize(request);
   });
 
-  pCONT_web->server->on(
+  tkr_web->server->on(
                         "/lcdupload", 
                         HTTP_POST, 
                         [this](AsyncWebServerRequest *request){ request->send(200); }, // On Completion
@@ -2332,16 +2332,16 @@ void mNextionPanel::WebPage_AddHandlers()
                       );
 
   #ifdef ENABLE_DEBUGFEATURE_NEXTION__LCD_UPDATE_VIA_URL
-  pCONT_web->server->on("/lcddownload", HTTP_GET, [this](AsyncWebServerRequest *request){
+  tkr_web->server->on("/lcddownload", HTTP_GET, [this](AsyncWebServerRequest *request){
     this->webHandleLcdDownload(request);
   });
   #endif // ENABLE_DEBUGFEATURE_NEXTION__LCD_UPDATE_VIA_URL
 
-  pCONT_web->server->on("/lcdOtaSuccess", HTTP_GET, [this](AsyncWebServerRequest *request){
+  tkr_web->server->on("/lcdOtaSuccess", HTTP_GET, [this](AsyncWebServerRequest *request){
     this->webHandleLcdUpdateSuccess(request);
   });
 
-  pCONT_web->server->on("/lcdOtaFailure", HTTP_GET, [this](AsyncWebServerRequest *request){
+  tkr_web->server->on("/lcdOtaFailure", HTTP_GET, [this](AsyncWebServerRequest *request){
     this->webHandleLcdUpdateFailure(request);
   });
 

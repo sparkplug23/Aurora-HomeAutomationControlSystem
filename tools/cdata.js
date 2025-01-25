@@ -227,7 +227,7 @@ function writeChunks(srcDir, specs, resultFile) {
 
 
 writeHtmlGzipped(source_path + "/index.htm", destination_path + "html_ui.h", 'index');
-writeHtmlGzipped(source_path + "/simple.htm", destination_path + "html_simple.h", 'simple');
+// writeHtmlGzipped(source_path + "/simple.htm", destination_path + "html_simple.h", 'simple'); //now create dynamically by hiding elements
 writeHtmlGzipped(source_path + "/pixart/pixart.htm", destination_path + "html_pixart.h", 'pixart');
 writeHtmlGzipped(source_path + "/cpal/cpal.htm", destination_path + "html_cpal.h", 'cpal');
 writeHtmlGzipped(source_path + "/pxmagic/pxmagic.htm", destination_path + "html_pxmagic.h", 'pxmagic');
@@ -268,6 +268,12 @@ writeChunks(
       mangle: (str) =>
         str
           .replace("%%","%")
+    },
+    {
+      file: "common.js",
+      name: "JS_common",
+      method: "gzip",
+      filter: "js-minify",
     },
     {
       file: "settings.htm",
@@ -414,17 +420,18 @@ const char PAGE_dmxmap[] PROGMEM = R"=====()=====";
       file: "favicon.ico",
       name: "favicon",
       method: "binary",
-    },
-    {
-      file: "iro.js",
-      name: "iroJs",
-      method: "gzip"
-    },
-    {
-      file: "rangetouch.js",
-      name: "rangetouchJs",
-      method: "gzip"
     }
+    // ,
+    // {
+    //   file: "iro.js",
+    //   name: "iroJs",
+    //   method: "gzip"
+    // },
+    // {
+    //   file: "rangetouch.js",
+    //   name: "rangetouchJs",
+    //   method: "gzip"
+    // }
   ],
   destination_path + "html_other.h"
 );

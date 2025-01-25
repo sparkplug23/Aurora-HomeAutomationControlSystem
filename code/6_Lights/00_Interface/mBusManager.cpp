@@ -515,6 +515,8 @@ void BusDigital::setStatusPixel(uint32_t c) {
 }
 
 
+#define ENABLE_DEVFEATURE_LIGHTING__SETGETPIXEL_FALLBACK_MINIMAL_2024
+
 /**
  * @brief Later these set/get will need to have an ifdef to enable rgbcct methods, so either complete duplication
  * or uses the same functions, but includes subcode that has ifdefs that enable 5 byte encoding for CCT. The bus wrapper will likely need to have rgbww ifdef method to make it easier to use.
@@ -524,6 +526,16 @@ void BusDigital::setStatusPixel(uint32_t c) {
  */
 
 void IRAM_ATTR BusDigital::setPixelColor(uint32_t pix, ColourBaseType c) {
+
+  #ifdef ENABLE_DEVFEATURE_LIGHTING__SETGETPIXEL_FALLBACK_MINIMAL_2024
+
+  // ALOG_INF(PSTR("p\t%d"), pix);
+  if (_reversed) pix = _len - pix -1;
+  else pix += _skip;
+  uint8_t co = _colorOrderMap.getPixelColorOrder(pix+_start, _colorOrder);
+  PolyBus::setPixelColor(_busPtr, _iType, pix, c, co);
+
+  #else
   if (!_valid) return;
   #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
   // Directly handle RgbwwColor
@@ -587,11 +599,25 @@ void IRAM_ATTR BusDigital::setPixelColor(uint32_t pix, ColourBaseType c) {
     PolyBus::setPixelColor(_busPtr, _iType, pix, c, co, wwcw);
   }
   #endif
+
+  #endif // ENABLE_DEVFEATURE_LIGHTING__SETGETPIXEL_FALLBACK_MINIMAL_2024
 }
 
 // returns original color if global buffering is enabled, else returns lossly restored color from bus
 ColourBaseType IRAM_ATTR BusDigital::getPixelColor(uint32_t pix) const {
   
+#ifdef ENABLE_DEVFEATURE_LIGHTING__SETGETPIXEL_FALLBACK_MINIMAL_2024
+
+  if (_reversed) pix = _len - pix -1;
+  else pix += _skip;
+  uint8_t co = _colorOrderMap.getPixelColorOrder(pix+_start, _colorOrder);
+  return PolyBus::getPixelColor(_busPtr, _iType, pix, co);
+
+#else
+
+pthrow error
+
+
   #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
 
 
@@ -649,6 +675,8 @@ ALOG_INF(PSTR("BusDigital::getPixelColor[%d]= %d %d %d %d\n\r"), pix, c.R, c.G, 
     }
     return c;
   }
+  #endif
+
   #endif
 }
 
@@ -1632,6 +1660,7 @@ uint16_t      BusManager::_milliAmpsUsed = 0;
 uint16_t      BusManager::_milliAmpsMax = ABL_MILLIAMPS_DEFAULT;
 
 bool PolyBus::useParallelI2S = false;
+uint8_t PolyBus::_bri_rgb = 255; // current brightness for RGB
 uint8_t PolyBus::required_channels = 0;
 
 

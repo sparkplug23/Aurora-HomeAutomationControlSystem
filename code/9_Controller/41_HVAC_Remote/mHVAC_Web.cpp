@@ -361,7 +361,7 @@ void mHVAC::WebPage_Root_AddHandlers(){
   /**
    * Root Page 
    * */
-  // pCONT_web->pWebServer->on("/" "main" "/root_draw.json", HTTP_GET, [this](AsyncWebServerRequest *request){
+  // tkr_web->pWebServer->on("/" "main" "/root_draw.json", HTTP_GET, [this](AsyncWebServerRequest *request){
   //   Web_Root_Draw(request);
   // })
 
@@ -372,7 +372,7 @@ void mHVAC::WebPage_Root_AddHandlers(){
 // void mHVAC::WebCommand_Parse(void)
 // {
   
-//   if(pCONT_web->request_web_command == nullptr){ return; }
+//   if(tkr_web->request_web_command == nullptr){ return; }
 
 //   char tmp[100];
 
@@ -383,8 +383,8 @@ void mHVAC::WebPage_Root_AddHandlers(){
 
 //   // // check palette selector
 //   // sprintf(arg_ctr,"relay0_toggle\0");
-//   // if (pCONT_web->pWebServer->hasParam("relay0_toggle")) {
-//   //   pCONT_web->WebGetArg(arg_ctr, tmp, sizeof(tmp));
+//   // if (tkr_web->pWebServer->hasParam("relay0_toggle")) {
+//   //   tkr_web->WebGetArg(arg_ctr, tmp, sizeof(tmp));
 //   //   arg_value = (!strlen(tmp)) ? 0 : atoi(tmp);
 //   //   // animation.palette = arg_value;
 
@@ -398,8 +398,8 @@ void mHVAC::WebPage_Root_AddHandlers(){
     
 //     sprintf(arg_ctr,"%s%d",WEB_HANDLE_BUTTON_NAME_TIMER_SET,relay_id);
 
-//     if (pCONT_web->request_web_command->hasParam(arg_ctr)) {
-//       pCONT_web->WebGetArg(pCONT_web->request_web_command, arg_ctr, tmp, sizeof(tmp));
+//     if (tkr_web->request_web_command->hasParam(arg_ctr)) {
+//       tkr_web->WebGetArg(tkr_web->request_web_command, arg_ctr, tmp, sizeof(tmp));
 //       arg_value = (!strlen(tmp)) ? 0 : atoi(tmp);
 //       // animation.brightness = BrtN2F(arg_value);
 //       ALOG_TST(PSTR(D_LOG_NEO "hasParam(\"%s\")=%d %d"),arg_ctr,arg_value,relay_id);
@@ -423,8 +423,8 @@ void mHVAC::WebPage_Root_AddHandlers(){
     
 //     sprintf(arg_ctr,"%s%d",WEB_HANDLE_BUTTON_NAME_TEMP_SET,relay_id);
 
-//     if (pCONT_web->request_web_command->hasParam(arg_ctr)) {
-//       pCONT_web->WebGetArg(pCONT_web->request_web_command, arg_ctr, tmp, sizeof(tmp));
+//     if (tkr_web->request_web_command->hasParam(arg_ctr)) {
+//       tkr_web->WebGetArg(tkr_web->request_web_command, arg_ctr, tmp, sizeof(tmp));
 //       arg_value = (!strlen(tmp)) ? 0 : atoi(tmp);
 //       // animation.brightness = BrtN2F(arg_value);
 //       ALOG_TST(PSTR(D_LOG_NEO "hasParam(\"%s\")=%d %d"),arg_ctr,arg_value,relay_id);

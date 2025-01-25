@@ -499,7 +499,7 @@ void mPWM::WebAppend_Root_Draw_Table(){
     "Switch 7" "|" 
     "Switch 8" "|" ;
 
- pCONT_web->WebAppend_Root_Draw_Table_dList(settings.switches_found,"switch_table", kTitle_TableTitles_Root); //add flag (or another function) that draws names with numbers after it
+ tkr_web->WebAppend_Root_Draw_Table_dList(settings.switches_found,"switch_table", kTitle_TableTitles_Root); //add flag (or another function) that draws names with numbers after it
 
 }
 

@@ -413,6 +413,7 @@ class BusDigital : public Bus {
     static uint16_t _milliAmpsTotal; // is overwitten/recalculated on each show()
 
     inline ColourBaseType restoreColorLossy(ColourBaseType c, uint8_t restoreBri) const {
+      Serial.printf("I DONT WANT TO BE HERE --------------------------------------- restoreColorLossy\n\r");
       if (restoreBri < 255) {
         uint8_t* chan = (uint8_t*) &c;
         for (uint_fast8_t i=0; i<4; i++) {

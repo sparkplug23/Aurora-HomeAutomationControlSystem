@@ -31,6 +31,8 @@ int8_t mAnimatorLight::Tasker(uint8_t function, JsonParserObject obj)
     case TASK_EVERY_SECOND:{
       EverySecond_AutoOff(); 
 
+      updateInterfaces(CALL_MODE_WS_SEND); //tmp fix sending here
+
 
       #ifdef USE_DEVFEATURE_LIGHTS__CUSTOM_MAPPING_TABLE_SPLASH
       DEBUG_PRINT(F("Matrix ledmap:"));
@@ -233,16 +235,22 @@ unsigned long wsLastLiveTime = 0;
 
 #define WS_LIVE_INTERVAL 40
 
+void sendDataWs(AsyncWebSocketClient * client = nullptr);
+
 void sendDataWs(AsyncWebSocketClient * client)
 {
-  if (!pCONT_web->ws->count()) return;
+  if (!tkr_web->ws->count())
+  {
+    ALOG_ERR(PSTR("No WS clients connected"));
+    return;
+  }
 
   if (!tkr_anim->requestJSONBufferLock(12)) {
     const char* error = PSTR("{\"error\":3}");
     if (client) {
       client->text(FPSTR(error)); // ERR_NOBUF
     } else {
-      pCONT_web->ws->textAll(FPSTR(error)); // ERR_NOBUF
+      tkr_web->ws->textAll(FPSTR(error)); // ERR_NOBUF
     }
     return;
   }
@@ -274,8 +282,8 @@ void sendDataWs(AsyncWebSocketClient * client)
   if (!buffer || heap1-heap2<len) {
     tkr_anim->releaseJSONBufferLock();
     DEBUG_PRINTLN(F("WS buffer allocation failed."));
-    pCONT_web->ws->closeAll(1013); //code 1013 = temporary overload, try again later
-    pCONT_web->ws->cleanupClients(0); //disconnect all clients to release memory
+    tkr_web->ws->closeAll(1013); //code 1013 = temporary overload, try again later
+    tkr_web->ws->cleanupClients(0); //disconnect all clients to release memory
     return; //out of memory
   }
   serializeJson(*tkr_anim->pDoc, (char *)buffer.data(), len);
@@ -286,7 +294,7 @@ void sendDataWs(AsyncWebSocketClient * client)
     client->text(std::move(buffer));
   } else {
     DEBUG_PRINTLN(F("to multiple clients."));
-    pCONT_web->ws->textAll(std::move(buffer));
+    tkr_web->ws->textAll(std::move(buffer));
   }
 
   tkr_anim->releaseJSONBufferLock();
@@ -295,6 +303,11 @@ void sendDataWs(AsyncWebSocketClient * client)
 
 void wsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len)
 {
+
+  uint8_t log = LOG_LEVEL_INFO;
+
+  ALOG_INF(PSTR("wsEvent_________________________________________________________%d"),type);
+
   if(type == WS_EVT_CONNECT){
     //client connected
     DEBUG_PRINTLN(F("WS client connected."));
@@ -304,6 +317,7 @@ void wsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventTyp
     if (client->id() == wsLiveClientId) wsLiveClientId = 0;
     DEBUG_PRINTLN(F("WS client disconnected."));
   } else if(type == WS_EVT_DATA){
+    ALOG(log, PSTR("WS data received."));
     // data packet
     AwsFrameInfo * info = (AwsFrameInfo*)arg;
     if(info->final && info->index == 0 && info->len == len){
@@ -327,6 +341,7 @@ void wsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventTyp
         JsonObject root = tkr_anim->pDoc->as<JsonObject>();
         if (error || root.isNull()) {
           tkr_anim->releaseJSONBufferLock();
+          ALOG(log, PSTR("{\"error\":2}")); // ERR_JSON
           return;
         }
         if (root["v"] && root.size() == 1) {
@@ -335,14 +350,18 @@ void wsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventTyp
         } else if (root.containsKey("lv")) {
           wsLiveClientId = root["lv"] ? client->id() : 0;
         } else {
+          ALOG(log, PSTR("we are here"));
           verboseResponse = tkr_anim->deserializeState(root);
         }
         tkr_anim->releaseJSONBufferLock();
+        ALOG(log, PSTR("we are here 2"));
 
         if (!tkr_anim->interfaceUpdateCallMode) { // individual client response only needed if no WS broadcast soon
           if (verboseResponse) {
+            ALOG(log, PSTR("{\"success\":true} verboseResponse"));
             sendDataWs(client);
           } else {
+            ALOG(log, PSTR("{\"success\":true}"));
             // we have to send something back otherwise WS connection closes
             client->text(F("{\"success\":true}"));
           }
@@ -350,6 +369,7 @@ void wsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventTyp
           //lastInterfaceUpdate = millis() - (INTERFACE_UPDATE_COOLDOWN -500); // ESP8266 does not like this
         }
       }
+        ALOG(log, PSTR("we are here 3"));
     } else {
       //message is comprised of multiple frames or the frame is split into multiple packets
       //if(info->index == 0){
@@ -360,6 +380,7 @@ void wsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventTyp
       //{
 
       //}
+        ALOG(log, PSTR("we are here 4"));
 
       if((info->index + len) == info->len){
         if(info->final){
@@ -385,7 +406,7 @@ void wsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventTyp
 
 bool sendLiveLedsWs(uint32_t wsClient)
 {
-  AsyncWebSocketClient * wsc = pCONT_web->ws->client(wsClient);
+  AsyncWebSocketClient * wsc = tkr_web->ws->client(wsClient);
   if (!wsc || wsc->queueLength() > 0) return false; //only send if queue free
 
   size_t used = tkr_anim->getLengthTotal();
@@ -429,7 +450,15 @@ bool sendLiveLedsWs(uint32_t wsClient)
 #ifndef WLED_DISABLE_2D
     if (tkr_anim->isMatrix && n>1 && (i/mAnimatorLight::Segment::maxWidth)%n) i += mAnimatorLight::Segment::maxWidth * (n-1);
 #endif
+
+
+    #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+    RgbwwColor col = tkr_anim->getPixelColor(i);
+    uint32_t c = RGBW32(col.R, col.G, col.B, col.WW);
+    #else
     uint32_t c = tkr_anim->getPixelColor(i);
+    #endif
+    
     uint8_t r = R(c);
     uint8_t g = G(c);
     uint8_t b = B(c);
@@ -450,9 +479,9 @@ void handleWs()
   if (millis() - wsLastLiveTime > WS_LIVE_INTERVAL)
   {
     #ifdef ESP8266
-    pCONT_web->ws->cleanupClients(3);
+    tkr_web->ws->cleanupClients(3);
     #else
-    pCONT_web->ws->cleanupClients();
+    tkr_web->ws->cleanupClients();
     #endif
     bool success = true;
     if (wsLiveClientId) success = sendLiveLedsWs(wsLiveClientId);
@@ -888,7 +917,7 @@ void mAnimatorLight::Init(void)
   #else
   #ifdef ENABLE_DEBUGFEATURE_WEBUI__SHOW_BUILD_DATETIME_IN_FOOTER
   #ifdef DEVICENAME_DESCRIPTION_CTR
-  snprintf(serverDescription, sizeof(serverDescription), "PulSar \"%s\" [%s] \"%s\"", tkr_set->Settings.system_name.friendly, tkr_time->GetBuildDateAndTime().c_str() , DEVICENAME_DESCRIPTION_CTR);
+  snprintf(serverDescription, sizeof(serverDescription), "PulSar \"%s\" [%s] %s", tkr_set->Settings.system_name.friendly, tkr_time->GetBuildDateAndTime().c_str() , tkr_set->runtime.firmware_version.current.name_ctr);
   #else
   snprintf(serverDescription, sizeof(serverDescription), "PulSar %s [%s]", tkr_set->Settings.system_name.friendly, tkr_time->GetBuildDateAndTime().c_str());
   #endif
@@ -912,7 +941,7 @@ void mAnimatorLight::Init(void)
   Reset_CustomPalette_NamesDefault();  
 
   #ifdef WLED_ENABLE_WEBSOCKETS2
-  pCONT_web->ws->onEvent(wsEvent);
+  tkr_web->ws->onEvent(wsEvent);
   #endif
   
   #ifdef ENABLE_DEVFEATURE_LIGHT__HARDCODE_MATRIX_SETUP
@@ -2157,6 +2186,7 @@ void mAnimatorLight::StartSegmentAnimation_AsAnimUpdateMemberFunction(uint8_t se
    * 
    */
   #ifdef ENABLE_FEATURE_LIGHTING__USE_NEOPIXELBUS_LIGHT_GAMMA_LG_BRIGHTNESS_ON_START_OF_ANIMATION //does nto work for firefly
+  error
   ALOG_INF(PSTR("Adjusting Brightness %d %d"), SEGMENT.getBrightnessRGB_WithGlobalApplied(), SEGMENT.getBrightnessCCT_WithGlobalApplied());
   SEGMENT.Update_DynamicBuffer_DesiredColour_Brightness( SEGMENT.getBrightnessRGB_WithGlobalApplied(), SEGMENT.getBrightnessCCT_WithGlobalApplied() );
   #endif
@@ -2836,6 +2866,7 @@ void mAnimatorLight::Segment::setOption(uint8_t n, bool val) {
 
 void mAnimatorLight::Segment::setMode(uint8_t fx, bool loadDefaults) 
 {
+  ALOG_INF(PSTR("Load FXData Defaults %d"), fx);
   // if we have a valid mode & is not reserved
   // if (fx < tkr_anim->getModeCount() && strncmp_P("RSVD", tkr_anim->getModeData(fx), 4)) {
   //   if (fx != mode) {
@@ -2867,6 +2898,18 @@ void mAnimatorLight::Segment::setMode(uint8_t fx, bool loadDefaults)
         {
           ALOG_INF(PSTR("Loading default pal=%d"), sOpt);
           setPalette(sOpt);
+        } 
+        
+        char paletteName[32]; // Buffer to store the extracted palette name
+        // Check for the "paln" command (palette name)
+        if (tkr_anim->extractModeDefaults(fx, "paln", paletteName, sizeof(paletteName)))
+        {
+          ALOG_INF(PSTR("Loading named palette: %s"), paletteName);
+          int16_t tmp_id = -1;
+          if((tmp_id=tkr_anim->GetPaletteIDbyName(paletteName))>=0){
+            ALOG_INF(PSTR("tmp_id=%d"),tmp_id);
+            palette_id = tmp_id;
+          }
         }
 
         if ((sOpt = tkr_anim->extractModeDefaults(fx, "ra")) >= 0) 
@@ -2908,6 +2951,8 @@ void mAnimatorLight::Segment::setMode(uint8_t fx, bool loadDefaults)
 
 
 
+
+
 // extracts mode parameter defaults from last section of mode data (e.g. "Juggle@!,Trail;!,!,;!;sx=16,ix=240,1d")
 //;sx=16,ix=240,1d
 int16_t mAnimatorLight::extractModeDefaults(uint8_t mode, const char *segVar)
@@ -2935,6 +2980,40 @@ int16_t mAnimatorLight::extractModeDefaults(uint8_t mode, const char *segVar)
     }
   }
   return -1;
+}
+
+bool mAnimatorLight::extractModeDefaults(uint8_t mode, const char *segVar, char *outBuffer, size_t bufferSize)
+{
+  if (mode < getModeCount())
+  {
+    char lineBuffer[128] = "";
+    strncpy_P(lineBuffer, getModeData_Config(mode), 127);
+    lineBuffer[127] = '\0'; // Ensure null-termination
+
+    if (lineBuffer[0] != 0)
+    {
+      char *startPtr = strrchr(lineBuffer, ';'); // Find the last ";"
+      if (!startPtr) return false;
+
+      char *stopPtr = strstr(startPtr, segVar);
+      if (!stopPtr) return false;
+
+      stopPtr += strlen(segVar) + 1; // Skip past the "segVar=" part
+
+      // Extract the value into outBuffer
+      char *valueEnd = strchr(stopPtr, ','); // Look for a delimiter (comma or null terminator)
+      if (!valueEnd) valueEnd = strchr(stopPtr, '\0'); // If no comma, find the end of the string
+
+      size_t length = valueEnd - stopPtr;
+      if (length >= bufferSize) return false; // Ensure it fits in outBuffer
+
+      strncpy(outBuffer, stopPtr, length);
+      outBuffer[length] = '\0'; // Null-terminate the result
+
+      return true;
+    }
+  }
+  return false;
 }
 
 
@@ -4624,7 +4703,7 @@ void mAnimatorLight::reset()
 {
   // briT = 0;
   #ifdef WLED_ENABLE_WEBSOCKETS2
-  pCONT_web->ws->closeAll(1012);
+  tkr_web->ws->closeAll(1012);
   #endif
   long dly = millis();
   while (millis() - dly < 450) {
@@ -6022,7 +6101,7 @@ RgbwwColor mAnimatorLight::Segment::color_blend(RgbwwColor color1, RgbwwColor co
  * color add function that preserves ratio
  * idea: https://github.com/Aircoookie/WLED/pull/2465 by https://github.com/Proto-molecule
  */
-#ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+// #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
 uint32_t mAnimatorLight::Segment::color_add(RgbwwColor c1, RgbwwColor c2, bool fast)
 {
   if (fast) {
@@ -6048,7 +6127,7 @@ uint32_t mAnimatorLight::Segment::color_add(RgbwwColor c1, RgbwwColor c2, bool f
     else           return RGBW32(r * 255 / max, g * 255 / max, b * 255 / max, w * 255 / max);
   }
 }
-#else
+// #else
 uint32_t mAnimatorLight::Segment::color_add(uint32_t c1, uint32_t c2, bool fast)
 {
   if (fast) {
@@ -6074,7 +6153,7 @@ uint32_t mAnimatorLight::Segment::color_add(uint32_t c1, uint32_t c2, bool fast)
     else           return RGBW32(r * 255 / max, g * 255 / max, b * 255 / max, w * 255 / max);
   }
 }
-#endif
+// #endif
 
 /*
  * fades color toward black
@@ -6137,7 +6216,7 @@ uint32_t mAnimatorLight::Segment::color_fade(uint32_t c1, uint8_t amount, bool v
 RgbwwColor mAnimatorLight::Segment::color_fade(RgbwwColor c1, uint8_t amount, bool video)
 {
   
-  return c1;// tmp fix
+  // return c1;// tmp fix
 
 
 
@@ -6164,7 +6243,7 @@ RgbwwColor mAnimatorLight::Segment::color_fade(RgbwwColor c1, uint8_t amount, bo
 uint32_t mAnimatorLight::Segment::color_fade(uint32_t c1, uint8_t amount, bool video)
 {
   
-  return c1;// tmp fix
+  // return c1;// tmp fix
 
 
   uint8_t r = R(c1);
@@ -8364,6 +8443,102 @@ uint8_t realtimeBroadcast(uint8_t type, IPAddress client, uint16_t length, uint8
   }
   return 0;
 }
+
+
+
+//called after every state changes, schedules interface updates, handles brightness transition and nightlight activation
+//unlike colorUpdated(), does NOT apply any colors or FX to segments
+void mAnimatorLight::stateUpdated(byte callMode) {
+  //call for notifier -> 0: init 1: direct change 2: button 3: notification 4: nightlight 5: other (No notification)
+  //                     6: fx changed 7: hue 8: preset cycle 9: blynk 10: alexa 11: ws send only 12: button preset
+  // setValuesFromFirstSelectedSeg();
+
+  // if (bri != briOld || stateChanged) {
+  //   if (stateChanged) currentPreset = 0; //something changed, so we are no longer in the preset
+
+  //   if (callMode != CALL_MODE_NOTIFICATION && callMode != CALL_MODE_NO_NOTIFY) notify(callMode);
+  //   if (bri != briOld && nodeBroadcastEnabled) sendSysInfoUDP(); // update on state
+
+  //   //set flag to update ws and mqtt
+  //   interfaceUpdateCallMode = callMode;
+  //   stateChanged = false;
+  // } else {
+  //   if (nightlightActive && !nightlightActiveOld && callMode != CALL_MODE_NOTIFICATION && callMode != CALL_MODE_NO_NOTIFY) {
+  //     notify(CALL_MODE_NIGHTLIGHT);
+  //     interfaceUpdateCallMode = CALL_MODE_NIGHTLIGHT;
+  //   }
+  // }
+
+  // if (callMode != CALL_MODE_NO_NOTIFY && nightlightActive && (nightlightMode == NL_MODE_FADE || nightlightMode == NL_MODE_COLORFADE)) {
+  //   briNlT = bri;
+  //   nightlightDelayMs -= (millis() - nightlightStartTime);
+  //   nightlightStartTime = millis();
+  // }
+  // if (briT == 0) {
+  //   if (callMode != CALL_MODE_NOTIFICATION) strip.resetTimebase(); //effect start from beginning
+  // }
+
+  // if (bri > 0) briLast = bri;
+
+  // //deactivate nightlight if target brightness is reached
+  // if (bri == nightlightTargetBri && callMode != CALL_MODE_NO_NOTIFY && nightlightMode != NL_MODE_SUN) nightlightActive = false;
+
+  // // notify usermods of state change
+  // UsermodManager::onStateChange(callMode);
+
+  // if (fadeTransition) {
+  //   if (strip.getTransition() == 0) {
+  //     jsonTransitionOnce = false;
+  //     transitionActive = false;
+  //     applyFinalBri();
+  //     strip.trigger();
+  //     return;
+  //   }
+
+  //   if (transitionActive) {
+  //     briOld = briT;
+  //   } else
+  //     strip.setTransitionMode(true); // force all segments to transition mode
+  //   transitionActive = true;
+  //   transitionStartTime = millis();
+  // } else {
+  //   applyFinalBri();
+  //   strip.trigger();
+  // }
+}
+
+
+void mAnimatorLight::updateInterfaces(uint8_t callMode)
+{
+  if (!interfaceUpdateCallMode || millis() - lastInterfaceUpdate < INTERFACE_UPDATE_COOLDOWN) return;
+
+  ALOG_INF(PSTR("Sending Update"));
+
+  sendDataWs();
+  lastInterfaceUpdate = millis();
+  interfaceUpdateCallMode = 0; //disable further updates
+
+  if (callMode == CALL_MODE_WS_SEND) return;
+
+  // #ifndef WLED_DISABLE_ALEXA
+  // if (espalexaDevice != nullptr && callMode != CALL_MODE_ALEXA) {
+  //   espalexaDevice->setValue(bri);
+  //   espalexaDevice->setColor(col[0], col[1], col[2]);
+  // }
+  // #endif
+  // #ifndef WLED_DISABLE_MQTT
+  // publishMqtt();
+  // #endif
+}
+
+
+// legacy method, applies values from col, effectCurrent, ... to selected segments
+void mAnimatorLight::colorUpdated(byte callMode) {
+  // applyValuesToSelectedSegs();
+  // stateUpdated(callMode);
+}
+
+
 
 #endif // ENABLE_WEBSERVER_LIGHTING_WEBUI
 

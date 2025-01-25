@@ -1492,9 +1492,9 @@ void handleStaticContent(AsyncWebServerRequest *request, const String &path, int
 bool captivePortal(AsyncWebServerRequest *request);
 byte cacheInvalidate       = 0;       // used to invalidate browser cache when switching from regular to simplified UI
 
-void setStaticContentCacheHeaders(AsyncWebServerResponse *response); //old
-void setStaticContentCacheHeaders(AsyncWebServerResponse *response, int code, uint16_t eTagSuffix = 0); // new
-void generateEtag(char *etag, uint16_t eTagSuffix);
+// void setStaticContentCacheHeaders(AsyncWebServerResponse *response); //old
+void setStaticContentCacheHeaders(AsyncWebServerResponse *response, int code = 200, uint16_t eTagSuffix = 0); // new
+void generateEtag(char *etag, uint16_t eTagSuffix = 0);
 
 bool handleIfNoneMatchCacheHeader(AsyncWebServerRequest *request, int code, uint16_t eTagSuffix = 0);
 

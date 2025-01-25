@@ -367,8 +367,10 @@ typedef uint32_t ColourBaseType;
   #define ENABLE_DEVFEATURE_LIGHT__PWM_DITHER_V2
   
   
+  #define ENABLE_DEVFEATURE_WEBSERVER__ETAGS_ENABLED_FOR_RELOADING_PALETTES_ON_FRESH_COMPILE
 
-  #define ANIM_BRIGHTNESS_REQUIRED true
+  #define ANIM_BRIGHTNESS_REQUIRED true // when using manual brightness control
+  // #define ANIM_BRIGHTNESS_REQUIRED false // when using LG bus
 
   #define ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
   
@@ -885,7 +887,7 @@ typedef uint32_t ColourBaseType;
  *           Part 2: 20 seconds
  *            Rainbow Cycle
  *           Part 3: 20 seconds
- *            Spanned Palette with Rainbow 16
+ *            Gradient with Rainbow 16
  * ** (3) "Bus Test"
  *            Part 1: 
  *              Busses will show the "hardware test" effect, where the first pixel(s) of each bus is white (based on the bus index, ie bus 2 is 2 white pixels), then the remaining are a gradient of set colours

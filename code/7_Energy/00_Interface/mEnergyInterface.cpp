@@ -1980,33 +1980,33 @@ void mEnergyInterface::MQTTHandler_Sender()
 // //  */
 
 // //       if (Energy.voltage_available) {
-// //         pCONT_web->WSContentSend_PD(HTTP_SNS_VOLTAGE, 
+// //         tkr_web->WSContentSend_PD(HTTP_SNS_VOLTAGE, 
 // //           EnergyFormat(value_chr, voltage_chr[0], json, Energy.voltage_common)
 // //         );
 // //       }
 // //       if (Energy.current_available) {
-// //         pCONT_web->WSContentSend_PD(HTTP_SNS_CURRENT, 
+// //         tkr_web->WSContentSend_PD(HTTP_SNS_CURRENT, 
 // //           EnergyFormat(value_chr, current_chr[0], json)
 // //         );
 // //       }
-// //       pCONT_web->WSContentSend_PD(HTTP_SNS_POWER, EnergyFormat(value_chr, active_power_chr[0], json));
+// //       tkr_web->WSContentSend_PD(HTTP_SNS_POWER, EnergyFormat(value_chr, active_power_chr[0], json));
 // //       if (!Energy.type_dc) {
 // //         if (Energy.current_available && Energy.voltage_available) {
-// //           pCONT_web->WSContentSend_PD(HTTP_ENERGY_SNS1, 
+// //           tkr_web->WSContentSend_PD(HTTP_ENERGY_SNS1, 
 // //             EnergyFormat(value_chr, apparent_power_chr[0], json),
 // //             EnergyFormat(value2_chr, reactive_power_chr[0], json),
 // //             EnergyFormat(value3_chr, power_factor_chr[0], json)
 // //           );
 // //         }
 // //         if (!isnan(Energy.frequency[0])) { 
-// //           pCONT_web->WSContentSend_PD(PSTR("{s}" D_FREQUENCY "{m}%s " D_UNIT_HERTZ "{e}"),
+// //           tkr_web->WSContentSend_PD(PSTR("{s}" D_FREQUENCY "{m}%s " D_UNIT_HERTZ "{e}"),
 // //             EnergyFormat(value_chr, frequency_chr[0], json, Energy.voltage_common)
 // //           );
 // //         }
 // //       }
-// //       pCONT_web->WSContentSend_PD(HTTP_ENERGY_SNS2, energy_daily_chr, energy_yesterday_chr, energy_total_chr[0]);
+// //       tkr_web->WSContentSend_PD(HTTP_ENERGY_SNS2, energy_daily_chr, energy_yesterday_chr, energy_total_chr[0]);
 // //       if (!isnan(Energy.export_active)) {
-// //         pCONT_web->WSContentSend_PD(HTTP_ENERGY_SNS3, export_active_chr[0]);
+// //         tkr_web->WSContentSend_PD(HTTP_ENERGY_SNS3, export_active_chr[0]);
 // //       }
 // // #endif  // USE_MODULE_NETWORK_WEBSERVER
 //   //} //if json

@@ -313,7 +313,7 @@
         "BrightnessRGB":5
       },
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":255,
         "Decimate":0,
@@ -487,7 +487,7 @@
         "BrightnessRGB":5
       },
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":255,
         "Decimate":0,
@@ -512,7 +512,7 @@
         "BrightnessRGB":5
       },
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":255,
         "Decimate":0,
@@ -557,7 +557,7 @@
   //       "BrightnessRGB":5
   //     },
   //     "Effects": {
-  //       "Function":"Static Palette",
+  //       "Function":"Static",
   //       "Speed":127,
   //       "Intensity":255,
   //       "Decimate":0,
@@ -1064,7 +1064,7 @@
       ],
       "ColourPalette":"Christmas Snowy 02",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":1,
         "Intensity":127,
         "Grouping":1
@@ -1291,7 +1291,7 @@
   //     ],
   //     "ColourPalette":"Christmas Snowy 02",
   //     "Effects": {
-  //       "Function":"Static Palette",
+  //       "Function":"Static",
   //       "Speed":127,
   //       "Intensity":127,
   //       "Grouping":1
@@ -1330,7 +1330,7 @@
   //     ],
   //     "ColourPalette":"Christmas Snowy 02",
   //     "Effects": {
-  //       "Function":"Static Palette",
+  //       "Function":"Static",
   //       "Speed":127,
   //       "Intensity":127,
   //       "Grouping":1
@@ -1404,7 +1404,7 @@
       ],
       "ColourPalette":"Christmas Snowy 02",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":101,
         "Decimate":0,
@@ -1669,7 +1669,7 @@
       ],
       "ColourPalette":"Christmas Snowy 02",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":1
@@ -1866,7 +1866,7 @@
       ],
       "ColourPalette":"Christmas Snowy 02",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":1
@@ -2122,7 +2122,7 @@
       ],
       "ColourPalette":"Christmas RGBO",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":100
@@ -2483,7 +2483,7 @@
   //       "BrightnessRGB":100
   //     },
   //     "Effects": {
-  //       "Function":"Static Palette",
+  //       "Function":"Static",
   //       "Speed":127,
   //       "Intensity":127,
   //       "Grouping":1
@@ -2756,7 +2756,7 @@
   //     ],
   //     "ColourPalette":"Christmas Snowy 02",
   //     "Effects": {
-  //       "Function":"Static Palette",
+  //       "Function":"Static",
   //       "Speed":127,
   //       "Intensity":127,
   //       "Grouping":1
@@ -2795,7 +2795,7 @@
       ],
       "ColourPalette":"Christmas Snowy 02",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":1

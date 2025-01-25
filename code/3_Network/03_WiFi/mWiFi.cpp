@@ -263,7 +263,7 @@ void mWiFi::WifiConfig(uint8_t type)
     // #ifdef ENABLE_LOG_LEVEL_INFO
     //  ALOG_INF(S_LOG_WIFI, PSTR(D_WCFG_2_WIFIMANAGER " " D_ACTIVE_FOR_3_MINUTES));
     // #endif// ENABLE_LOG_LEVEL_INFO
-    //  pCONT_web->WifiManagerBegin(WIFI_MANAGER_RESET_ONLY == connection.config_type);
+    //  tkr_web->WifiManagerBegin(WIFI_MANAGER_RESET_ONLY == connection.config_type);
     // }
     // #endif  // USE_MODULE_NETWORK_WEBSERVER
   }else{
@@ -1136,9 +1136,9 @@ void mWiFi::WifiCheck(uint8_t param)
             
             // #ifdef USE_MODULE_NETWORK_WEBSERVER
             //   if (tkr_set->Settings.webserver) {
-            //     pCONT_web->StartWebserver(tkr_set->Settings.webserver, WiFi.localIP());
+            //     tkr_web->StartWebserver(tkr_set->Settings.webserver, WiFi.localIP());
             //   } else {
-            //     pCONT_web->StopWebserver();
+            //     tkr_web->StopWebserver();
             //   }
             // #endif  // USE_MODULE_NETWORK_WEBSERVER
 

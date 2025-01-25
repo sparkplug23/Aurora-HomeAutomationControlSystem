@@ -45,9 +45,9 @@
 
         
 //    ;;;;;;;;;;;; PAIRED DEVICES ;;;;;;;;;;;;;;;;  -- Multiple devices that are being tested together, sharing a common build method with slight changes
-#define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__BASE // "BASE" this device "60", has the following 3 built/running from it
+// #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__BASE // "BASE" this device "60", has the following 3 built/running from it
     // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__RGBWW // the buswrapper is rgbww enabled, so full 5 r+g+b+ww+cw possible. While most effects stay 32-bit, this enables getting colours from palette in 5 colour size, and some effects are full 5 colour possible
-    #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB  // buswrapper is limited to rgbw, effects may be rgbW or rgb only, 32-bit, white may be created in the effect, or generated automatically by the RGB parts.
+    // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB  // buswrapper is limited to rgbw, effects may be rgbW or rgb only, 32-bit, white may be created in the effect, or generated automatically by the RGB parts.
     // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB_MATRIX16X16 // same as previous, but figuring out how to work on 2d 16x16 matrix. So will be getting the matrix setup working, and 2d effects testing
     // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__RGB_PEBBLES  // RGB only, most common type I used, get the 8port tester and make 8 200 led white sections. Aim is to ensure larger "strings" will work as planned
     
@@ -735,7 +735,7 @@
       ],
       "ColourPalette":"Rainbow 16",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":1,
@@ -963,7 +963,7 @@
   //     ],
   //     "ColourPalette":"Snowy 02",
   //     "Effects": {
-  //       "Function":"Static Palette",
+  //       "Function":"Static",
   //       "Speed":127,
   //       "Intensity":127,
   //       "Grouping":1
@@ -1025,7 +1025,7 @@
       ],
       "ColourPalette":"Snowy 02",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":1
@@ -1212,7 +1212,7 @@
       ],
       "ColourPalette":0,
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":1,
@@ -2071,7 +2071,7 @@
       ],
       "ColourPalette":"Snowy 02",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":1,
@@ -2409,7 +2409,7 @@
       ],
       "ColourPalette":"RGPBO",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":20,
@@ -2540,7 +2540,7 @@
       ],
       "ColourPalette":"RGPBO",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":20,
@@ -2664,7 +2664,7 @@
       ],
       "ColourPalette":"Snowy 02",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":20,
@@ -2856,7 +2856,7 @@
       ],
       "ColourPalette":"Sunset",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":1,
@@ -3541,7 +3541,7 @@ Left to right
       ],
       "ColourPalette":"Sweetpea",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":1,
@@ -3572,7 +3572,7 @@ Left to right
       "ColourPalette":172,
       "CustomPalette":{"Encoding":"RGB","Index":9,"Data":[255,255,255,255,0,43]},
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":1,
@@ -3627,7 +3627,7 @@ Left to right
       ],
       "ColourPalette":"Sweetpea",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":1,
@@ -3658,7 +3658,7 @@ Left to right
       "ColourPalette":172,
       "CustomPalette":{"Encoding":"RGB","Index":9,"Data":[255,255,255,255,0,43]},
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":1,
@@ -4012,7 +4012,7 @@ typedef uint32_t ColourBaseType;
         "CCT_TempPercentage":100
       },
       "Effects": {
-        "Function":"Spanned Palette",
+        "Function":"Gradient",
         "RateMs": 1000
       },
       "BrightnessRGB":5,
@@ -8853,43 +8853,43 @@ typedef uint32_t ColourBaseType;
 
 
   
-  #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
-  // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
+  // #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
+  // // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
 
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-  #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
+  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
+  // #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
 
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
+  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
+  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
 
 
-  #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
+  // #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
 
-  // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
-  #define ENABLE_DEVFEATURE_LIGHT__PWM_DITHER_V2  
+  // // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+  // #define ENABLE_DEVFEATURE_LIGHT__PWM_DITHER_V2  
   #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
 
   
-  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-  struct RgbwwColor;  // Forward declaration
-  typedef RgbwwColor ColourBaseType;
-  #else
-  typedef uint32_t ColourBaseType;
-  #endif
+  // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  // struct RgbwwColor;  // Forward declaration
+  // typedef RgbwwColor ColourBaseType;
+  // #else
+  // typedef uint32_t ColourBaseType;
+  // #endif
 
 
-  #define USE_RGBWW_PALETTE
+  // #define USE_RGBWW_PALETTE
 
-  // #define ENABLE_DEVFEATURE_LIGHTING__CRITICAL_DISABLE_LOAD_PALETTE
+  // // #define ENABLE_DEVFEATURE_LIGHTING__CRITICAL_DISABLE_LOAD_PALETTE
 
-  // #define ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
+  // // #define ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
 
-  // #define ENABLE_LIGHTING_TEMPLATE__PWM_OUTPUT_ONLY
-  // #define ENABLE_LIGHTING_TEMPLATE__WS2805_OUTPUT_ONLY
+  // // #define ENABLE_LIGHTING_TEMPLATE__PWM_OUTPUT_ONLY
+  // // #define ENABLE_LIGHTING_TEMPLATE__WS2805_OUTPUT_ONLY
   #define ENABLE_LIGHTING_TEMPLATE__DUAL_PWM_WS2805
-  // #define ENABLE_LIGHTING_TEMPLATE__DUAL_PWM_WS2805_SINGLE
+  // // #define ENABLE_LIGHTING_TEMPLATE__DUAL_PWM_WS2805_SINGLE
 
 
   #define USE_LIGHTING_TEMPLATE
@@ -8955,7 +8955,7 @@ typedef uint32_t ColourBaseType;
       "ColourType":5,
       "ColourPalette":"RGBO",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "RateMs": 1000,
         "Speed":127
       },
@@ -9004,7 +9004,7 @@ typedef uint32_t ColourBaseType;
       "Effects": {
         "Function":"Solid Colour",
         "RateMs": 1000,
-        "Speed":127
+        "Speed":255
       },
       "BrightnessRGB":100,
       "BrightnessCCT":100
@@ -9017,12 +9017,12 @@ typedef uint32_t ColourBaseType;
       "ColourType":5,
       "ColourPalette":"RGBO",
       "Effects": {
-        "Function":"Spanned Palette",
+        "Function":"Hour Progress",
         "RateMs": 1000,
-        "Speed":127
+        "Speed":255
       },
-      "BrightnessRGB":5,
-      "BrightnessCCT":5
+      "BrightnessRGB":100,
+      "BrightnessCCT":100
     },
     "BrightnessRGB":100,
     "BrightnessCCT":100
@@ -9079,7 +9079,7 @@ typedef uint32_t ColourBaseType;
       "ColourType":5,
       "ColourPalette":"RGBO",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "RateMs": 1000,
         "Speed":127
       },
@@ -9097,6 +9097,8 @@ typedef uint32_t ColourBaseType;
 
 
 #ifdef DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB 
+
+  // #define ENABLE_DEBUGFEATURE_LIGHTING__TRACE_PIXEL_SET_GET_SHOW_FIRST_NUMBER_LOGGED_WITH_VALUE 1
   
   #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 4000
 
@@ -9121,8 +9123,8 @@ typedef uint32_t ColourBaseType;
       "ColourPalette":"Snowy 02",
       "ColourType":4,
       "Effects": {
-        "Function":"Static Palette",
-        "Speed":127,
+        "Function":"Static",
+        "Speed":255,
         "Intensity":127,
         "Grouping":1,
         "RateMs": 20
@@ -9135,7 +9137,7 @@ typedef uint32_t ColourBaseType;
         "BrightnessRGB":1
       }
     },
-    "BrightnessRGB": 2,
+    "BrightnessRGB": 100,
     "BrightnessCCT": 0
   }
   )=====";
@@ -9150,53 +9152,53 @@ typedef uint32_t ColourBaseType;
  */
 
 
-  // #define WLED_ENABLE_WEBSOCKETS
-  #define WLED_ENABLE_WEBSOCKETS2
-  #define ENABLE_DEVFEATURE_LIGHTING__JSONLIVE_WEBSOCKETS
-  #define WLED_ENABLE_JSONLIVE
-  #define ENABLE_FEATURE_LIGHTING__WEBSOCKETS
-  // #define ENABLE_FEATURE_LIGHTING__XML_REQUESTS
+//   // #define WLED_ENABLE_WEBSOCKETS
+//   #define WLED_ENABLE_WEBSOCKETS2
+//   #define ENABLE_DEVFEATURE_LIGHTING__JSONLIVE_WEBSOCKETS
+//   #define WLED_ENABLE_JSONLIVE
+//   #define ENABLE_FEATURE_LIGHTING__WEBSOCKETS
+//   // #define ENABLE_FEATURE_LIGHTING__XML_REQUESTS
   
 
   
-  #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
-  // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
+//   #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
+//   // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
 
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-  #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
+//   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
+//   #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
 
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-
-
-  #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
-
-  // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-  // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+//   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
+//   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
+//   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+//   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
 
 
-  #define ENABLE_DEVFEATURE_LIGHT__PWM_DITHER_V2
+//   #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
+
+//   // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+//   // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+
+
+//   #define ENABLE_DEVFEATURE_LIGHT__PWM_DITHER_V2
   
-  #define ENABLE_DEVFEATURE_LIGHTING__ADD_EFFECT_DEVSTAGE_TO_WEBUI
+//   #define ENABLE_DEVFEATURE_LIGHTING__ADD_EFFECT_DEVSTAGE_TO_WEBUI
 
 
   
-#ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-struct RgbwwColor;  // Forward declaration
-typedef RgbwwColor ColourBaseType;
-#else
-typedef uint32_t ColourBaseType;
-#endif
+// #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+// struct RgbwwColor;  // Forward declaration
+// typedef RgbwwColor ColourBaseType;
+// #else
+// typedef uint32_t ColourBaseType;
+// #endif
 
-  // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-  // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
-  // #else
-  // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
-  // #endif
+//   // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+//   // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+//   // #else
+//   // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+//   // #endif
 
-  #define ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
+//   #define ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
 
 
 
@@ -9230,8 +9232,8 @@ typedef uint32_t ColourBaseType;
       "ColourPalette":"RGBO",
       "ColourType":3,
       "Effects": {
-        "Function":"Static Palette",
-        "Speed":127,
+        "Function":"Static",
+        "Speed":255,
         "Intensity":127,
         "Grouping":1,
         "RateMs": 20
@@ -9239,7 +9241,7 @@ typedef uint32_t ColourBaseType;
       "BrightnessRGB": 100,
       "BrightnessCCT": 0
     },
-    "BrightnessRGB": 2,
+    "BrightnessRGB": 30,
     "BrightnessCCT": 0
   }
   )=====";
@@ -9249,81 +9251,88 @@ typedef uint32_t ColourBaseType;
 #ifdef DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB_MATRIX16X16 
 
 
-  #define ENABLE_DEBUGFEATURE__OVERIDE_FASTBOOT_DISABLE
+  // #define ENABLE_DEBUGFEATURE_LIGHTING__TRACE_PIXEL_SET_GET_SHOW_FIRST_NUMBER_LOGGED_WITH_VALUE 1
+
+
+  // #define ENABLE_DEBUGFEATURE__OVERIDE_FASTBOOT_DISABLE
 
   
-  #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
-  // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
+  // #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
+  // // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
 
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-  #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
+  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
+  // #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
 
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
-
-
-  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__HARDWARE_TESTING
-  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__SUN_POSITIONS
-  // // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__LED_SEGMENT_CLOCK
-  // // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__NOTIFICATIONS
-  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__BORDER_WALLPAPERS
-  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__PIXEL_SET_ELSEWHERE
-  // // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__CHRISTMAS_MULTIFUNCTION_CONTROLLER_WITH_MUSIC
-  // // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__CHRISTMAS_MULTIFUNCTION_CONTROLLER
+  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
+  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
+  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
+  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
+  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D
+  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
 
 
+  // // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__HARDWARE_TESTING
+  // // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__SUN_POSITIONS
+  // // // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__LED_SEGMENT_CLOCK
+  // // // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__NOTIFICATIONS
+  // // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__BORDER_WALLPAPERS
+  // // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__PIXEL_SET_ELSEWHERE
+  // // // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__CHRISTMAS_MULTIFUNCTION_CONTROLLER_WITH_MUSIC
+  // // // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__CHRISTMAS_MULTIFUNCTION_CONTROLLER
 
-  #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
-
-  // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-  // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
 
 
-  #define ENABLE_DEVFEATURE_LIGHT__PWM_DITHER_V2
+  // #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
+
+  // // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  // // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+
+
+  // #define ENABLE_DEVFEATURE_LIGHT__PWM_DITHER_V2
   
 
-  #define ANIM_BRIGHTNESS_REQUIRED true
-
-  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-  struct RgbwwColor;  // Forward declaration
-  typedef RgbwwColor ColourBaseType;
-  #else
-  typedef uint32_t ColourBaseType;
-  #endif
+  // #define ANIM_BRIGHTNESS_REQUIRED true
 
   // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-  // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+  // struct RgbwwColor;  // Forward declaration
+  // typedef RgbwwColor ColourBaseType;
   // #else
-  // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+  // typedef uint32_t ColourBaseType;
   // #endif
 
-  #define ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
+  // // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+  // // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+  // // #else
+  // // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
+  // // #endif
+
+  // #define ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
 
   
 
 
 
   #define ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
-  #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS  
-    #define ENABLE_FEATURE_LIGHTING__2D_MATRIX
-    #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__MATRIX
-    #define ENABLE_DEVFEATURE_LIGHT__HARDCODE_MATRIX_SETUP  
-    #define WLED_DEBUG
-    #define ENABLE_DEVFEATURE_LIGHT__INCLUDE_AUDIOREACTIVE_USERMOD
-    #define ENABLE_FEATURE_LIGHTING__2D_MATRIX
-    // #define ENABLE_DEVFEATURE_LIGHT__MATRIX_LOAD_PALETTE_PATCH_IN_WEBUI_PALETTE_CHANGE
-  #endif 
+  // #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS  
+  //   #define ENABLE_FEATURE_LIGHTING__2D_MATRIX
+  //   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__MATRIX
+  //   #define ENABLE_DEVFEATURE_LIGHT__HARDCODE_MATRIX_SETUP  
+  //   #define WLED_DEBUG
+  //   #define ENABLE_DEVFEATURE_LIGHT__INCLUDE_AUDIOREACTIVE_USERMOD
+  //   #define ENABLE_FEATURE_LIGHTING__2D_MATRIX
+  //   // #define ENABLE_DEVFEATURE_LIGHT__MATRIX_LOAD_PALETTE_PATCH_IN_WEBUI_PALETTE_CHANGE
+  // #endif 
 
-  // #define WLED_ENABLE_WEBSOCKETS
-  #define WLED_ENABLE_WEBSOCKETS2
-  #define ENABLE_DEVFEATURE_LIGHTING__JSONLIVE_WEBSOCKETS
-  #define WLED_ENABLE_JSONLIVE
+  // // #define WLED_ENABLE_WEBSOCKETS
+  // #define WLED_ENABLE_WEBSOCKETS2
+  // #define ENABLE_DEVFEATURE_LIGHTING__JSONLIVE_WEBSOCKETS
+  // #define WLED_ENABLE_JSONLIVE
 
   // #define ENABLE_FEATURE_LIGHTING__USE_NEOPIXELBUS_LIGHT_GAMMA_LG
+
+  #define CONFIG_TEMPLATE__TEST_COLOUR01_SHOW_PIXEL_BLEND
+
+  #ifdef CONFIG_TEMPLATE__NORMAL
   
 
   // 13, 18, 19, 22, 23, 25, 26, 27       USED
@@ -9350,8 +9359,8 @@ typedef uint32_t ColourBaseType;
     "BusConfig":[
       {
         "Pin":2,
-        "ColourOrder":"GRBW",
-        "BusType":"SK6812_RGBW",
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
         "Start":0,
         "Length":256
       }
@@ -9397,6 +9406,83 @@ typedef uint32_t ColourBaseType;
 
 
 
+#endif // 
+
+  #ifdef CONFIG_TEMPLATE__TEST_COLOUR01_SHOW_PIXEL_BLEND
+  
+
+  // 13, 18, 19, 22, 23, 25, 26, 27       USED
+  // 33, 32, 21, 17, 16, 15*, 14*, 5*, 4, NOTUSED
+  // 21 = on PCB (4 pixels)
+  // 32 = external
+  /*
+  
+  
+        "ColourOrder":"GRB",
+        "BusType":"WS2812_RGB",
+
+
+        
+        "ColourOrder":"GRBW",
+        "BusType":"SK6812_RGBW",
+  
+  
+  */
+  #define USE_LIGHTING_TEMPLATE
+  DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  R"=====(
+  {
+    "BusConfig":[
+      {
+        "Pin":2,
+        "ColourOrder":"GRB",
+        "BusType":"WS2812_RGB",
+        "Start":0,
+        "Length":256
+      }
+    ],
+    "Segment0": {
+      "PixelRange": [
+        0,
+        256
+      ],
+      "ColourType":3,
+      "ColourPalette":"Snowy 02",
+      "PaletteMappingValues":[10,15,20],
+      "SegColour0": {
+        "Hue": 0,
+        "Sat":100,
+        "BrightnessRGB":1
+      },
+      "SegColour1": {
+        "Hue": 120,
+        "Sat":20,
+        "BrightnessRGB":1
+      },
+      "SegColour2": {
+        "Hue": 240,
+        "Sat":100,
+        "BrightnessRGB":1
+      },
+      "Effects": {
+        "Function":"Static",
+        "Speed":255,
+        "Intensity":255,
+        "Decimate":0,
+        "Grouping":1,
+        "RateMs": 3000
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 0
+    },
+    "BrightnessRGB": 20,
+    "BrightnessCCT": 0
+  }
+  )=====";
+
+
+
+#endif // 
 
 #endif
 

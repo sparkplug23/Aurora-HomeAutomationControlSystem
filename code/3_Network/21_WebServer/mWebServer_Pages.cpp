@@ -1328,11 +1328,11 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 
 //   // //? basic style
 //   // WSBufferAppend_P2(buffer, "<style>");
-//   // pCONT_web->WSBufferAppend_P2(buffer, PM_HTTP_HEAD_STYLE1_MINIMAL,
-//   //   pCONT_web->WebColor(tkr_set->COL_FORM), 
-//   //   pCONT_web->WebColor(tkr_set->COL_BACKGROUND),
-//   //   pCONT_web->WebColor(tkr_set->COL_BUTTON),  
-//   //   pCONT_web->WebColor(tkr_set->COL_BUTTON_TEXT)
+//   // tkr_web->WSBufferAppend_P2(buffer, PM_HTTP_HEAD_STYLE1_MINIMAL,
+//   //   tkr_web->WebColor(tkr_set->COL_FORM), 
+//   //   tkr_web->WebColor(tkr_set->COL_BACKGROUND),
+//   //   tkr_web->WebColor(tkr_set->COL_BUTTON),  
+//   //   tkr_web->WebColor(tkr_set->COL_BUTTON_TEXT)
 //   // );
 //   // WSBufferAppend_P2(buffer, "</style>");
 
@@ -2156,9 +2156,9 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 // //   // AppendBuffer_PI2(PSTR("}1" D_FREE_MEMORY "}2%dkB"),        ESP.getFreeHeap() / 1024);
 // //   // AppendBuffer_PI2(PSTR("</td></tr>"));
 
-// //   // pCONT_web->AppendBuffer_PI2("%s","{t2}");
-// //   // pCONT_web->AppendBuffer_PI2("\"}]");  
-// //   // pCONT_web->AppendBuffer_PI2(PSTR(","));  
+// //   // tkr_web->AppendBuffer_PI2("%s","{t2}");
+// //   // tkr_web->AppendBuffer_PI2("\"}]");  
+// //   // tkr_web->AppendBuffer_PI2(PSTR(","));  
 
 // // } //end function
 
@@ -2321,10 +2321,10 @@ void mWebServer::HandleConsoleRefresh(AsyncWebServerRequest *request)
 
 // //   BufferWriterI->Append_P("<style>");
 // //   BufferWriterI->Append_P(PM_HTTP_HEAD_STYLE1_MINIMAL,
-// //     pCONT_web->WebColor(tkr_set->COL_FORM), 
-// //     pCONT_web->WebColor(tkr_set->COL_BACKGROUND),
-// //     pCONT_web->WebColor(tkr_set->COL_BUTTON),  
-// //     pCONT_web->WebColor(tkr_set->COL_BUTTON_TEXT)
+// //     tkr_web->WebColor(tkr_set->COL_FORM), 
+// //     tkr_web->WebColor(tkr_set->COL_BACKGROUND),
+// //     tkr_web->WebColor(tkr_set->COL_BUTTON),  
+// //     tkr_web->WebColor(tkr_set->COL_BUTTON_TEXT)
 // //   );
 // //   BufferWriterI->Append_P("</style>");
 

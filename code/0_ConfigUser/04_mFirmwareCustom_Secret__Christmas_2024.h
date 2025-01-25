@@ -1333,7 +1333,7 @@
         "BrightnessRGB":5
       },
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":255,
         "Decimate":0,
@@ -1474,7 +1474,7 @@
       ],
       "ColourPalette":"Christmas Snowy 02",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":1,
         "Intensity":127,
         "Grouping":1,
@@ -1682,7 +1682,7 @@
       ],
       "ColourPalette":"Christmas Snowy 02",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":1,
         "Intensity":127,
         "Grouping":1,
@@ -3906,7 +3906,7 @@
       ],
       "ColourPalette":"Snowy 02",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":1,
@@ -4244,7 +4244,7 @@
       ],
       "ColourPalette":"RGPBO",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":20,
@@ -4375,7 +4375,7 @@
       ],
       "ColourPalette":"RGPBO",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":20,
@@ -4499,7 +4499,7 @@
       ],
       "ColourPalette":"Snowy 02",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":1,
@@ -5072,7 +5072,7 @@
       ],
       "ColourPalette":"Snowy 02",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Decimate":0,

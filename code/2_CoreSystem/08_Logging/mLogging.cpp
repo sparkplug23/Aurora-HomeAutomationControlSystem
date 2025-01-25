@@ -166,7 +166,7 @@ void AddLog(uint8_t loglevel, PGM_P formatP, ...)
 
   // LOG : WEBSERVER
   #ifdef USE_MODULE_NETWORK_WEBSERVER
-  // if(pCONT_web->fConsole_active && !pCONT_web->fConsole_history){ //only append values when active, however, this stops history
+  // if(tkr_web->fConsole_active && !tkr_web->fConsole_history){ //only append values when active, however, this stops history
   //   if (tkr_set->Settings.webserver && (loglevel <= tkr_set->Settings.logging.web_level)) {
   //     // Delimited, zero-terminated buffer of log lines.
   //     // Each entry has this format: [index][log data]['\1']

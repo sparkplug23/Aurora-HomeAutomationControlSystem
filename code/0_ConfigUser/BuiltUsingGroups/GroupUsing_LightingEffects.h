@@ -331,7 +331,7 @@
   //     ],
   //     "ColourPalette":"Snowy 02",
   //     "Effects": {
-  //       "Function":"Static Palette"
+  //       "Function":"Static"
   //     },
   //     "Transition": {
   //       "TimeMs": 0,
@@ -371,7 +371,7 @@
       ],
       "ColourPalette":"Snowy 02",
       "Effects": {
-        "Function":"Static Palette"
+        "Function":"Static"
       },
       "Transition": {
         "TimeMs": 0,

@@ -2001,7 +2001,7 @@
       ],
       "ColourPalette":"Halloween Orange-Purple",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":1,
@@ -2677,7 +2677,7 @@
       ],
       "ColourPalette":"Rainbow 16",
       "Effects": {
-        "Function":"Spanned Palette",
+        "Function":"Gradient",
         "Speed":127,
         "Intensity":127,
         "Grouping":1,
@@ -2732,7 +2732,7 @@
       ],
       "ColourPalette":"Sweetpea",
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":1,
@@ -2763,7 +2763,7 @@
       "ColourPalette":172,
       "CustomPalette":{"Encoding":"RGB","Index":9,"Data":[255,255,255,255,0,43]},
       "Effects": {
-        "Function":"Static Palette",
+        "Function":"Static",
         "Speed":127,
         "Intensity":127,
         "Grouping":1,

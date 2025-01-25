@@ -448,6 +448,17 @@ enum LoggingLevels {
 #endif
 
 
+#ifdef ENABLE_LOG_LEVEL_DYNAMIC_LEVELS
+#define ALOG(x, ...) AddLog(x, ##__VA_ARGS__)
+#else
+#define ALOG(x, ...)
+#endif
+
+
+
+
+
+
 #define ALOG_DEBUG_LINE_HERE ALOG_DBG(PSTR("DP:%s|%d"),__FILE__,__LINE__);
 
 

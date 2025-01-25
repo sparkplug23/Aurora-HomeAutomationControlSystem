@@ -316,7 +316,7 @@ enum MODULE_SUBTYPE_IDS{ //ignores the "interface"
 #endif 
 #ifdef USE_MODULE_NETWORK_WEBSERVER
   #include "3_Network/21_WebServer/mWebServer.h"
-  #define pCONT_web                                 static_cast<mWebServer*>(mTaskerManager::GetInstance()->GetModule(D_UNIQUE_MODULE_NETWORK_WEBSERVER_ID))
+  #define tkr_web                                 static_cast<mWebServer*>(mTaskerManager::GetInstance()->GetModule(D_UNIQUE_MODULE_NETWORK_WEBSERVER_ID))
 #endif
 /**
  * @brief Displays

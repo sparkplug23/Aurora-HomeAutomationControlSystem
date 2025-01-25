@@ -1731,7 +1731,7 @@ function setEffectParameters(idx)
 	var effectPar = fxdata[idx];
 	var effectPars = (effectPar == '')?[]:effectPar.split(";");
 	var slOnOff = (effectPars.length==0 || effectPars[0]=='')?[]:effectPars[0].split(",");
-	var coOnOff = (effectPars.length<2  || effectPars[1]=='')?[]:effectPars[1].split(",");
+	var coOnOff = (effectPars.length<2  || effectPars[1]=='')?['1','2','3','4','5']:effectPars[1].split(","); // default is now all 5 colours will be editable
 	var paOnOff = (effectPars.length<3  || effectPars[2]=='')?[]:effectPars[2].split(",");
 
 	// set html slider items on/off
@@ -2538,7 +2538,7 @@ function setIntensity()
 
 function setEffectTimePeriod()
 {
-	var obj = {"seg": {"etp": parseInt(gId('sliderEffectTimePeriod').value)}};
+	var obj = {"seg": {"ep": parseInt(gId('sliderEffectTimePeriod').value)}};
 	requestJson(obj);
 }
 function setGrouping()

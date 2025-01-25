@@ -13,9 +13,9 @@ void mAnimatorLight::LoadEffects()
             PM_EFFECT_CONFIG__STATIC_PALETTE,
             Effect_DevStage::Release);
 
-  addEffect(EFFECTS_FUNCTION__SPANNED_PALETTE__ID,
+  addEffect(EFFECTS_FUNCTION__SPLIT_PALETTE_SEGWIDTH__ID,
             &mAnimatorLight::EffectAnim__Spanned_Static_Palette,
-            PM_EFFECT_CONFIG__SPANNED_PALETTE,
+            PM_EFFECT_CONFIG__SPLIT_PALETTE_SEGWIDTH,
             Effect_DevStage::Beta);
 
   addEffect(EFFECTS_FUNCTION__FIREFLY__ID,
@@ -33,13 +33,13 @@ void mAnimatorLight::LoadEffects()
             PM_EFFECT_CONFIG__CANDLE_MULTIPLE,
             Effect_DevStage::Alpha);
 
-  addEffect(EFFECTS_FUNCTION__RANDOMISE_GRADIENT__ID,
-            &mAnimatorLight::EffectAnim__Randomise_Gradient,
-            PM_EFFECT_CONFIG__RANDOMISE_GRADIENT,
+  addEffect(EFFECTS_FUNCTION__RANDOMISE_GRADIENT_PALETTE_SEGWIDTH__ID,
+            &mAnimatorLight::EffectAnim__Randomise_Gradient_Palette_SegWidth,
+            PM_EFFECT_CONFIG__RANDOMISE_GRADIENT_PALETTE_SEGWIDTH,
             Effect_DevStage::Beta);
-  addEffect(EFFECTS_FUNCTION__STATIC_PALETTE_VINTAGE__ID,
-            &mAnimatorLight::EffectAnim__Static_Palette_Vintage,
-            PM_EFFECT_CONFIG__STATIC_PALETTE_VINTAGE,
+  addEffect(EFFECTS_FUNCTION__STATIC_PALETTE_VARIED__ID,
+            &mAnimatorLight::EffectAnim__Static_Palette_Varied,
+            PM_EFFECT_CONFIG__STATIC_PALETTE_VARIED,
             Effect_DevStage::Dev);
   #endif
 
@@ -54,9 +54,9 @@ void mAnimatorLight::LoadEffects()
             &mAnimatorLight::EffectAnim__Shimmering_Palette_Saturation,
             PM_EFFECT_CONFIG__SHIMMERING_PALETTE_SATURATION);
 
-  addEffect(EFFECTS_FUNCTION__STATIC_GRADIENT_PALETTE__ID,
-            &mAnimatorLight::EffectAnim__Static_Gradient_Palette,
-            PM_EFFECT_CONFIG__STATIC_GRADIENT_PALETTE);
+  addEffect(EFFECTS_FUNCTION__GRADIENT_PALETTE_SEGWIDTH__ID,
+            &mAnimatorLight::EffectAnim__Gradient_Palette_SegWidth,
+            PM_EFFECT_CONFIG__GRADIENT_PALETTE_SEGWIDTH);
 
   addEffect(EFFECTS_FUNCTION__ROTATING_PALETTE__ID,
             &mAnimatorLight::EffectAnim__Rotating_Palette,

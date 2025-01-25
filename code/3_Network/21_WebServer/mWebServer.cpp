@@ -50,24 +50,24 @@ void mWebServer::WebGetArg(AsyncWebServerRequest *request, const char* arg, char
 
 void mWebServer::createEditHandler(bool enable) 
 {
-  if (editHandler != nullptr) pCONT_web->server->removeHandler(editHandler);
+  if (editHandler != nullptr) tkr_web->server->removeHandler(editHandler);
   if (enable) 
   {
     #ifdef WLED_ENABLE_FS_EDITOR
       #ifdef ARDUINO_ARCH_ESP32
-      editHandler = &pCONT_web->server->addHandler(new SPIFFSEditor(FILE_SYSTEM));
+      editHandler = &tkr_web->server->addHandler(new SPIFFSEditor(FILE_SYSTEM));
       #else
-      editHandler = &pCONT_web->server->addHandler(new SPIFFSEditor("","",FILE_SYSTEM));
+      editHandler = &tkr_web->server->addHandler(new SPIFFSEditor("","",FILE_SYSTEM));
       #endif
     #else
-      editHandler = &pCONT_web->server->on("/edit", HTTP_GET, [this](AsyncWebServerRequest *request){
+      editHandler = &tkr_web->server->on("/edit", HTTP_GET, [this](AsyncWebServerRequest *request){
         this->serveMessage(request, 501, "Not implemented", F("The FS editor is disabled in this build."), 254);
       });
     #endif
   } 
   else 
   {
-    editHandler = &pCONT_web->server->on("/edit", HTTP_ANY, [this](AsyncWebServerRequest *request){
+    editHandler = &tkr_web->server->on("/edit", HTTP_ANY, [this](AsyncWebServerRequest *request){
       this->serveMessage(request, 500, "Access Denied", FPSTR(s_unlock_cfg), 254);
     });
   }
@@ -309,7 +309,7 @@ void mWebServer::WebPage_Root_AddHandlers(){
 //   /**
 //    * Shared resources
 //    * */
-//   pCONT_web->server->on("/base_page_fill.json", HTTP_GET, [this](AsyncWebServerRequest *request){
+//   tkr_web->server->on("/base_page_fill.json", HTTP_GET, [this](AsyncWebServerRequest *request){
 //     Web_Base_Page_Draw(request);
 //   });   
 //   server->on(WEB_HANLDE_JSON_WEB_TOP_BAR, HTTP_GET, [this](AsyncWebServerRequest *request){ 
@@ -318,15 +318,15 @@ void mWebServer::WebPage_Root_AddHandlers(){
 //   server->on(WEB_HANLDE_JSON_WEB_STATUS_POPOUT_DATA, HTTP_GET, [this](AsyncWebServerRequest *request){ 
 //     WebSend_JSON_WebServer_StatusPopoutData(request);    
 //   });
-//   pCONT_web->server->on(WEB_HANDLE_JSON_ROOT_STATUS_ANY, HTTP_GET, [this](AsyncWebServerRequest *request){
+//   tkr_web->server->on(WEB_HANDLE_JSON_ROOT_STATUS_ANY, HTTP_GET, [this](AsyncWebServerRequest *request){
 //     WebSend_JSON_RootStatus_Table(request);
 //   });
 
-//   pCONT_web->server->on("/console_test.json", HTTP_GET, [this](AsyncWebServerRequest *request){
+//   tkr_web->server->on("/console_test.json", HTTP_GET, [this](AsyncWebServerRequest *request){
 //     Console_JSON_Data(request);
 //   });  
       
-//   pCONT_web->server->onRequestBody([](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total){
+//   tkr_web->server->onRequestBody([](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total){
 //     if(!index)
 //       Serial.printf("BodyStart: %u\n", total);
 //     Serial.printf("%s", (const char*)data);
@@ -335,7 +335,7 @@ void mWebServer::WebPage_Root_AddHandlers(){
 //   });
 
   
-//   pCONT_web->server->on("/json_command.json", HTTP_POST, [](AsyncWebServerRequest *request){}, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total){
+//   tkr_web->server->on("/json_command.json", HTTP_POST, [](AsyncWebServerRequest *request){}, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total){
 //     Serial.println("onRequestBody " "/json_command.json" );
 //     if ((request->url() == "/json_command.json") && (request->method() == HTTP_POST))
 //     {
@@ -357,17 +357,17 @@ void mWebServer::WebPage_Root_AddHandlers(){
 //    * Root Page
 //    * */
 //   // server->redirect("/", "/main/page");
-//   // pCONT_web->server->rewrite("/", WEB_HANDLE_ROOT);
-//   pCONT_web->server->on(WEB_HANDLE_ROOT "/", [this](AsyncWebServerRequest *request){
+//   // tkr_web->server->rewrite("/", WEB_HANDLE_ROOT);
+//   tkr_web->server->on(WEB_HANDLE_ROOT "/", [this](AsyncWebServerRequest *request){
 //     HandlePage_Root(request);
 //   });
-//   pCONT_web->server->on(WEB_HANDLE_ROOT "/page_draw.json", HTTP_GET, [this](AsyncWebServerRequest *request){
+//   tkr_web->server->on(WEB_HANDLE_ROOT "/page_draw.json", HTTP_GET, [this](AsyncWebServerRequest *request){
 //     Web_Root_Draw(request);
 //   });
-//   pCONT_web->server->on(WEB_HANDLE_ROOT "/module_draw.json", HTTP_GET, [this](AsyncWebServerRequest *request){
+//   tkr_web->server->on(WEB_HANDLE_ROOT "/module_draw.json", HTTP_GET, [this](AsyncWebServerRequest *request){
 //     Web_Root_Draw_Modules(request);
 //   });
-//   pCONT_web->server->on(WEB_HANDLE_ROOT "/update_urls.json", HTTP_GET, [this](AsyncWebServerRequest *request){ 
+//   tkr_web->server->on(WEB_HANDLE_ROOT "/update_urls.json", HTTP_GET, [this](AsyncWebServerRequest *request){ 
 //     Web_Root_UpdateURLs(request);
 //   }); 
 
@@ -375,17 +375,17 @@ void mWebServer::WebPage_Root_AddHandlers(){
   /**
    * Console Page
    * */
-  pCONT_web->server->on(D_WEB_HANDLE_CONSOLE_PAGE, [this](AsyncWebServerRequest *request){
+  tkr_web->server->on(D_WEB_HANDLE_CONSOLE_PAGE, [this](AsyncWebServerRequest *request){
     HandlePage_Console(request);
   });
 #endif // ENABLE_DEVFEATURE_WEBUI__INCLUDE_URI_PRE2023
-  // pCONT_web->server->on(D_WEB_HANDLE_CONSOLE "/page_draw.json", HTTP_GET, [this](AsyncWebServerRequest *request){
+  // tkr_web->server->on(D_WEB_HANDLE_CONSOLE "/page_draw.json", HTTP_GET, [this](AsyncWebServerRequest *request){
   //   Web_Console_Draw(request);
   // });
-  // pCONT_web->server->on(D_WEB_HANDLE_CONSOLE "/update_urls.json", HTTP_GET, [this](AsyncWebServerRequest *request){ 
+  // tkr_web->server->on(D_WEB_HANDLE_CONSOLE "/update_urls.json", HTTP_GET, [this](AsyncWebServerRequest *request){ 
   //   // Web_Root_UpdateURLs(request);
   // }); 
-  // pCONT_web->server->on(D_WEB_HANDLE_CONSOLE "/update_data.json", HTTP_GET, [this](AsyncWebServerRequest *request){
+  // tkr_web->server->on(D_WEB_HANDLE_CONSOLE "/update_data.json", HTTP_GET, [this](AsyncWebServerRequest *request){
   //   // Web_Root_Draw_Modules(request); //get console log
   // });
 
@@ -1349,7 +1349,7 @@ int8_t mWebServer::Tasker(uint8_t function, JsonParserObject obj)
 
     initServer();
 
-    pCONT_web->server->begin();
+    tkr_web->server->begin();
 
     #endif
 // DEBUG_LINE_HERE;
@@ -1413,10 +1413,10 @@ bool mWebServer::handleIfNoneMatchCacheHeader(AsyncWebServerRequest *request, in
 
   AsyncWebHeader *header = request->getHeader(F("If-None-Match"));
   char etag[32];
-  pCONT_web->generateEtag(etag, eTagSuffix);
+  tkr_web->generateEtag(etag, eTagSuffix);
   if (header && header->value() == etag) {
     AsyncWebServerResponse *response = request->beginResponse(304);
-    pCONT_web->setStaticContentCacheHeaders(response, code, eTagSuffix);
+    tkr_web->setStaticContentCacheHeaders(response, code, eTagSuffix);
     request->send(response);
     return true;
   }
@@ -1456,304 +1456,33 @@ void mWebServer::initServer()
   DefaultHeaders::Instance().addHeader(F("Access-Control-Allow-Methods"), "*");
   DefaultHeaders::Instance().addHeader(F("Access-Control-Allow-Headers"), "*");
 
-  pCONT_web->server->on("/root", HTTP_GET, [this](AsyncWebServerRequest *request){
+  tkr_web->server->on("/root", HTTP_GET, [this](AsyncWebServerRequest *request){
     this->webHandleRoot(request);
   });
-  
-  // releaseJSONBufferLock();
 
-  // #ifdef WLED_ENABLE_WEBSOCKETS
-  // #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
-  // pCONT_web->server->on("/liveview2D", HTTP_GET, [](AsyncWebServerRequest *request){
-  //   if (handleIfNoneMatchCacheHeader(request)) return;
-  //   AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", PAGE_liveviewws2D, PAGE_liveviewws2D_length);
-  //   response->addHeader(FPSTR(s_content_enc),"gzip");
-  //   setStaticContentCacheHeaders(response);
-  //   request->send(response);
-  // });
-  // #endif
-  // #endif
-  
-  // pCONT_web->server->on("/liveview", HTTP_GET, [this](AsyncWebServerRequest *request){
-  //   if (this->handleIfNoneMatchCacheHeader(request)) return;
-  //   AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", PAGE_liveview, PAGE_liveview_length);
-  //   response->addHeader(FPSTR(s_content_enc),"gzip");
-  //   this->setStaticContentCacheHeaders(response);
-  //   request->send(response);
-  // });
-
-  // //settings page
-  // pCONT_web->server->on("/settings", HTTP_GET, [this](AsyncWebServerRequest *request){
-  //   this->serveSettings(request);
-  // });
-
-  // // "/settings/settings.js&p=x" request also handled by serveSettings()
-
-  // pCONT_web->server->on("/style.css", HTTP_GET, [this](AsyncWebServerRequest *request){
-  //   if (handleIfNoneMatchCacheHeader(request)) return;
-  //   AsyncWebServerResponse *response = request->beginResponse_P(200, "text/css", PAGE_settingsCss, PAGE_settingsCss_length);
-  //   response->addHeader(FPSTR(s_content_enc),"gzip");
-  //   this->setStaticContentCacheHeaders(response);
-  //   request->send(response);
-  // });
-
-  // pCONT_web->server->on("/favicon.ico", HTTP_GET, [this](AsyncWebServerRequest *request){
-  //   if(!handleFileRead(request, "/favicon.ico"))
-  //   {
-  //     request->send_P(200, "image/x-icon", favicon, 156);
-  //   }
-  // });
-
-  // pCONT_web->server->on("/welcome", HTTP_GET, [this](AsyncWebServerRequest *request){
-  //   this->serveSettings(request);
-  // });
-
-  // pCONT_web->server->on("/reset", HTTP_GET, [this](AsyncWebServerRequest *request){
-  //   this->serveMessage(request, 200,F("Rebooting now..."),F("Please wait ~10 seconds..."),129);
-  //   // doReboot = true;
-  // });
-
-  // pCONT_web->server->on("/settings", HTTP_POST, [this](AsyncWebServerRequest *request){
-  //   this->serveSettings(request, true);
-  // });
-
-  // pCONT_web->server->on("/json", HTTP_GET, [this](AsyncWebServerRequest *request){
-  //   this->serveJson(request);
-  // });
-
-  // AsyncCallbackJsonWebHandler* handler = new AsyncCallbackJsonWebHandler("/json", [this](AsyncWebServerRequest *request) {
-  //   bool verboseResponse = false;
-  //   bool isConfig = false;
-
-  //   ALOG_INF(PSTR("AsyncCallbackJsonWebHandler"));
-
-  //   Serial.println((char*)request->_tempObject);
-
-  //   if (!this->requestJSONBufferLock(14)) return;
-
-  //   DeserializationError error = deserializeJson(doc, (uint8_t*)(request->_tempObject));
-  //   JsonObject root = doc.as<JsonObject>();
-  //   if (error || root.isNull()) {
-  //     this->releaseJSONBufferLock();
-  //     request->send(400, "application/json", F("{\"error\":9}")); // ERR_JSON
-  //     return;
-  //   }
-  //   // if (root.containsKey("pin")) checkSettingsPIN(root["pin"].as<const char*>());
-
-  //   const String& url = request->url();
-  //   isConfig = url.indexOf("cfg") > -1; 
-  //   if (!isConfig) {
-  //     /*
-  //     #ifdef WLED_DEBUG
-  //       DEBUG_PRINTLN(F("Serialized HTTP"));
-  //       serializeJson(root,Serial);
-  //       DEBUG_PRINTLN();
-  //     #endif
-  //     */
-  //     ALOG_INF(PSTR("deserializeState"));
-  //     verboseResponse = this->deserializeState(root);
-  //   } else {
-  //     if (!correctPIN && strlen(settingsPIN)>0) {
-  //       request->send(403, "application/json", F("{\"error\":1}")); // ERR_DENIED
-  //       this->releaseJSONBufferLock();
-  //       return;
-  //     }
-  //   ALOG_INF(PSTR("deserializeConfig"));
-  //     verboseResponse = this->deserializeConfig(root); //use verboseResponse to determine whether cfg change should be saved immediately
-  //   }
-  //   this->releaseJSONBufferLock();
-
-  //   if (verboseResponse) {
-  //     if (!isConfig) {
-  //       this->serveJson(request); return; //if JSON contains "v"
-  //     } else {
-  //       // doSerializeConfig = true; //serializeConfig(); //Save new settings to FS
-  //     }
-  //   }
-  //   request->send(200, "application/json", F("{\"success\":true}"));
-  // }, JSON_BUFFER_SIZE);
-  // pCONT_web->server->addHandler(handler);
-
-  pCONT_web->server->on("/version", HTTP_GET, [](AsyncWebServerRequest *request){
+  tkr_web->server->on("/version", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(200, "text/plain", (String)PROJECT_VERSION);
   });
 
-  pCONT_web->server->on("/uptime", HTTP_GET, [](AsyncWebServerRequest *request){
+  tkr_web->server->on("/uptime", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(200, "text/plain", (String)millis());
   });
 
-//   pCONT_web->server->on("/freeheap", HTTP_GET, [](AsyncWebServerRequest *request){
-//     request->send(200, "text/plain", (String)ESP.getFreeHeap());
-//   });
-
-
-  pCONT_web->server->on("/reboot", HTTP_GET, [this](AsyncWebServerRequest *request){
+  tkr_web->server->on("/reboot", HTTP_GET, [this](AsyncWebServerRequest *request){
     this->webHandleReboot(request);
   });
-  pCONT_web->server->on("/reset", HTTP_GET, [this](AsyncWebServerRequest *request){
-    pCONT_web->serveMessage(request, 200,F("Rebooting now..."),F("Please wait ~10 seconds..."),129);
+  tkr_web->server->on("/reset", HTTP_GET, [this](AsyncWebServerRequest *request){
+    tkr_web->serveMessage(request, 200,F("Rebooting now..."),F("Please wait ~10 seconds..."),129);
     tkr_anim->doReboot = true;
   });
 
-// #ifdef WLED_ENABLE_USERMOD_PAGE
-//   pCONT_web->server->on("/u", HTTP_GET, [](AsyncWebServerRequest *request){
-//     if (handleIfNoneMatchCacheHeader(request)) return;
-//     AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", PAGE_usermod, PAGE_usermod_length);
-//     response->addHeader(FPSTR(s_content_enc),"gzip");
-//     setStaticContentCacheHeaders(response);
-//     request->send(response);
-//   });
-// #endif
-
-//   pCONT_web->server->on("/teapot", HTTP_GET, [this](AsyncWebServerRequest *request){
-//     this->serveMessage(request, 418, F("418. I'm a teapot."), F("(Tangible Embedded Advanced Project Of Twinkling)"), 254);
-//   });
-
-//   pCONT_web->server->on("/upload", HTTP_POST, [this](AsyncWebServerRequest *request) {},
-//         [this](AsyncWebServerRequest *request, const String& filename, size_t index, uint8_t *data,
-//                       size_t len, bool final) {this->handleUpload(request, filename, index, data, len, final);}
-//   );
-
-// #ifdef WLED_ENABLE_SIMPLE_UI
-//   pCONT_web->server->on("/simple.htm", HTTP_GET, [](AsyncWebServerRequest *request){
-//     if (handleFileRead(request, "/simple.htm")) return;
-//     if (handleIfNoneMatchCacheHeader(request)) return;
-//     AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", PAGE_simple, PAGE_simple_L);
-//     response->addHeader(FPSTR(s_content_enc),"gzip");
-//     setStaticContentCacheHeaders(response);
-//     request->send(response);
-//   });
-// #endif
-
-//   pCONT_web->server->on("/iro.js", HTTP_GET, [this](AsyncWebServerRequest *request){
-//     AsyncWebServerResponse *response = request->beginResponse_P(200, "application/javascript", iroJs, iroJs_length);
-//     response->addHeader(FPSTR(s_content_enc),"gzip");
-//     this->setStaticContentCacheHeaders(response);
-//     request->send(response);
-//   });
-
-//   pCONT_web->server->on("/rangetouch.js", HTTP_GET, [this](AsyncWebServerRequest *request){
-//     AsyncWebServerResponse *response = request->beginResponse_P(200, "application/javascript", rangetouchJs, rangetouchJs_length);
-//     response->addHeader(FPSTR(s_content_enc),"gzip");
-//     this->setStaticContentCacheHeaders(response);
-//     request->send(response);
-//   });
-
-  createEditHandler(true);//correctPIN);
-
-// #ifndef WLED_DISABLE_OTA
-//   //init ota page
-//   pCONT_web->server->on("/update", HTTP_GET, [this](AsyncWebServerRequest *request){
-//     ALOG_INF(PSTR("URL HTTP_GET \"/update\""));
-//     // if (otaLock) {
-//     //   serveMessage(request, 500, "Access Denied", FPSTR(s_unlock_ota), 254);
-//     // } else
-//       this->serveSettings(request); // checks for "upd" in URL and handles PIN
-//   });
-
-//   pCONT_web->server->on("/update", HTTP_POST, [this](AsyncWebServerRequest *request){
-//     ALOG_INF(PSTR("URL HTTP_POST \"/update\""));
-//     // if (!correctPIN) {
-//     //   serveSettings(request, true); // handle PIN page POST request
-//     //   return;
-//     // }
-//     if (Update.hasError() || otaLock) {
-//       this->serveMessage(request, 500, F("Update failed!"), F("Please check your file and retry!"), 254);
-//     } else {
-//       this->serveMessage(request, 200, F("Update successful!"), F("Rebooting..."), 131);
-//       // doReboot = true;
-//     }
-//   },[this](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final){
-//     if (!this->correctPIN || this->otaLock) return;
-//     if(!index){
-//       DEBUG_PRINTLN(F("OTA Update Start"));
-//       // WLED::instance().disableWatchdog();
-//       // usermods.onUpdateBegin(true); // notify usermods that update is about to begin (some may require task de-init)
-//       // lastEditTime = millis(); // make sure PIN does not lock during update
-//       #ifdef ESP8266
-//       Update.runAsync(true);
-//       #endif
-//       Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000);
-//     }
-//     if(!Update.hasError()) Update.write(data, len);
-//     if(final){
-//       if(Update.end(true)){
-//         DEBUG_PRINTLN(F("Update Success"));
-//       } else {
-//         DEBUG_PRINTLN(F("Update Failed"));
-//         // usermods.onUpdateBegin(false); // notify usermods that update has failed (some may require task init)
-//         // WLED::instance().enableWatchdog();
-//       }
-//     }
-//   });
-// #else
-//   pCONT_web->server->on("/update", HTTP_GET, [](AsyncWebServerRequest *request){
-//     serveMessage(request, 501, "Not implemented", F("OTA updating is disabled in this build."), 254);
-//   });
-// #endif
-
-
-//   #ifdef ENABLE_FEATURE_LIGHTING__DMX
-//   pCONT_web->server->on("/dmxmap", HTTP_GET, [](AsyncWebServerRequest *request){
-//     request->send_P(200, "text/html", PAGE_dmxmap     , dmxProcessor);
-//   });
-//   #else
-//   pCONT_web->server->on("/dmxmap", HTTP_GET, [this](AsyncWebServerRequest *request){
-//     this->serveMessage(request, 501, "Not implemented", F("DMX support is not enabled in this build."), 254);
-//   });
-//   #endif
-
-//   pCONT_web->server->on("/", HTTP_GET, [this](AsyncWebServerRequest *request){
-//     // if (captivePortal(request)) return;
-//     bool showWelcomePage = false;
-//     if (!showWelcomePage || request->hasArg(F("sliders"))){
-//       this->serveIndex(request);
-//     } else {
-//       this->serveSettings(request);
-//     }
-//   });
-
-//   #ifdef WLED_ENABLE_PIXART
-//   pCONT_web->server->on("/pixart.htm", HTTP_GET, [](AsyncWebServerRequest *request){
-//     if (handleFileRead(request, "/pixart.htm")) return;
-//     if (handleIfNoneMatchCacheHeader(request)) return;
-//     AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", PAGE_pixart, PAGE_pixart_L);
-//     response->addHeader(FPSTR(s_content_enc),"gzip");
-//     setStaticContentCacheHeaders(response);
-//     request->send(response);
-//   });
-//   #endif
-
-//   #ifndef WLED_DISABLE_PXMAGIC
-//   pCONT_web->server->on("/pxmagic.htm", HTTP_GET, [this](AsyncWebServerRequest *request){
-//     if (this->handleFileRead(request, "/pxmagic.htm")) return;
-//     if (this->handleIfNoneMatchCacheHeader(request)) return;
-//     AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", PAGE_pxmagic, PAGE_pxmagic_L);
-//     response->addHeader(FPSTR(s_content_enc),"gzip");
-//     this->setStaticContentCacheHeaders(response);
-//     request->send(response);
-//   });
-//   #endif
-
-//   pCONT_web->server->on("/cpal.htm", HTTP_GET, [this](AsyncWebServerRequest *request){
-//     if (this->handleFileRead(request, "/cpal.htm")) return;
-//     if (this->handleIfNoneMatchCacheHeader(request)) return;
-//     AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", PAGE_cpal, PAGE_cpal_L);
-//     response->addHeader(FPSTR(s_content_enc),"gzip");
-//     this->setStaticContentCacheHeaders(response);
-//     request->send(response);
-//   });
+  createEditHandler(true);
 
   #ifdef WLED_ENABLE_WEBSOCKETS2
-  pCONT_web->server->addHandler(ws);
+  tkr_web->server->addHandler(ws);
   #endif
 
-
-  // pCONT->Tasker_Interface(TASK_WEB_ADD_HANDLER);/
   pCONT->Tasker_Interface(TASK_WEB_ADD_HANDLER);
-
-
-
 
 }
 
@@ -1776,7 +1505,7 @@ void mWebServer::webHandleReboot(AsyncWebServerRequest* request)
 #endif
 }
 
-
+// Might be needed for NEXTION
 void mWebServer::webHandleRoot(AsyncWebServerRequest* request)
 { 
 
@@ -1830,25 +1559,31 @@ bool  mWebServer::captivePortal(AsyncWebServerRequest *request)
   return false;
 }
 
-// cacheInvalidate this causes the presets to reload!!
+/*
+  cacheInvalidate this causes the presets to reload!!
+  The ETag (or Entity Tag) is a string that serves as a cache validation token.
+  To enable better cache detection, I am adding the build time to this as each new compile should force a new load
+*/
 void mWebServer::generateEtag(char *etag, uint16_t eTagSuffix) {
-  sprintf_P(etag, PSTR("%7d-%02x-%04x"), PROJECT_VERSION, cacheInvalidate, eTagSuffix);
+  snprintf_P(etag, 32, PSTR("%7d-%02x-%04x-BT%S"), PROJECT_VERSION, cacheInvalidate, eTagSuffix, PSTR(__TIME__));
 }
 
-void mWebServer::setStaticContentCacheHeaders(AsyncWebServerResponse *response)
-{
-  char tmp[40];
-  // https://medium.com/@codebyamir/a-web-developers-guide-to-browser-caching-cc41f3b73e7c
-  #ifndef WLED_DEBUG
-  // This header name is misleading, "no-cache" will not disable cache,
-  // it just revalidates on every load using the "If-None-Match" header with the last ETag value
-  response->addHeader(F("Cache-Control"),"no-cache");
-  #else
-  response->addHeader(F("Cache-Control"),"no-store,max-age=0"); // prevent caching if debug build
-  #endif
-  snprintf_P(tmp, sizeof(tmp), PSTR("%d-%02x"), PROJECT_VERSION, false);// tkr_anim->cacheInvalidate);
-  response->addHeader(F("ETag"), tmp);
-}
+// void mWebServer::setStaticContentCacheHeaders(AsyncWebServerResponse *response)
+// {
+//   // char tmp[40];
+//   // https://medium.com/@codebyamir/a-web-developers-guide-to-browser-caching-cc41f3b73e7c
+//   #ifndef ENABLE_DEBUGFEATURE_NETWORK__DISABLE_CACHE
+//   // This header name is misleading, "no-cache" will not disable cache,
+//   // it just revalidates on every load using the "If-None-Match" header with the last ETag value
+//   response->addHeader(F("Cache-Control"),"no-cache");
+//   #else
+//   response->addHeader(F("Cache-Control"),"no-store,max-age=0"); // prevent caching if debug build
+//   #endif
+//   char etag[32]; // limit is 32 bytes
+//   tkr_web->generateEtag(etag);
+//   // snprintf_P(tmp, sizeof(tmp), PSTR("%d-%02x"), PROJECT_VERSION, false);// tkr_anim->cacheInvalidate);
+//   response->addHeader(F("ETag"), etag);
+// }
 
 
 void mWebServer::setStaticContentCacheHeaders(AsyncWebServerResponse *response, int code, uint16_t eTagSuffix ) 
@@ -1858,7 +1593,7 @@ void mWebServer::setStaticContentCacheHeaders(AsyncWebServerResponse *response, 
   if (code != 200) return;
 
   // https://medium.com/@codebyamir/a-web-developers-guide-to-browser-caching-cc41f3b73e7c
-  #ifndef WLED_DEBUG
+  #ifndef ENABLE_DEBUGFEATURE_NETWORK__DISABLE_CACHE
   // this header name is misleading, "no-cache" will not disable cache,
   // it just revalidates on every load using the "If-None-Match" header with the last ETag value
   response->addHeader(F("Cache-Control"), F("no-cache"));
@@ -1866,38 +1601,9 @@ void mWebServer::setStaticContentCacheHeaders(AsyncWebServerResponse *response, 
   response->addHeader(F("Cache-Control"), F("no-store,max-age=0"));  // prevent caching if debug build
   #endif
   char etag[32];
-  pCONT_web->generateEtag(etag, eTagSuffix);
+  tkr_web->generateEtag(etag, eTagSuffix);
   response->addHeader(F("ETag"), etag);
 }
-
-
-
-
-
-
-/*
- * Integrated HTTP web server page declarations
- */
-
-
-// static void setStaticContentCacheHeaders(AsyncWebServerResponse *response, int code, uint16_t eTagSuffix = 0) {
-//   // Only send ETag for 200 (OK) responses
-//   if (code != 200) return;
-
-//   // https://medium.com/@codebyamir/a-web-developers-guide-to-browser-caching-cc41f3b73e7c
-//   #ifndef WLED_DEBUG
-//   // this header name is misleading, "no-cache" will not disable cache,
-//   // it just revalidates on every load using the "If-None-Match" header with the last ETag value
-//   response->addHeader(F("Cache-Control"), F("no-cache"));
-//   #else
-//   response->addHeader(F("Cache-Control"), F("no-store,max-age=0"));  // prevent caching if debug build
-//   #endif
-//   char etag[32];
-//   generateEtag(etag, eTagSuffix);
-//   response->addHeader(F("ETag"), etag);
-// }
-
-
 
 //Is this an IP?
 bool mWebServer::isIp(String str) {

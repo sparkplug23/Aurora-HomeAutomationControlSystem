@@ -528,7 +528,7 @@ void mSensorsDHT::MQTTHandler_Sender()
 //       }break;
 //     }
 //   }
-//   // *pCONT_web->buffer_writer_internal = (*pCONT_web->buffer_writer_internal) - 1;// remove extra comma
+//   // *tkr_web->buffer_writer_internal = (*tkr_web->buffer_writer_internal) - 1;// remove extra comma
 //   // JBI->Append_P(PSTR("],")); 
 
 //   JBI->Array_End();

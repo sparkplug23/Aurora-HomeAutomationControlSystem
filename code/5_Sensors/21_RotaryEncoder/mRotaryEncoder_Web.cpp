@@ -43,7 +43,7 @@
 //                               );
 //                               //Serial.printf("colour_G=%d\n\r",colour_G);
 //           // sprintf(colour_ctr,"%s",
-//           pCONT_web->WebColorCtr(255,colour_G,colour_G, colour_ctr, sizeof(colour_ctr));
+//           tkr_web->WebColorCtr(255,colour_G,colour_G, colour_ctr, sizeof(colour_ctr));
 //           //);
 //         }
 //         // no event show, just white

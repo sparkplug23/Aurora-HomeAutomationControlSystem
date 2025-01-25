@@ -20,7 +20,7 @@
 #define CODE_BLOCK__MQTTHandler_AddWebURL_PayloadRequests()  \
   char uri_buffer[70] = {0};\
   snprintf(uri_buffer, sizeof(uri_buffer), "/mqtt/%s/%S", D_TOPIC_STATUS, GetModuleFriendlyName());\
-  pCONT_web->server->on(uri_buffer, HTTP_GET,\
+  tkr_web->server->on(uri_buffer, HTTP_GET,\
   [this](AsyncWebServerRequest *request)\
     {\
       char handle_url[100] = {0};       \

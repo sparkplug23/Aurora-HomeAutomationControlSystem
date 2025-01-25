@@ -474,7 +474,7 @@ static const uint8_t *getPresetCache(size_t &size) {
   //if (presetsModifiedTime != presetsCachedTime) DEBUG_PRINTLN(F("getPresetCache(): presetsModifiedTime changed."));
   //if (presetsCachedValidate != cacheInvalidate) DEBUG_PRINTLN(F("getPresetCache(): cacheInvalidate changed."));
 
-  if ((tkr_anim->presetsModifiedTime != presetsCachedTime) || (presetsCachedValidate != pCONT_web->cacheInvalidate)) {
+  if ((tkr_anim->presetsModifiedTime != presetsCachedTime) || (presetsCachedValidate != tkr_web->cacheInvalidate)) {
     if (presetsCached) {
       free(presetsCached);
       presetsCached = nullptr;
@@ -485,7 +485,7 @@ static const uint8_t *getPresetCache(size_t &size) {
     File file = FILE_SYSTEM.open(FPSTR( tkr_anim->getPresetsFileName() ), "r");
     if (file) {
       presetsCachedTime = tkr_anim->presetsModifiedTime;
-      presetsCachedValidate = pCONT_web->cacheInvalidate;
+      presetsCachedValidate = tkr_web->cacheInvalidate;
       presetsCachedSize = 0;
       presetsCached = (uint8_t*)ps_malloc(file.size() + 1);
       if (presetsCached) {

@@ -61,7 +61,7 @@ enum FIRMWARE_VERSION_BRANCH_TYPE_IDS{
  * #30 : Added ultrasonic to unified sensor
  * #29 : Flashed testbed shelly2.5 to try new modeC for outside lights that simply reports switches as motion events, with relays to be remote OH controlled
  */
-#define FIRMWARE_VERSION_MODULE   0
+#define FIRMWARE_VERSION_MODULE   1
 
 #define FIRMWARE_BRANCH_NAME_STRING "development"
 
@@ -154,6 +154,7 @@ enum FIRMWARE_VERSION_BRANCH_TYPE_IDS{
 //#define ENABLE_LOG_LEVEL_DEBUG_LOWLEVEL
 //#define ENABLE_LOG_LEVEL__DEBUG_TRACE 
 //#define ENABLE_LOG_LEVEL_ALL
+#define ENABLE_LOG_LEVEL_DYNAMIC_LEVELS
 
 #define DEBUG_WEBSERVER_LIB  //used in improving core lib
 // #define DEBUG_WEBSERVER_MEMORY
