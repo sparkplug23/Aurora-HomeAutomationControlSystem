@@ -909,7 +909,7 @@ void mInterfaceLight::parseJSONObject__BusConfig(JsonParserObject obj)
   if (busConfigs[bus_index] != nullptr) delete busConfigs[bus_index];
 
 
-  ALOG_HGL(PSTR("============BusConfig(type%d,pin0=%d,start%d,len%d,CO%d)"),
+  ALOG_INF(PSTR("BusConfig(type%d,pin0=%d,start%d,len%d,CO%d)"),
     bus_type,
     pins[0],
     start,
@@ -1017,7 +1017,7 @@ uint8_t mInterfaceLight::GetColourOrder_FromName(const char* c)
     }
 
     #ifdef ENABLE_LOG_LEVEL_COMMANDS
-    ALOG_ERR(PSTR("colour_order == \n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r%X"), colour_order);
+    ALOG_COM(PSTR("colour_order %X"), colour_order);
     #endif  
 
     return colour_order;

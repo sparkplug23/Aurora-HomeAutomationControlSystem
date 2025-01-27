@@ -97,7 +97,8 @@ void mAnimatorLight::subparse_JSONCommand(JsonParserObject obj, uint8_t segment_
    **/
   if(!segments.size()){ 
     ALOG_ERR(PSTR("No segments created"));
-    return; }
+    return; 
+  }
 
 
   if (jtok = obj["PaletteMappingValues"]) { 

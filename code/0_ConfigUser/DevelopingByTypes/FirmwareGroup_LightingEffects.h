@@ -50,7 +50,8 @@
     // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB  // buswrapper is limited to rgbw, effects may be rgbW or rgb only, 32-bit, white may be created in the effect, or generated automatically by the RGB parts.
     // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB_MATRIX16X16 // same as previous, but figuring out how to work on 2d 16x16 matrix. So will be getting the matrix setup working, and 2d effects testing
     // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__RGB_PEBBLES  // RGB only, most common type I used, get the 8port tester and make 8 200 led white sections. Aim is to ensure larger "strings" will work as planned
-    
+    // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB_2X
+    // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB_4X
 
 //    ;;;;;;;;;;;; ESP8266 ;;;;;;;;;;;;;;;;
         // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__50__ESP82_1CH                               // ESP8266 - Single Bus - Single Segment - 100 rgb leds
@@ -8847,55 +8848,21 @@ typedef uint32_t ColourBaseType;
 
 
 #endif
+
+
 #ifdef DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__RGBWW 
   
-
-
-
-  
-  // #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
-  // // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
-
-  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-  // #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
-
-  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
-  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-
-
-  // #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
-
-  // // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
-  // #define ENABLE_DEVFEATURE_LIGHT__PWM_DITHER_V2  
   #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-
-  
-  // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-  // struct RgbwwColor;  // Forward declaration
-  // typedef RgbwwColor ColourBaseType;
-  // #else
-  // typedef uint32_t ColourBaseType;
-  // #endif
-
-
-  // #define USE_RGBWW_PALETTE
-
-  // // #define ENABLE_DEVFEATURE_LIGHTING__CRITICAL_DISABLE_LOAD_PALETTE
-
-  // // #define ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
 
   // // #define ENABLE_LIGHTING_TEMPLATE__PWM_OUTPUT_ONLY
   // // #define ENABLE_LIGHTING_TEMPLATE__WS2805_OUTPUT_ONLY
   #define ENABLE_LIGHTING_TEMPLATE__DUAL_PWM_WS2805
   // // #define ENABLE_LIGHTING_TEMPLATE__DUAL_PWM_WS2805_SINGLE
 
-
-  #define USE_LIGHTING_TEMPLATE
-
+  #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 4000
 
   #ifdef ENABLE_LIGHTING_TEMPLATE__PWM_OUTPUT_ONLY
+  #define USE_LIGHTING_TEMPLATE
   DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
   R"=====(
   {
@@ -8935,6 +8902,7 @@ typedef uint32_t ColourBaseType;
   )=====";
   #endif
   #ifdef ENABLE_LIGHTING_TEMPLATE__WS2805_OUTPUT_ONLY
+  #define USE_LIGHTING_TEMPLATE
   DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
   R"=====(
   {
@@ -8968,6 +8936,7 @@ typedef uint32_t ColourBaseType;
   )=====";
   #endif
   #ifdef ENABLE_LIGHTING_TEMPLATE__DUAL_PWM_WS2805
+  #define USE_LIGHTING_TEMPLATE
   DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
   R"=====(
   {
@@ -9030,6 +8999,7 @@ typedef uint32_t ColourBaseType;
   )=====";
   #endif
   #ifdef ENABLE_LIGHTING_TEMPLATE__DUAL_PWM_WS2805_SINGLE
+  #define USE_LIGHTING_TEMPLATE
   DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
   R"=====(
   {
@@ -9098,9 +9068,112 @@ typedef uint32_t ColourBaseType;
 
 #ifdef DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB 
 
-  // #define ENABLE_DEBUGFEATURE_LIGHTING__TRACE_PIXEL_SET_GET_SHOW_FIRST_NUMBER_LOGGED_WITH_VALUE 1
-  
   #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 4000
+
+  
+  // #define USE_LIGHTING_TEMPLATE
+  // DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  // R"=====(
+  // {
+  //   "BusConfig":[
+  //     {
+  //       "Pin":13,
+  //       "ColourOrder":"GRB",
+  //       "BusType":"WS2812_RGB",
+  //       "Start":0,
+  //       "Length":350
+  //     },
+  //     {
+  //       "Pin":12,
+  //       "ColourOrder":"GRBW",
+  //       "BusType":"SK6812_RGBW",
+  //       "Start":350,
+  //       "Length":127
+  //     },
+  //     {
+  //       "Pin":14,
+  //       "ColourOrder":"GRB",
+  //       "BusType":"WS2812_RGB",
+  //       "Start":477,
+  //       "Length":16
+  //     }
+  //   ],
+  //   "Segment0": {
+  //     "PixelRange": [
+  //       0,
+  //       302
+  //     ],
+  //     "ColourPalette":"Pink White Purple Grad",
+  //     "Effects": {
+  //       "Function":"Gradient",
+  //       "Speed":127,
+  //       "Intensity":0,
+  //       "Grouping":1,
+  //       "RateMs": 1000
+  //     },
+  //     "BrightnessRGB": 100,
+  //     "BrightnessCCT": 100
+  //   },
+  //   "Segment1": {
+  //     "PixelRange": [
+  //       302,
+  //       350
+  //     ],
+  //     "ColourPalette":"Rainbow 16",
+  //     "Effects": {
+  //       "Function":"Wipe Over",
+  //       "Speed":200,
+  //       "Intensity":127,
+  //       "Grouping":1,
+  //       "RateMs": 20
+  //     },
+  //     "SegColour0": {
+  //       "Hue": 0,
+  //       "Sat":100
+  //     },
+  //     "BrightnessRGB": 100,
+  //     "BrightnessCCT": 100
+  //   },
+  //   "Segment2": {
+  //     "PixelRange": [
+  //       350,
+  //       477
+  //     ],
+  //     "ColourPalette":"Colour 01",
+  //     "Effects": {
+  //       "Function":"Solid",
+  //       "Speed":255,
+  //       "RateMs": 20
+  //     },
+  //     "SegColour0": {
+  //       "Hue": 25,
+  //       "Sat":100
+  //     },
+  //     "BrightnessRGB": 100,
+  //     "BrightnessCCT": 100
+  //   },
+  //   "Segment3": {
+  //     "PixelRange": [
+  //       477,
+  //       493
+  //     ],
+  //     "ColourPalette":"Colour 01",
+  //     "Effects": {
+  //       "Function":"Wipe Random",
+  //       "Speed":255,
+  //       "RateMs": 20
+  //     },
+  //     "SegColour0": {
+  //       "Hue": 25,
+  //       "Sat":100
+  //     },
+  //     "BrightnessRGB": 100
+  //   },
+  //   "BrightnessRGB": 100
+  // }
+  // )=====";
+
+
 
   #define USE_LIGHTING_TEMPLATE
   DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
@@ -9145,72 +9218,193 @@ typedef uint32_t ColourBaseType;
 #endif
 
 
-#ifdef DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__RGB_PEBBLES
-/***
- * This subgroup devices will be used to test the more typical string style lights
- * 200x8 to a red device, powered with a 20A PSU (4 of them are on the one in the attic, get that controller)
- */
+#ifdef DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB_2X
+
+  // #define ENABLE_ADVANCED_DEBUGGING
+  // #define ENABLE_FEATURE_EVERY_SECOND_SPLASH_UPTIME
+  // #define ENABLE_FEATURE_DEBUG_TASKER_INTERFACE_LOOP_TIMES
+  // #define ENABLE_DEBUG_FEATURE__TASKER_INTERFACE_SPLASH_LONG_LOOPS_WITH_MS 50
+  // #define ENABLE_DEBUG_FUNCTION_NAMES
+  // #define ENABLE_DEBUGFEATURE_TASKER_INTERFACE__LONG_LOOPS 600
+  // #define ENABLE_DEBUG_TRACE__SERIAL_PRINT_MQTT_MESSAGE_OUT_BEFORE_FORMING
+  // #define ENABLE_DEBUG_TRACE__MQTT_TOPIC_AS_TRASNMITTED
+  // #define ENABLE_DEBUG_TRACE__MQTT_PAYLOAD_AS_TRASNMITTED
+  // #define ENABLE_DEBUGFEATURE__LOGGING_MQTT__CHECK_CONNECTION
+
+  // #define ENABLE_DEBUG_LINE_HERE_TRACE
+  // #define ENABLE_DEBUG_LINE_HERE
+  // #define ENABLE_DEBUG_LINE_HERE2
+  // #define ENABLE_DEBUG_LINE_HERE3
+  // #define ENABLE_DEBUG_LINE_HERE_MILLIS
+  // #define USE_DEBUG_PRINT
 
 
-//   // #define WLED_ENABLE_WEBSOCKETS
-//   #define WLED_ENABLE_WEBSOCKETS2
-//   #define ENABLE_DEVFEATURE_LIGHTING__JSONLIVE_WEBSOCKETS
-//   #define WLED_ENABLE_JSONLIVE
-//   #define ENABLE_FEATURE_LIGHTING__WEBSOCKETS
-//   // #define ENABLE_FEATURE_LIGHTING__XML_REQUESTS
-  
-
-  
-//   #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
-//   // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
-
-//   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-//   #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
-
-//   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-//   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-//   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
-//   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-
-
-//   #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
-
-//   // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-//   // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
-
-
-//   #define ENABLE_DEVFEATURE_LIGHT__PWM_DITHER_V2
-  
-//   #define ENABLE_DEVFEATURE_LIGHTING__ADD_EFFECT_DEVSTAGE_TO_WEBUI
-
-
-  
-// #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-// struct RgbwwColor;  // Forward declaration
-// typedef RgbwwColor ColourBaseType;
-// #else
-// typedef uint32_t ColourBaseType;
-// #endif
-
-//   // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-//   // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
-//   // #else
-//   // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
-//   // #endif
-
-//   #define ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
-
-
-
-        // "ColourOrder":"GRBWC",
-        // "BusType":"WS2805_RGBWW",
-
+  #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 4000
   #define USE_LIGHTING_TEMPLATE
+  DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  R"=====(
+  {
+    "BusConfig":[
+      {
+        "Pin":2,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":0,
+        "Length":100
+      },
+      {
+        "Pin":4,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":100,
+        "Length":100
+      }
+    ],
+    "Segment0": {
+      "PixelRange": [
+        0,
+        200
+      ],
+      "ColourPalette":"Snowy 02",
+      "ColourType":4,
+      "Effects": {
+        "Function":"Static",
+        "Speed":255,
+        "Intensity":127,
+        "Grouping":1,
+        "RateMs": 20
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 0,
+      "SegColour1": {
+        "Hue": 30,
+        "Sat":100,
+        "BrightnessRGB":1
+      }
+    },
+    "BrightnessRGB": 100,
+    "BrightnessCCT": 0
+  }
+  )=====";
+
+  #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 4000
   
+  // #define USE_LIGHTING_TEMPLATE
+  // DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  // R"=====(
+  // {
+  //   "BusConfig":[
+  //     {
+  //       "Pin":2,
+  //       "ColourOrder":"RGB",
+  //       "BusType":"WS2812_RGB",
+  //       "Start":0,
+  //       "Length":100
+  //     }
+  //   ],
+  //   "Segment0": {
+  //     "PixelRange": [
+  //       0,
+  //       200
+  //     ],
+  //     "ColourPalette":"Snowy 02",
+  //     "ColourType":4,
+  //     "Effects": {
+  //       "Function":"Static",
+  //       "Speed":255,
+  //       "Intensity":127,
+  //       "Grouping":1,
+  //       "RateMs": 20
+  //     },
+  //     "BrightnessRGB": 100,
+  //     "BrightnessCCT": 0,
+  //     "SegColour1": {
+  //       "Hue": 30,
+  //       "Sat":100,
+  //       "BrightnessRGB":1
+  //     }
+  //   },
+  //   "BrightnessRGB": 100,
+  //   "BrightnessCCT": 0
+  // }
+  // )=====";
+
+#endif
+
+
+#ifdef DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB_4X
+
   #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 4000
 
-  //colourtype going forward should be detected with bustype and set there
 
+  #define USE_LIGHTING_TEMPLATE
+  DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  R"=====(
+  {
+    "BusConfig":[
+      {
+        "Pin":2,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":0,
+        "Length":100
+      },
+      {
+        "Pin":4,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":100,
+        "Length":100
+      },
+      {
+        "Pin":18,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":200,
+        "Length":100
+      },
+      {
+        "Pin":19,
+        "ColourOrder":"RGB",
+        "BusType":"WS2812_RGB",
+        "Start":300,
+        "Length":100
+      }
+    ],
+    "Segment0": {
+      "PixelRange": [
+        0,
+        400
+      ],
+      "ColourPalette":"Snowy 02",
+      "ColourType":4,
+      "Effects": {
+        "Function":"Static",
+        "Speed":255,
+        "Intensity":127,
+        "Grouping":1,
+        "RateMs": 20
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 0,
+      "SegColour1": {
+        "Hue": 30,
+        "Sat":100,
+        "BrightnessRGB":1
+      }
+    },
+    "BrightnessRGB": 100,
+    "BrightnessCCT": 0
+  }
+  )=====";
+
+#endif
+
+
+
+#ifdef DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__RGB_PEBBLES
+
+  #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 4000
   #define USE_LIGHTING_TEMPLATE
   DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
   R"=====(
@@ -9248,241 +9442,123 @@ typedef uint32_t ColourBaseType;
 
 #endif
 
+
 #ifdef DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB_MATRIX16X16 
 
-
-  // #define ENABLE_DEBUGFEATURE_LIGHTING__TRACE_PIXEL_SET_GET_SHOW_FIRST_NUMBER_LOGGED_WITH_VALUE 1
-
-
-  // #define ENABLE_DEBUGFEATURE__OVERIDE_FASTBOOT_DISABLE
-
-  
-  // #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
-  // // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
-
-  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-  // #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
-
-  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
-  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D
-  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
-
-
-  // // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__HARDWARE_TESTING
-  // // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__SUN_POSITIONS
-  // // // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__LED_SEGMENT_CLOCK
-  // // // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__NOTIFICATIONS
-  // // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__BORDER_WALLPAPERS
-  // // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__PIXEL_SET_ELSEWHERE
-  // // // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__CHRISTMAS_MULTIFUNCTION_CONTROLLER_WITH_MUSIC
-  // // // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__CHRISTMAS_MULTIFUNCTION_CONTROLLER
-
-
-
-  // #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
-
-  // // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-  // // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
-
-
-  // #define ENABLE_DEVFEATURE_LIGHT__PWM_DITHER_V2
-  
-
-  // #define ANIM_BRIGHTNESS_REQUIRED true
-
-  // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-  // struct RgbwwColor;  // Forward declaration
-  // typedef RgbwwColor ColourBaseType;
-  // #else
-  // typedef uint32_t ColourBaseType;
-  // #endif
-
-  // // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-  // // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
-  // // #else
-  // // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
-  // // #endif
-
-  // #define ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
-
-  
-
-
-
   #define ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
-  // #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS  
-  //   #define ENABLE_FEATURE_LIGHTING__2D_MATRIX
-  //   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__MATRIX
-  //   #define ENABLE_DEVFEATURE_LIGHT__HARDCODE_MATRIX_SETUP  
-  //   #define WLED_DEBUG
-  //   #define ENABLE_DEVFEATURE_LIGHT__INCLUDE_AUDIOREACTIVE_USERMOD
-  //   #define ENABLE_FEATURE_LIGHTING__2D_MATRIX
-  //   // #define ENABLE_DEVFEATURE_LIGHT__MATRIX_LOAD_PALETTE_PATCH_IN_WEBUI_PALETTE_CHANGE
-  // #endif 
-
-  // // #define WLED_ENABLE_WEBSOCKETS
-  // #define WLED_ENABLE_WEBSOCKETS2
-  // #define ENABLE_DEVFEATURE_LIGHTING__JSONLIVE_WEBSOCKETS
-  // #define WLED_ENABLE_JSONLIVE
-
-  // #define ENABLE_FEATURE_LIGHTING__USE_NEOPIXELBUS_LIGHT_GAMMA_LG
-
+  
+  // #define CONFIG_TEMPLATE__NORMAL
   #define CONFIG_TEMPLATE__TEST_COLOUR01_SHOW_PIXEL_BLEND
 
+  #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 4000
   #ifdef CONFIG_TEMPLATE__NORMAL
-  
-
-  // 13, 18, 19, 22, 23, 25, 26, 27       USED
-  // 33, 32, 21, 17, 16, 15*, 14*, 5*, 4, NOTUSED
-  // 21 = on PCB (4 pixels)
-  // 32 = external
-  /*
-  
-  
-        "ColourOrder":"GRB",
-        "BusType":"WS2812_RGB",
-
-
-        
-        "ColourOrder":"GRBW",
-        "BusType":"SK6812_RGBW",
-  
-  
-  */
-  #define USE_LIGHTING_TEMPLATE
-  DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
-  R"=====(
-  {
-    "BusConfig":[
-      {
-        "Pin":2,
-        "ColourOrder":"RGB",
-        "BusType":"WS2812_RGB",
-        "Start":0,
-        "Length":256
-      }
-    ],
-    "Segment0": {
-      "PixelRange": [
-        0,
-        256
+    #define USE_LIGHTING_TEMPLATE
+    DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+    R"=====(
+    {
+      "BusConfig":[
+        {
+          "Pin":2,
+          "ColourOrder":"RGB",
+          "BusType":"WS2812_RGB",
+          "Start":0,
+          "Length":256
+        }
       ],
-      "ColourType":3,
-      "ColourPalette":"Orange & Teal",
-      "PaletteMappingValues":[10,15,20],
-      "SegColour0": {
-        "Hue": 0,
-        "Sat":100,
-        "BrightnessRGB":1
+      "Segment0": {
+        "PixelRange": [
+          0,
+          256
+        ],
+        "ColourType":3,
+        "ColourPalette":"Orange & Teal",
+        "PaletteMappingValues":[10,15,20],
+        "SegColour0": {
+          "Hue": 0,
+          "Sat":100,
+          "BrightnessRGB":1
+        },
+        "SegColour1": {
+          "Hue": 120,
+          "Sat":20,
+          "BrightnessRGB":1
+        },
+        "SegColour2": {
+          "Hue": 240,
+          "Sat":100,
+          "BrightnessRGB":1
+        },
+        "Effects": {
+          "Function":"Octopus",
+          "Speed":1,
+          "Intensity":127,
+          "Decimate":0,
+          "Grouping":1,
+          "RateMs": 25
+        },
+        "BrightnessRGB": 100,
+        "BrightnessCCT": 0
       },
-      "SegColour1": {
-        "Hue": 120,
-        "Sat":20,
-        "BrightnessRGB":1
-      },
-      "SegColour2": {
-        "Hue": 240,
-        "Sat":100,
-        "BrightnessRGB":1
-      },
-      "Effects": {
-        "Function":"Octopus",
-        "Speed":1,
-        "Intensity":127,
-        "Decimate":0,
-        "Grouping":1,
-        "RateMs": 25
-      },
-      "BrightnessRGB": 100,
+      "BrightnessRGB": 20,
       "BrightnessCCT": 0
-    },
-    "BrightnessRGB": 20,
-    "BrightnessCCT": 0
-  }
-  )=====";
+    }
+    )=====";
+  #endif // CONFIG_TEMPLATE__NORMAL
 
 
-
-#endif // 
-
-  #ifdef CONFIG_TEMPLATE__TEST_COLOUR01_SHOW_PIXEL_BLEND
-  
-
-  // 13, 18, 19, 22, 23, 25, 26, 27       USED
-  // 33, 32, 21, 17, 16, 15*, 14*, 5*, 4, NOTUSED
-  // 21 = on PCB (4 pixels)
-  // 32 = external
-  /*
-  
-  
-        "ColourOrder":"GRB",
-        "BusType":"WS2812_RGB",
-
-
-        
-        "ColourOrder":"GRBW",
-        "BusType":"SK6812_RGBW",
-  
-  
-  */
-  #define USE_LIGHTING_TEMPLATE
-  DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
-  R"=====(
-  {
-    "BusConfig":[
-      {
-        "Pin":2,
-        "ColourOrder":"GRB",
-        "BusType":"WS2812_RGB",
-        "Start":0,
-        "Length":256
-      }
-    ],
-    "Segment0": {
-      "PixelRange": [
-        0,
-        256
+  #ifdef CONFIG_TEMPLATE__TEST_COLOUR01_SHOW_PIXEL_BLEND  
+    #define USE_LIGHTING_TEMPLATE
+    DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+    R"=====(
+    {
+      "BusConfig":[
+        {
+          "Pin":2,
+          "ColourOrder":"GRB",
+          "BusType":"WS2812_RGB",
+          "Start":0,
+          "Length":256
+        }
       ],
-      "ColourType":3,
-      "ColourPalette":"Snowy 02",
-      "PaletteMappingValues":[10,15,20],
-      "SegColour0": {
-        "Hue": 0,
-        "Sat":100,
-        "BrightnessRGB":1
+      "Segment0": {
+        "PixelRange": [
+          0,
+          256
+        ],
+        "ColourType":3,
+        "ColourPalette":"Snowy 02",
+        "PaletteMappingValues":[10,15,20],
+        "SegColour0": {
+          "Hue": 0,
+          "Sat":100,
+          "BrightnessRGB":1
+        },
+        "SegColour1": {
+          "Hue": 120,
+          "Sat":20,
+          "BrightnessRGB":1
+        },
+        "SegColour2": {
+          "Hue": 240,
+          "Sat":100,
+          "BrightnessRGB":1
+        },
+        "Effects": {
+          "Function":"Static",
+          "Speed":255,
+          "Intensity":255,
+          "Decimate":0,
+          "Grouping":1,
+          "RateMs": 3000
+        },
+        "BrightnessRGB": 100,
+        "BrightnessCCT": 0
       },
-      "SegColour1": {
-        "Hue": 120,
-        "Sat":20,
-        "BrightnessRGB":1
-      },
-      "SegColour2": {
-        "Hue": 240,
-        "Sat":100,
-        "BrightnessRGB":1
-      },
-      "Effects": {
-        "Function":"Static",
-        "Speed":255,
-        "Intensity":255,
-        "Decimate":0,
-        "Grouping":1,
-        "RateMs": 3000
-      },
-      "BrightnessRGB": 100,
+      "BrightnessRGB": 20,
       "BrightnessCCT": 0
-    },
-    "BrightnessRGB": 20,
-    "BrightnessCCT": 0
-  }
-  )=====";
-
-
-
-#endif // 
+    }
+    )=====";  
+  #endif // CONFIG_TEMPLATE__TEST_COLOUR01_SHOW_PIXEL_BLEND
 
 #endif
 

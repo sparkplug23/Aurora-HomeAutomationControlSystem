@@ -2660,238 +2660,16 @@ Bathroom
   /***********************************
    * SECTION: Lighting Configs
   ************************************/  
+ 
+  #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_JANUARY_2025
 
-  // #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
-  // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
-
-  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-  // #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
-
-  
-
-  #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
-  // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
-
-  // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-  #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
-
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D
-
-  // #define ENABLE_DEVFEATURE_LIGHT__INCLUDE_AUDIOREACTIVE_USERMOD
-
-  // #define ENABLE_FEATURE_LIGHTING__2D_MATRIX
-  // #define ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
-  // #define WLED_DISABLE_2D
-
-
-  #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
-
-  // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-  // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
-
-
-  #define ENABLE_DEVFEATURE_LIGHT__PWM_DITHER_V2
-  
-  
-
-  #define ANIM_BRIGHTNESS_REQUIRED true
-
-  
-  #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-  struct RgbwwColor;  // Forward declaration
-  typedef RgbwwColor ColourBaseType;
-  #else
-  typedef uint32_t ColourBaseType;
-  #endif
-
-  // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-  // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
-  // #else
-  // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
-  // #endif
-
-  #define ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
-
-  // #define ENABLE_DEVFEATURE_LIGHTING__ADD_EFFECT_DEVSTAGE_TO_WEBUI
-
-  // #define ENABLE__DEBUG_POINT__ANIMATION_EFFECTS
-
-  // #define ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
-  #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS  
-    #define ENABLE_FEATURE_LIGHTING__2D_MATRIX
-    #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__MATRIX
-    #define ENABLE_DEVFEATURE_LIGHT__HARDCODE_MATRIX_SETUP  
-    #define WLED_DEBUG
-    #define ENABLE_FEATURE_LIGHTING__2D_MATRIX
-    // #define ENABLE_DEVFEATURE_LIGHT__MATRIX_LOAD_PALETTE_PATCH_IN_WEBUI_PALETTE_CHANGE
-    #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
-  #endif 
-  #if defined(ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D) || defined(ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D)
-    #define ENABLE_DEVFEATURE_LIGHT__INCLUDE_AUDIOREACTIVE_USERMOD
-  #endif
-
-
-  // #define WLED_ENABLE_WEBSOCKETS
-  #define WLED_ENABLE_WEBSOCKETS2
-  #define ENABLE_DEVFEATURE_LIGHTING__JSONLIVE_WEBSOCKETS
-  #define WLED_ENABLE_JSONLIVE
-  
-//   #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
-//   // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
-
-//   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-//   #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
-
-//   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-//   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-//   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
-//   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-
-
-//   #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
-
-//   // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-//   // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
-
-
-//   #define ENABLE_DEVFEATURE_LIGHT__PWM_DITHER_V2
-  
-//   #define ENABLE_DEVFEATURE_LIGHTING__ADD_EFFECT_DEVSTAGE_TO_WEBUI
-
-
-  
-// #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-// struct RgbwwColor;  // Forward declaration
-// typedef RgbwwColor ColourBaseType;
-// #else
-// typedef uint32_t ColourBaseType;
-// #endif
-
-//   // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-//   // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
-//   // #else
-//   // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
-//   // #endif
-
-//   #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
-
-//   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D
-
-//   #define ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
-
-// // #define ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS
-//   #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS  
-//     #define ENABLE_FEATURE_LIGHTING__2D_MATRIX
-//     #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__MATRIX
-//     #define ENABLE_DEVFEATURE_LIGHT__HARDCODE_MATRIX_SETUP  
-//     #define WLED_DEBUG
-//     #define ENABLE_FEATURE_LIGHTING__2D_MATRIX
-//     // #define ENABLE_DEVFEATURE_LIGHT__MATRIX_LOAD_PALETTE_PATCH_IN_WEBUI_PALETTE_CHANGE
-//     #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D
-//   #endif 
-//   #if defined(ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__1D) || defined(ENABLE_FEATURE_ANIMATORLIGHT_EFFECT__AUDIO_REACTIVE__2D)
-//     #define ENABLE_DEVFEATURE_LIGHT__INCLUDE_AUDIOREACTIVE_USERMOD
-//   #endif
-
-//   // #define WLED_ENABLE_WEBSOCKETS
-//   #define WLED_ENABLE_WEBSOCKETS2
-//   #define ENABLE_DEVFEATURE_LIGHTING__JSONLIVE_WEBSOCKETS
-//   #define WLED_ENABLE_JSONLIVE
-
-//         // "ColourOrder":"GRBWC",
-//         // "BusType":"WS2805_RGBWW",
-
-//   #define USE_LIGHTING_TEMPLATE
-  
-//   #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 4000
-
-
-// //   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-// //   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-// //   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
-// //   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-
-// //   #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
-
-// //   #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
-
-// //   // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-
-  
-// // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-// // #define ColourBaseType RgbwwColor
-// // #else
-// // #define ColourBaseType uint32_t
-// // #endif
-
-
-// //   // #define WLED_ENABLE_WEBSOCKETS
-// //   #define WLED_ENABLE_WEBSOCKETS2
-// //   #define ENABLE_DEVFEATURE_LIGHTING__JSONLIVE_WEBSOCKETS
-// //   #define WLED_ENABLE_JSONLIVE
-  
-
-  
-// //   #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_NOVEMBER_2024
-// //   // #define ENABLE_FEATURE_LIGHTING__SINGLE_BUTTON_AS_DEMO_MODE
-
-// //   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-// //   #define ENABLE_DEVFEATURE_LIGHTING__REMOVE_RGBCCT
-
-// //   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL1_MINIMAL_HOME
-// //   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC
-// //   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED
-// //   #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE
-
-
-// //   #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
-
-// //   // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-// //   // #define ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
-
-
-// //   #define ENABLE_DEVFEATURE_LIGHT__PWM_DITHER_V2
-  
-// //   #define ENABLE_DEVFEATURE_LIGHTING__ADD_EFFECT_DEVSTAGE_TO_WEBUI
-
-
-  
-// // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-// // struct RgbwwColor;  // Forward declaration
-// // typedef RgbwwColor ColourBaseType;
-// // #else
-// // typedef uint32_t ColourBaseType;
-// // #endif
-
-// //   // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-// //   // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
-// //   // #else
-// //   // // #define ENABLE_DEVFEATURE_LIGHTING__DOUBLE_BUFFER
-// //   // #endif
-
-// //   #define ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
-
-
-
-// //         // "ColourOrder":"GRBWC",
-// //         // "BusType":"WS2805_RGBWW",
-
-// //   #define USE_LIGHTING_TEMPLATE
-  
-// //   #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 4000
-
+  #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 4000
 
   /***********************************
    * SECTION: Controller Configs
   ************************************/  
 
   // #define USE_MODULE_CONTROLLER_CUSTOM__LIGHTNEO_MOTION_ALERTS
-
 
   /***********************************
    * SECTION: Lighting BusConfig Set
@@ -2907,10 +2685,11 @@ Bathroom
   // #define ENABLE_BUSCONFIG_16X_2400_200
   // #define ENABLE_BUSCONFIG_16X_2000_200
   // #define ENABLE_BUSCONFIG_16X_1800_200
-  #define ENABLE_BUSCONFIG_1X_1S_SEGMENT // getting strip length
+  // #define ENABLE_BUSCONFIG_1X_1S_SEGMENT // getting strip length
   // #define ENABLE_BUSCONFIG_2X_THREE_SEGMENTS // towards the planned output
-
-  #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__HARDWARE_TESTING
+  // #define ENABLE_BUSCONFIG_DUAL_OUTPUT_THREE_SEGMENTS
+  // #define ENABLE_BUSCONFIG_3_OUTPUT_THREE_SEGMENTS
+  #define ENABLE_BUSCONFIG_2_OUTPUT_THREE_SEGMENTS_TESTER1
 
 
   #ifdef ENABLE_BUSCONFIG_1X_16
@@ -3131,13 +2910,18 @@ Bathroom
         302,
         350
       ],
-      "ColourPalette":"Pink Splash",
+      "ColourPalette":"Rainbow 16",
       "Effects": {
         "Function":"Wipe Over",
         "Speed":200,
         "Intensity":127,
         "Grouping":1,
         "RateMs": 20
+      },
+      "SegColour0": {
+        "Hue": 0,
+        "Sat":100,
+        "BrightnessRGB":0
       },
       "BrightnessRGB": 100,
       "BrightnessCCT": 100
@@ -3174,6 +2958,361 @@ Bathroom
   "}";
 
   #endif // ENABLE_BUSCONFIG_7X_2100
+
+  
+  #ifdef ENABLE_BUSCONFIG_DUAL_OUTPUT_THREE_SEGMENTS
+
+  #define USE_LIGHTING_TEMPLATE
+  DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  R"=====(
+  {
+    "BusConfig":[
+      {
+        "Pin":13,
+        "ColourOrder":"GRB",
+        "BusType":"WS2812_RGB",
+        "Start":0,
+        "Length":350
+      },
+      {
+        "Pin":14,
+        "ColourOrder":"GRBW",
+        "BusType":"SK6812_RGBW",
+        "Start":350,
+        "Length":127
+      }
+    ],
+    "Segment0": {
+      "Name":"Door Edge",
+      "PixelRange": [
+        0,
+        302
+      ],
+      "ColourPalette":"Pink White Purple Grad",
+      "Effects": {
+        "Function":"Gradient",
+        "Speed":127,
+        "Intensity":0,
+        "Grouping":1,
+        "RateMs": 1000
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 100
+    },
+    "Segment1": {
+      "Name":"Door Edge",
+      "PixelRange": [
+        302,
+        350
+      ],
+      "ColourPalette":"Rainbow 16",
+      "Effects": {
+        "Function":"Wipe Over",
+        "Speed":200,
+        "Intensity":127,
+        "Grouping":1,
+        "RateMs": 20
+      },
+      "SegColour0": {
+        "Hue": 0,
+        "Sat":100,
+        "BrightnessRGB":0
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 100
+    },
+    "Segment2": {
+      "Name":"Door Edge",
+      "PixelRange": [
+        350,
+        477
+      ],
+      "ColourPalette":"Colour 01",
+      "Effects": {
+        "Function":"Solid",
+        "Speed":255,
+        "Intensity":255,
+        "Grouping":1,
+        "RateMs": 20
+      },
+      "SegColour0": {
+        "Hue": 25,
+        "Sat":100,
+        "BrightnessRGB":100
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 100
+    },
+    "BrightnessRGB": 100,
+    "BrightnessCCT": 0
+  }
+  )=====";
+
+
+  #define USE_MODULE_TEMPLATE
+  DEFINE_PGM_CTR(MODULE_TEMPLATE) 
+  "{"
+    "\"" D_NAME         "\":\"" DEVICENAME_CTR "\","
+    "\"" D_FRIENDLYNAME "\":\"" DEVICENAME_FRIENDLY_CTR "\","
+    "\"" D_GPIO_NUMBER "\":{"    
+      "\"12\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\""       // 3 pin out not being used
+      // "\"14\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\""         // unused top door
+      // "\"13\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      #ifdef USE_MODULE_SENSORS_BUTTONS
+      "\"35\":\"" D_GPIO_FUNCTION_KEY1_INV_CTR  "\","
+      "\"34\":\"" D_GPIO_FUNCTION_KEY2_INV_CTR  "\","
+      "\"0\":\"" D_GPIO_FUNCTION_KEY3_INV_CTR  "\""
+      #endif
+    "},"
+    "\"" D_BASE     "\":\"" D_MODULE_NAME_USERMODULE_CTR "\","
+    "\"" D_ROOMHINT "\":\"" DEVICENAME_ROOMHINT_CTR "\""
+  "}";
+
+  #endif //
+
+
+// dual output does not work yet, will cause crash. using 3 will invoke palellel methods (otherwise i2s is being used twoice)
+  #ifdef ENABLE_BUSCONFIG_3_OUTPUT_THREE_SEGMENTS
+
+  #define USE_LIGHTING_TEMPLATE
+  DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  R"=====(
+  {
+    "BusConfig":[
+      {
+        "Pin":13,
+        "ColourOrder":"GRB",
+        "BusType":"WS2812_RGB",
+        "Start":0,
+        "Length":350
+      },
+      {
+        "Pin":12,
+        "ColourOrder":"GRBW",
+        "BusType":"SK6812_RGBW",
+        "Start":350,
+        "Length":127
+      },
+      {
+        "Pin":14,
+        "ColourOrder":"GRB",
+        "BusType":"WS2812_RGB",
+        "Start":477,
+        "Length":16
+      }
+    ],
+    "Segment0": {
+      "PixelRange": [
+        0,
+        302
+      ],
+      "ColourPalette":"Pink White Purple Grad",
+      "Effects": {
+        "Function":"Gradient",
+        "Speed":127,
+        "Intensity":0,
+        "Grouping":1,
+        "RateMs": 1000
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 100
+    },
+    "Segment1": {
+      "PixelRange": [
+        302,
+        350
+      ],
+      "ColourPalette":"Rainbow 16",
+      "Effects": {
+        "Function":"Wipe Over",
+        "Speed":200,
+        "Intensity":127,
+        "Grouping":1,
+        "RateMs": 20
+      },
+      "SegColour1": {
+        "Hue": 0,
+        "Sat":100,
+        "BrightnessRGB":0
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 100
+    },
+    "Segment2": {
+      "PixelRange": [
+        350,
+        477
+      ],
+      "ColourPalette":"Colour 01",
+      "Effects": {
+        "Function":"Solid",
+        "Speed":255,
+        "RateMs": 20
+      },
+      "SegColour0": {
+        "Hue": 25,
+        "Sat":100
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 100
+    },
+    "Segment3": {
+      "PixelRange": [
+        477,
+        493
+      ],
+      "ColourPalette":"Colour 01",
+      "Effects": {
+        "Function":"Wipe Random",
+        "Speed":30,
+        "RateMs": 20
+      },
+      "SegColour1": {
+        "Hue": 25,
+        "Sat":100,
+        "BrightnessRGB":0
+      },
+      "BrightnessRGB": 100
+    },
+    "BrightnessRGB": 100
+  }
+  )=====";
+
+
+  #define USE_MODULE_TEMPLATE
+  DEFINE_PGM_CTR(MODULE_TEMPLATE) 
+  "{"
+    "\"" D_NAME         "\":\"" DEVICENAME_CTR "\","
+    "\"" D_FRIENDLYNAME "\":\"" DEVICENAME_FRIENDLY_CTR "\","
+    "\"" D_GPIO_NUMBER "\":{"    
+      // "\"12\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\""       // 3 pin out not being used
+      // "\"14\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\""         // unused top door
+      // "\"13\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      #ifdef USE_MODULE_SENSORS_BUTTONS
+      "\"35\":\"" D_GPIO_FUNCTION_KEY1_INV_CTR  "\","
+      "\"34\":\"" D_GPIO_FUNCTION_KEY2_INV_CTR  "\","
+      "\"0\":\"" D_GPIO_FUNCTION_KEY3_INV_CTR  "\""
+      #endif
+    "},"
+    "\"" D_BASE     "\":\"" D_MODULE_NAME_USERMODULE_CTR "\","
+    "\"" D_ROOMHINT "\":\"" DEVICENAME_ROOMHINT_CTR "\""
+  "}";
+
+  #endif //
+
+
+
+
+// dual output does not work yet, will cause crash. using 3 will invoke palellel methods (otherwise i2s is being used twoice)
+  #ifdef ENABLE_BUSCONFIG_2_OUTPUT_THREE_SEGMENTS_TESTER1
+
+  #define USE_LIGHTING_TEMPLATE
+  DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  R"=====(
+  {
+    "BusConfig":[
+      {
+        "Pin":13,
+        "ColourOrder":"GRB",
+        "BusType":"WS2812_RGB",
+        "Start":0,
+        "Length":350
+      },
+      {
+        "Pin":12,
+        "ColourOrder":"GRBW",
+        "BusType":"SK6812_RGBW",
+        "Start":350,
+        "Length":127
+      }
+    ],
+    "Segment0": {
+      "Name":"Door Edge",
+      "PixelRange": [
+        0,
+        302
+      ],
+      "ColourPalette":"Pink White Purple Grad",
+      "Effects": {
+        "Function":"Gradient",
+        "Speed":127,
+        "Intensity":0,
+        "Grouping":1,
+        "RateMs": 1000
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 100
+    },
+    "Segment1": {
+      "Name":"Bottom",
+      "PixelRange": [
+        302,
+        350
+      ],
+      "ColourPalette":"Rainbow 16",
+      "Effects": {
+        "Function":"Wipe Over",
+        "Speed":200,
+        "Intensity":127,
+        "Grouping":1,
+        "RateMs": 20
+      },
+      "SegColour1": {
+        "Hue": 0,
+        "Sat":100,
+        "BrightnessRGB":0
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 100
+    },
+    "Segment2": {
+      "Name":"Top",
+      "PixelRange": [
+        350,
+        477
+      ],
+      "ColourPalette":"Colour 01",
+      "ColourType":4,
+      "Effects": {
+        "Function":"Solid",
+        "Speed":255,
+        "RateMs": 20
+      },
+      "SegColour1": {
+        "Hue": 25,
+        "Sat":100,
+        "BrightnessRGB":0
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 100
+    },
+    "BrightnessRGB": 100
+  }
+  )=====";
+
+
+  #define USE_MODULE_TEMPLATE
+  DEFINE_PGM_CTR(MODULE_TEMPLATE) 
+  "{"
+    "\"" D_NAME         "\":\"" DEVICENAME_CTR "\","
+    "\"" D_FRIENDLYNAME "\":\"" DEVICENAME_FRIENDLY_CTR "\","
+    "\"" D_GPIO_NUMBER "\":{"    
+      // "\"12\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\""       // 3 pin out not being used
+      // "\"14\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\""         // unused top door
+      // "\"13\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      #ifdef USE_MODULE_SENSORS_BUTTONS
+      "\"35\":\"" D_GPIO_FUNCTION_KEY1_INV_CTR  "\","
+      "\"34\":\"" D_GPIO_FUNCTION_KEY2_INV_CTR  "\","
+      "\"0\":\"" D_GPIO_FUNCTION_KEY3_INV_CTR  "\""
+      #endif
+    "},"
+    "\"" D_BASE     "\":\"" D_MODULE_NAME_USERMODULE_CTR "\","
+    "\"" D_ROOMHINT "\":\"" DEVICENAME_ROOMHINT_CTR "\""
+  "}";
+
+  #endif //
+
+
 
   #ifdef ENABLE_BUSCONFIG_8X_2400
 

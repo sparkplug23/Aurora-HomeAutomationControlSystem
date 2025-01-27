@@ -34,8 +34,13 @@
     }
     void WDT_Reset(){
       // DEBUG_LINE_HERE;
-      if(timerwdt==nullptr){ DEBUG_LINE_HERE; }
+      if(timerwdt==nullptr){ 
+        DEBUG_LINE_HERE; 
+        WDT_Init(); 
+        DEBUG_LINE_HERE;
+      }
       timerWrite(timerwdt, 0); //reset timerwdt (feed watchdog)
+      DEBUG_LINE_HERE;
       // Serial.println("WDT_Reset");
     }
   #endif // ESP32

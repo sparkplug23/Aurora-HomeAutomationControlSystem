@@ -130,12 +130,12 @@ enum EM_BUS_TYPE
 #ifdef ARDUINO_ARCH_ESP32
   //RGB
   #ifdef DISABLE_RMT_METHODS
-  #define PIXELBUS_32_RN_3 NeoPixelBusLg<NeoRgbFeature, NeoEsp32I2s1800KbpsMethod, NeoGammaNullMethod>
+  #define PIXELBUS_32_RN_3 NeoPixelBusLg<NeoRgbFeature, NeoEsp32I2s0Sk6812Method, NeoGammaNullMethod>
   #else
   #define PIXELBUS_32_RN_3 NeoPixelBusLg<NeoRgbFeature, NeoEsp32RmtNWs2812xMethod, NeoGammaNullMethod>
   #endif
   #define PIXELBUS_32_I0_3 NeoPixelBusLg<NeoRgbFeature, NeoEsp32I2s0Sk6812Method, NeoGammaNullMethod>//NeoEsp32I2s0800KbpsMethod>NeoEsp32I2s0800KbpsMethod>
-  #define PIXELBUS_32_I1_3 NeoPixelBusLg<NeoRgbFeature, NeoEsp32I2s1800KbpsMethod, NeoGammaNullMethod>
+  #define PIXELBUS_32_I1_3 NeoPixelBusLg<NeoRgbFeature, NeoEsp32I2s1Sk6812Method, NeoGammaNullMethod>
   #define PIXELBUS_32_I1_3P NeoPixelBusLg<NeoRgbFeature, NeoEsp32I2s1X8Ws2812xMethod, NeoGammaNullMethod>
   #define PIXELBUS_32_I0_3P NeoPixelBusLg<NeoRgbFeature, NeoEsp32I2s0X16Ws2812xMethod, NeoGammaNullMethod>
   //RGBW
@@ -1086,16 +1086,19 @@ static uint32_t getPixelColor(void* busPtr, uint8_t busType, uint16_t pix, uint8
                   else // I0, I1, RMT0 to RMT7
                   {
                     if(num == 0){
-                      offset_method_inside_group = 1; // I2S1 preffered( RMT0, I2S0, I2S1)
+                      offset_method_inside_group = 1; // I2S0 preffered( RMT0, I2S0, I2S1)
+                      Serial.println("BUS DETECT: I2S0 preffered");
                     }else 
-                    if (num < 2) {
+                    if (num < 2) { // Channel 0 and 1, will be I2S0 and I2S1
                       offset_method_inside_group = num + 1; // +1 to skip RMT method
+                      Serial.printf("BUS DETECT: RMT num%d, busType%d\n\r", num, offset_method_inside_group);
                     } else if (num < 9) {
-                      offset_method_inside_group = num - 7;
+                      offset_method_inside_group = num; // Use RMT0 to 7
+                      Serial.printf("BUS DETECT: I2S num%d, busType%d\n\r", num, offset_method_inside_group);
                     } else {
                       return BUSTYPE__NONE__ID;
                     }
-                    Serial.printf("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^BUS DETECT: No Parallel num%d, busType%d\n\r", num, offset_method_inside_group);
+                    Serial.printf("BUS DETECT: No Parallel num%d, busType%d\n\r^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\r", num, offset_method_inside_group);
                   }
 
                 #else

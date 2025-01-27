@@ -7,19 +7,19 @@
 
 #define DATA_BUFFER_TOPIC_MAX_LENGTH    100
 
-#ifdef USE_MODULE_NETWORK_WEBSERVER
-  #ifndef DATA_BUFFER_PAYLOAD_MAX_LENGTH
-    #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 3000
-  #endif
-#else
-  #ifndef DATA_BUFFER_PAYLOAD_MAX_LENGTH
-    #ifdef ESP32
-      #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 3000
-    #else
-      #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 2000
-    #endif
-  #endif
-#endif //USE_MODULE_NETWORK_WEBSERVER
+// #ifdef USE_MODULE_NETWORK_WEBSERVER
+//   #ifndef DATA_BUFFER_PAYLOAD_MAX_LENGTH
+//     #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 3000
+//   #endif
+// #else
+//   #ifndef DATA_BUFFER_PAYLOAD_MAX_LENGTH
+//     #ifdef ESP32
+//       #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 3000
+//     #else
+//       #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 2000
+//     #endif
+//   #endif
+// #endif //USE_MODULE_NETWORK_WEBSERVER
 
 
 typedef union {

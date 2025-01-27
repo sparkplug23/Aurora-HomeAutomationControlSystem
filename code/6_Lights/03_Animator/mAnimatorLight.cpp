@@ -532,7 +532,7 @@ void mAnimatorLight::EveryLoop()
           if (channels > maxChannels) maxChannels  = channels;
         }
       }
-      DEBUG_PRINTF_P(PSTR("Maximum LEDs on a bus: %u\nDigital buses: %u\n"), maxLedsOnBus, digitalCount);
+      DEBUG_PRINTF_P(PSTR("Maximum LEDs on a bus: %u\n\rDigital buses: %u\n\r"), maxLedsOnBus, digitalCount);
       /**
        * Assign to use parallel only when pixels per bus are low, and channels are more than 2
        * Will use combined I2Sx2 + RMTx8 when pixels per bus are more than 300
@@ -540,12 +540,19 @@ void mAnimatorLight::EveryLoop()
        */
       if (maxLedsOnBus <= 300 && digitalCount > 2) 
       {  // I will want >2, as I0 and I1 are for 2 pins only, then immediately switch to parallel
-        DEBUG_PRINTF_P(PSTR("Switching to parallel I2S"));
+        DEBUG_PRINTF_P(PSTR("Switching to parallel I2S\n\r"));
         useParallel = true;
         pCONT_iLight->bus_manager->useParallelOutput(true);
         pCONT_iLight->bus_manager->setRequiredChannels(digitalCount);
         mem = BusManager::memUsage(maxChannels, maxLedsOnBus, 8); // use alternate memory calculation (hse to be used *after* useParallelOutput())
-      }else{
+      }else
+      if (maxLedsOnBus > 300 && digitalCount > 2) 
+      {
+        ALOG_ERR(PSTR("Parallel is required to avoid RMT, but per bus count exceeded. Using anyway for now (%d,%d)"), maxLedsOnBus, digitalCount);
+        pCONT_iLight->bus_manager->setRequiredChannels(digitalCount);
+        pCONT_iLight->bus_manager->useParallelOutput(true);
+      }
+      else{
         ALOG_INF(PSTR("Parallel is not required for %d channels"), digitalCount);
         pCONT_iLight->bus_manager->setRequiredChannels(digitalCount);
         pCONT_iLight->bus_manager->useParallelOutput(false);
@@ -5648,7 +5655,6 @@ void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(int i, uint32_t col)//, bo
   // Serial.printf("Segment::setPixelColor(%d, col %d,%d,%d\n\r", i, R(col), G(col), B(col));
   // #endif
 
-  DEBUG_LINE_HERE;
   if (!isActive() || i < 0) return; // not active or invalid index
 #ifndef WLED_DISABLE_2D
   int vStrip = 0;
@@ -6703,6 +6709,11 @@ uint8_t mAnimatorLight::ConstructJSON_Segments(uint8_t json_level, bool json_app
 
   JBI->Start();
 
+    uint8_t seg_count = getSegmentsNum();
+
+    JBI->Add("SegmentCount", seg_count);
+
+
     // JBI->Add("millis", millis());
 
     // for(uint8_t seg_i =0; seg_i < getSegmentsNum(); seg_i++)
@@ -6716,14 +6727,15 @@ uint8_t mAnimatorLight::ConstructJSON_Segments(uint8_t json_level, bool json_app
     // }
 
 
+
+
     JBI->Add("Brightness_Master",    pCONT_iLight->getBri_Global());
     JBI->Add("BrightnessRGB_Master", pCONT_iLight->getBriRGB_Global());
     JBI->Add("BrightnessCCT_Master", pCONT_iLight->getBriCCT_Global());
 
   JBI->Add("FPS", getFps());
 
-    uint8_t seg_count = getSegmentsNum();
-    seg_count = seg_count < 3 ? seg_count : 3; //limit memory overrun, or else later instead of reducing the seg count, reduce the data shared in another topic as overview
+    seg_count = seg_count < 4 ? seg_count : 4; //limit memory overrun, or else later instead of reducing the seg count, reduce the data shared in another topic as overview
 
     for(uint8_t seg_i =0; seg_i < seg_count; seg_i++)
     {
@@ -6753,13 +6765,16 @@ uint8_t mAnimatorLight::ConstructJSON_Segments(uint8_t json_level, bool json_app
           JBI->Add("On",           SEGMENT_I(seg_i).on);
           JBI->Add("Mirror",       SEGMENT_I(seg_i).mirror);
           JBI->Add("Freeze",       SEGMENT_I(seg_i).freeze);
-          JBI->Add("Reset",        SEGMENT_I(seg_i).reset);
-          JBI->Add("Transitional", SEGMENT_I(seg_i).transitional);
-          JBI->Add("Reverse_y",    SEGMENT_I(seg_i).reverse_y);
-          JBI->Add("Mirror_y",     SEGMENT_I(seg_i).mirror_y);
-          JBI->Add("Transpose",    SEGMENT_I(seg_i).transpose);
-          JBI->Add("Map1D2D",      SEGMENT_I(seg_i).map1D2D);
-          JBI->Add("SoundSim",     SEGMENT_I(seg_i).soundSim);
+          if(seg_i<3)
+          {
+            JBI->Add("Reset",        SEGMENT_I(seg_i).reset);
+            JBI->Add("Transitional", SEGMENT_I(seg_i).transitional);
+            JBI->Add("Reverse_y",    SEGMENT_I(seg_i).reverse_y);
+            JBI->Add("Mirror_y",     SEGMENT_I(seg_i).mirror_y);
+            JBI->Add("Transpose",    SEGMENT_I(seg_i).transpose);
+            JBI->Add("Map1D2D",      SEGMENT_I(seg_i).map1D2D);
+            JBI->Add("SoundSim",     SEGMENT_I(seg_i).soundSim);
+          }
         JBI->Object_End();
         JBI->Add("ColourType",     (uint8_t)SEGMENT_I(seg_i).colour_width__used_in_effect_generate);
         JBI->Object_Start("Transition");
