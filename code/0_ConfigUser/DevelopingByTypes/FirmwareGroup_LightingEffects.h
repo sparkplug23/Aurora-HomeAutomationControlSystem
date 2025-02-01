@@ -45,9 +45,9 @@
 
         
 //    ;;;;;;;;;;;; PAIRED DEVICES ;;;;;;;;;;;;;;;;  -- Multiple devices that are being tested together, sharing a common build method with slight changes
-// #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__BASE // "BASE" this device "60", has the following 3 built/running from it
+#define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__BASE // "BASE" this device "60", has the following 3 built/running from it
     // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__RGBWW // the buswrapper is rgbww enabled, so full 5 r+g+b+ww+cw possible. While most effects stay 32-bit, this enables getting colours from palette in 5 colour size, and some effects are full 5 colour possible
-    // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB  // buswrapper is limited to rgbw, effects may be rgbW or rgb only, 32-bit, white may be created in the effect, or generated automatically by the RGB parts.
+    #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB  // buswrapper is limited to rgbw, effects may be rgbW or rgb only, 32-bit, white may be created in the effect, or generated automatically by the RGB parts.
     // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB_MATRIX16X16 // same as previous, but figuring out how to work on 2d 16x16 matrix. So will be getting the matrix setup working, and 2d effects testing
     // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__RGB_PEBBLES  // RGB only, most common type I used, get the 8port tester and make 8 200 led white sections. Aim is to ensure larger "strings" will work as planned
     // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB_2X
@@ -9069,111 +9069,6 @@ typedef uint32_t ColourBaseType;
 #ifdef DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB 
 
   #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 4000
-
-  
-  // #define USE_LIGHTING_TEMPLATE
-  // DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
-  // R"=====(
-  // {
-  //   "BusConfig":[
-  //     {
-  //       "Pin":13,
-  //       "ColourOrder":"GRB",
-  //       "BusType":"WS2812_RGB",
-  //       "Start":0,
-  //       "Length":350
-  //     },
-  //     {
-  //       "Pin":12,
-  //       "ColourOrder":"GRBW",
-  //       "BusType":"SK6812_RGBW",
-  //       "Start":350,
-  //       "Length":127
-  //     },
-  //     {
-  //       "Pin":14,
-  //       "ColourOrder":"GRB",
-  //       "BusType":"WS2812_RGB",
-  //       "Start":477,
-  //       "Length":16
-  //     }
-  //   ],
-  //   "Segment0": {
-  //     "PixelRange": [
-  //       0,
-  //       302
-  //     ],
-  //     "ColourPalette":"Pink White Purple Grad",
-  //     "Effects": {
-  //       "Function":"Gradient",
-  //       "Speed":127,
-  //       "Intensity":0,
-  //       "Grouping":1,
-  //       "RateMs": 1000
-  //     },
-  //     "BrightnessRGB": 100,
-  //     "BrightnessCCT": 100
-  //   },
-  //   "Segment1": {
-  //     "PixelRange": [
-  //       302,
-  //       350
-  //     ],
-  //     "ColourPalette":"Rainbow 16",
-  //     "Effects": {
-  //       "Function":"Wipe Over",
-  //       "Speed":200,
-  //       "Intensity":127,
-  //       "Grouping":1,
-  //       "RateMs": 20
-  //     },
-  //     "SegColour0": {
-  //       "Hue": 0,
-  //       "Sat":100
-  //     },
-  //     "BrightnessRGB": 100,
-  //     "BrightnessCCT": 100
-  //   },
-  //   "Segment2": {
-  //     "PixelRange": [
-  //       350,
-  //       477
-  //     ],
-  //     "ColourPalette":"Colour 01",
-  //     "Effects": {
-  //       "Function":"Solid",
-  //       "Speed":255,
-  //       "RateMs": 20
-  //     },
-  //     "SegColour0": {
-  //       "Hue": 25,
-  //       "Sat":100
-  //     },
-  //     "BrightnessRGB": 100,
-  //     "BrightnessCCT": 100
-  //   },
-  //   "Segment3": {
-  //     "PixelRange": [
-  //       477,
-  //       493
-  //     ],
-  //     "ColourPalette":"Colour 01",
-  //     "Effects": {
-  //       "Function":"Wipe Random",
-  //       "Speed":255,
-  //       "RateMs": 20
-  //     },
-  //     "SegColour0": {
-  //       "Hue": 25,
-  //       "Sat":100
-  //     },
-  //     "BrightnessRGB": 100
-  //   },
-  //   "BrightnessRGB": 100
-  // }
-  // )=====";
-
-
 
   #define USE_LIGHTING_TEMPLATE
   DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 

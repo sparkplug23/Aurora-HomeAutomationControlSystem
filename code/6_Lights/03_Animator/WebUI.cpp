@@ -638,6 +638,32 @@ void mAnimatorLight::parseNumber(const char* str, byte* val, byte minv, byte max
 }
 
 
+
+static size_t printSetFormInput(Print& settingsScript, const char* key, const char* selector, int value) {
+  return settingsScript.printf_P(PSTR("d.Sf.%s.%s=%d;"), key, selector, value);
+}
+
+size_t mAnimatorLight::printSetFormCheckbox(Print& settingsScript, const char* key, int val) {
+  return printSetFormInput(settingsScript, key, PSTR("checked"), val);
+}
+size_t mAnimatorLight::printSetFormValue(Print& settingsScript, const char* key, int val) {
+  return printSetFormInput(settingsScript, key, PSTR("value"), val);
+}
+size_t mAnimatorLight::printSetFormIndex(Print& settingsScript, const char* key, int index) {
+  return printSetFormInput(settingsScript, key, PSTR("selectedIndex"), index);
+}
+
+size_t mAnimatorLight::printSetFormValue(Print& settingsScript, const char* key, const char* val) {
+  return settingsScript.printf_P(PSTR("d.Sf.%s.value=\"%s\";"),key,val);
+}
+
+size_t mAnimatorLight::printSetClassElementHTML(Print& settingsScript, const char* key, const int index, const char* val) {
+  return settingsScript.printf_P(PSTR("d.getElementsByClassName(\"%s\")[%d].innerHTML=\"%s\";"), key, index, val);
+}
+
+
+
+
 bool mAnimatorLight::getVal(JsonVariant elem, byte* val, byte vmin, byte vmax) {
   if (elem.is<int>()) {
 		if (elem < 0) return false; //ignore e.g. {"ps":-1}
@@ -2887,6 +2913,9 @@ void mAnimatorLight::serveJson(AsyncWebServerRequest* request)
 
 void mAnimatorLight::serveSettingsJS(AsyncWebServerRequest* request)
 {
+
+  ALOG_INF(PSTR("serveSettingsJS url %s"), request->url().c_str());
+
   static const char _common_js[] PROGMEM = "/common.js";
   if (request->url().indexOf(FPSTR(_common_js)) > 0) {
     tkr_web->handleStaticContent(request, FPSTR(_common_js), 200, FPSTR(CONTENT_TYPE_JAVASCRIPT), JS_common, JS_common_length);
@@ -2904,6 +2933,7 @@ void mAnimatorLight::serveSettingsJS(AsyncWebServerRequest* request)
   // }
   
   #ifdef ENABLE_FEATURE_LIGHTING__XML_REQUESTS
+
   AsyncResponseStream *response = request->beginResponseStream(FPSTR(CONTENT_TYPE_JAVASCRIPT));
   response->addHeader(F("Cache-Control"), F("no-store"));
   response->addHeader(F("Expires"), F("0"));
@@ -2912,6 +2942,7 @@ void mAnimatorLight::serveSettingsJS(AsyncWebServerRequest* request)
   getSettingsJS(subPage, *response);
   response->print(F("}"));
   request->send(response);
+
   #else // old way to be replaced
 
   char buf[SETTINGS_STACK_BUF_SIZE+37];
@@ -3110,7 +3141,7 @@ void mAnimatorLight::WebPage_Root_AddHandlers()
     tkr_web->handleStaticContent(request, FPSTR(_common_js), 200, FPSTR(CONTENT_TYPE_JAVASCRIPT), JS_common, JS_common_length);
   });
 
-  //settings page
+  //settings page for LEDs, UI, sync, time, security, usermods, update
   tkr_web->server->on("/settings", HTTP_GET, [this](AsyncWebServerRequest *request){
     this->serveSettings(request);
   });

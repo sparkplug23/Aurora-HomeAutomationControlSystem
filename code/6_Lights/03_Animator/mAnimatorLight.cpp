@@ -7581,7 +7581,6 @@ void mAnimatorLight::MQTTHandler_Init()
 #define UDP_IN_MAXSIZE 1472
 #define PRESUMED_NETWORK_DELAY 3 //how many ms could it take on avg to reach the receiver? This will be added to transmitted times
 
-#define Network WiFi
 
 
 void realtimeLock2(uint32_t timeoutMs, byte md);

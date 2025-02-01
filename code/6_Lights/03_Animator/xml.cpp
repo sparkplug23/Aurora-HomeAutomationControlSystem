@@ -10,7 +10,7 @@
 //build XML response to HTTP /win API request
 void mAnimatorLight::XML_response(Print& dest)
 {
-  dest.printf_P(PSTR("<?xml version=\"1.0\" ?><vs><ac>%d</ac>"), (nightlightActive && nightlightMode > NL_MODE_SET) ? briT : bri);
+  dest.printf_P(PSTR("<?xml version=\"1.0\" ?><vs><ac>%d</ac>"), (nightlightActive && nightlightMode > NL_MODE_SET) ? briT : getBrightness());
   for (int i = 0; i < 3; i++)
   {
    dest.printf_P(PSTR("<cl>%d</cl>"), col[i]);
@@ -22,13 +22,13 @@ void mAnimatorLight::XML_response(Print& dest)
   dest.printf_P(PSTR("<ns>%d</ns><nr>%d</nr><nl>%d</nl><nf>%d</nf><nd>%d</nd><nt>%d</nt><fx>%d</fx><sx>%d</sx><ix>%d</ix><fp>%d</fp><wv>%d</wv><ws>%d</ws><ps>%d</ps><cy>%d</cy><ds>%s%s</ds><ss>%d</ss></vs>"),
     notifyDirect, receiveGroups!=0, nightlightActive, nightlightMode > NL_MODE_SET, nightlightDelayMins,
     nightlightTargetBri, effectCurrent, effectSpeed, effectIntensity, effectPalette,
-    strip.hasWhiteChannel() ? col[3] : -1, colSec[3], currentPreset, currentPlaylist >= 0,
+    hasWhiteChannel() ? col[3] : -1, colSec[3], currentPreset, currentPlaylist >= 0,
     serverDescription, realtimeMode ? PSTR(" (live)") : "",
-    strip.getFirstSelectedSegId()
+    getFirstSelectedSegId()
   );
 }
 
-static void extractPin(Print& settingsScript, JsonObject &obj, const char *key) {
+void mAnimatorLight::extractPin(Print& settingsScript, JsonObject &obj, const char *key) {
   if (obj[key].is<JsonArray>()) {
     JsonArray pins = obj[key].as<JsonArray>();
     for (JsonVariant pv : pins) {
@@ -40,7 +40,7 @@ static void extractPin(Print& settingsScript, JsonObject &obj, const char *key) 
 }
 
 // print used pins by scanning JsonObject (1 level deep)
-static void mAnimatorLight::fillUMPins(Print& settingsScript, JsonObject &mods)
+void mAnimatorLight::fillUMPins(Print& settingsScript, JsonObject &mods)
 {
   for (JsonPair kv : mods) {
     // kv.key() is usermod name or subobject key
@@ -76,6 +76,10 @@ static void mAnimatorLight::fillUMPins(Print& settingsScript, JsonObject &mods)
 
 void mAnimatorLight::appendGPIOinfo(Print& settingsScript) {
   settingsScript.print(F("d.um_p=[-1")); // has to have 1 element
+
+  int i2c_sda = -1, i2c_scl = -1; //WLED FIX
+  int spi_mosi = -1, spi_sclk = -1; //WLED FIX
+
   if (i2c_sda > -1 && i2c_scl > -1) {
     settingsScript.printf_P(PSTR(",%d,%d"), i2c_sda, i2c_scl);
   }
@@ -86,7 +90,7 @@ void mAnimatorLight::appendGPIOinfo(Print& settingsScript) {
   if (requestJSONBufferLock(6)) {
     // if we can't allocate JSON buffer ignore usermod pins
     JsonObject mods = pDoc->createNestedObject("um");
-    UsermodManager::addToConfig(mods);
+    // UsermodManager::addToConfig(mods);
     if (!mods.isNull()) fillUMPins(settingsScript, mods);
     releaseJSONBufferLock();
   }
@@ -95,8 +99,9 @@ void mAnimatorLight::appendGPIOinfo(Print& settingsScript) {
   // add reserved (unusable) pins
   bool firstPin = true;
   settingsScript.print(F("d.rsvd=["));
+  int WLED_NUM_PINS = 2; // WLED FIX
   for (unsigned i = 0; i < WLED_NUM_PINS; i++) {
-    if (!PinManager::isPinOk(i, false)) {  // include readonly pins
+    if (0){//!PinManager::isPinOk(i, false)) {  // include readonly pins
       if (!firstPin) settingsScript.print(',');
       settingsScript.print(i);
       firstPin = false;
@@ -109,6 +114,7 @@ void mAnimatorLight::appendGPIOinfo(Print& settingsScript) {
   #endif
   #if defined(WLED_DEBUG) && !defined(WLED_DEBUG_HOST)
   if (!firstPin) settingsScript.print(',');
+  int hardwareTX = -1; // WLED FIX
   settingsScript.print(hardwareTX); // debug output (TX) pin
   firstPin = false;
   #endif
@@ -139,7 +145,7 @@ void mAnimatorLight::appendGPIOinfo(Print& settingsScript) {
   settingsScript.print(F("d.ro_gpio=["));
   firstPin = true;
   for (unsigned i = 0; i < WLED_NUM_PINS; i++) {
-    if (PinManager::isReadOnlyPin(i)) {
+    if (0){//PinManager::isReadOnlyPin(i)) {
       // No comma before the first pin
       if (!firstPin) settingsScript.print(',');
       settingsScript.print(i);
@@ -174,26 +180,28 @@ void mAnimatorLight::getSettingsJS(byte subPage, Print& settingsScript)
   if (subPage == SUBPAGE_WIFI)
   {
     size_t l;
-    settingsScript.printf_P(PSTR("resetWiFi(%d);"), WLED_MAX_WIFI_COUNT);
-    for (size_t n = 0; n < multiWiFi.size(); n++) {
-      l = strlen(multiWiFi[n].clientPass);
-      char fpass[l+1]; //fill password field with ***
-      fpass[l] = 0;
-      memset(fpass,'*',l);
-      settingsScript.printf_P(PSTR("addWiFi(\"%s\",\"%s\",0x%X,0x%X,0x%X);"),
-        multiWiFi[n].clientSSID,
-        fpass,
-        (uint32_t) multiWiFi[n].staticIP, // explicit cast required as this is a struct
-        (uint32_t) multiWiFi[n].staticGW,
-        (uint32_t) multiWiFi[n].staticSN);
-    }
+    settingsScript.printf_P(PSTR("resetWiFi(%d);"), 0);//WLED_MAX_WIFI_COUNT);
+    // for (size_t n = 0; n < multiWiFi.size(); n++) {
+    //   l = strlen(multiWiFi[n].clientPass);
+    //   char fpass[l+1]; //fill password field with ***
+    //   fpass[l] = 0;
+    //   memset(fpass,'*',l);
+    //   settingsScript.printf_P(PSTR("addWiFi(\"%s\",\"%s\",0x%X,0x%X,0x%X);"),
+    //     multiWiFi[n].clientSSID,
+    //     fpass,
+    //     (uint32_t) multiWiFi[n].staticIP, // explicit cast required as this is a struct
+    //     (uint32_t) multiWiFi[n].staticGW,
+    //     (uint32_t) multiWiFi[n].staticSN);
+    // }
+
+    IPAddress dnsAddress = IPAddress(8,8,8,8);
 
     printSetFormValue(settingsScript,PSTR("D0"),dnsAddress[0]);
     printSetFormValue(settingsScript,PSTR("D1"),dnsAddress[1]);
     printSetFormValue(settingsScript,PSTR("D2"),dnsAddress[2]);
     printSetFormValue(settingsScript,PSTR("D3"),dnsAddress[3]);
 
-    printSetFormValue(settingsScript,PSTR("CM"),cmDNS);
+    printSetFormValue(settingsScript,PSTR("CM"), tkr_web->cmDNS);
     printSetFormIndex(settingsScript,PSTR("AB"),apBehavior);
     printSetFormValue(settingsScript,PSTR("AS"),apSSID);
     printSetFormCheckbox(settingsScript,PSTR("AH"),apHide);
@@ -202,20 +210,20 @@ void mAnimatorLight::getSettingsJS(byte subPage, Print& settingsScript)
     char fapass[l+1]; //fill password field with ***
     fapass[l] = 0;
     memset(fapass,'*',l);
-    printSetFormValue(settingsScript,PSTR("AP"),fapass);
+    printSetFormValue(settingsScript,PSTR("AP"),0);//fapass);
 
-    printSetFormValue(settingsScript,PSTR("AC"),apChannel);
+    printSetFormValue(settingsScript,PSTR("AC"),0);//apChannel);
     #ifdef ARDUINO_ARCH_ESP32
-    printSetFormValue(settingsScript,PSTR("TX"),txPower);
+    printSetFormValue(settingsScript,PSTR("TX"),0);//txPower);
     #else
     settingsScript.print(F("gId('tx').style.display='none';"));
     #endif
-    printSetFormCheckbox(settingsScript,PSTR("FG"),force802_3g);
-    printSetFormCheckbox(settingsScript,PSTR("WS"),noWifiSleep);
+    printSetFormCheckbox(settingsScript,PSTR("FG"),0);//force802_3g);
+    printSetFormCheckbox(settingsScript,PSTR("WS"),0);//noWifiSleep);
 
     #ifndef WLED_DISABLE_ESPNOW
-    printSetFormCheckbox(settingsScript,PSTR("RE"),enableESPNow);
-    printSetFormValue(settingsScript,PSTR("RMAC"),linked_remote);
+    printSetFormCheckbox(settingsScript,PSTR("RE"),0);//,enableESPNow);
+    printSetFormValue(settingsScript,PSTR("RMAC"),0);//,linked_remote);
     #else
     //hide remote settings if not compiled
     settingsScript.print(F("toggle('ESPNOW');"));  // hide ESP-NOW setting
@@ -257,7 +265,7 @@ void mAnimatorLight::getSettingsJS(byte subPage, Print& settingsScript)
     #ifndef WLED_DISABLE_ESPNOW
     if (strlen(last_signal_src) > 0) { //Have seen an ESP-NOW Remote
       printSetClassElementHTML(settingsScript,PSTR("rlid"),0,last_signal_src);
-    } else if (!enableESPNow) {
+    } else if (!0){//enableESPNow) {
       printSetClassElementHTML(settingsScript,PSTR("rlid"),0,(char*)F("(Enable ESP-NOW to listen)"));
     } else {
       printSetClassElementHTML(settingsScript,PSTR("rlid"),0,(char*)F("None"));
@@ -267,6 +275,9 @@ void mAnimatorLight::getSettingsJS(byte subPage, Print& settingsScript)
 
   if (subPage == SUBPAGE_LEDS)
   {
+    
+    #ifdef ENABLE_FEATURE_LIGHTING__XML_REQUESTS__SUBPAGE_LEDS
+
     appendGPIOinfo(settingsScript);
 
     settingsScript.printf_P(PSTR("d.ledTypes=%s;"), BusManager::getLEDTypesJSONString().c_str());
@@ -277,20 +288,20 @@ void mAnimatorLight::getSettingsJS(byte subPage, Print& settingsScript)
       WLED_MIN_VIRTUAL_BUSSES,
       MAX_LEDS_PER_BUS,
       MAX_LED_MEMORY,
-      MAX_LEDS,
+      MAX_LEDS_NEO,
       WLED_MAX_COLOR_ORDER_MAPPINGS,
       WLED_MAX_DIGITAL_CHANNELS,
       WLED_MAX_ANALOG_CHANNELS
     );
 
-    printSetFormCheckbox(settingsScript,PSTR("MS"),strip.autoSegments);
-    printSetFormCheckbox(settingsScript,PSTR("CCT"),strip.correctWB);
-    printSetFormCheckbox(settingsScript,PSTR("IC"),cctICused);
-    printSetFormCheckbox(settingsScript,PSTR("CR"),strip.cctFromRgb);
-    printSetFormValue(settingsScript,PSTR("CB"),strip.cctBlending);
-    printSetFormValue(settingsScript,PSTR("FR"),strip.getTargetFps());
+    printSetFormCheckbox(settingsScript,PSTR("MS"),autoSegments);
+    printSetFormCheckbox(settingsScript,PSTR("CCT"),correctWB);
+    printSetFormCheckbox(settingsScript,PSTR("IC"),0);//cctICused);
+    printSetFormCheckbox(settingsScript,PSTR("CR"),cctFromRgb);
+    printSetFormValue(settingsScript,PSTR("CB"),cctBlending);
+    printSetFormValue(settingsScript,PSTR("FR"),getTargetFps());
     printSetFormValue(settingsScript,PSTR("AW"),Bus::getGlobalAWMode());
-    printSetFormCheckbox(settingsScript,PSTR("LD"),useGlobalLedBuffer);
+    printSetFormCheckbox(settingsScript,PSTR("LD"),0);//useGlobalLedBuffer);
 
     unsigned sumMa = 0;
     for (int s = 0; s < BusManager::getNumBusses(); s++) {
@@ -315,7 +326,7 @@ void mAnimatorLight::getSettingsJS(byte subPage, Print& settingsScript)
       int nPins = bus->getPins(pins);
       for (int i = 0; i < nPins; i++) {
         lp[1] = offset+i;
-        if (PinManager::isPinOk(pins[i]) || bus->isVirtual()) printSetFormValue(settingsScript,lp,pins[i]);
+        if (1/*PinManager::isPinOk(pins[i])*/ || bus->isVirtual()) printSetFormValue(settingsScript,lp,pins[i]);
       }
       printSetFormValue(settingsScript,lc,bus->getLength());
       printSetFormValue(settingsScript,lt,bus->getType());
@@ -374,14 +385,14 @@ void mAnimatorLight::getSettingsJS(byte subPage, Print& settingsScript)
     printSetFormCheckbox(settingsScript,PSTR("TF"),fadeTransition);
     printSetFormCheckbox(settingsScript,PSTR("EB"),modeBlending);
     printSetFormValue(settingsScript,PSTR("TD"),transitionDelayDefault);
-    printSetFormCheckbox(settingsScript,PSTR("PF"),strip.paletteFade);
+    printSetFormCheckbox(settingsScript,PSTR("PF"),paletteFade);
     printSetFormValue(settingsScript,PSTR("TP"),randomPaletteChangeTime);
     printSetFormCheckbox(settingsScript,PSTR("TH"),useHarmonicRandomPalette);
     printSetFormValue(settingsScript,PSTR("BF"),briMultiplier);
     printSetFormValue(settingsScript,PSTR("TB"),nightlightTargetBri);
     printSetFormValue(settingsScript,PSTR("TL"),nightlightDelayMinsDefault);
     printSetFormValue(settingsScript,PSTR("TW"),nightlightMode);
-    printSetFormIndex(settingsScript,PSTR("PB"),strip.paletteBlend);
+    printSetFormIndex(settingsScript,PSTR("PB"),paletteBlend);
     printSetFormValue(settingsScript,PSTR("RL"),rlyPin);
     printSetFormCheckbox(settingsScript,PSTR("RM"),rlyMde);
     printSetFormCheckbox(settingsScript,PSTR("RO"),rlyOpenDrain);
@@ -395,6 +406,8 @@ void mAnimatorLight::getSettingsJS(byte subPage, Print& settingsScript)
     printSetFormValue(settingsScript,PSTR("IT"),irEnabled);
 #endif    
     printSetFormCheckbox(settingsScript,PSTR("MSO"),!irApplyToAllSelected);
+
+    #endif // ENABLE_FEATURE_LIGHTING__XML_REQUESTS__SUBPAGE_LEDS
   }
 
   if (subPage == SUBPAGE_UI)
@@ -405,6 +418,8 @@ void mAnimatorLight::getSettingsJS(byte subPage, Print& settingsScript)
 
   if (subPage == SUBPAGE_SYNC)
   {
+    #ifdef ENABLE_FEATURE_LIGHTING__XML_REQUESTS__SUBPAGE_SYNC
+
     printSetFormValue(settingsScript,PSTR("UP"),udpPort);
     printSetFormValue(settingsScript,PSTR("U2"),udpPort2);
   #ifndef WLED_DISABLE_ESPNOW
@@ -568,6 +583,8 @@ void mAnimatorLight::getSettingsJS(byte subPage, Print& settingsScript)
 				k[0] = 'E'; printSetFormValue(settingsScript,k,timerDayEnd[i]);
       }
     }
+
+    #endif // ENABLE_FEATURE_LIGHTING__XML_REQUESTS__SUBPAGE_SYNC
   }
 
   if (subPage == SUBPAGE_SEC)
@@ -581,7 +598,7 @@ void mAnimatorLight::getSettingsJS(byte subPage, Print& settingsScript)
     printSetFormCheckbox(settingsScript,PSTR("OW"),wifiLock);
     printSetFormCheckbox(settingsScript,PSTR("AO"),aOtaEnabled);
     char tmp_buf[128];
-    snprintf_P(tmp_buf,sizeof(tmp_buf),PSTR("WLED %s (build %d)"),versionString,VERSION);
+    snprintf_P(tmp_buf,sizeof(tmp_buf),PSTR("WLED %s (build %d)"),versionString, PROJECT_VERSION);
     printSetClassElementHTML(settingsScript,PSTR("sip"),0,tmp_buf);
     settingsScript.printf_P(PSTR("sd=\"%s\";"), serverDescription);
   }
@@ -617,20 +634,20 @@ void mAnimatorLight::getSettingsJS(byte subPage, Print& settingsScript)
   if (subPage == SUBPAGE_UM) //usermods
   {
     appendGPIOinfo(settingsScript);
-    settingsScript.printf_P(PSTR("numM=%d;"), UsermodManager::getModCount());
-    printSetFormValue(settingsScript,PSTR("SDA"),i2c_sda);
-    printSetFormValue(settingsScript,PSTR("SCL"),i2c_scl);
-    printSetFormValue(settingsScript,PSTR("MOSI"),spi_mosi);
-    printSetFormValue(settingsScript,PSTR("MISO"),spi_miso);
-    printSetFormValue(settingsScript,PSTR("SCLK"),spi_sclk);
-    settingsScript.printf_P(PSTR("addInfo('SDA','%d');"
-                 "addInfo('SCL','%d');"
-                 "addInfo('MOSI','%d');"
-                 "addInfo('MISO','%d');"
-                 "addInfo('SCLK','%d');"),
-      HW_PIN_SDA, HW_PIN_SCL, HW_PIN_DATASPI, HW_PIN_MISOSPI, HW_PIN_CLOCKSPI
-    );
-    UsermodManager::appendConfigData(settingsScript);
+    // settingsScript.printf_P(PSTR("numM=%d;"), UsermodManager::getModCount());
+    // printSetFormValue(settingsScript,PSTR("SDA"),i2c_sda);
+    // printSetFormValue(settingsScript,PSTR("SCL"),i2c_scl);
+    // printSetFormValue(settingsScript,PSTR("MOSI"),spi_mosi);
+    // printSetFormValue(settingsScript,PSTR("MISO"),spi_miso);
+    // printSetFormValue(settingsScript,PSTR("SCLK"),spi_sclk);
+    // settingsScript.printf_P(PSTR("addInfo('SDA','%d');"
+    //              "addInfo('SCL','%d');"
+    //              "addInfo('MOSI','%d');"
+    //              "addInfo('MISO','%d');"
+    //              "addInfo('SCLK','%d');"),
+    //   HW_PIN_SDA, HW_PIN_SCL, HW_PIN_DATASPI, HW_PIN_MISOSPI, HW_PIN_CLOCKSPI
+    // );
+    // UsermodManager::appendConfigData(settingsScript);
   }
 
   if (subPage == SUBPAGE_UPDATE) // update
@@ -644,38 +661,38 @@ void mAnimatorLight::getSettingsJS(byte subPage, Print& settingsScript)
     #else
       "esp8266",
     #endif
-      VERSION);
+      PROJECT_VERSION);
 
     printSetClassElementHTML(settingsScript,PSTR("sip"),0,tmp_buf);
   }
 
   if (subPage == SUBPAGE_2D) // 2D matrices
   {
-    printSetFormValue(settingsScript,PSTR("SOMP"),strip.isMatrix);
+    printSetFormValue(settingsScript,PSTR("SOMP"),isMatrix);
     #ifndef WLED_DISABLE_2D
     settingsScript.printf_P(PSTR("maxPanels=%d;resetPanels();"),WLED_MAX_PANELS);
-    if (strip.isMatrix) {
-      if(strip.panels>0){
-        printSetFormValue(settingsScript,PSTR("PW"),strip.panel[0].width); //Set generator Width and Height to first panel size for convenience
-        printSetFormValue(settingsScript,PSTR("PH"),strip.panel[0].height);
+    if (isMatrix) {
+      if(panels>0){
+        printSetFormValue(settingsScript,PSTR("PW"),panel[0].width); //Set generator Width and Height to first panel size for convenience
+        printSetFormValue(settingsScript,PSTR("PH"),panel[0].height);
       }
-      printSetFormValue(settingsScript,PSTR("MPC"),strip.panels);
+      printSetFormValue(settingsScript,PSTR("MPC"),panels);
       // panels
-      for (unsigned i=0; i<strip.panels; i++) {
+      for (unsigned i=0; i<panels; i++) {
         settingsScript.printf_P(PSTR("addPanel(%d);"), i);
         char pO[8] = { '\0' };
         snprintf_P(pO, 7, PSTR("P%d"), i);       // WLED_MAX_PANELS is 18 so pO will always only be 4 characters or less
         pO[7] = '\0';
         unsigned l = strlen(pO);
         // create P0B, P1B, ..., P63B, etc for other PxxX
-        pO[l] = 'B'; printSetFormValue(settingsScript,pO,strip.panel[i].bottomStart);
-        pO[l] = 'R'; printSetFormValue(settingsScript,pO,strip.panel[i].rightStart);
-        pO[l] = 'V'; printSetFormValue(settingsScript,pO,strip.panel[i].vertical);
-        pO[l] = 'S'; printSetFormCheckbox(settingsScript,pO,strip.panel[i].serpentine);
-        pO[l] = 'X'; printSetFormValue(settingsScript,pO,strip.panel[i].xOffset);
-        pO[l] = 'Y'; printSetFormValue(settingsScript,pO,strip.panel[i].yOffset);
-        pO[l] = 'W'; printSetFormValue(settingsScript,pO,strip.panel[i].width);
-        pO[l] = 'H'; printSetFormValue(settingsScript,pO,strip.panel[i].height);
+        pO[l] = 'B'; printSetFormValue(settingsScript,pO,panel[i].bottomStart);
+        pO[l] = 'R'; printSetFormValue(settingsScript,pO,panel[i].rightStart);
+        pO[l] = 'V'; printSetFormValue(settingsScript,pO,panel[i].vertical);
+        pO[l] = 'S'; printSetFormCheckbox(settingsScript,pO,panel[i].serpentine);
+        pO[l] = 'X'; printSetFormValue(settingsScript,pO,panel[i].xOffset);
+        pO[l] = 'Y'; printSetFormValue(settingsScript,pO,panel[i].yOffset);
+        pO[l] = 'W'; printSetFormValue(settingsScript,pO,panel[i].width);
+        pO[l] = 'H'; printSetFormValue(settingsScript,pO,panel[i].height);
       }
     }
     #else

@@ -566,7 +566,7 @@ class BusManager
         
     bool canAllShow();
 
-    Bus* getBus(uint8_t busNr);
+    static Bus* getBus(uint8_t busNr);
 
     uint16_t getTotalLength(); //semi-duplicate of strip.getLengthTotal() (though that just returns strip._length, calculated in finalizeInit())
 
@@ -577,6 +577,7 @@ class BusManager
 
     inline const ColorOrderMap& getColorOrderMap(){ return colorOrderMap; }
     static inline uint8_t getNumBusses(){return numBusses; }
+    static String getLEDTypesJSONString();
 
     
 
