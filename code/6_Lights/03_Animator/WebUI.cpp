@@ -639,7 +639,54 @@ void mAnimatorLight::parseNumber(const char* str, byte* val, byte minv, byte max
 
 
 
-static size_t printSetFormInput(Print& settingsScript, const char* key, const char* selector, int value) {
+
+//helper to get int value at a position in string
+int mAnimatorLight::getNumVal(const String* req, uint16_t pos)
+{
+  return req->substring(pos+3).toInt();
+}
+
+
+//getVal supports inc/decrementing and random ("X~Y(r|~[w][-][Z])" form)
+bool mAnimatorLight::getVal(JsonVariant elem, byte* val, byte vmin, byte vmax) {
+  if (elem.is<int>()) {
+		if (elem < 0) return false; //ignore e.g. {"ps":-1}
+    *val = elem;
+    return true;
+  } else if (elem.is<const char*>()) {
+    const char* str = elem;
+    size_t len = strnlen(str, 14);
+    if (len == 0 || len > 12) return false;
+    // fix for #3605 & #4346
+    // ignore vmin and vmax and use as specified in API
+    if (len > 3 && (strchr(str,'r') || strchr(str,'~') != strrchr(str,'~'))) vmax = vmin = 0; // we have "X~Y(r|~[w][-][Z])" form
+    // end fix
+    parseNumber(str, val, vmin, vmax);
+    return true;
+  }
+  return false; //key does not exist
+}
+
+
+bool mAnimatorLight::getBoolVal(JsonVariant elem, bool dflt) {
+  if (elem.is<const char*>() && elem.as<const char*>()[0] == 't') {
+    return !dflt;
+  } else {
+    return elem | dflt;
+  }
+}
+
+
+bool mAnimatorLight::updateVal(const char* req, const char* key, byte* val, byte minv, byte maxv)
+{
+  const char *v = strstr(req, key);
+  if (v) v += strlen(key);
+  else return false;
+  parseNumber(v, val, minv, maxv);
+  return true;
+}
+
+size_t mAnimatorLight::printSetFormInput(Print& settingsScript, const char* key, const char* selector, int value) {
   return settingsScript.printf_P(PSTR("d.Sf.%s.%s=%d;"), key, selector, value);
 }
 
@@ -664,20 +711,6 @@ size_t mAnimatorLight::printSetClassElementHTML(Print& settingsScript, const cha
 
 
 
-bool mAnimatorLight::getVal(JsonVariant elem, byte* val, byte vmin, byte vmax) {
-  if (elem.is<int>()) {
-		if (elem < 0) return false; //ignore e.g. {"ps":-1}
-    *val = elem;
-    return true;
-  } else if (elem.is<const char*>()) {
-    const char* str = elem;
-    size_t len = strnlen(str, 12);
-    if (len == 0 || len > 10) return false;
-    parseNumber(str, val, vmin, vmax);
-    return true;
-  }
-  return false; //key does not exist
-}
 
 #endif // ENABLE_DEVFEATURE_JSON__ASYNCJSON_V6
 
@@ -3015,7 +3048,9 @@ void mAnimatorLight::serveSettings(AsyncWebServerRequest* request, bool post)
 
   if (post) { //settings/set POST request, saving
 
-    // if (subPage != SUBPAGE_WIFI || !(wifiLock && otaLock)) handleSettingsSet(request, subPage);   // I should have this?
+    #ifdef ENABLE_FEATURE_LIGHTING__SETTINGS_URL_QUERY_PARAMETERS
+    if (subPage != SUBPAGE_WIFI || !(wifiLock && otaLock)) handleSettingsSet(request, subPage);   // I should have this?
+    #endif
 
     char s[32];
     char s2[45] = "";

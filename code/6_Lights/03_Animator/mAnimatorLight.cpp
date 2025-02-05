@@ -2365,6 +2365,17 @@ void mAnimatorLight::FileSystem_JsonAppend_Save_Module()
 }
 
 
+bool mAnimatorLight::isAsterisksOnly(const char* str, byte maxLen)
+{
+  for (unsigned i = 0; i < maxLen; i++) {
+    if (str[i] == 0) break;
+    if (str[i] != '*') return false;
+  }
+  //at this point the password contains asterisks only
+  return (str[0] != 0); //false on empty string
+}
+
+
 /**
  * @brief Blends between Rgbcct with 0 to 255 range
  * 

@@ -394,7 +394,7 @@ class BusDigital : public Bus {
     uint16_t getUsedCurrent() const override { return _milliAmpsTotal; }
     uint16_t getMaxCurrent() const override  { return _milliAmpsMax; }
     uint8_t  getInterfaceType() const override  { return _iType; }
-    void reinit();
+    void begin();
     void cleanup();
 
     static std::vector<LEDType> getLEDTypes();
@@ -575,7 +575,7 @@ class BusManager
       memcpy(&colorOrderMap, &com, sizeof(ColorOrderMap));
     }
 
-    inline const ColorOrderMap& getColorOrderMap(){ return colorOrderMap; }
+    static const ColorOrderMap& getColorOrderMap(){ return colorOrderMap; }
     static inline uint8_t getNumBusses(){return numBusses; }
     static String getLEDTypesJSONString();
 

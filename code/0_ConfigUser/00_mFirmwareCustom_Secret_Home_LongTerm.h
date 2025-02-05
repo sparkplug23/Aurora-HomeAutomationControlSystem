@@ -117,6 +117,7 @@ DSToilet
 */
 // #define DEVICE_CONSUMERUNIT
 // #define DEVICE_CONSUMERUNIT_25
+// #define DEVICE_CONSUMERUNIT_25_TESTER
 
 /**
 LivingRoom
@@ -4033,6 +4034,252 @@ Bathroom
 
 
 #endif
+
+
+
+
+/**
+ * @brief 
+ * 
+ * BME280 and BH1750? : Could have a sensor board where they leave the hole. Just design as I2C Daughter board
+ * Light version may not be worth it, since its next to the lights.A0
+ * 
+ * PIR (Install losely for now, have double sensors)
+ * 
+ * SK6812 144/m over door, 5V. Install with 3pin connector so its replaceable (solder short wires to connector)
+ * SK6812 mini along side of door, 5V. Install with 3pin connector so its replaceable (solder short wires to connector)
+ * 12 PZEM (Keep on old system for now)
+ * Button Board: 4 digital lines (2 are PWM controlling LEDs)
+ * 
+ * Will use a new "module" controller, to sequence the lights as notifications. 
+ *  ** Effect of notify
+ *  ** Will subscribe to motion topic wildcard
+ *  ** possibly divide the strip into segments, so it can show motion zones
+ *  ** Use "fade out" effect, so new motion makes section go full brightness, and then have it fade out over 5 seconds
+ * 
+ *                               *I ~PWM 'NC    
+ *                          _____________________
+ *                    3V3  |3V3     |USB|     VIN|
+ *                    GND  |GND               GND| 
+ *     Boot strapping pin  |15                 13| NEO0
+ *                         |2                  12| NEO1
+ *                         |4                  14| NEO2
+ *              NEXTION TX |RX2/17             27|
+ *              NEXTION RX |TX2/16             26|
+ *                         |5                  25|
+ *                         |18                 33|
+ *                         |19                 32|
+ *         Climate I2C_SDA |21               * 35|
+ *                         |RX0              * 34|
+ *                         |TX0              ' VN| 
+ *         Climate I2C_SCL |22               ' VP| 
+ *                         |23               ' EN| 
+ *                          _____________________
+ *                                      
+ * 
+ * 
+ * Using 4X red board to test sections
+ * 
+ */
+#ifdef DEVICE_CONSUMERUNIT_25_TESTER
+  #ifndef DEVICENAME_CTR
+  #define DEVICENAME_CTR          "consumerunit_25"
+  #endif
+  #ifndef DEVICENAME_FRIENDLY_CTR
+  #define DEVICENAME_FRIENDLY_CTR DEVICENAME_CTR
+  #endif
+  #ifndef DEVICENAME_DESCRIPTION_CTR
+  #define DEVICENAME_DESCRIPTION_CTR DEVICENAME_FRIENDLY_CTR
+  #endif
+  #define DEVICENAME_ROOMHINT_CTR "testgroup"
+  #define D_MQTTSERVER_IP_ADDRESS_COMMA_DELIMITED   "192.168.1.70"
+    #define MQTT_PORT     1883
+    
+
+    
+  /***********************************
+   * SECTION: System Debug Options
+  ************************************/    
+  ///////////////////////////////////////////// Enable Logs
+  // #define DISABLE_SERIAL
+  // #define DISABLE_SERIAL0_CORE
+  // #define DISABLE_SERIAL_LOGGING
+  #define ENABLE_DEBUG_MANUAL_DELAYS // permits blocking delays
+  
+  ///////////////////////////////////////////// System Logs
+  // #define ENABLE_ADVANCED_DEBUGGING
+  // #define ENABLE_FEATURE_EVERY_SECOND_SPLASH_UPTIME
+  // #define ENABLE_FEATURE_DEBUG_TASKER_INTERFACE_LOOP_TIMES
+  // #define ENABLE_DEBUG_FEATURE__TASKER_INTERFACE_SPLASH_LONG_LOOPS_WITH_MS 50
+  // #define ENABLE_DEBUG_FUNCTION_NAMES
+  // #define ENABLE_DEBUGFEATURE_WEBUI__SHOW_BUILD_DATETIME_IN_FOOTER
+  // #define SERIAL_LOG_LEVEL_DURING_BOOT 8
+  // #define ENABLE_DEBUG_LINE_HERE
+  // #define ENABLE_DEBUG_LINE_HERE2
+  // #define ENABLE_DEBUG_LINE_HERE3
+  // #define ENABLE_DEBUG_LINE_HERE_TRACE
+  // #define ENABLE_DEBUGFEATURE_TASKERMANAGER__ADVANCED_METRICS
+  // #define USE_DEBUG_PRINT
+  // #define ENABLE_DEBUGFEATURE_LOGS__FORCE_FLUSH_ON_TRANSMIT
+
+  ///////////////////////////////////////////// Module Logs
+  // #define ENABLE_DEVFEATURE__PIXEL_COLOUR_VALUE_IN_MULTIPIN_SHOW_LOGS  
+  #define ENABLE_FREERAM_APPENDING_SERIAL
+  
+  /***********************************
+   * SECTION: System Configs
+  ************************************/    
+ 
+  #define SETTINGS_HOLDER 1239
+
+  #define ENABLE_DEVFEATURE_STORAGE__SYSTEM_CONFIG__LOAD_WITH_TEMPLATES_OVERRIDE
+  #define ENABLE_DEVFEATURE_STORAGE__ANIMATION_PLAYLISTS
+  #define ENABLE_DEVFEATURE__SAVE_MODULE_DATA
+  #define ENABLE_DEVFEATURE__SAVE_CRITICAL_BOOT_DATA_FOR_DEBUG_BUT_ONLY_SPLASH_ON_BOOT_FOR_NOW__EG_SSID_MQTT_SERVER_IP_ADDRESS // until devices can reliably be used without compiling per device
+  #define ENABLE_DEVFEATURE_ADD_TIMESTAMP_ON_SAVE_FILES
+      
+  /***********************************
+   * SECTION: Network Configs
+  ************************************/    
+
+  #define ENABLE_DEVFEATURE_JSON__ASYNCJSON_V6
+  #define USE_MODULE_NETWORK_WEBSERVER
+  #define ENABLE_WEBSERVER_LIGHTING_WEBUI  
+
+  #define WLED_DEBUG
+
+  /***********************************
+   * SECTION: Sensor Configs
+  ************************************/  
+
+  // #define USE_MODULE_SENSORS_INTERFACE  
+  // #define USE_MODULE_SENSORS_BUTTONS
+  //   #define ENABLE_DEVFEATURE_BUTTON__V2
+    /**
+     * @brief 
+     * Button 1: Single button installs, means {"short":"iter over nice palettes", "long": "iter over 4 brightness levels"}
+     * Button 2: (Short) Two button installs, this button is iter common effects || (Long) starts a demo and debug mode
+     **/
+
+  /***********************************
+   * SECTION: Lighting Configs
+  ************************************/  
+ 
+  #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_JANUARY_2025
+
+  #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 4000
+
+  /***********************************
+   * SECTION: Lighting BusConfig Set
+  ************************************/  
+
+  #define USE_LIGHTING_TEMPLATE
+  DEFINE_PGM_CTR(LIGHTING_TEMPLATE) 
+  R"=====(
+  {
+    "BusConfig":[
+      {
+        "Pin":2,
+        "ColourOrder":"GRB",
+        "BusType":"WS2812_RGB",
+        "Start":0,
+        "Length":350
+      },
+      {
+        "Pin":4,
+        "ColourOrder":"GRBW",
+        "BusType":"SK6812_RGBW",
+        "Start":350,
+        "Length":127
+      }
+    ],
+    "Segment0": {
+      "Name":"Door Edge",
+      "PixelRange": [
+        0,
+        302
+      ],
+      "ColourPalette":"Pink White Purple Grad",
+      "Effects": {
+        "Function":"Gradient",
+        "Speed":127,
+        "Intensity":0,
+        "Grouping":1,
+        "RateMs": 1000
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 100
+    },
+    "Segment1": {
+      "Name":"Bottom",
+      "PixelRange": [
+        302,
+        350
+      ],
+      "ColourPalette":"Rainbow 16",
+      "Effects": {
+        "Function":"Wipe Over",
+        "Speed":200,
+        "Intensity":127,
+        "Grouping":1,
+        "RateMs": 20
+      },
+      "SegColour1": {
+        "Hue": 0,
+        "Sat":100,
+        "BrightnessRGB":0
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 100
+    },
+    "Segment2": {
+      "Name":"Top",
+      "PixelRange": [
+        350,
+        477
+      ],
+      "ColourPalette":"Colour 01",
+      "ColourType":4,
+      "Effects": {
+        "Function":"Solid",
+        "Speed":255,
+        "RateMs": 20
+      },
+      "SegColour1": {
+        "Hue": 25,
+        "Sat":100,
+        "BrightnessRGB":0
+      },
+      "BrightnessRGB": 100,
+      "BrightnessCCT": 100
+    },
+    "BrightnessRGB": 100
+  }
+  )=====";
+
+
+  #define USE_MODULE_TEMPLATE
+  DEFINE_PGM_CTR(MODULE_TEMPLATE) 
+  "{"
+    "\"" D_NAME         "\":\"" DEVICENAME_CTR "\","
+    "\"" D_FRIENDLYNAME "\":\"" DEVICENAME_FRIENDLY_CTR "\","
+    "\"" D_GPIO_NUMBER "\":{"    
+      // "\"12\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\""       // 3 pin out not being used
+      // "\"14\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\""         // unused top door
+      // "\"13\":\"" D_GPIO_FUNCTION_UNUSED_FORCED_HIGH_CTR   "\","
+      #ifdef USE_MODULE_SENSORS_BUTTONS
+      "\"35\":\"" D_GPIO_FUNCTION_KEY1_INV_CTR  "\","
+      "\"34\":\"" D_GPIO_FUNCTION_KEY2_INV_CTR  "\","
+      "\"0\":\"" D_GPIO_FUNCTION_KEY3_INV_CTR  "\""
+      #endif
+    "},"
+    "\"" D_BASE     "\":\"" D_MODULE_NAME_USERMODULE_CTR "\","
+    "\"" D_ROOMHINT "\":\"" DEVICENAME_ROOMHINT_CTR "\""
+  "}";
+
+
+#endif
+
 
 
 /**************************************************************************************************************************************************

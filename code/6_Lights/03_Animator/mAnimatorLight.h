@@ -511,9 +511,9 @@ char releaseString[7] = WLED_RELEASE_NAME; // must include the quotes when defin
     #ifdef ENABLE_DEVFEATURE_CREATE_MINIMAL_BUSSES_SINGLE_OUTPUT
     byte correctionRGB[4] = {0,0,0,0};
     uint16_t lastKelvin = 0;
-    void colorKtoRGB(uint16_t kelvin, byte* rgb);
+    static void colorKtoRGB(uint16_t kelvin, byte* rgb);
     uint32_t colorBalanceFromKelvin(uint16_t kelvin, uint32_t rgb);
-    uint16_t approximateKelvinFromRGB(uint32_t rgb);
+    static uint16_t approximateKelvinFromRGB(uint32_t rgb);
     #endif // ENABLE_DEVFEATURE_CREATE_MINIMAL_BUSSES_SINGLE_OUTPUT
 
     unsigned long presetsModifiedTime = 0;
@@ -694,6 +694,12 @@ bool correctPIN     _INIT(true);
 unsigned long lastEditTime _INIT(0);
 
 
+uint16_t userVar0 _INIT(0), userVar1 _INIT(0); //available for use in usermod
+
+// countdown
+unsigned long countdownTime _INIT(1514764800L);
+bool countdownOverTriggered _INIT(true);
+
 //timer
 byte lastTimerMinute  _INIT(0);
 byte timerHours[]     _INIT_N(({ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }));
@@ -808,12 +814,13 @@ inline uint32_t color_blend(uint32_t color1, uint32_t color2, uint8_t blend) {
     #endif // ENABLE_DEVFEATURE_LIGHTING__PLAYLISTS
 
 
-    #ifdef ENABLE_DEVFEATURE_LIGHTING__SETTINGS
-    //set.cpp
     bool isAsterisksOnly(const char* str, byte maxLen);
+
+
+    #ifdef ENABLE_FEATURE_LIGHTING__SETTINGS_URL_QUERY_PARAMETERS
     void handleSettingsSet(AsyncWebServerRequest *request, byte subPage);
     bool handleSet(AsyncWebServerRequest *request, const String& req, bool apply=true);
-    #endif // ENABLE_DEVFEATURE_LIGHTING__SETTINGS
+    #endif // ENABLE_FEATURE_LIGHTING__SETTINGS_URL_QUERY_PARAMETERS
 
     /******************************************************************************************************************************************************************************
     *******************************************************************************************************************************************************************************
@@ -2897,7 +2904,7 @@ typedef struct Segment
 
     void setRandomColor(byte* rgb);
     void colorHStoRGB(uint16_t hue, byte sat, byte* rgb);
-    void colorKtoRGB(uint16_t kelvin, byte* rgb);
+    void colorKtoRGB(uint16_t kelvin, byte* rgb);    
     void colorCTtoRGB(uint16_t mired, byte* rgb);
     void colorXYtoRGB(float x, float y, byte* rgb);
     void colorRGBtoXY(byte* rgb, float* xy);
@@ -3921,7 +3928,24 @@ inline uint32_t HueSatBrt(uint16_t hue, uint8_t sat, uint8_t brt, bool white_fro
 
     void estimateCurrentAndLimitBri(void);
 
+    
+    
+    
+// network time
+#ifndef WLED_LAT
+  #define WLED_LAT 0.0f
+#endif
+#ifndef WLED_LON
+  #define WLED_LON 0.0f
+#endif
+ float longitude _INIT(WLED_LON);
+ float latitude _INIT(WLED_LAT);
+ time_t sunrise _INIT(0);
+ time_t sunset _INIT(0);
     Toki toki = Toki();
+
+
+
     WiFiUDP notifierUdp, rgbUdp, notifier2Udp;
     bool e131NewData = false;
     byte currentPreset = 0;
@@ -4089,16 +4113,18 @@ void setPaletteColors(JsonArray json, CRGBPalette16 palette);
 
 bool deserializeSegment(JsonObject elem, byte it, byte presetId = 0);
 
+int getNumVal(const String* req, uint16_t pos);
 void parseNumber(const char* str, byte* val, byte minv=0, byte maxv=255);
 bool getVal(JsonVariant elem, byte* val, byte minv=0, byte maxv=255);
-
-
+bool getBoolVal(JsonVariant elem, bool dflt);
+bool updateVal(const char* req, const char* key, byte* val, byte minv=0, byte maxv=255);
 size_t printSetFormCheckbox(Print& settingsScript, const char* key, int val);
 size_t printSetFormValue(Print& settingsScript, const char* key, int val);
 size_t printSetFormIndex(Print& settingsScript, const char* key, int index);
 size_t printSetFormValue(Print& settingsScript, const char* key, const char* val);
 size_t printSetClassElementHTML(Print& settingsScript, const char* key, const int index, const char* val);
 
+size_t printSetFormInput(Print& settingsScript, const char* key, const char* selector, int value) ;
 
 
 bool colorFromHexString(byte* rgb, const char* in);

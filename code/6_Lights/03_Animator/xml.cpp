@@ -374,7 +374,7 @@ void mAnimatorLight::getSettingsJS(byte subPage, Print& settingsScript)
       settingsScript.printf_P(PSTR("addCOM(%d,%d,%d);"), entry->start, entry->len, entry->colorOrder);
     }
 
-    printSetFormValue(settingsScript,PSTR("CA"),briS);
+    printSetFormValue(settingsScript,PSTR("CA"), 127);//briS);
 
     printSetFormCheckbox(settingsScript,PSTR("BO"),turnOnAtBoot);
     printSetFormValue(settingsScript,PSTR("BP"),bootPreset);
@@ -383,26 +383,26 @@ void mAnimatorLight::getSettingsJS(byte subPage, Print& settingsScript)
     printSetFormCheckbox(settingsScript,PSTR("GC"),gammaCorrectCol);
     dtostrf(gammaCorrectVal,3,1,nS); printSetFormValue(settingsScript,PSTR("GV"),nS);
     printSetFormCheckbox(settingsScript,PSTR("TF"),fadeTransition);
-    printSetFormCheckbox(settingsScript,PSTR("EB"),modeBlending);
-    printSetFormValue(settingsScript,PSTR("TD"),transitionDelayDefault);
+    printSetFormCheckbox(settingsScript,PSTR("EB"),0);//modeBlending);
+    printSetFormValue(settingsScript,PSTR("TD"),0);//,transitionDelayDefault);
     printSetFormCheckbox(settingsScript,PSTR("PF"),paletteFade);
     printSetFormValue(settingsScript,PSTR("TP"),randomPaletteChangeTime);
-    printSetFormCheckbox(settingsScript,PSTR("TH"),useHarmonicRandomPalette);
+    printSetFormCheckbox(settingsScript,PSTR("TH"),0);//,useHarmonicRandomPalette);
     printSetFormValue(settingsScript,PSTR("BF"),briMultiplier);
     printSetFormValue(settingsScript,PSTR("TB"),nightlightTargetBri);
     printSetFormValue(settingsScript,PSTR("TL"),nightlightDelayMinsDefault);
     printSetFormValue(settingsScript,PSTR("TW"),nightlightMode);
     printSetFormIndex(settingsScript,PSTR("PB"),paletteBlend);
-    printSetFormValue(settingsScript,PSTR("RL"),rlyPin);
-    printSetFormCheckbox(settingsScript,PSTR("RM"),rlyMde);
-    printSetFormCheckbox(settingsScript,PSTR("RO"),rlyOpenDrain);
+    printSetFormValue(settingsScript,PSTR("RL"),0);//,rlyPin);
+    printSetFormCheckbox(settingsScript,PSTR("RM"),0);//,rlyMde);
+    printSetFormCheckbox(settingsScript,PSTR("RO"),0);//,rlyOpenDrain);
     for (int i = 0; i < WLED_MAX_BUTTONS; i++) {
-      settingsScript.printf_P(PSTR("addBtn(%d,%d,%d);"), i, btnPin[i], buttonType[i]);
+      settingsScript.printf_P(PSTR("addBtn(%d,%d,%d);"), i, 0,0);//btnPin[i], buttonType[i]);
     }
     printSetFormCheckbox(settingsScript,PSTR("IP"),disablePullUp);
     printSetFormValue(settingsScript,PSTR("TT"),touchThreshold);
 #ifndef WLED_DISABLE_INFRARED
-    printSetFormValue(settingsScript,PSTR("IR"),irPin);
+    printSetFormValue(settingsScript,PSTR("IR"),0);//,irPin);
     printSetFormValue(settingsScript,PSTR("IT"),irEnabled);
 #endif    
     printSetFormCheckbox(settingsScript,PSTR("MSO"),!irApplyToAllSelected);
@@ -423,8 +423,9 @@ void mAnimatorLight::getSettingsJS(byte subPage, Print& settingsScript)
     printSetFormValue(settingsScript,PSTR("UP"),udpPort);
     printSetFormValue(settingsScript,PSTR("U2"),udpPort2);
   #ifndef WLED_DISABLE_ESPNOW
-    if (enableESPNow) printSetFormCheckbox(settingsScript,PSTR("EN"),useESPNowSync);
-    else              settingsScript.print(F("toggle('ESPNOW');"));  // hide ESP-NOW setting
+    // if (enableESPNow) printSetFormCheckbox(settingsScript,PSTR("EN"),useESPNowSync);
+    // else              
+    settingsScript.print(F("toggle('ESPNOW');"));  // hide ESP-NOW setting
   #else
     settingsScript.print(F("toggle('ESPNOW');"));  // hide ESP-NOW setting
   #endif
@@ -434,10 +435,10 @@ void mAnimatorLight::getSettingsJS(byte subPage, Print& settingsScript)
     printSetFormCheckbox(settingsScript,PSTR("RB"),receiveNotificationBrightness);
     printSetFormCheckbox(settingsScript,PSTR("RC"),receiveNotificationColor);
     printSetFormCheckbox(settingsScript,PSTR("RX"),receiveNotificationEffects);
-    printSetFormCheckbox(settingsScript,PSTR("RP"),receiveNotificationPalette);
+    printSetFormCheckbox(settingsScript,PSTR("RP"),0);//receiveNotificationPalette);
     printSetFormCheckbox(settingsScript,PSTR("SO"),receiveSegmentOptions);
     printSetFormCheckbox(settingsScript,PSTR("SG"),receiveSegmentBounds);
-    printSetFormCheckbox(settingsScript,PSTR("SS"),sendNotifications);
+    printSetFormCheckbox(settingsScript,PSTR("SS"),0);//,sendNotifications);
     printSetFormCheckbox(settingsScript,PSTR("SD"),notifyDirect);
     printSetFormCheckbox(settingsScript,PSTR("SB"),notifyButton);
     printSetFormCheckbox(settingsScript,PSTR("SH"),notifyHue);
@@ -455,38 +456,37 @@ void mAnimatorLight::getSettingsJS(byte subPage, Print& settingsScript)
     printSetFormValue(settingsScript,PSTR("EU"),e131Universe);
     printSetFormValue(settingsScript,PSTR("DA"),DMXAddress);
     printSetFormValue(settingsScript,PSTR("XX"),DMXSegmentSpacing);
-    printSetFormValue(settingsScript,PSTR("PY"),e131Priority);
+    printSetFormValue(settingsScript,PSTR("PY"),0);//,e131Priority);
     printSetFormValue(settingsScript,PSTR("DM"),DMXMode);
     printSetFormValue(settingsScript,PSTR("ET"),realtimeTimeoutMs);
     printSetFormCheckbox(settingsScript,PSTR("FB"),arlsForceMaxBri);
     printSetFormCheckbox(settingsScript,PSTR("RG"),arlsDisableGammaCorrection);
     printSetFormValue(settingsScript,PSTR("WO"),arlsOffset);
     #ifndef WLED_DISABLE_ALEXA
-    printSetFormCheckbox(settingsScript,PSTR("AL"),alexaEnabled);
-    printSetFormValue(settingsScript,PSTR("AI"),alexaInvocationName);
+    printSetFormCheckbox(settingsScript,PSTR("AL"),0);//,alexaEnabled);
+    printSetFormValue(settingsScript,PSTR("AI"),0);//,alexaInvocationName);
     printSetFormCheckbox(settingsScript,PSTR("SA"),notifyAlexa);
-    printSetFormValue(settingsScript,PSTR("AP"),alexaNumPresets);
+    printSetFormValue(settingsScript,PSTR("AP"),0);//,alexaNumPresets);
     #else
     settingsScript.print(F("toggle('Alexa');"));  // hide Alexa settings
     #endif
 
     #ifndef WLED_DISABLE_MQTT
-    printSetFormCheckbox(settingsScript,PSTR("MQ"),mqttEnabled);
-    printSetFormValue(settingsScript,PSTR("MS"),mqttServer);
-    printSetFormValue(settingsScript,PSTR("MQPORT"),mqttPort);
-    printSetFormValue(settingsScript,PSTR("MQUSER"),mqttUser);
-    byte l = strlen(mqttPass);
+    printSetFormCheckbox(settingsScript,PSTR("MQ"),0);//,mqttEnabled);
+    printSetFormValue(settingsScript,PSTR("MS"),0);//,mqttServer);
+    printSetFormValue(settingsScript,PSTR("MQPORT"),0);//,mqttPort);
+    printSetFormValue(settingsScript,PSTR("MQUSER"),0);//,mqttUser);
+    byte l = strlen("mqttPass");
     char fpass[l+1]; //fill password field with ***
     fpass[l] = 0;
     memset(fpass,'*',l);
-    printSetFormValue(settingsScript,PSTR("MQPASS"),fpass);
-    printSetFormValue(settingsScript,PSTR("MQCID"),mqttClientID);
-    printSetFormValue(settingsScript,PSTR("MD"),mqttDeviceTopic);
-    printSetFormValue(settingsScript,PSTR("MG"),mqttGroupTopic);
-    printSetFormCheckbox(settingsScript,PSTR("BM"),buttonPublishMqtt);
-    printSetFormCheckbox(settingsScript,PSTR("RT"),retainMqttMsg);
-    settingsScript.printf_P(PSTR("d.Sf.MD.maxLength=%d;d.Sf.MG.maxLength=%d;d.Sf.MS.maxLength=%d;"),
-                  MQTT_MAX_TOPIC_LEN, MQTT_MAX_TOPIC_LEN, MQTT_MAX_SERVER_LEN);
+    printSetFormValue(settingsScript,PSTR("MQPASS"),"fpass");
+    printSetFormValue(settingsScript,PSTR("MQCID"),"mqttClientID");
+    printSetFormValue(settingsScript,PSTR("MD"),"mqttDeviceTopic");
+    printSetFormValue(settingsScript,PSTR("MG"),"mqttGroupTopic");
+    printSetFormCheckbox(settingsScript,PSTR("BM"),0);//buttonPublishMqtt);
+    printSetFormCheckbox(settingsScript,PSTR("RT"),0);//,retainMqttMsg);
+    // settingsScript.printf_P(PSTR("d.Sf.MD.maxLength=%d;d.Sf.MG.maxLength=%d;d.Sf.MS.maxLength=%d;"),    MQTT_MAX_TOPIC_LEN, MQTT_MAX_TOPIC_LEN, MQTT_MAX_SERVER_LEN);
     #else
     settingsScript.print(F("toggle('MQTT');"));    // hide MQTT settings
     #endif
@@ -537,10 +537,11 @@ void mAnimatorLight::getSettingsJS(byte subPage, Print& settingsScript)
     printSetFormValue(settingsScript,PSTR("LN"),tm);
     dtostrf(latitude,4,2,tm);
     printSetFormValue(settingsScript,PSTR("LT"),tm);
-    getTimeString(tm);
+    // getTimeString(tm);
+    snprintf(tm, sizeof(tm), "%s", tkr_time->GetDateAndTime(DT_UTC).c_str());
     printSetClassElementHTML(settingsScript,PSTR("times"),0,tm);
     if ((int)(longitude*10.0f) || (int)(latitude*10.0f)) {
-      sprintf_P(tm, PSTR("Sunrise: %02d:%02d Sunset: %02d:%02d"), hour(sunrise), minute(sunrise), hour(sunset), minute(sunset));
+      sprintf_P(tm, PSTR("Sunrise: %02d:%02d Sunset: %02d:%02d"), tkr_time->hour(sunrise), tkr_time->minute(sunrise), tkr_time->hour(sunset), tkr_time->minute(sunset));
       printSetClassElementHTML(settingsScript,PSTR("times"),1,tm);
     }
     printSetFormCheckbox(settingsScript,PSTR("OL"),overlayCurrent);

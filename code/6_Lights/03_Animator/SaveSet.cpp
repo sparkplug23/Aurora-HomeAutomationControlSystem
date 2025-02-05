@@ -86,12 +86,15 @@ Summary
  */
 
 //called upon POST settings form submit
-void handleSettingsSet(AsyncWebServerRequest *request, byte subPage)
+void mAnimatorLight::handleSettingsSet(AsyncWebServerRequest *request, byte subPage)
 {
+
   if (subPage == SUBPAGE_PINREQ)
   {
+    #ifdef ENABLE_FEATURE_LIGHTING__SETTINGS_URL_QUERY_PARAMETERS__SUBPAGE_PINREQ
     checkSettingsPIN(request->arg(F("PIN")).c_str());
     return;
+    #endif
   }
 
   //0: menu 1: wifi 2: leds 3: ui 4: sync 5: time 6: sec 7: DMX 8: usermods 9: N/A 10: 2D
@@ -100,6 +103,7 @@ void handleSettingsSet(AsyncWebServerRequest *request, byte subPage)
   //WIFI SETTINGS
   if (subPage == SUBPAGE_WIFI)
   {
+    #ifdef ENABLE_FEATURE_LIGHTING__SETTINGS_URL_QUERY_PARAMETERS__SUBPAGE_WIFI
     unsigned cnt = 0;
     for (size_t n = 0; n < WLED_MAX_WIFI_COUNT; n++) {
       char cs[4] = "CS"; cs[2] = 48+n; cs[3] = 0; //client SSID
@@ -178,11 +182,14 @@ void handleSettingsSet(AsyncWebServerRequest *request, byte subPage)
     ethernetType = request->arg(F("ETH")).toInt();
     WLED::instance().initEthernet();
     #endif
+
+    #endif // ENABLE_FEATURE_LIGHTING__SETTINGS_URL_QUERY_PARAMETERS__SUBPAGE_WIFI
   }
 
   //LED SETTINGS
   if (subPage == SUBPAGE_LEDS)
   {
+    #ifdef ENABLE_FEATURE_LIGHTING__SETTINGS_URL_QUERY_PARAMETERS__SUBPAGE_LEDS
     int t = 0;
 
     if (rlyPin>=0 && PinManager::isPinAllocated(rlyPin, PinOwner::Relay)) {
@@ -211,14 +218,14 @@ void handleSettingsSet(AsyncWebServerRequest *request, byte subPage)
     unsigned ablMilliampsMax = request->arg(F("MA")).toInt();
     BusManager::setMilliampsMax(ablMilliampsMax);
 
-    strip.autoSegments = request->hasArg(F("MS"));
-    strip.correctWB = request->hasArg(F("CCT"));
-    strip.cctFromRgb = request->hasArg(F("CR"));
+    autoSegments = request->hasArg(F("MS"));
+    correctWB = request->hasArg(F("CCT"));
+    cctFromRgb = request->hasArg(F("CR"));
     cctICused = request->hasArg(F("IC"));
-    strip.cctBlending = request->arg(F("CB")).toInt();
-    Bus::setCCTBlend(strip.cctBlending);
+    cctBlending = request->arg(F("CB")).toInt();
+    Bus::setCCTBlend(cctBlending);
     Bus::setGlobalAWMode(request->arg(F("AW")).toInt());
-    strip.setTargetFps(request->arg(F("FR")).toInt());
+    setTargetFps(request->arg(F("FR")).toInt());
     useGlobalLedBuffer = request->hasArg(F("LD"));
 
     bool busesChanged = false;
@@ -411,7 +418,7 @@ void handleSettingsSet(AsyncWebServerRequest *request, byte subPage)
     modeBlending = request->hasArg(F("EB"));
     t = request->arg(F("TD")).toInt();
     if (t >= 0) transitionDelayDefault = t;
-    strip.paletteFade = request->hasArg(F("PF"));
+    paletteFade = request->hasArg(F("PF"));
     t = request->arg(F("TP")).toInt();
     randomPaletteChangeTime = MIN(255,MAX(1,t));
     useHarmonicRandomPalette = request->hasArg(F("TH"));
@@ -423,28 +430,32 @@ void handleSettingsSet(AsyncWebServerRequest *request, byte subPage)
     nightlightMode = request->arg(F("TW")).toInt();
 
     t = request->arg(F("PB")).toInt();
-    if (t >= 0 && t < 4) strip.paletteBlend = t;
+    if (t >= 0 && t < 4) paletteBlend = t;
     t = request->arg(F("BF")).toInt();
     if (t > 0) briMultiplier = t;
 
     doInitBusses = busesChanged;
+    #endif // ENABLE_FEATURE_LIGHTING__SETTINGS_URL_QUERY_PARAMETERS__SUBPAGE_LEDS
   }
 
   //UI
   if (subPage == SUBPAGE_UI)
   {
+    #ifdef ENABLE_FEATURE_LIGHTING__SETTINGS_URL_QUERY_PARAMETERS__SUBPAGE_UI
     strlcpy(serverDescription, request->arg(F("DS")).c_str(), 33);
     //syncToggleReceive = request->hasArg(F("ST"));
     simplifiedUI = request->hasArg(F("SU"));
     DEBUG_PRINTLN(F("Enumerating ledmaps"));
     enumerateLedmaps();
     DEBUG_PRINTLN(F("Loading custom palettes"));
-    strip.loadCustomPalettes(); // (re)load all custom palettes
+    loadCustomPalettes(); // (re)load all custom palettes
+    #endif // ENABLE_FEATURE_LIGHTING__SETTINGS_URL_QUERY_PARAMETERS__SUBPAGE_UI
   }
 
   //SYNC
   if (subPage == SUBPAGE_SYNC)
   {
+    #ifdef ENABLE_FEATURE_LIGHTING__SETTINGS_URL_QUERY_PARAMETERS__SUBPAGE_SYNC
     int t = request->arg(F("UP")).toInt();
     if (t > 0) udpPort = t;
     t = request->arg(F("U2")).toInt();
@@ -545,11 +556,13 @@ void handleSettingsSet(AsyncWebServerRequest *request, byte subPage)
     t = request->arg(F("BD")).toInt();
     if (t >= 96 && t <= 15000) serialBaud = t;
     updateBaudRate(serialBaud *100);
+    #endif // ENABLE_FEATURE_LIGHTING__SETTINGS_URL_QUERY_PARAMETERS__SUBPAGE_SYNC
   }
 
   //TIME
   if (subPage == SUBPAGE_TIME)
   {
+    #ifdef ENABLE_FEATURE_LIGHTING__SETTINGS_URL_QUERY_PARAMETERS__SUBPAGE_TIME
     ntpEnabled = request->hasArg(F("NT"));
     strlcpy(ntpServerName, request->arg(F("NS")).c_str(), 33);
     useAMPM = !request->hasArg(F("CF"));
@@ -620,11 +633,13 @@ void handleSettingsSet(AsyncWebServerRequest *request, byte subPage)
         timerDayEnd[i] = request->arg(k).toInt();
       }
     }
+    #endif // ENABLE_FEATURE_LIGHTING__SETTINGS_URL_QUERY_PARAMETERS__SUBPAGE_TIME
   }
 
   //SECURITY
   if (subPage == SUBPAGE_SEC)
   {
+    #ifdef ENABLE_FEATURE_LIGHTING__SETTINGS_URL_QUERY_PARAMETERS__SUBPAGE_SEC
     if (request->hasArg(F("RS"))) //complete factory reset
     {
       WLED_FS.format();
@@ -669,6 +684,7 @@ void handleSettingsSet(AsyncWebServerRequest *request, byte subPage)
       aOtaEnabled = request->hasArg(F("AO"));
       //createEditHandler(correctPIN && !otaLock);
     }
+    #endif // ENABLE_FEATURE_LIGHTING__SETTINGS_URL_QUERY_PARAMETERS__SUBPAGE_SEC
   }
 
   #ifdef ENABLE_FEATURE_LIGHTING__DMX // include only if DMX is enabled
@@ -704,6 +720,7 @@ void handleSettingsSet(AsyncWebServerRequest *request, byte subPage)
   //USERMODS
   if (subPage == SUBPAGE_UM)
   {
+    #ifdef ENABLE_FEATURE_LIGHTING__SETTINGS_URL_QUERY_PARAMETERS__SUBPAGE_UM
     if (!requestJSONBufferLock(5)) return;
 
     // global I2C & SPI pins
@@ -834,18 +851,20 @@ void handleSettingsSet(AsyncWebServerRequest *request, byte subPage)
     UsermodManager::readFromConfig(um);  // force change of usermod parameters
     DEBUG_PRINTLN(F("Done re-init UsermodManager::"));
     releaseJSONBufferLock();
+    #endif // ENABLE_FEATURE_LIGHTING__SETTINGS_URL_QUERY_PARAMETERS__SUBPAGE_UM
   }
 
   #ifndef WLED_DISABLE_2D
   //2D panels
   if (subPage == SUBPAGE_2D)
   {
-    strip.isMatrix = request->arg(F("SOMP")).toInt();
-    strip.panel.clear(); // release memory if allocated
-    if (strip.isMatrix) {
-      strip.panels  = MAX(1,MIN(WLED_MAX_PANELS,request->arg(F("MPC")).toInt()));
-      strip.panel.reserve(strip.panels); // pre-allocate memory
-      for (unsigned i=0; i<strip.panels; i++) {
+    #ifdef ENABLE_FEATURE_LIGHTING__SETTINGS_URL_QUERY_PARAMETERS__SUBPAGE_2D
+    isMatrix = request->arg(F("SOMP")).toInt();
+    panel.clear(); // release memory if allocated
+    if (isMatrix) {
+      panels  = MAX(1,MIN(WLED_MAX_PANELS,request->arg(F("MPC")).toInt()));
+      panel.reserve(panels); // pre-allocate memory
+      for (unsigned i=0; i<panels; i++) {
         WS2812FX::Panel p;
         char pO[8] = { '\0' };
         snprintf_P(pO, 7, PSTR("P%d"), i);       // MAX_PANELS is 64 so pO will always only be 4 characters or less
@@ -861,15 +880,16 @@ void handleSettingsSet(AsyncWebServerRequest *request, byte subPage)
         pO[l] = 'Y'; p.yOffset     = request->arg(pO).toInt();
         pO[l] = 'W'; p.width       = request->arg(pO).toInt();
         pO[l] = 'H'; p.height      = request->arg(pO).toInt();
-        strip.panel.push_back(p);
+        panel.push_back(p);
       }
-      strip.setUpMatrix(); // will check limits
-      strip.makeAutoSegments(true);
-      strip.deserializeMap();
+      setUpMatrix(); // will check limits
+      makeAutoSegments(true);
+      deserializeMap();
     } else {
-      Segment::maxWidth  = strip.getLengthTotal();
+      Segment::maxWidth  = getLengthTotal();
       Segment::maxHeight = 1;
     }
+    #endif // ENABLE_FEATURE_LIGHTING__SETTINGS_URL_QUERY_PARAMETERS__SUBPAGE_2D
   }
   #endif
 
@@ -878,13 +898,15 @@ void handleSettingsSet(AsyncWebServerRequest *request, byte subPage)
   doSerializeConfig = subPage != SUBPAGE_LEDS && !(subPage == SUBPAGE_SEC && doReboot);
   if (subPage == SUBPAGE_UM) doReboot = request->hasArg(F("RBT")); // prevent race condition on dual core system (set reboot here, after doSerializeConfig has been set)
   #ifndef WLED_DISABLE_ALEXA
+  #ifdef ENABLE_FEATURE_LIGHTING__SETTINGS_URL_QUERY_PARAMETERS__SUBPAGE_SYNC
   if (subPage == SUBPAGE_SYNC) alexaInit();
+  #endif
   #endif
 }
 
 
 //HTTP API request parser
-bool handleSet(AsyncWebServerRequest *request, const String& req, bool apply)
+bool mAnimatorLight::handleSet(AsyncWebServerRequest *request, const String& req, bool apply)
 {
   if (!(req.indexOf("win") >= 0)) return false;
 
@@ -894,40 +916,40 @@ bool handleSet(AsyncWebServerRequest *request, const String& req, bool apply)
   //segment select (sets main segment)
   pos = req.indexOf(F("SM="));
   if (pos > 0 && !realtimeMode) {
-    strip.setMainSegmentId(getNumVal(&req, pos));
+    setMainSegmentId(getNumVal(&req, pos));
   }
 
-  byte selectedSeg = strip.getFirstSelectedSegId();
+  byte selectedSeg = getFirstSelectedSegId();
 
   bool singleSegment = false;
 
   pos = req.indexOf(F("SS="));
   if (pos > 0) {
     unsigned t = getNumVal(&req, pos);
-    if (t < strip.getSegmentsNum()) {
+    if (t < getSegmentsNum()) {
       selectedSeg = t;
       singleSegment = true;
     }
   }
 
-  Segment& selseg = strip.getSegment(selectedSeg);
+  Segment& selseg = getSegment(selectedSeg);
   pos = req.indexOf(F("SV=")); //segment selected
   if (pos > 0) {
     unsigned t = getNumVal(&req, pos);
-    if (t == 2) for (unsigned i = 0; i < strip.getSegmentsNum(); i++) strip.getSegment(i).selected = false; // unselect other segments
+    if (t == 2) for (unsigned i = 0; i < getSegmentsNum(); i++) getSegment(i).selected = false; // unselect other segments
     selseg.selected = t;
   }
 
   // temporary values, write directly to segments, globals are updated by setValuesFromFirstSelectedSeg()
-  uint32_t col0    = selseg.colors[0];
-  uint32_t col1    = selseg.colors[1];
-  uint32_t col2    = selseg.colors[2];
+  uint32_t col0    = selseg.segcol[0].getU32();
+  uint32_t col1    = selseg.segcol[1].getU32();
+  uint32_t col2    = selseg.segcol[2].getU32();
   byte colIn[4]    = {R(col0), G(col0), B(col0), W(col0)};
   byte colInSec[4] = {R(col1), G(col1), B(col1), W(col1)};
-  byte effectIn    = selseg.mode;
+  byte effectIn    = selseg.effect_id;
   byte speedIn     = selseg.speed;
   byte intensityIn = selseg.intensity;
-  byte paletteIn   = selseg.palette;
+  byte paletteIn   = selseg.palette_id;
   byte custom1In   = selseg.custom1;
   byte custom2In   = selseg.custom2;
   byte custom3In   = selseg.custom3;
@@ -956,9 +978,9 @@ bool handleSet(AsyncWebServerRequest *request, const String& req, bool apply)
   if (pos > 0) {
     spcI = std::max(0,getNumVal(&req, pos));
   }
-  strip.suspend(); // must suspend strip operations before changing geometry
-  selseg.setGeometry(startI, stopI, grpI, spcI, UINT16_MAX, startY, stopY, selseg.map1D2D);
-  strip.resume();
+  // suspend(); // must suspend strip operations before changing geometry
+  // selseg.setGeometry(startI, stopI, grpI, spcI, UINT16_MAX, startY, stopY, selseg.map1D2D);
+  // resume();
 
   pos = req.indexOf(F("RV=")); //Segment reverse
   if (pos > 0) selseg.reverse = req.charAt(pos+3) != '0';
@@ -971,7 +993,7 @@ bool handleSet(AsyncWebServerRequest *request, const String& req, bool apply)
     byte segbri = getNumVal(&req, pos);
     selseg.setOption(SEG_OPTION_ON, segbri); // use transition
     if (segbri) {
-      selseg.setOpacity(segbri);
+      // selseg.setOpacity(segbri);
     }
   }
 
@@ -1002,7 +1024,7 @@ bool handleSet(AsyncWebServerRequest *request, const String& req, bool apply)
   if (pos > 0) doAdvancePlaylist = true;
   
   //set brightness
-  updateVal(req.c_str(), "&A=", &bri);
+  updateVal(req.c_str(), "&A=", &pCONT_iLight->_briRGB_Global);
 
   bool col0Changed = false, col1Changed = false, col2Changed = false;
   //set colors
@@ -1048,7 +1070,7 @@ bool handleSet(AsyncWebServerRequest *request, const String& req, bool apply)
       tempsat = getNumVal(&req, pos);
     }
     byte sec = req.indexOf(F("H2"));
-    colorHStoRGB(temphue, tempsat, (sec>0) ? colInSec : colIn);
+    // colorHStoRGB(temphue, tempsat, (sec>0) ? colInSec : colIn);
     col0Changed |= (!sec); col1Changed |= sec;
   }
 
@@ -1063,18 +1085,18 @@ bool handleSet(AsyncWebServerRequest *request, const String& req, bool apply)
   //set color from HEX or 32bit DEC
   pos = req.indexOf(F("CL="));
   if (pos > 0) {
-    colorFromDecOrHexString(colIn, (char*)req.substring(pos + 3).c_str());
+    // colorFromDecOrHexString(colIn, (char*)req.substring(pos + 3).c_str());
     col0Changed = true;
   }
   pos = req.indexOf(F("C2="));
   if (pos > 0) {
-    colorFromDecOrHexString(colInSec, (char*)req.substring(pos + 3).c_str());
+    // colorFromDecOrHexString(colInSec, (char*)req.substring(pos + 3).c_str());
     col1Changed = true;
   }
   pos = req.indexOf(F("C3="));
   if (pos > 0) {
     byte tmpCol[4];
-    colorFromDecOrHexString(tmpCol, (char*)req.substring(pos + 3).c_str());
+    // colorFromDecOrHexString(tmpCol, (char*)req.substring(pos + 3).c_str());
     col2 = RGBW32(tmpCol[0], tmpCol[1], tmpCol[2], tmpCol[3]);
     selseg.setColor(2, col2); // defined above (SS= or main)
     col2Changed = true;
@@ -1084,7 +1106,7 @@ bool handleSet(AsyncWebServerRequest *request, const String& req, bool apply)
   pos = req.indexOf(F("SR"));
   if (pos > 0) {
     byte sec = getNumVal(&req, pos);
-    setRandomColor(sec? colInSec : colIn);
+    // setRandomColor(sec? colInSec : colIn);
     col0Changed |= (!sec); col1Changed |= sec;
   }
 
@@ -1109,13 +1131,13 @@ bool handleSet(AsyncWebServerRequest *request, const String& req, bool apply)
   bool fxModeChanged = false, speedChanged = false, intensityChanged = false, paletteChanged = false;
   bool custom1Changed = false, custom2Changed = false, custom3Changed = false, check1Changed = false, check2Changed = false, check3Changed = false;
   // set effect parameters
-  if (updateVal(req.c_str(), "FX=", &effectIn, 0, strip.getModeCount()-1)) {
+  if (updateVal(req.c_str(), "FX=", &effectIn, 0, getModeCount()-1)) {
     if (request != nullptr) unloadPlaylist(); // unload playlist if changing FX using web request
     fxModeChanged = true;
   }
   speedChanged     = updateVal(req.c_str(), "SX=", &speedIn);
   intensityChanged = updateVal(req.c_str(), "IX=", &intensityIn);
-  paletteChanged   = updateVal(req.c_str(), "FP=", &paletteIn, 0, strip.getPaletteCount()-1);
+  paletteChanged   = updateVal(req.c_str(), "FP=", &paletteIn, 0, getPaletteCount()-1);
   custom1Changed   = updateVal(req.c_str(), "X1=", &custom1In);
   custom2Changed   = updateVal(req.c_str(), "X2=", &custom2In);
   custom3Changed   = updateVal(req.c_str(), "X3=", &custom3In);
@@ -1126,8 +1148,8 @@ bool handleSet(AsyncWebServerRequest *request, const String& req, bool apply)
   stateChanged |= (fxModeChanged || speedChanged || intensityChanged || paletteChanged || custom1Changed || custom2Changed || custom3Changed || check1Changed || check2Changed || check3Changed);
 
   // apply to main and all selected segments to prevent #1618.
-  for (unsigned i = 0; i < strip.getSegmentsNum(); i++) {
-    Segment& seg = strip.getSegment(i);
+  for (unsigned i = 0; i < getSegmentsNum(); i++) {
+    Segment& seg = getSegment(i);
     if (i != selectedSeg && (singleSegment || !seg.isActive() || !seg.isSelected())) continue; // skip non main segments if not applying to all
     if (fxModeChanged)    seg.setMode(effectIn, req.indexOf(F("FXD="))>0);  // apply defaults if FXD= is specified
     if (speedChanged)     seg.speed     = speedIn;
@@ -1174,8 +1196,8 @@ bool handleSet(AsyncWebServerRequest *request, const String& req, bool apply)
     nightlightActive = false; //always disable nightlight when toggling
     switch (getNumVal(&req, pos))
     {
-      case 0: if (bri != 0){briLast = bri; bri = 0;} break; //off, only if it was previously on
-      case 1: if (bri == 0) bri = briLast; break; //on, only if it was previously off
+      case 0: if (pCONT_iLight->_briRGB_Global != 0){briLast = pCONT_iLight->_briRGB_Global; pCONT_iLight->_briRGB_Global = 0;} break; //off, only if it was previously on
+      case 1: if (pCONT_iLight->_briRGB_Global == 0) pCONT_iLight->_briRGB_Global = briLast; break; //on, only if it was previously off
       default: toggleOnOff(); //toggle
     }
   }
@@ -1221,12 +1243,12 @@ bool handleSet(AsyncWebServerRequest *request, const String& req, bool apply)
 
   pos = req.indexOf(F("TT="));
   if (pos > 0) transitionDelay = getNumVal(&req, pos);
-  if (fadeTransition) strip.setTransition(transitionDelay);
+  // if (fadeTransition) setTransition(transitionDelay);
 
   //set time (unix timestamp)
   pos = req.indexOf(F("ST="));
   if (pos > 0) {
-    setTimeFromAPI(getNumVal(&req, pos));
+    // setTimeFromAPI(getNumVal(&req, pos));
   }
 
   //set countdown goal (unix timestamp)
@@ -1241,7 +1263,7 @@ bool handleSet(AsyncWebServerRequest *request, const String& req, bool apply)
     realtimeOverride = getNumVal(&req, pos);
     if (realtimeOverride > 2) realtimeOverride = REALTIME_OVERRIDE_ALWAYS;
     if (realtimeMode && useMainSegmentOnly) {
-      strip.getMainSegment().freeze = !realtimeOverride;
+      getMainSegment().freeze = !realtimeOverride;
     }
   }
 
