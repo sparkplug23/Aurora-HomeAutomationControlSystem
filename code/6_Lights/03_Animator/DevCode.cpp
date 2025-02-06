@@ -237,7 +237,21 @@ void mAnimatorLight::TestCode_Add16ParallelBus1()
 #ifdef ENABLE_DEVFEATURE_LIGHTING__COMMANDS_NOTIFICATION_SHORTCUT
 void mAnimatorLight::parsesub_json_object_notification_shortcut(JsonParserObject obj)
 {
+/*
 
+segment needs to be able to overdraw, which may require pausing over another.
+
+SegmentOverDraw, so a function/set needs added that checks its range, and if the other segments are within its range those are paused.
+Every segment should gain the command to take control of others for a set time,
+
+
+PriorityDraw, so a function/set needs added that checks its range, and if the other segments are within its range those are paused.
+
+
+
+
+
+*/
   // Dumb this way down.
   // "notif" does not need my original complete code. Simply have the aux values pick
   // period/time_show/etc and have the ffect by blink/pulse/flash etc. Then all of this can be removed

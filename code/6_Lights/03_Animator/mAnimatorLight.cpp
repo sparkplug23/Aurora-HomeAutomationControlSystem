@@ -1023,7 +1023,7 @@ void mAnimatorLight::EverySecond_AutoOff()
   
     if(seg.auto_timeoff.UpdateTick())
     {
-      ALOG_INF( PSTR(D_LOG_GARAGE D_COMMAND_NVALUE_K("Running Value")), seg.auto_timeoff.Value());
+      ALOG_INF( PSTR(D_LOG_LED D_COMMAND_NVALUE_K("Running Value")), seg.auto_timeoff.Value());
     }
 
     if(seg.auto_timeoff.IsLastTick())
@@ -1031,7 +1031,8 @@ void mAnimatorLight::EverySecond_AutoOff()
       ALOG_INF(PSTR("Segment Turn OFF"));
       // Set intensity to make all LEDs refresh
       seg.intensity = 255;
-      seg.single_animation_override.time_ms = 1000; // slow and smooth turn off
+      seg.single_animation_override.time_ms = seg.single_animation_override_turning_off.time_ms;// 1000; // slow and smooth turn off
+      seg.cycle_time__rate_ms = seg.single_animation_override.time_ms+10; // exceed the time to turn off to let it cycle through
 
       ALOG_INF(PSTR("Setting override for off %d"), seg.single_animation_override.time_ms);
 
@@ -1779,6 +1780,10 @@ void mAnimatorLight::SubTask_Effects()
       seg.animation_has_anim_callback = false; // Any animations required will reset this to true in the effect call
         
       ALOG_DBM(PSTR("seg.effect_id %d/%d"), seg.effect_id, effects.function.size());
+
+      #ifdef ENABLE_DEVFEATURE_LIGHT__SERIAL_SHOW_PRE_EFFECT_CALL
+      Serial.println("Pre Effect Call -------------------------------------------------------------");
+      #endif
       
       frameDelay = (this->*effects.function[seg.effect_id])(); // Call Effect Function (passes and returns nothing)
       
@@ -5656,10 +5661,12 @@ RgbwwColor IRAM_ATTR mAnimatorLight::GetColourFromUnloadedPalette3(
 
 
 #ifndef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-  // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
-// ColourBaseType
-void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(int i, uint32_t col)//, bool flag_brightness_already_applied)
-{
+
+void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(int i, uint32_t col
+#ifdef ENABLE_DEVFEATURE_LIGHTING__BRIGHTNESS_ALREADY_SET_FUNCTION_ARGUMENT
+,bool flag_brightness_already_applied
+#endif
+){
 
   // #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
   // if(i<10)
@@ -5684,20 +5691,21 @@ void IRAM_ATTR mAnimatorLight::Segment::setPixelColor(int i, uint32_t col)//, bo
     #endif
   }
 
-  // #ifndef ENABLE_FEATURE_LIGHTING__USE_NEOPIXELBUS_LIGHT_GAMMA_LG
-  // // // Apply brightness if needed
-  // // if (!flag_brightness_already_applied) {
-  //   uint8_t brightness = scale8(_brightness_rgb, pCONT_iLight->getBriRGB_Global());
-  //   uint16_t scale = brightness + 1;  // Avoid division by zero and maintain full range
-  //   // Extract, scale, and repack in one step
-  //   col = RGBW32(
-  //     (R(col) * scale) >> 8,  // Red
-  //     (G(col) * scale) >> 8,  // Green
-  //     (B(col) * scale) >> 8,  // Blue
-  //     (W(col) * scale) >> 8   // White
-  //   );
-  // // }
-  // #endif
+  #ifdef ENABLE_DEVFEATURE_LIGHTING__BRIGHTNESS_MANUAL_CONTROLS
+  // // Apply brightness if needed
+  if (flag_brightness_already_applied==false) {
+    // uint8_t brightness = pCONT_iLight->getBriRGB_Global();//scale8(_brightness_rgb, pCONT_iLight->getBriRGB_Global());
+    uint8_t brightness = scale8(_brightness_rgb, pCONT_iLight->getBriRGB_Global());
+    uint16_t scale = brightness + 1;  // Avoid division by zero and maintain full range
+    // Extract, scale, and repack in one step
+    col = RGBW32(
+      (R(col) * scale) >> 8,  // Red
+      (G(col) * scale) >> 8,  // Green
+      (B(col) * scale) >> 8,  // Blue
+      (W(col) * scale) >> 8   // White
+    );
+  }
+  #endif
 
 
 #ifdef ENABLE_FEATURE_LIGHTS__2D_MATRIX_EFFECTS

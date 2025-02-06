@@ -435,6 +435,14 @@ enum LoggingLevels {
 #define ALOG_COM(...)
 #endif
 
+// New feature to add, when a new json comes in, the flag will autoclear this. I can send "cmd_response" which will mean all commands should echo their parsing
+// instead of fancy passing around of flags, it can be performed in the AddLog by adding a special flag to ignore levels and only show these when the flag is active
+#ifdef ENABLE_LOG_LEVEL_COMMANDS_ECHO
+#define ALOG_CME(...) AddLog(LOG_LEVEL_COMMANDS, __VA_ARGS__)
+#else
+#define ALOG_CME(...)
+#endif
+
 #ifdef ENABLE_LOG_LEVEL_HIGHLIGHT
 #define ALOG_HGL(...) AddLog(LOG_LEVEL_HIGHLIGHT, __VA_ARGS__)
 #else

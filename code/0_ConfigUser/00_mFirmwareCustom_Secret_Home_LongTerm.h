@@ -4083,7 +4083,7 @@ Bathroom
  */
 #ifdef DEVICE_CONSUMERUNIT_25_TESTER
   #ifndef DEVICENAME_CTR
-  #define DEVICENAME_CTR          "consumerunit_25"
+  #define DEVICENAME_CTR          "consumerunit_25_tester"
   #endif
   #ifndef DEVICENAME_FRIENDLY_CTR
   #define DEVICENAME_FRIENDLY_CTR DEVICENAME_CTR
@@ -4250,7 +4250,7 @@ Bathroom
         "Sat":100,
         "BrightnessRGB":0
       },
-      "BrightnessRGB": 100,
+      "BrightnessRGB": 10,
       "BrightnessCCT": 100
     },
     "BrightnessRGB": 100

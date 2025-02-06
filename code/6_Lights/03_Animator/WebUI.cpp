@@ -1307,9 +1307,9 @@ bool mAnimatorLight::deserializeSegment(JsonObject elem, byte it, byte presetId)
 
   if (seg.reset && seg.stop == 0) return true; // segment was deleted & is marked for reset, no need to change anything else
 
-  byte segbri = 255;//seg.opacity;
+  byte segbri = seg._brightness_rgb;//255;//seg.opacity;
   if (getVal(elem["bri"], &segbri)) {
-    // ALOG_INF(PSTR("getVal(elem[\"bri\"], &segbri) %d"), segbri);
+    ALOG_INF(PSTR("getVal(elem[\"bri\"], &segbri) %d"), segbri);
     // if (segbri > 0) seg.setOpacity(segbri);
     // seg.setOption(SEG_OPTION_ON, segbri); // use transition
   }

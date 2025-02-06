@@ -98,6 +98,9 @@ void mInterfaceLight::Pre_Init(void)
 
 }
 
+
+// Change this to use my ticker class
+// then make a basic version for the segments, just use a U16 for a ticker, with =0 meaning off
 void mInterfaceLight::EverySecond_AutoOff()
 {
 

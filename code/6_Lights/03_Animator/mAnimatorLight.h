@@ -2979,7 +2979,11 @@ typedef struct Segment
     void setPixelColor(float i, CRGB c, bool aa = true)                                         { setPixelColor(i, RGBW32(c.r,c.g,c.b,0), aa); }    
     #endif
     #else    
-    [[gnu::hot]] void setPixelColor(int n, uint32_t c);
+    [[gnu::hot]] void setPixelColor(int n, uint32_t c
+    #ifdef ENABLE_DEVFEATURE_LIGHTING__BRIGHTNESS_ALREADY_SET_FUNCTION_ARGUMENT
+    ,bool brightness_already_set = false /*temporary fix*/
+    #endif
+    );
     void setPixelColor(int n, RgbwwColor c){ setPixelColor(n, RGBW32(c.R, c.G, c.B, c.WW)); } 
     void setPixelColor(unsigned n, uint32_t c){ setPixelColor((int)n, c); } // to keep compatibility with RGBWW
     void setPixelColor(uint16_t n, uint32_t c){ setPixelColor((int)n, c); } // to keep compatibility with RGBWW
@@ -3493,7 +3497,53 @@ inline void AnimationProcess_LinearBlend_Dynamic_BufferU32(const AnimationParam&
 
             #ifdef ENABLE_DEBUGFEATURE_LIGHTING__TRACE_PIXEL_SET_GET_SHOW_FIRST_NUMBER_LOGGED_WITH_VALUE
             if(i < ENABLE_DEBUGFEATURE_LIGHTING__TRACE_PIXEL_SET_GET_SHOW_FIRST_NUMBER_LOGGED_WITH_VALUE) {
-              SERIAL_DEBUG_COL32i("blendedColor", blendedColor, i);
+              SERIAL_DEBUG_COL32i(">>startColor", startColor, i);
+              SERIAL_DEBUG_COL32i(">>blendedColor", blendedColor, blendFactor);
+              SERIAL_DEBUG_COL32i(">>desiredColor", desiredColor, i);
+            }
+            #endif
+        }
+    }
+}
+
+// Temporary function until I decide what to do with brightness
+inline void AnimationProcess_LinearBlend_Dynamic_BufferU32_BrightnessAlreadySet(const AnimationParam& param) {
+  
+    float progress = param.progress;
+    uint8_t blendFactor = static_cast<uint8_t>(progress * 255);
+
+    for (int i = 0; i < virtualLength(); i++) {
+      // Serial.printf("buffer32 %d\n\r", i);
+        if (colour_width__used_in_effect_generate == 5) {
+            #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+            // Retrieve starting and desired colors for RGBWW
+            RgbwwColor startRgbww = Get_DynamicBuffer_StartingColour_RgbwwColor(i);
+            RgbwwColor desiredRgbww = Get_DynamicBuffer_DesiredColour_RgbwwColor(i);
+
+            // Blend RGBWW colors and write the result
+            RgbwwColor blendedRgbww = RgbwwColor::LinearBlend(startRgbww, desiredRgbww, blendFactor);
+            setPixelColor(i, blendedRgbww, BRIGHTNESS_ALREADY_SET);
+            #endif
+        } else {
+            // Retrieve starting and desired colors for RGB/WRGB
+            uint32_t startColor = Get_DynamicBuffer_StartingColour(i);
+            uint32_t desiredColor = Get_DynamicBuffer_DesiredColour(i);
+            // SERIAL_DEBUG_COL32i("startColor", startColor, i);
+            // SERIAL_DEBUG_COL32i("desiredColor", desiredColor, i);
+
+            // Blend RGB/WRGB colors and write the result
+            uint32_t blendedColor = ColourBlend(startColor, desiredColor, blendFactor);
+            // RgbwColor rgbw = RgbwColor::LinearBlend(RgbwColor(R(startColor), G(startColor), B(startColor), W(startColor)), RgbwColor(R(desiredColor), G(desiredColor), B(desiredColor), W(desiredColor)), param.progress);
+            // uint32_t blendedColor = RGBW32(rgbw.R, rgbw.G, rgbw.B, rgbw.W); // When debugging without a blend
+            // uint32_t blendedColor = desiredColor; // When debugging without a blend
+
+            setPixelColor(i, blendedColor, BRIGHTNESS_ALREADY_SET);
+
+            #ifdef ENABLE_DEBUGFEATURE_LIGHTING__TRACE_PIXEL_SET_GET_SHOW_FIRST_NUMBER_LOGGED_WITH_VALUE
+            if(i < ENABLE_DEBUGFEATURE_LIGHTING__TRACE_PIXEL_SET_GET_SHOW_FIRST_NUMBER_LOGGED_WITH_VALUE) {              
+              SERIAL_DEBUG_COL32i(">>>startColor", startColor, i);
+              SERIAL_DEBUG_COL32i(">>>blendedColor", blendedColor, blendFactor);
+              SERIAL_DEBUG_COL32i(">>>desiredColor", desiredColor, i);
             }
             #endif
         }
@@ -3557,6 +3607,64 @@ inline void AnimationProcess_LinearBlend_Dynamic_BufferU32_FillSegment(const Ani
     }
 }
 
+
+
+inline void AnimationProcess_LinearBlend_Dynamic_BufferU32_FillSegment_BrightnessAlreadySet(const AnimationParam& param) {
+    float progress = param.progress;
+    uint8_t blendFactor = static_cast<uint8_t>(progress * 255);
+
+    #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+    Serial.println("AnimationProcess_LinearBlend_Dynamic_BufferU32_FillSegment_BrightnessAlreadySet"); Serial.flush();
+    #endif
+
+    // Retrieve the first starting and desired colors
+    if (colour_width__used_in_effect_generate == 5) {
+        #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
+        // Handle RGBWW blending
+        RgbwwColor startRgbww = Get_DynamicBuffer_StartingColour_RgbwwColor(0);
+        RgbwwColor desiredRgbww = Get_DynamicBuffer_DesiredColour_RgbwwColor(0);
+
+        #ifdef ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
+        desiredRgbww.WW = 0; desiredRgbww.CW = 0;
+        #endif
+
+        // Blend the two colors
+        // RgbwwColor blendedRgbww = desiredRgbww;//RgbwwColor::LinearBlend(startRgbww, desiredRgbww, blendFactor);
+
+        RgbwwColor blendedRgbww = RgbwwColor::LinearBlend(startRgbww, desiredRgbww, blendFactor);
+
+        // blendedRgbww = RgbwwColor(0,0,0,0,255);
+        
+        #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+        // blendedRgbww = RgbwwColor(1,2,255,0,0);
+        Serial.printf("startRgbww RGBWW %d,%d,%d,%d,%d", startRgbww.R, startRgbww.G, startRgbww.B, startRgbww.WW, startRgbww.CW); 
+        Serial.printf("\t\tdesiredRgbww RGBWW %d,%d,%d,%d,%d\n\r", desiredRgbww.R, desiredRgbww.G, desiredRgbww.B, desiredRgbww.WW, desiredRgbww.CW); 
+        #endif
+
+        // Set the blended color across the segment
+        for (int pixel = 0; pixel < virtualLength(); pixel++) {
+          #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE_DEBUG
+          Serial.printf("blendedRgbww RGBWW %d,%d,%d,%d,%d\n\r", blendedRgbww.R, blendedRgbww.G, blendedRgbww.B, blendedRgbww.WW, blendedRgbww.CW); 
+          #endif
+          setPixelColor(pixel, blendedRgbww, BRIGHTNESS_ALREADY_SET);
+        }
+        
+        // AddLog_Array_Block(3, PSTR("Solid Colour RGBWW"), SEGMENT.Data(), SEGMENT.DataLength(), 5, false);
+        #endif
+    } else {
+        // Handle RGB/WRGB blending
+        uint32_t startColor = Get_DynamicBuffer_StartingColour(0);
+        uint32_t desiredColor = Get_DynamicBuffer_DesiredColour(0);
+
+        // Blend the two colors
+        uint32_t blendedColor = ColourBlend(startColor, desiredColor, blendFactor);
+
+        // Set the blended color across the segment
+        for (uint16_t pixel = 0; pixel < virtualLength(); pixel++) {
+            setPixelColor(pixel, blendedColor, BRIGHTNESS_ALREADY_SET);
+        }
+    }
+}
 
 
 } segment;

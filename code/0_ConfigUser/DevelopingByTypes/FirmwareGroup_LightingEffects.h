@@ -45,10 +45,10 @@
 
         
 //    ;;;;;;;;;;;; PAIRED DEVICES ;;;;;;;;;;;;;;;;  -- Multiple devices that are being tested together, sharing a common build method with slight changes
-#define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__BASE // "BASE" this device "60", has the following 3 built/running from it
+// #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__BASE // "BASE" this device "60", has the following 3 built/running from it
 //     #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB  // buswrapper is limited to rgbw, effects may be rgbW or rgb only, 32-bit, white may be created in the effect, or generated automatically by the RGB parts.
     // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__RGBWW // the buswrapper is rgbww enabled, so full 5 r+g+b+ww+cw possible. While most effects stay 32-bit, this enables getting colours from palette in 5 colour size, and some effects are full 5 colour possible
-    #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB_MATRIX16X16 // same as previous, but figuring out how to work on 2d 16x16 matrix. So will be getting the matrix setup working, and 2d effects testing
+    // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB_MATRIX16X16 // same as previous, but figuring out how to work on 2d 16x16 matrix. So will be getting the matrix setup working, and 2d effects testing
     // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__RGB_PEBBLES  // RGB only, most common type I used, get the 8port tester and make 8 200 led white sections. Aim is to ensure larger "strings" will work as planned
     // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB_2X
     // #define DEVICE_TESTGROUP__LIGHTING_EFFECTS__60__SUBGROUP__COLOUR_BUFFER__WRGB_4X

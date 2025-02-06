@@ -218,8 +218,33 @@ typedef uint32_t ColourBaseType;
 
   // #define ENABLE_DEVFEATURE_LIGHTING__BUSPWM_DITHERING_PWM_ENABLED
   // #define ENABLE_DEVFEATURE_LIGHTING__BUSPWM_2025_METHOD
+  
+  #define ANIM_BRIGHTNESS_REQUIRED true // only when manually testing it to be manual, but not part of the feb2025 method
+  // #define ANIM_BRIGHTNESS_REQUIRED false // when using LG bus
 
   #define ENABLE_DEVFEATURE_LIGHTING__BRIGHTNESS_MANUAL_CONTROLS // handle it without BusLg methods
+
+  #ifdef ENABLE_FEATURE_LIGHTING__USE_NEOPIXELBUS_LIGHT_GAMMA_LG
+  #undef ANIM_BRIGHTNESS_REQUIRED
+  #define ANIM_BRIGHTNESS_REQUIRED false // when using LG bus
+  #endif
+
+  #ifdef ENABLE_DEVFEATURE_LIGHTING__BRIGHTNESS_MANUAL_CONTROLS
+  #undef ANIM_BRIGHTNESS_REQUIRED
+  #define ANIM_BRIGHTNESS_REQUIRED true // when controlling it directly
+  #endif
+
+  #define ENABLE_DEVFEATURE_LIGHTING__BRIGHTNESS_ALREADY_SET_FUNCTION_ARGUMENT
+  
+  
+  /**
+   * @brief Feb2025 Debug serial logs
+   * 
+   */
+  // #define ENABLE_DEBUGFEATURE_LIGHTING__TRACE_PIXEL_SET_GET_SHOW_FIRST_NUMBER_LOGGED_WITH_VALUE 1
+  // #define ENABLE_DEVFEATURE_LIGHT__SERIAL_SHOW_PRE_EFFECT_CALL
+
+
 
 
   #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 4000
@@ -375,6 +400,7 @@ typedef uint32_t ColourBaseType;
     #define ENABLE_DEVFEATURE_LIGHT__INCLUDE_AUDIOREACTIVE_USERMOD
   #endif
 
+
   
 
   #define ENABLE_FEATURE_LIGHTS__GLOBAL_ANIMATOR_LIGHT_CLASS_ACCESS
@@ -388,8 +414,6 @@ typedef uint32_t ColourBaseType;
   
   #define ENABLE_DEVFEATURE_WEBSERVER__ETAGS_ENABLED_FOR_RELOADING_PALETTES_ON_FRESH_COMPILE
 
-  #define ANIM_BRIGHTNESS_REQUIRED true // when using manual brightness control
-  // #define ANIM_BRIGHTNESS_REQUIRED false // when using LG bus
 
   #define ENABLE_DEVFEATURE_LIGHTING__SUPPRESS_WHITE_OUTPUT
   

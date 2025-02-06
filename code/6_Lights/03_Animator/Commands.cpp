@@ -978,6 +978,7 @@ if (jtok = obj["MQTTPixelArrays"]) {
     if(jtok = jtok_sub.getObject()["Animation_Off"].getObject()["TimeMs"])
     {
       SEGMENT_I(segment_index).single_animation_override_turning_off.time_ms = jtok.getInt();
+      ALOG_INF(PSTR(D_LOG_PIXEL D_COMMAND_SVALUE_NVALUE_K("Animation_Off","TimeMs")), SEGMENT_I(segment_index).single_animation_override_turning_off.time_ms);
       data_buffer.isserviced++;
     }
 
@@ -1050,6 +1051,7 @@ if (jtok = obj["MQTTPixelArrays"]) {
 
   }
 
+  // Per segment timer
   if(jtok = obj["TimeOnSecs"]){
     SEGMENT_I(segment_index).auto_timeoff.Start(jtok.getInt());
     ALOG_INF(PSTR("auto_timeoff %d"), SEGMENT_I(segment_index).auto_timeoff.Value());

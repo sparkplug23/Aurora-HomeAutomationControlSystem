@@ -147,7 +147,11 @@ Serial.println(SEGMENT.colour_width__used_in_effect_generate);
 
   // Set up the animation function callback
   SetSegment_AnimFunctionCallback(SEGIDX, [this](const AnimationParam& param) {
-    SEGMENT.AnimationProcess_LinearBlend_Dynamic_BufferU32_FillSegment(param);
+    #ifdef ENABLE_DEVFEATURE_LIGHTING__BRIGHTNESS_ALREADY_SET_FUNCTION_ARGUMENT
+      SEGMENT.AnimationProcess_LinearBlend_Dynamic_BufferU32_FillSegment_BrightnessAlreadySet(param);
+      #else
+      SEGMENT.AnimationProcess_LinearBlend_Dynamic_BufferU32_FillSegment(param);
+      #endif
   });
 
   return USE_ANIMATOR;
@@ -192,7 +196,7 @@ uint16_t mAnimatorLight::EffectAnim__Static_Palette()
     uint32_t colour;
     for(uint16_t pixel = 0; pixel < SEGLEN; pixel++)
     {
-      colour = SEGMENT.GetPaletteColour(pixel, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE, ANIM_BRIGHTNESS_REQUIRED);
+      colour = SEGMENT.GetPaletteColour(pixel, PALETTE_INDEX_SPANS_SEGLEN_ON, PALETTE_WRAP_OFF, PALETTE_DISCRETE_ON, NO_ENCODED_VALUE);
       SEGMENT.setPixelColor(pixel, colour);
     }
 
@@ -219,7 +223,13 @@ uint16_t mAnimatorLight::EffectAnim__Static_Palette()
       #endif
     }
 
-    SetSegment_AnimFunctionCallback(SEGIDX, [this](const AnimationParam& param) { SEGMENT.AnimationProcess_LinearBlend_Dynamic_BufferU32(param); });
+    SetSegment_AnimFunctionCallback(SEGIDX, [this](const AnimationParam& param) {
+      #ifdef ENABLE_DEVFEATURE_LIGHTING__BRIGHTNESS_ALREADY_SET_FUNCTION_ARGUMENT
+      SEGMENT.AnimationProcess_LinearBlend_Dynamic_BufferU32_BrightnessAlreadySet(param);
+      #else
+      SEGMENT.AnimationProcess_LinearBlend_Dynamic_BufferU32(param);
+      #endif
+    });
 
     return USE_ANIMATOR;
 
@@ -310,7 +320,11 @@ uint16_t mAnimatorLight::EffectAnim__Split_Palette_SegWidth()
 
   // Set the animation function callback for linear blending
   SetSegment_AnimFunctionCallback(SEGIDX, [this](const AnimationParam& param) {
+    #ifdef ENABLE_DEVFEATURE_LIGHTING__BRIGHTNESS_ALREADY_SET_FUNCTION_ARGUMENT
+    SEGMENT.AnimationProcess_LinearBlend_Dynamic_BufferU32_BrightnessAlreadySet(param);
+    #else
     SEGMENT.AnimationProcess_LinearBlend_Dynamic_BufferU32(param);
+    #endif
   });
 
   return USE_ANIMATOR;
@@ -558,7 +572,11 @@ uint16_t mAnimatorLight::EffectAnim__Firefly()
     // Serial.println();
 
     SetSegment_AnimFunctionCallback(SEGIDX, [this](const AnimationParam& param) {
+      #ifdef ENABLE_DEVFEATURE_LIGHTING__BRIGHTNESS_ALREADY_SET_FUNCTION_ARGUMENT
+      SEGMENT.AnimationProcess_LinearBlend_Dynamic_BufferU32_BrightnessAlreadySet(param);
+      #else
       SEGMENT.AnimationProcess_LinearBlend_Dynamic_BufferU32(param);
+      #endif
     });
 
     return USE_ANIMATOR;
