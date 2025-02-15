@@ -47,7 +47,7 @@
    
     
 //       // Event for this
-//       if(pCONT_rules->event_triggered.module_id == D_UNIQUE_MODULE_SENSORS_BUTTONS_ID)
+//       if(tkr_rules->event_triggered.module_id == D_UNIQUE_MODULE_SENSORS_BUTTONS_ID)
 //       {
    
 //         ALOG_INF(PSTR("Button State Changed1 : MQTTHandler_Sender"));
@@ -350,12 +350,12 @@
 
 
 // //         // #ifdef USE_MODULE_CORE_RULES
-// //         // pCONT_rules->NewEvent(D_UNIQUE_MODULE_SENSORS_BUTTONS_ID,button_index,state);
+// //         // tkr_rules->NewEvent(D_UNIQUE_MODULE_SENSORS_BUTTONS_ID,button_index,state);
 // //         // #endif
 // //         // pCONT->Tasker_Interface(FUNC_EVENT_INPUT_STATE_CHANGED_ID);
 
 
-// //    pCONT_rules->NewEventRun(D_UNIQUE_MODULE_SENSORS_BUTTONS_ID, FUNC_EVENT_INPUT_STATE_CHANGED_ID, button_index, state); // Event has occured, save and check it            
+// //    tkr_rules->NewEventRun(D_UNIQUE_MODULE_SENSORS_BUTTONS_ID, FUNC_EVENT_INPUT_STATE_CHANGED_ID, button_index, state); // Event has occured, save and check it            
           
 // //           //}
 // //         // } else {
@@ -547,7 +547,7 @@
 //         {           
 //           AddLog(LOG_LEVEL_INFO,PSTR(D_LOG_BUTTONS "#%d Changed : Level %d | %s " D_IMMEDIATE), id, state, state==BUTTON_PRESSED_ID?"ACTIVE":"Not Active" );          
 //           // <length of data>,<state>,<type ie single/multi/hold><count>  
-//           pCONT_rules->NewEventRun_NumArg(D_UNIQUE_MODULE_SENSORS_BUTTONS_ID, FUNC_EVENT_INPUT_STATE_CHANGED_ID, id, 2, state, INPUT_TYPE_SINGLE_PRESS_ID); // 1 press event
+//           tkr_rules->NewEventRun_NumArg(D_UNIQUE_MODULE_SENSORS_BUTTONS_ID, FUNC_EVENT_INPUT_STATE_CHANGED_ID, id, 2, state, INPUT_TYPE_SINGLE_PRESS_ID); // 1 press event
 //         }
 //         else
 //         {
@@ -581,7 +581,7 @@
 //           if (buttons[id].hold_timer == loops_per_second * hold_time_extent * tkr_set->Settings.setoption_255[P_HOLD_TIME] / 10) {  // SetOption32 (40) - Button held for factor times longer
 //             // snprintf_P(scmnd, sizeof(scmnd), PSTR(D_CMND_SETOPTION "13 0"));  // Disable single press only             // ExecuteCommand(scmnd, SRC_BUTTON); 
 //           // <length of data>,<state>,<type ie single/multi/hold><count>  
-//             pCONT_rules->NewEventRun_NumArg(D_UNIQUE_MODULE_SENSORS_BUTTONS_ID, FUNC_EVENT_INPUT_STATE_CHANGED_ID, id, 2, state, INPUT_TYPE_SINGLE_HOLD_ID);    // ERROR - Not sure what this section will do, long press no multi?
+//             tkr_rules->NewEventRun_NumArg(D_UNIQUE_MODULE_SENSORS_BUTTONS_ID, FUNC_EVENT_INPUT_STATE_CHANGED_ID, id, 2, state, INPUT_TYPE_SINGLE_HOLD_ID);    // ERROR - Not sure what this section will do, long press no multi?
 //           }
 //         } 
 //         else 
@@ -597,7 +597,7 @@
           
 //             // 3 = button pressed state, presses of button, type is long press?
 //             // <length of data>,<state>,<type ie single/multi/hold><count>  
-//             pCONT_rules->NewEventRun_NumArg(D_UNIQUE_MODULE_SENSORS_BUTTONS_ID, FUNC_EVENT_INPUT_STATE_CHANGED_ID, id, 2, state, INPUT_TYPE_SINGLE_HOLD_ID); 
+//             tkr_rules->NewEventRun_NumArg(D_UNIQUE_MODULE_SENSORS_BUTTONS_ID, FUNC_EVENT_INPUT_STATE_CHANGED_ID, id, 2, state, INPUT_TYPE_SINGLE_HOLD_ID); 
 //           }
 //           // Long pressed not yet reached 
 //           else {
@@ -614,7 +614,7 @@
 //                 // snprintf_P(scmnd, sizeof(scmnd), PSTR(D_CMND_RESET " 1"));
 //                 // ExecuteCommand(scmnd, SRC_BUTTON);                
 //                 ALOG_INF(PSTR(D_LOG_BUTTONS D_CMND_RESET " 1"));                
-//                 pCONT_rules->NewEventRun_NumArg(D_UNIQUE_MODULE_SENSORS_BUTTONS_ID, FUNC_EVENT_INPUT_STATE_CHANGED_ID, id, 2, state, INPUT_TYPE_SINGLE_HOLD_ID);    // Resetting command
+//                 tkr_rules->NewEventRun_NumArg(D_UNIQUE_MODULE_SENSORS_BUTTONS_ID, FUNC_EVENT_INPUT_STATE_CHANGED_ID, id, 2, state, INPUT_TYPE_SINGLE_HOLD_ID);    // Resetting command
 //                 #endif // ENABLE_DEVFEATURE_DISABLE_BUTTON_CAN_RESET_DEVICE
 //               }
 //             }
@@ -642,7 +642,7 @@
 //             // <length of data>,<state>,<type ie single/multi/hold><count>  
 //             // Single or Multiple Events 
 
-//             pCONT_rules->NewEventRun_NumArg(D_UNIQUE_MODULE_SENSORS_BUTTONS_ID, FUNC_EVENT_INPUT_STATE_CHANGED_ID, id, 3, state, buttons[id].press_counter == 1 ? INPUT_TYPE_SINGLE_PRESS_ID : INPUT_TYPE_MULTIPLE_PRESS_ID, buttons[id].press_counter);
+//             tkr_rules->NewEventRun_NumArg(D_UNIQUE_MODULE_SENSORS_BUTTONS_ID, FUNC_EVENT_INPUT_STATE_CHANGED_ID, id, 3, state, buttons[id].press_counter == 1 ? INPUT_TYPE_SINGLE_PRESS_ID : INPUT_TYPE_MULTIPLE_PRESS_ID, buttons[id].press_counter);
 
 //             buttons[id].press_counter = 0;
 //           }
@@ -726,25 +726,25 @@
 //      * @brief New method to show type of press (short/long/multi)
 //      **/
 //     JBI->Level_Start("Event"); // asumes only one button at a time, will need nicer formatting later (arrays?)
-//       JBI->Add("ID", pCONT_rules->event_triggered.device_id);
-//       // JBI->Add("func", pCONT_rules->event_triggered.function_id);
-//       // JBI->Array_AddArray("data1", pCONT_rules->event_triggered.value.data, pCONT_rules->event_triggered.value.length);
+//       JBI->Add("ID", tkr_rules->event_triggered.device_id);
+//       // JBI->Add("func", tkr_rules->event_triggered.function_id);
+//       // JBI->Array_AddArray("data1", tkr_rules->event_triggered.value.data, tkr_rules->event_triggered.value.length);
 
 //       // [state][type][opt. count]
-//       if(pCONT_rules->event_triggered.value.data[1] == INPUT_TYPE_SINGLE_PRESS_ID)
+//       if(tkr_rules->event_triggered.value.data[1] == INPUT_TYPE_SINGLE_PRESS_ID)
 //       {
 //         JBI->Add("type", "Single");
 //         JBI->Add("count", 1);
 //       }
-//       if(pCONT_rules->event_triggered.value.data[1] == INPUT_TYPE_SINGLE_HOLD_ID)
+//       if(tkr_rules->event_triggered.value.data[1] == INPUT_TYPE_SINGLE_HOLD_ID)
 //       {
 //         JBI->Add("type", "Hold");
-//         JBI->Add("count", pCONT_rules->event_triggered.value.data[2]);
+//         JBI->Add("count", tkr_rules->event_triggered.value.data[2]);
 //       }
-//       if(pCONT_rules->event_triggered.value.data[1] == INPUT_TYPE_MULTIPLE_PRESS_ID)
+//       if(tkr_rules->event_triggered.value.data[1] == INPUT_TYPE_MULTIPLE_PRESS_ID)
 //       {
 //         JBI->Add("type", "Multiple");
-//         JBI->Add("count", pCONT_rules->event_triggered.value.data[2]);
+//         JBI->Add("count", tkr_rules->event_triggered.value.data[2]);
 //       }
 
 //     JBI->End();

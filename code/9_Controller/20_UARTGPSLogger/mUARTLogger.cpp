@@ -100,20 +100,20 @@ void mUARTLogger::Init(void)
     #if defined(USE_MODULE_SENSORS_BUTTONS)
     
     // // Trigger0
-    // p_event = &pCONT_rules->rules[pCONT_rules->rules_active_index].trigger;   
+    // p_event = &tkr_rules->rules[tkr_rules->rules_active_index].trigger;   
     // p_event->module_id = EM_MODULE_SENSORS_BUTTONS_ID;
     // p_event->function_id = TASK_EVENT_INPUT_STATE_CHANGED_ID;
     // p_event->device_id = 0; // Button0
     // p_event->value.length = 0;
     // p_event->value.data[p_event->value.length++] = 1;  // Pressed 
     // // Command0
-    // p_event = &pCONT_rules->rules[pCONT_rules->rules_active_index].command;   
+    // p_event = &tkr_rules->rules[tkr_rules->rules_active_index].command;   
     // p_event->module_id = EM_MODULE_CONTROLLER_SONOFF_IFAN_ID;
     // p_event->function_id = TASK_EVENT_SET_SPEED_ID;
     // p_event->device_id = 0; // Button0
     // p_event->value.length = 0;
     // p_event->value.data[p_event->value.length++] = STATE_NUMBER_INCREMENT_ID;  // Increment 
-    // pCONT_rules->rules_active_index++;
+    // tkr_rules->rules_active_index++;
     // settings.loaded_default_for_moduled = true;
 
     #endif

@@ -2100,7 +2100,7 @@
   //   // #define ENABLE_FEATURE_SETTINGS_STORAGE__ENABLED_SAVING_BEFORE_OTA
     
   #define ENABLE_DEVFEATURE_STORAGE__SYSTEM_CONFIG__LOAD_WITH_TEMPLATES_OVERRIDE
-  #define ENABLE_DEVFEATURE_STORAGE__ANIMATION_PLAYLISTS
+  // #define ENABLE_DEVFEATURE_STORAGE__ANIMATION_PLAYLISTS
 
   #define ENABLE_DEVFEATURE__SAVE_MODULE_DATA
   #define ENABLE_DEVFEATURE__SAVE_CRITICAL_BOOT_DATA_FOR_DEBUG_BUT_ONLY_SPLASH_ON_BOOT_FOR_NOW__EG_SSID_MQTT_SERVER_IP_ADDRESS // until devices can reliably be used without compiling per device
@@ -2109,13 +2109,32 @@
 
 
   /***********************************
+   * SECTION: Enable with one line (to make it easier to switch on and off for debugging)
+  ************************************/  
+  
+  #define ENABLE_TEMPLATE_SECTION__SENSORS__BME
+  #define ENABLE_TEMPLATE_SECTION__SENSORS__DS18X20
+  #define ENABLE_TEMPLATE_SECTION__SENSORS__SOLAR
+  #define ENABLE_TEMPLATE_SECTION__SENSORS__BH1750
+  #define ENABLE_TEMPLATE_SECTION__SENSORS__MOTION
+  #define ENABLE_TEMPLATE_SECTION__LIGHTING
+  #define ENABLE_TEMPLATE_SECTION__ENERGY
+  #define ENABLE_TEMPLATE_SECTION__ENERGY__PZEM
+  #define ENABLE_TEMPLATE_SECTION__ENERGY__INA219
+  #define ENABLE_TEMPLATE_SECTION__DISPLAY_NEXTION
+  #define ENABLE_TEMPLATE_SECTION__CONTROLLER__HVAC
+
+
+  /***********************************
    * SECTION: Network Configs
   ************************************/    
 
   #define ENABLE_DEVFEATURE_JSON__ASYNCJSON_V6
 
-  #define USE_MODULE_NETWORK_WEBSERVER
-  #define ENABLE_WEBSERVER_LIGHTING_WEBUI
+  // #define USE_MODULE_NETWORK_WEBSERVER
+  // #define ENABLE_WEBSERVER_LIGHTING_WEBUI
+
+  #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 4000
 
 
   /***********************************
@@ -2140,7 +2159,7 @@
   // #define DEVICENAMEBUFFER_NAME_BUFFER_LENGTH 1000
   // #define DEVICENAMEBUFFER_NAME_INDEX_LENGTH  100
   // #define DB18_SENSOR_MAX                     15
-  // #define DATA_BUFFER_PAYLOAD_MAX_LENGTH      3000 //needed for db sensosrs, but currently causes crash in lighting
+  #define DATA_BUFFER_PAYLOAD_MAX_LENGTH      3000 //needed for db sensosrs, but currently causes crash in lighting
   // #define MQTT_MAX_PACKET_SIZE                3000
 
   #define USE_MODULE_SENSORS_INTERFACE
@@ -2149,6 +2168,12 @@
   // #define USE_MODULE_SENSORS__DS18X20_ESP32_2023
   //   #define DS18X20_MAX_SENSORS 20
   //   #define ENABLE_DEVFEATURE_DS18B20_SEARCHING_SENSOR_LOCATION_WITH_ADDRESS_TEMP_SPLASH
+  
+  #ifdef ENABLE_TEMPLATE_SECTION__SENSORS__DS18X20
+    #define USE_MODULE_SENSORS__DS18X20_ESP32_2023
+      #define DS18X20_MAX_SENSORS 20
+        #define ENABLE_DEBUG_MQTT_CHANNEL_DB18X20    
+  #endif 
   #define USE_MODULE_SENSORS_BME
     #define ENABLE_DEVFEATURE_BME680
       
@@ -2223,8 +2248,8 @@
       "\"23\":\"" D_GPIO_FUNCTION_I2C_SDA_CTR   "\","
       #endif
       #ifdef USE_MODULE_SENSORS__DS18X20_ESP32_2023
-      "\"18\":\"" D_GPIO_FUNCTION_DS18X20_1_CTR  "\"," // Group 1 = Basic Set, use just these until device is stable
-      "\"19\":\"" D_GPIO_FUNCTION_DS18X20_2_CTR  "\"," // Group 2 = Detailed, use these only after stress testing with 3 pins for sensors with rewrite. Read datasheet.
+      "\"4\":\"" D_GPIO_FUNCTION_DS18X20_1_CTR  "\"," // Group 1 = Basic Set, use just these until device is stable
+      // "\"19\":\"" D_GPIO_FUNCTION_DS18X20_2_CTR  "\"," // Group 2 = Detailed, use these only after stress testing with 3 pins for sensors with rewrite. Read datasheet.
       #endif
       #ifdef USE_MODULE_SENSORS_PIR
       "\"32\":\"" D_GPIO_FUNCTION_SWT1_CTR "\","       // Stairs
@@ -2271,51 +2296,85 @@
   /***********************************
    * SECTION: Device Configs
   ************************************/    
+ 
 
-  /**
-   * @brief Group 1: Primary HVAC Feedback Sensors 
-   */
-  #define D_DEVICE_SENSOR_DB18S20_01_NAME        "Immersion_Heater"
-  #define D_DEVICE_SENSOR_DB18S20_01_ADDRESS     "[40,255,136,105,53,22,4,114]"
-  #define D_DEVICE_SENSOR_DB18S20_02_NAME        "Tank_Top_90" 
-  #define D_DEVICE_SENSOR_DB18S20_02_ADDRESS     "[40,255,162,167,53,22,4,27]"
-  #define D_DEVICE_SENSOR_DB18S20_03_NAME        "Tank_Middle_50"
-  #define D_DEVICE_SENSOR_DB18S20_03_ADDRESS     "[40,255,219,93,53,22,4,239]"
-  #define D_DEVICE_SENSOR_DB18S20_04_NAME        "Tank_Bottom_25"
-  #define D_DEVICE_SENSOR_DB18S20_04_ADDRESS     "[40,255,50,176,193,23,4,197]"
-  #define D_DEVICE_SENSOR_DB18S20_05_NAME        "Tank_Out" // Rear Pipe
-  #define D_DEVICE_SENSOR_DB18S20_05_ADDRESS     "[40,255,216,108,53,22,4,102]"
+//  {"NumDevices":13,"DeviceNameIndex":[-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],"AddressList":[
+//   [40,48,142,47,0,0,0,112],
+//   [40,4,161,51,0,0,0,252],
+//   [40,194,109,51,0,0,0,210],
+//   [40,38,95,51,0,0,0,32],
+//   [40,182,157,48,0,0,0,184],
+//   [40,153,85,50,0,0,0,49],
+//   [40,217,113,51,0,0,0,44],
+//   [40,121,104,51,0,0,0,255],
+//   [40,53,140,51,0,0,0,50],
+//   [40,181,105,48,0,0,0,88],
+//   [40,15,153,47,0,0,0,148],
+//   [40,111,124,47,0,0,0,95],
+//   [40,127,141,47,0,0,0,111]]}
+
+/*** View of the enclosure fron the front, with signal starting at the bottom left
+ * 
+ *     *******************************************
+ *     *   FTL             FTC             FTR   *
+ *     * FL100              ||             FR100 *
+ *     *                    ||                   *
+ *     * FL75               ||              FR75 *
+ *     *                 Front View              *
+ *     * FL50               ||              FR50 *
+ *     *                    ||                   *
+ *     * FL25               ||              FR25 *
+ *     *                    ||                   *
+ *     * FL00               ||              FR00 *
+ *     *                    ||                   *
+ *     *******************************************
+ */
+
+/**
+ * @brief Group 1: Front enclosure sensors (bottom left, up, across, to bottom right)
+ * */
+// Front right - top to bottom
+#define D_DEVICE_SENSOR_DB18S20_01_NAME        "FrontRight00"
+#define D_DEVICE_SENSOR_DB18S20_01_ADDRESS     "[40,153,85,50,0,0,0,49]"
+#define D_DEVICE_SENSOR_DB18S20_02_NAME        "FrontRight25"
+#define D_DEVICE_SENSOR_DB18S20_02_ADDRESS     "[40,48,142,47,0,0,0,112]"
+#define D_DEVICE_SENSOR_DB18S20_03_NAME        "FrontRight50"
+#define D_DEVICE_SENSOR_DB18S20_03_ADDRESS     "[40,38,95,51,0,0,0,32]"
+#define D_DEVICE_SENSOR_DB18S20_04_NAME        "FrontRight75"
+#define D_DEVICE_SENSOR_DB18S20_04_ADDRESS     "[40,15,153,47,0,0,0,148]"
+#define D_DEVICE_SENSOR_DB18S20_05_NAME        "FrontRight100"
+#define D_DEVICE_SENSOR_DB18S20_05_ADDRESS     "[40,217,113,51,0,0,0,44]"
+// Front cetnre
+#define D_DEVICE_SENSOR_DB18S20_06_NAME        "FrontTopLeft"
+#define D_DEVICE_SENSOR_DB18S20_06_ADDRESS     "[40,182,157,48,0,0,0,184]"
+#define D_DEVICE_SENSOR_DB18S20_07_NAME        "FrontTopCentre"
+#define D_DEVICE_SENSOR_DB18S20_07_ADDRESS     "[40,121,104,51,0,0,0,255]"
+#define D_DEVICE_SENSOR_DB18S20_08_NAME        "FrontTopRight"
+#define D_DEVICE_SENSOR_DB18S20_08_ADDRESS     "[40,111,124,47,0,0,0,95]"
+// Front left - bottom to top
+#define D_DEVICE_SENSOR_DB18S20_09_NAME        "FrontLeft00"
+#define D_DEVICE_SENSOR_DB18S20_09_ADDRESS     "[40,127,141,47,0,0,0,111]"
+#define D_DEVICE_SENSOR_DB18S20_10_NAME        "FrontLeft25"
+#define D_DEVICE_SENSOR_DB18S20_10_ADDRESS     "[40,53,140,51,0,0,0,50]"
+#define D_DEVICE_SENSOR_DB18S20_11_NAME        "FrontLeft50"
+#define D_DEVICE_SENSOR_DB18S20_11_ADDRESS     "[40,181,105,48,0,0,0,88]"
+#define D_DEVICE_SENSOR_DB18S20_12_NAME        "FrontLeft75"
+#define D_DEVICE_SENSOR_DB18S20_12_ADDRESS     "[40,4,161,51,0,0,0,252]"
+#define D_DEVICE_SENSOR_DB18S20_13_NAME        "FrontLeft100"
+#define D_DEVICE_SENSOR_DB18S20_13_ADDRESS     "[40,194,109,51,0,0,0,210]"
+
   
-  /**
-   * @brief Group 2: Additonal Sensors
-   * */
-  #define D_DEVICE_SENSOR_DB18S20_10_NAME        "TankPosition00"
-  #define D_DEVICE_SENSOR_DB18S20_10_ADDRESS     "[40,0,118,128,59,71,5,227]"
-  #define D_DEVICE_SENSOR_DB18S20_11_NAME        "TankPosition20"
-  #define D_DEVICE_SENSOR_DB18S20_11_ADDRESS     "[40,0,114,20,59,71,5,19]"
-  #define D_DEVICE_SENSOR_DB18S20_12_NAME        "TankPosition40"
-  #define D_DEVICE_SENSOR_DB18S20_12_ADDRESS     "[40,0,66,109,59,71,5,172]"
-  #define D_DEVICE_SENSOR_DB18S20_13_NAME        "TankPosition60"
-  #define D_DEVICE_SENSOR_DB18S20_13_ADDRESS     "[40,0,108,65,59,71,4,202]"
-  #define D_DEVICE_SENSOR_DB18S20_14_NAME        "TankPosition80"
-  #define D_DEVICE_SENSOR_DB18S20_14_ADDRESS     "[40,0,83,19,59,71,6,66]"
-  #define D_DEVICE_SENSOR_DB18S20_15_NAME        "TankPosition100"
-  #define D_DEVICE_SENSOR_DB18S20_15_ADDRESS     "[40,0,32,23,59,71,5,141]"
-  #define D_DEVICE_SENSOR_DB18S20_16_NAME        "BoilerLoopTop"
-  #define D_DEVICE_SENSOR_DB18S20_16_ADDRESS     "[40,0,40,61,59,71,4,134]"
-  #define D_DEVICE_SENSOR_DB18S20_17_NAME        "BoilerLoopBottom"
-  #define D_DEVICE_SENSOR_DB18S20_17_ADDRESS     "[40,0,66,140,59,71,6,136]"
-  #define D_DEVICE_SENSOR_DB18S20_18_NAME        "ImmersionFeedIn"
-  #define D_DEVICE_SENSOR_DB18S20_18_ADDRESS     "[40,0,95,50,59,71,5,126]"
-  #define D_DEVICE_SENSOR_DB18S20_19_NAME        "FeedRed"
-  #define D_DEVICE_SENSOR_DB18S20_19_ADDRESS     "[40,0,149,87,59,71,5,240]"
-  
+  #define D_DEVICE_SENSOR_DB18S20_14_NAME        "Sensor 01"
+  #define D_DEVICE_SENSOR_DB18S20_14_ADDRESS     "[40,68,132,149,240,1,60,87]"
+  #define D_DEVICE_SENSOR_DB18S20_15_NAME        "Sensor 02" 
+  #define D_DEVICE_SENSOR_DB18S20_15_ADDRESS     "[40,174,159,3,0,0,0,1]"
+
 
 
   #define D_DEVICE_DRIVER_RELAY_01_NAME "Immersion"
   
-  #define D_DEVICE_SENSOR_BME_LONG_WIRE_NAME  "PrinterEnclosureTop"
-  #define D_DEVICE_SENSOR_BME_SHORT_WIRE_NAME "PrinterEnclosureBottom"
+  #define D_DEVICE_SENSOR_BME_LONG_WIRE_NAME  "BME Dryer"
+  #define D_DEVICE_SENSOR_BME_SHORT_WIRE_NAME "BME Enclosure"
 
   #define D_DEVICE_CONTROLLER_HVAC_ZONE0_NAME "Immersion"
 
@@ -2337,17 +2396,17 @@
         "\"" D_DEVICE_SENSOR_DB18S20_03_NAME "\","
         "\"" D_DEVICE_SENSOR_DB18S20_04_NAME "\","
         "\"" D_DEVICE_SENSOR_DB18S20_05_NAME "\","
-        // Group 2
+        "\"" D_DEVICE_SENSOR_DB18S20_06_NAME "\","
+        "\"" D_DEVICE_SENSOR_DB18S20_07_NAME "\","
+        "\"" D_DEVICE_SENSOR_DB18S20_08_NAME "\","
+        "\"" D_DEVICE_SENSOR_DB18S20_09_NAME "\","
         "\"" D_DEVICE_SENSOR_DB18S20_10_NAME "\","
         "\"" D_DEVICE_SENSOR_DB18S20_11_NAME "\","
         "\"" D_DEVICE_SENSOR_DB18S20_12_NAME "\","
         "\"" D_DEVICE_SENSOR_DB18S20_13_NAME "\","
+        // Group 2
         "\"" D_DEVICE_SENSOR_DB18S20_14_NAME "\","
-        "\"" D_DEVICE_SENSOR_DB18S20_15_NAME "\","
-        "\"" D_DEVICE_SENSOR_DB18S20_16_NAME "\","
-        "\"" D_DEVICE_SENSOR_DB18S20_17_NAME "\","
-        "\"" D_DEVICE_SENSOR_DB18S20_18_NAME "\","
-        "\"" D_DEVICE_SENSOR_DB18S20_19_NAME "\""      
+        "\"" D_DEVICE_SENSOR_DB18S20_15_NAME "\""    
       "],"
       "\"" D_MODULE_CONTROLLER_HVAC_CTR "\":["
         "\"" D_DEVICE_CONTROLLER_HVAC_ZONE0_NAME "\""
@@ -2360,18 +2419,18 @@
         "\"" D_DEVICE_SENSOR_DB18S20_02_NAME "\":" D_DEVICE_SENSOR_DB18S20_02_ADDRESS ","
         "\"" D_DEVICE_SENSOR_DB18S20_03_NAME "\":" D_DEVICE_SENSOR_DB18S20_03_ADDRESS ","
         "\"" D_DEVICE_SENSOR_DB18S20_04_NAME "\":" D_DEVICE_SENSOR_DB18S20_04_ADDRESS ","      
-        "\"" D_DEVICE_SENSOR_DB18S20_05_NAME "\":" D_DEVICE_SENSOR_DB18S20_05_ADDRESS ","  
+        "\"" D_DEVICE_SENSOR_DB18S20_05_NAME "\":" D_DEVICE_SENSOR_DB18S20_05_ADDRESS ","       
+        "\"" D_DEVICE_SENSOR_DB18S20_06_NAME "\":" D_DEVICE_SENSOR_DB18S20_06_ADDRESS ","       
+        "\"" D_DEVICE_SENSOR_DB18S20_07_NAME "\":" D_DEVICE_SENSOR_DB18S20_07_ADDRESS ","       
+        "\"" D_DEVICE_SENSOR_DB18S20_08_NAME "\":" D_DEVICE_SENSOR_DB18S20_08_ADDRESS ","       
+        "\"" D_DEVICE_SENSOR_DB18S20_09_NAME "\":" D_DEVICE_SENSOR_DB18S20_09_ADDRESS ","  
         // Group 2
         "\"" D_DEVICE_SENSOR_DB18S20_10_NAME "\":" D_DEVICE_SENSOR_DB18S20_10_ADDRESS ","
         "\"" D_DEVICE_SENSOR_DB18S20_11_NAME "\":" D_DEVICE_SENSOR_DB18S20_11_ADDRESS ","
         "\"" D_DEVICE_SENSOR_DB18S20_12_NAME "\":" D_DEVICE_SENSOR_DB18S20_12_ADDRESS ","
         "\"" D_DEVICE_SENSOR_DB18S20_13_NAME "\":" D_DEVICE_SENSOR_DB18S20_13_ADDRESS ","
         "\"" D_DEVICE_SENSOR_DB18S20_14_NAME "\":" D_DEVICE_SENSOR_DB18S20_14_ADDRESS ","
-        "\"" D_DEVICE_SENSOR_DB18S20_15_NAME "\":" D_DEVICE_SENSOR_DB18S20_15_ADDRESS ","
-        "\"" D_DEVICE_SENSOR_DB18S20_16_NAME "\":" D_DEVICE_SENSOR_DB18S20_16_ADDRESS ","
-        "\"" D_DEVICE_SENSOR_DB18S20_17_NAME "\":" D_DEVICE_SENSOR_DB18S20_17_ADDRESS ","
-        "\"" D_DEVICE_SENSOR_DB18S20_18_NAME "\":" D_DEVICE_SENSOR_DB18S20_18_ADDRESS ","
-        "\"" D_DEVICE_SENSOR_DB18S20_19_NAME "\":" D_DEVICE_SENSOR_DB18S20_19_ADDRESS ""
+        "\"" D_DEVICE_SENSOR_DB18S20_15_NAME "\":" D_DEVICE_SENSOR_DB18S20_15_ADDRESS ""
       "}"  
     "},"
     "\"" "HVACZone" "\":{"
@@ -2386,7 +2445,7 @@
         "}"
       "]"
     "}"
-    "\"MQTTUpdateSeconds\":{\"IfChanged\":5,\"TelePeriod\":10,\"ConfigPeriod\":60}"   // if changed needs to be reconfigured so its only sent teleperiod amount, but flag is set when needed (rather than ischanged variables)
+    "\"MQTTUpdateSeconds\":{\"IfChanged\":1,\"TelePeriod\":1,\"ConfigPeriod\":60}"   // if changed needs to be reconfigured so its only sent teleperiod amount, but flag is set when needed (rather than ischanged variables)
   "}";
 
   // #ifdef USE_RGB_OUT_LANDING_PANEL
@@ -2450,38 +2509,38 @@
   // #endif // USE_MODULE_LIGHTS_INTERFACE
   // #endif // USE_RGB_OUT_TANK
     
-  #define USE_RULES_TEMPLATE
-  DEFINE_PGM_CTR(RULES_TEMPLATE)
-  "{"// for PIR to follow
-    "\"Rule0\":{"
-      "\"Trigger\":{"
-        "\"Module\":\"" D_MODULE_SENSORS_SWITCHES_CTR "\","
-        "\"Function\":\"" D_TASK_EVENT_INPUT_STATE_CHANGED_CTR "\","
-        "\"DeviceName\":0,"
-        "\"State\":\"On\""
-      "},"
-      "\"Command\":{"
-        "\"Module\":\"" D_MODULE_SENSORS_MOTION_FRIENDLY_CTR "\","
-        "\"Function\":\"" D_TASK_EVENT_MOTION_STARTED_CTR "\","
-        "\"DeviceName\":0," 
-        "\"State\":\"Follow\""
-      "}"
-    "},"
-    "\"Rule1\":{"
-      "\"Trigger\":{"
-        "\"Module\":\"" D_MODULE_SENSORS_SWITCHES_CTR "\","
-        "\"Function\":\"" D_TASK_EVENT_INPUT_STATE_CHANGED_CTR "\","
-        "\"DeviceName\":1,"
-        "\"State\":\"On\""
-      "},"
-      "\"Command\":{"
-        "\"Module\":\"" D_MODULE_SENSORS_MOTION_FRIENDLY_CTR "\","
-        "\"Function\":\"" D_TASK_EVENT_MOTION_STARTED_CTR "\","
-        "\"DeviceName\":1," 
-        "\"State\":\"Follow\""
-      "}"
-    "}"
-  "}";
+  // #define USE_RULES_TEMPLATE
+  // DEFINE_PGM_CTR(RULES_TEMPLATE)
+  // "{"// for PIR to follow
+  //   "\"Rule0\":{"
+  //     "\"Trigger\":{"
+  //       "\"Module\":\"" D_MODULE_SENSORS_SWITCHES_CTR "\","
+  //       "\"Function\":\"" D_TASK_EVENT_INPUT_STATE_CHANGED_CTR "\","
+  //       "\"DeviceName\":0,"
+  //       "\"State\":\"On\""
+  //     "},"
+  //     "\"Command\":{"
+  //       "\"Module\":\"" D_MODULE_SENSORS_MOTION_FRIENDLY_CTR "\","
+  //       "\"Function\":\"" D_TASK_EVENT_MOTION_STARTED_CTR "\","
+  //       "\"DeviceName\":0," 
+  //       "\"State\":\"Follow\""
+  //     "}"
+  //   "},"
+  //   "\"Rule1\":{"
+  //     "\"Trigger\":{"
+  //       "\"Module\":\"" D_MODULE_SENSORS_SWITCHES_CTR "\","
+  //       "\"Function\":\"" D_TASK_EVENT_INPUT_STATE_CHANGED_CTR "\","
+  //       "\"DeviceName\":1,"
+  //       "\"State\":\"On\""
+  //     "},"
+  //     "\"Command\":{"
+  //       "\"Module\":\"" D_MODULE_SENSORS_MOTION_FRIENDLY_CTR "\","
+  //       "\"Function\":\"" D_TASK_EVENT_MOTION_STARTED_CTR "\","
+  //       "\"DeviceName\":1," 
+  //       "\"State\":\"Follow\""
+  //     "}"
+  //   "}"
+  // "}";
 
 #endif
 

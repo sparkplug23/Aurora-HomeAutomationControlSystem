@@ -2367,16 +2367,16 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
   DEBUG_LINE_HERE_TRACE
       /** first check if the palette is one that uses the colour picker*/       
       // Handle RGBCCT color palettes
-      if (palette_id >= mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID && palette_id < mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_LENGTH__ID) {
+      if (palette_id >= mPalette::PALETTELIST_SEGMENT__SEGMENT_COLOUR_01__ID && palette_id < mPalette::PALETTELIST_SEGMENT__SEGMENT_COLOUR_LENGTH__ID) {
           
   DEBUG_LINE_HERE_TRACE
   const char* color_id = nullptr;
           switch (palette_id) {
-              case mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID: color_id = "c1"; break;
-              case mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_02__ID: color_id = "c2"; break;
-              case mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_03__ID: color_id = "c3"; break;
-              case mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_04__ID: color_id = "c4"; break;
-              case mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_05__ID: color_id = "c5"; break;
+              case mPalette::PALETTELIST_SEGMENT__SEGMENT_COLOUR_01__ID: color_id = "c1"; break;
+              case mPalette::PALETTELIST_SEGMENT__SEGMENT_COLOUR_02__ID: color_id = "c2"; break;
+              case mPalette::PALETTELIST_SEGMENT__SEGMENT_COLOUR_03__ID: color_id = "c3"; break;
+              case mPalette::PALETTELIST_SEGMENT__SEGMENT_COLOUR_04__ID: color_id = "c4"; break;
+              case mPalette::PALETTELIST_SEGMENT__SEGMENT_COLOUR_05__ID: color_id = "c5"; break;
           }
           if (color_id) {
               curPalette_obj.add(color_id);
@@ -2533,7 +2533,7 @@ void mAnimatorLight::serializePalettes(JsonObject root, int page)
       }
     }
 
-    if (palette_id >= mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID && palette_id < mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_LENGTH__ID) {  
+    if (palette_id >= mPalette::PALETTELIST_SEGMENT__SEGMENT_COLOUR_01__ID && palette_id < mPalette::PALETTELIST_SEGMENT__SEGMENT_COLOUR_LENGTH__ID) {  
       palette_display_as_banded_gradient = false; // No gradient for segment palettes
     }
 
@@ -2644,7 +2644,7 @@ void mAnimatorLight::serializeModeNames(JsonArray arr, bool flag_get_first_name_
       case 4: strcat_P(lineBuffer, PSTR(" (uns)")); break; 
     }
     #endif // ENABLE_DEVFEATURE_LIGHTING__ADD_DEVSTAGE_TO_EFFECT_NAME
-    // ALOG_INF(PSTR("serializeModeNames2 %d %s"), getEffectsAmount(), lineBuffer);
+    // ALOG_INF(PSTR("serializeModeNames2 %d/%d %s"), i, getEffectsAmount(), lineBuffer);
     arr.add(lineBuffer);
   }
 

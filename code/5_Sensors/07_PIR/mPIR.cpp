@@ -8,6 +8,7 @@
  * @description The PIR module, works directly with the PIR sensors, and reports motion events.
  * This module will report the event, but will also immediately send the event to the rule engine to be processed, which
  * will then trigger any rules, but also make sure that the "interface" is called to report the new unified motion event structure.
+ * Although it is possible to tie the PIR sensor directly to the rule engine, 
  * 
  * @copyright Copyright (c) 2025
  * 
@@ -174,7 +175,7 @@ void mPIR::ReadSensor()
 
           // Log or trigger events for active state
           AddLog(LOG_LEVEL_INFO, PSTR(D_LOG_PIR "%d (Active)"), sensor_id);
-          pCONT_rules->New_Event(GetModuleUniqueID(), sensor_id, isActive);
+          tkr_rules->New_Event(GetModuleUniqueID(), sensor_id, isActive);
           pCONT->Tasker_Interface(TASK_EVENT_MOTION_STARTED_ID);               // This tied this submodule, directly into the interface, and will send the response immediately (with the rule populated)
         } 
         else 
@@ -186,7 +187,7 @@ void mPIR::ReadSensor()
 
           // Log or trigger events for inactive state
           AddLog(LOG_LEVEL_INFO, PSTR(D_LOG_PIR "%d (Inactive)"), sensor_id);
-          pCONT_rules->New_Event(GetModuleUniqueID(), sensor_id, isActive);
+          tkr_rules->New_Event(GetModuleUniqueID(), sensor_id, isActive);
           pCONT->Tasker_Interface(TASK_EVENT_MOTION_ENDED_ID);                // This tied this submodule, directly into the interface, and will send the response immediately (with the rule populated)
         }
 
@@ -252,10 +253,10 @@ uint8_t mPIR::ConstructJSON_Sensor(uint8_t json_level, bool json_appending){
         
         pir_detect[sensor_id].ischanged = false;
 
-        JBI->Add(D_LOCATION, DLI->GetDeviceName_WithModuleUniqueID( GetModuleUniqueID(), sensor_id, buffer, sizeof(buffer))); 
+        JBI->Add(PM_LOCATION, DLI->GetDeviceName_WithModuleUniqueID( GetModuleUniqueID(), sensor_id, buffer, sizeof(buffer))); 
         JBI->Add(PM_TIME, tkr_time->GetTimeStr(tkr_time->Rtc.local_time).c_str());
         JBI->Add(PM_UTC_TIME, tkr_time->Rtc.local_time);
-        JBI->Add(D_EVENT, pir_detect[sensor_id].isactive ? "detected": "over");
+        JBI->Add(PM_EVENT, pir_detect[sensor_id].isactive ? "detected": "over");
 
       }
     }

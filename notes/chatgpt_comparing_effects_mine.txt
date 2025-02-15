@@ -695,10 +695,10 @@ void mAnimatorLight::LoadEffects()
   /**
    * Manual Pixel: Keeping as legacy, but mode change to realtime will remove this
    **/
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__PIXEL_SET_ELSEWHERE
-  addEffect(EFFECTS_FUNCTION__MANUAL__PIXEL_SET_ELSEWHERE__ID,
-            &mAnimatorLight::EffectAnim__Manual__PixelSetElsewhere,
-            PM_EFFECT_CONFIG__MANUAL__PIXEL_SET_ELSEWHERE__INDEXING);
+  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__CONTROLLED_FROM_ANOTHER_MODULE
+  addEffect(EFFECTS_FUNCTION__MANUAL__CONTROLLED_FROM_ANOTHER_MODULE__ID,
+            &mAnimatorLight::EffectAnim__Manual__ControlledFromAnotherModule,
+            PM_EFFECT_CONFIG__MANUAL__CONTROLLED_FROM_ANOTHER_MODULE__INDEXING);
   #endif
 
   /**

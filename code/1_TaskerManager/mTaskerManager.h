@@ -144,7 +144,7 @@ enum FUNCTION_RESULT_IDS{
   FUNCTION_RESULT_UNKNOWN_ID = 0,
   // Good results
   FUNCTION_RESULT_SUCCESS_ID,
-  FUNCTION_RESULT_HANDLED_ID,
+  FUNCTION_RESULT_HANDLED_ID, // e.g. button press handled by another module, so it can be ignored by hardcoded rules
   FUNCTION_RESULT_ERROR_ID,
   // Length
   FUNCTION_RESULT_LENGTH_ID
@@ -262,7 +262,7 @@ enum MODULE_SUBTYPE_IDS{ //ignores the "interface"
 #endif 
 #ifdef USE_MODULE_CORE_RULES
   #include "2_CoreSystem/10_RuleEngine/mRuleEngine.h"
-  #define   pCONT_rules                             static_cast<mRuleEngine*>(mTaskerManager::GetInstance()->GetModule(D_UNIQUE_MODULE_CORE_RULES_FRIENDLY_ID))
+  #define   tkr_rules                             static_cast<mRuleEngine*>(mTaskerManager::GetInstance()->GetModule(D_UNIQUE_MODULE_CORE_RULES_FRIENDLY_ID))
 #endif
 #ifdef USE_MODULE_CORE_UPDATES
   #include "2_CoreSystem/14_Updates/mUpdates.h"
@@ -287,6 +287,7 @@ enum MODULE_SUBTYPE_IDS{ //ignores the "interface"
 #ifdef USE_MODULE_CORE_SUPPORT
   #include "2_CoreSystem/06_Support/mSupport.h"
   #define   pCONT_sup                               static_cast<mSupport*>(mTaskerManager::GetInstance()->GetModule(D_UNIQUE_MODULE_CORE_SUPPORT_ID))
+  #define tkr_sup pCONT_sup
 #endif 
 #ifdef USE_MODULE_CORE_DEVELOPMENT_DEBUGGING
   #include "2_CoreSystem/99_DevelopmentDebugging/mDevelopmentDebugging.h"
@@ -827,9 +828,9 @@ class mTaskerManager{
       return pModule.size();
     }
 
-    #ifdef ENABLE_DEBUG_FUNCTION_NAMES
-    const char* GetTaskName(uint8_t task);
-    #endif
+    const char* GetTaskName(uint16_t task);
+    const char* GetTaskName_Full(uint16_t task);
+    
     
     void JSONCommand_Run(char* json);
     

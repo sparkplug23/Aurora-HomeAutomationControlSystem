@@ -7,19 +7,19 @@
 
 #define DATA_BUFFER_TOPIC_MAX_LENGTH    100
 
-// #ifdef USE_MODULE_NETWORK_WEBSERVER
-//   #ifndef DATA_BUFFER_PAYLOAD_MAX_LENGTH
-//     #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 3000
-//   #endif
-// #else
-//   #ifndef DATA_BUFFER_PAYLOAD_MAX_LENGTH
-//     #ifdef ESP32
-//       #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 3000
-//     #else
-//       #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 2000
-//     #endif
-//   #endif
-// #endif //USE_MODULE_NETWORK_WEBSERVER
+#ifdef USE_MODULE_NETWORK_WEBSERVER
+  #ifndef DATA_BUFFER_PAYLOAD_MAX_LENGTH
+    #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 3000
+  #endif
+#else
+  #ifndef DATA_BUFFER_PAYLOAD_MAX_LENGTH
+    #ifdef ESP32
+      #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 3000
+    #else
+      #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 2000
+    #endif
+  #endif
+#endif //USE_MODULE_NETWORK_WEBSERVER
 
 
 typedef union {
@@ -174,7 +174,16 @@ inline void releaseDataBufferLock(){};
 #endif // ENABLE_DEVFEATURE_SETTINGS__NVM_NON_VOLATILE_MEMORY
 
 
+// #define ENABLE_DEVFEATURE_REMOVE__UNDESIRED_SETTINGS_TEXT_OF_SUBMODULES
+
+
+
 #ifdef ENABLE_DEVFEATURE_SETTINGS__TEXT_BUFFER
+// Unlike tasmota,
+/***
+ * I likely want to remove any sensor/driver name here, and limit SettingsTxt to be for system related values
+ * ie remove SET_SWITCH_TXT1
+ */
 enum SettingsTextIndex { 
     SET_OTAURL,
     SET_STASSID1, SET_STASSID2,  // MAX_SSIDS
@@ -187,23 +196,27 @@ enum SettingsTextIndex {
     SET_MEM9, SET_MEM10, SET_MEM11, SET_MEM12, SET_MEM13, SET_MEM14, SET_MEM15, SET_MEM16,  // MAX_RULE_MEMS
     SET_FRIENDLYNAME1, SET_FRIENDLYNAME2, SET_FRIENDLYNAME3, SET_FRIENDLYNAME4,
     SET_FRIENDLYNAME5, SET_FRIENDLYNAME6, SET_FRIENDLYNAME7, SET_FRIENDLYNAME8,  // MAX_FRIENDLYNAMES
+    #ifndef ENABLE_DEVFEATURE_REMOVE__UNDESIRED_SETTINGS_TEXT_OF_SUBMODULES
     SET_BUTTON1, SET_BUTTON2, SET_BUTTON3, SET_BUTTON4, SET_BUTTON5, SET_BUTTON6, SET_BUTTON7, SET_BUTTON8,
     SET_BUTTON9, SET_BUTTON10, SET_BUTTON11, SET_BUTTON12, SET_BUTTON13, SET_BUTTON14, SET_BUTTON15, SET_BUTTON16,  // MAX_BUTTON_TEXT
+    #endif // ENABLE_DEVFEATURE_REMOVE__UNDESIRED_SETTINGS_TEXT_OF_SUBMODULES
     SET_TEMPLATE_NAME,
     SET_DEV_GROUP_NAME1, SET_DEV_GROUP_NAME2, SET_DEV_GROUP_NAME3, SET_DEV_GROUP_NAME4,  // MAX_DEV_GROUP_NAMES
     SET_DEVICENAME,
     SET_TELEGRAM_TOKEN, SET_TELEGRAM_CHATID,
-  #ifdef ESP8266
-    SET_ADC_PARAM1,
-    SET_SWITCH_TXT1, SET_SWITCH_TXT2, SET_SWITCH_TXT3, SET_SWITCH_TXT4, SET_SWITCH_TXT5, SET_SWITCH_TXT6, SET_SWITCH_TXT7, SET_SWITCH_TXT8,  // MAX_SWITCHES_TXT
-  #endif  // ESP8266
-  #ifdef ESP32
-    SET_ADC_PARAM1, SET_ADC_PARAM2, SET_ADC_PARAM3, SET_ADC_PARAM4, SET_ADC_PARAM5, SET_ADC_PARAM6, SET_ADC_PARAM7, SET_ADC_PARAM8,  // MAX_ADCS
-    SET_SWITCH_TXT1, SET_SWITCH_TXT2, SET_SWITCH_TXT3, SET_SWITCH_TXT4, SET_SWITCH_TXT5, SET_SWITCH_TXT6, SET_SWITCH_TXT7, SET_SWITCH_TXT8,  // MAX_SWITCHES_TXT
-    SET_SWITCH_TXT9, SET_SWITCH_TXT10, SET_SWITCH_TXT11, SET_SWITCH_TXT12, SET_SWITCH_TXT13, SET_SWITCH_TXT14, SET_SWITCH_TXT15, SET_SWITCH_TXT16,  // MAX_SWITCHES_TXT
-    SET_SWITCH_TXT17, SET_SWITCH_TXT18, SET_SWITCH_TXT19, SET_SWITCH_TXT20, SET_SWITCH_TXT21, SET_SWITCH_TXT22, SET_SWITCH_TXT23, SET_SWITCH_TXT24,  // MAX_SWITCHES_TXT
-    SET_SWITCH_TXT25, SET_SWITCH_TXT26, SET_SWITCH_TXT27, SET_SWITCH_TXT28,  // MAX_SWITCHES_TXT
-  #endif  // ESP32
+    #ifndef ENABLE_DEVFEATURE_REMOVE__UNDESIRED_SETTINGS_TEXT_OF_SUBMODULES
+    #ifdef ESP8266
+      SET_ADC_PARAM1,
+      SET_SWITCH_TXT1, SET_SWITCH_TXT2, SET_SWITCH_TXT3, SET_SWITCH_TXT4, SET_SWITCH_TXT5, SET_SWITCH_TXT6, SET_SWITCH_TXT7, SET_SWITCH_TXT8,  // MAX_SWITCHES_TXT
+    #endif  // ESP8266
+    #ifdef ESP32
+      SET_ADC_PARAM1, SET_ADC_PARAM2, SET_ADC_PARAM3, SET_ADC_PARAM4, SET_ADC_PARAM5, SET_ADC_PARAM6, SET_ADC_PARAM7, SET_ADC_PARAM8,  // MAX_ADCS
+      SET_SWITCH_TXT1, SET_SWITCH_TXT2, SET_SWITCH_TXT3, SET_SWITCH_TXT4, SET_SWITCH_TXT5, SET_SWITCH_TXT6, SET_SWITCH_TXT7, SET_SWITCH_TXT8,  // MAX_SWITCHES_TXT
+      SET_SWITCH_TXT9, SET_SWITCH_TXT10, SET_SWITCH_TXT11, SET_SWITCH_TXT12, SET_SWITCH_TXT13, SET_SWITCH_TXT14, SET_SWITCH_TXT15, SET_SWITCH_TXT16,  // MAX_SWITCHES_TXT
+      SET_SWITCH_TXT17, SET_SWITCH_TXT18, SET_SWITCH_TXT19, SET_SWITCH_TXT20, SET_SWITCH_TXT21, SET_SWITCH_TXT22, SET_SWITCH_TXT23, SET_SWITCH_TXT24,  // MAX_SWITCHES_TXT
+      SET_SWITCH_TXT25, SET_SWITCH_TXT26, SET_SWITCH_TXT27, SET_SWITCH_TXT28,  // MAX_SWITCHES_TXT
+    #endif  // ESP32
+    #endif // ENABLE_DEVFEATURE_REMOVE__UNDESIRED_SETTINGS_TEXT_OF_SUBMODULES
     SET_SHD_PARAM,
     SET_RGX_SSID, SET_RGX_PASSWORD,
     SET_INFLUXDB_HOST, SET_INFLUXDB_PORT, SET_INFLUXDB_ORG, SET_INFLUXDB_TOKEN, SET_INFLUXDB_BUCKET, SET_INFLUXDB_RP,
@@ -211,8 +224,10 @@ enum SettingsTextIndex {
     SET_TELEGRAM_FINGERPRINT,
     SET_MAX, // limit of texts stored in Settings
     // Index above are not stored in Settings and should be handled specifically in SettingText()
+    #ifndef ENABLE_DEVFEATURE_REMOVE__UNDESIRED_SETTINGS_TEXT_OF_SUBMODULES
     SET_BUTTON17, SET_BUTTON18, SET_BUTTON19, SET_BUTTON20, SET_BUTTON21, SET_BUTTON22, SET_BUTTON23, SET_BUTTON24,
     SET_BUTTON25, SET_BUTTON26, SET_BUTTON27, SET_BUTTON28, SET_BUTTON29, SET_BUTTON30, SET_BUTTON31, SET_BUTTON32,
+    #endif // ENABLE_DEVFEATURE_REMOVE__UNDESIRED_SETTINGS_TEXT_OF_SUBMODULES
     SET_FINAL_MAX
    };
 #endif // ENABLE_DEVFEATURE_SETTINGS__TEXT_BUFFER
@@ -394,6 +409,8 @@ enum PowerOnStateOptions {
   POWER_ALL_OFF_PULSETIME_ON 
 };
 
+enum TopicOptions { CMND, STAT, TELE, nu1, RESULT_OR_CMND, RESULT_OR_STAT, RESULT_OR_TELE };
+
 
 // Ordered in levels, if(>0 then active)
 enum MODULE_STATUS{
@@ -413,6 +430,8 @@ enum INPUT_TYPE_IDS{ //style fron nextion
   INPUT_TYPE_SINGLE_PRESS_ID,
   INPUT_TYPE_MULTIPLE_PRESS_ID,
   INPUT_TYPE_SINGLE_HOLD_ID,
+  INPUT_TYPE_SINGLE_HOLD_RELEASED_ID,
+  INPUT_TYPE_SINGLE_HOLD_RESET_TIME_ID,
   INPUT_TYPE_LENGTH_ID
 };
 
@@ -627,7 +646,7 @@ typedef union {                            // Restricted by MISRA-C Rule 18.4 bu
     uint32_t mqtt_offline : 1;             // bit 10             - SetOption10 - Control MQTT LWT message format
     uint32_t button_swap : 1;              // bit 11 (v5.1.6)    - SetOption11 - Swap button single and double press functionality
     uint32_t stop_flash_rotate : 1;        // bit 12 (v5.2.0)    - SetOption12 - Switch between dynamic or fixed slot flash save location
-    uint32_t button_single : 1;            // bit 13 (v5.4.0)    - SetOption13 - Support only single press to speed up button press recognition
+    uint32_t button_single_press_only : 1;            // bit 13 (v5.4.0)    - SetOption13 - Support only single press to speed up button press recognition
     uint32_t interlock : 1;                // bit 14 (v5.6.0)    - CMND_INTERLOCK
     uint32_t pwm_control : 1;              // bit 15 (v5.8.1)    - SetOption15 - Switch between commands PWM or COLOR/DIMMER/CT/CHANNEL
     uint32_t ws_clock_reverse : 1;         // bit 16 (v5.8.1)    - SetOption16 - Switch between clockwise or counter-clockwise
@@ -1005,7 +1024,7 @@ struct SETTINGS {
   char          serial_delimiter;          // 451
   uint8_t       sbaudrate;                 // 452
   uint8_t       sleep;                     // 453
-  uint8_t       setoption_255[PARAM8_SIZE];
+  uint8_t       setoption_255[PARAM8_SIZE]; // https://tasmota.github.io/docs/Commands/#setoptions
   // Core
   uint16_t      unified_interface_reporting_invalid_reading_timeout_seconds; // 0 is ignored, anything else is the seconds of age above which a sensor should not be reporting (ie is invalid)
   // Network
@@ -1162,6 +1181,19 @@ struct SETTINGS {
     uint8_t enable_serial_logging_filtering = false;    
     bool settings_holder_hardcorded_stored_changed = false; // if true, other files may want to reset too
   }runtime;
+
+  
+  struct XDRVMAILBOX {
+    bool          grpflg;
+    bool          usridx;
+    uint16_t      command_code;
+    uint32_t      index;
+    uint32_t      data_len;
+    int32_t       payload;
+    char         *topic;
+    char         *data;
+    char         *command;
+  } XdrvMailbox;
 
   #define RESET_BOOT_STATUS() memset(&tkr_set->runtime.boot_status,0,sizeof(tkr_set->runtime.boot_status))
 

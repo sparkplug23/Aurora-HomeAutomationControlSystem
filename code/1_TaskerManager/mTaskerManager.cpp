@@ -1,3 +1,15 @@
+/**
+ * @file mTaskerManager.cpp
+ * @author your name (you@domain.com)
+ * @brief 
+ * @version 0.1
+ * @date 2025-02-14
+ * 
+ * @copyright Copyright (c) 2025
+ * 
+ * cooperative multitasking scheduler or a cyclic executive.
+ * 
+ */
 #include "1_TaskerManager/mTaskerManager.h"
 
 mTaskerManager* mTaskerManager::instance = nullptr;
@@ -144,11 +156,11 @@ int8_t mTaskerManager::Tasker_Interface(uint16_t task)
           }
       } else {
           // If the task is not being monitored, just run it
-          mod->Tasker(task, obj);
+          result = mod->Tasker(task, obj);
       }
   #else
       // If metrics are disabled, just run the task
-      mod->Tasker(task, obj);
+      result = mod->Tasker(task, obj);
   #endif
 
     
@@ -642,13 +654,27 @@ uint8_t mTaskerManager::Instance_Init()
 };
 
 
+const char* mTaskerManager::GetTaskName(uint16_t task)
+{
+  
+  switch(task){
+    default:                                          return GetTaskName_Full(task);
+    /**
+     * Common tasks to keep in normal builds (e.g. button input events) 
+     **/
+    case TASK_EVENT_INPUT_STATE_CHANGED_ID:           return PM_TASK_EVENT_INPUT_STATE_CHANGED_CTR;
+  }
+
+}
+
+
 #ifdef ENABLE_DEBUG_FUNCTION_NAMES
-const char* mTaskerManager::GetTaskName(uint8_t task)
+const char* mTaskerManager::GetTaskName_Full(uint16_t task)
 {
   
   switch(task){
     default:
-                                                      return PM_SEARCH_NOMATCH;
+                                                      return PM_UNDEFINED;
     case TASK_POINTER_INIT:                           return PM_TASK_POINTER_INIT_CTR;
     case TASK_TEMPLATES__LOAD_MODULE:                 return PM_TASK_TEMPLATE_LOAD_CTR;
     case TASK_PRE_INIT:                               return PM_TASK_PRE_INIT_CTR;
@@ -733,5 +759,10 @@ const char* mTaskerManager::GetTaskName(uint8_t task)
     case TASK_DEBUG_CONFIGURE:                        return PM_TASK_DEBUG_CONFIGURE_CTR;
   }
 
+}
+#else
+const char* mTaskerManager::GetTaskName_Full(uint16_t task)
+{
+  return PM_UNDEFINED;
 }
 #endif // ENABLE_DEBUG_FUNCTION_NAMES

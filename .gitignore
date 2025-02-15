@@ -2,6 +2,9 @@
 .DS_Store
 .fuse_hidden*
 
+## HIDE PERSONAL PASSWORDS -  holds directory of json encoded messages container passwords
+private  
+
 ## Project files ######
 .pioenvs
 .piolibdeps

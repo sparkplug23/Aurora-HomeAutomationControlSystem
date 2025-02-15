@@ -410,9 +410,6 @@ class mSupport :
     uint16_t GetModuleUniqueID(){ return D_UNIQUE_MODULE_CORE_SUPPORT_ID; }
     
 
-    String GetSwitchText(uint32_t i);
-
-
     void CheckResetConditions();
 
     #ifdef USE_ARDUINO_OTA
@@ -552,7 +549,9 @@ class mSupport :
 
     char* GetState_Name_by_ID(uint8_t id, char* buffer, uint8_t buflen);
     int8_t GetStateNumber(const char *state_text);
-    char* GetStateText(uint8_t state);
+
+    char* GetStateText(uint32_t state);
+    
 
     void SleepDelay(uint32_t mseconds);
 

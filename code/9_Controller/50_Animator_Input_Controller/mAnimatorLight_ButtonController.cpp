@@ -366,14 +366,14 @@
 //   /**
 //    * Buttons: Palette Colours
 //    * */
-//   if(pCONT_rules->event_triggered.device_id == USER_INPUT_BUTTON_1_LEFT)
+//   if(tkr_rules->event_triggered.device_id == USER_INPUT_BUTTON_1_LEFT)
 //   {
 //     // Decrement and wrap
 //     user_input.selected.palette_id = (user_input.selected.palette_id == 0) ? sizeof(palette_options_ids)-1: user_input.selected.palette_id-1;
 //     pCONT_iLight->animation.palette_id = palette_options_ids[user_input.selected.palette_id];
 //     ALOG_INF(PSTR("BUTTON\n\r \"P-\" L[%d] \t (%d)\"%s\""), user_input.selected.palette_id, pCONT_iLight->animation.palette_id, mPaletteI->GetPaletteNameByID(pCONT_iLight->animation.palette_id, buffer, sizeof(buffer)));
 //   }else
-//   if(pCONT_rules->event_triggered.device_id == USER_INPUT_BUTTON_1_RIGHT)
+//   if(tkr_rules->event_triggered.device_id == USER_INPUT_BUTTON_1_RIGHT)
 //   {
 //     // Increment and wrap
 //     user_input.selected.palette_id = (user_input.selected.palette_id == (sizeof(palette_options_ids)-1)) ? 0: user_input.selected.palette_id+1;
@@ -385,14 +385,14 @@
 //   /**
 //    * Button: Brightness
 //    * */
-//   if(pCONT_rules->event_triggered.device_id == USER_INPUT_BUTTON_2_LEFT)
+//   if(tkr_rules->event_triggered.device_id == USER_INPUT_BUTTON_2_LEFT)
 //   {
 //     user_input.selected.brightness_id = (user_input.selected.brightness_id == 0) ? sizeof(brightness_options_ids)-1: user_input.selected.brightness_id-1;
 //     pCONT_iLight->setBriRGB_Global(map(brightness_options_ids[user_input.selected.brightness_id]  ,0,100, 0,255));  
 //     ALOG_INF(PSTR("BUTTON\n\r \"B-\" L[%d] \t %d/255"), user_input.selected.brightness_id, pCONT_iLight->getBriRGB_Global());
 //   }
 //   else 
-//   if(pCONT_rules->event_triggered.device_id == USER_INPUT_BUTTON_2_RIGHT)
+//   if(tkr_rules->event_triggered.device_id == USER_INPUT_BUTTON_2_RIGHT)
 //   {
 //     user_input.selected.brightness_id = (user_input.selected.brightness_id == (sizeof(brightness_options_ids)-1)) ? 0: user_input.selected.brightness_id+1;
 //     pCONT_iLight->setBriRGB_Global(map(brightness_options_ids[user_input.selected.brightness_id]  ,0,100, 0,255));
@@ -402,13 +402,13 @@
 //   /**
 //    * Buttons: Effects
 //    * */
-//   if(pCONT_rules->event_triggered.device_id == USER_INPUT_BUTTON_3_LEFT)
+//   if(tkr_rules->event_triggered.device_id == USER_INPUT_BUTTON_3_LEFT)
 //   {
 //     user_input.selected.effects_id = (user_input.selected.effects_id == 0) ? sizeof(effects_options_ids)-1: user_input.selected.effects_id-1;
 //     flashersettings.function = effects_options_ids[user_input.selected.effects_id];
 //     ALOG_INF(PSTR("BUTTON\n\r \"E-\" L[%d] \t\"%s\""), user_input.selected.effects_id, tkr_anim->GetFlasherFunctionNamebyID(flashersettings.function, buffer, sizeof(buffer)));
 //   }else
-//   if(pCONT_rules->event_triggered.device_id == USER_INPUT_BUTTON_3_RIGHT)
+//   if(tkr_rules->event_triggered.device_id == USER_INPUT_BUTTON_3_RIGHT)
 //   {
 //     user_input.selected.effects_id = (user_input.selected.effects_id == (sizeof(effects_options_ids)-1)) ? 0: user_input.selected.effects_id+1;
 //     flashersettings.function = effects_options_ids[user_input.selected.effects_id];
@@ -418,12 +418,12 @@
 //   /**
 //    * Buttons: Intensity
 //    * */
-//   if(pCONT_rules->event_triggered.device_id == USER_INPUT_BUTTON_4_LEFT)
+//   if(tkr_rules->event_triggered.device_id == USER_INPUT_BUTTON_4_LEFT)
 //   {
 //     user_input.selected.intensity_id = (user_input.selected.intensity_id == 0) ? sizeof(intensity_options_ids)-1: user_input.selected.intensity_id-1;
 //     ALOG_INF(PSTR("BUTTON\n\r \"I-\" L[%d] \t %d"), user_input.selected.intensity_id, intensity_options_ids[user_input.selected.intensity_id]);
 //   }else
-//   if(pCONT_rules->event_triggered.device_id == USER_INPUT_BUTTON_4_RIGHT)
+//   if(tkr_rules->event_triggered.device_id == USER_INPUT_BUTTON_4_RIGHT)
 //   {
 //     user_input.selected.intensity_id = (user_input.selected.intensity_id == (sizeof(intensity_options_ids)-1)) ? 0: user_input.selected.intensity_id+1;
 //     ALOG_INF(PSTR("BUTTON\n\r \"I+\" L[%d] \t %d"), user_input.selected.intensity_id, intensity_options_ids[user_input.selected.intensity_id]);
@@ -432,7 +432,7 @@
 //   /**
 //    * If event was serviced, then clear it
 //    * */
-//   pCONT_rules->Reset(&pCONT_rules->event_triggered);
+//   tkr_rules->Reset(&tkr_rules->event_triggered);
 
 //   PhysicalController_Convert_IDs_to_Internal_Parameters();
 

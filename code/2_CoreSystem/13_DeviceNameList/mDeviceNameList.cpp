@@ -230,41 +230,23 @@ const char* DeviceNameList::GetDeviceName_WithModuleUniqueID(int16_t unique_modu
 
   if(found_index == -1)
   {
-// DEBUG_LINE_HERE;
     if(flag_respond_nomatch_if_not_found)
     {
       memcpy(buffer,PM_SEARCH_NOMATCH,sizeof(PM_SEARCH_NOMATCH));
-      #ifdef ENABLE_LOG_LEVEL_INFO
-      // ALOG_TST(PSTR("F::%s >> %s"),__FUNCTION__,PM_SEARCH_NOMATCH);
-      ALOG_TST(PSTR("F::GetDeviceName >> %s"), PM_SEARCH_NOMATCH);
-      #endif // ENABLE_LOG_LEVEL_INFO
-    
-
+      ALOG_WRN(PSTR("DeviceName Undefined >> %s"), PM_SEARCH_NOMATCH);
     }
     else
     {  
-
-// DEBUG_LINE_HERE;
-// I will need to add an increasing index here with its module name, but important to check how many of that index exist. For now, simply "-1"
-
-/**
- * @brief If unknown, use unique random name
- * 
- */
-
-      // snprintf(buffer, buffer_size, "%S_%02d", pCONT->GetModuleName(unique_module_id), device_id);
-
+      #ifdef ENABLE_DEVFEATURE_DEVICENAMES__USE_DEVICE_ID_WHEN_NO_NAME_MATCHED
+      snprintf(buffer, buffer_size, "%S_%02d", pCONT->GetModuleName(unique_module_id), device_id);
+      #else
       snprintf(buffer, buffer_size, "%S_Unknown_%03d", pCONT->GetModuleName(unique_module_id), random(1000));//device_id);
-
-      #ifdef ENABLE_LOG_LEVEL_INFO
-      // ALOG_INF( PSTR("F::%s >> %s"),__FUNCTION__,buffer);
-      ALOG_WRN(PSTR("F::GetDeviceName >> %s"), buffer);
-      #endif // ENABLE_LOG_LEVEL_INFO
+      #endif
+      ALOG_WRN(PSTR("F::GetDeviceName Undefined >> %s"), buffer);
     }
     return buffer;
   }
 
-// DEBUG_LINE_HERE;
   char* name_buffer2 = name_buffer.ptr;
 
   // ALOG_INF( PSTR("GetDeviceNameWithEnumNumber len=%d"),strlen(buffer));

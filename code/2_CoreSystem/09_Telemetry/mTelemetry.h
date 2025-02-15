@@ -23,6 +23,8 @@
 
 #include "1_TaskerManager/mTaskerInterface.h"
 
+#define SECONDS_FROM_BUILDTIME_TO_ENABLE_SPLASHING_TELEMETRY 600
+
 class mTelemetry :
   public mTaskerInterface
 {

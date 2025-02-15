@@ -218,15 +218,7 @@ uint8_t rule_count2 = 0;
       event_triggered.value.data[0] = _state;
     };
     void NewEventRun(uint16_t _module_id=0, uint16_t function_event = 0, uint8_t _index=0, uint8_t _state=0); // needs to be in cpp
-    // {
-    //   Reset();
-    //   event_triggered.module_id = _module_id;
-    //   event_triggered.device_id = _index;
-    //   event_triggered.value.data[0] = _state;
-    //   pCONT->Tasker_Interface(0);
-    // };
-
-    void NewEventRun_NumArg(uint16_t _module_id=0, uint16_t function_event=0, uint8_t _index=0, uint8_t _data_length=0, ...); 
+    bool NewEventRun_NumArg(uint16_t _module_id=0, uint16_t function_event=0, uint8_t _index=0, uint8_t _data_length=0, ...); 
 
 
     void Encoding( uint8_t encoding){
@@ -264,7 +256,7 @@ uint8_t rule_count2 = 0;
     void parsesub_Rule_Part(JsonParserObject jobj, mEvent::EVENT_PART* event);
 
     
-    void Tasker_Rules_Interface(uint16_t function);
+    bool Tasker_Rules_Interface(uint16_t function);
     // void Tasker_Rules_Init();
 
     uint8_t ConstructJSON_Settings(uint8_t json_level = 0, bool json_appending = true);

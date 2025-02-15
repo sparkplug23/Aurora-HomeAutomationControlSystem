@@ -66,6 +66,8 @@ class mButtons :
 
 #define MAX_RELAY_BUTTON1       5            // Max number of relay controlled by BUTTON1
 
+#define MAX_BUTTON_MULTIPRESS_COUNTER 7
+
 #ifndef DOUBLE_CLICK_WINDOW
  #define DOUBLE_CLICK_WINDOW 500             // Define Window size to recognize double clicks
 #endif
@@ -76,44 +78,62 @@ const uint8_t BUTTON_PROBE_INTERVAL = 10;      // Time in milliseconds between b
 const uint8_t BUTTON_FAST_PROBE_INTERVAL = 2;  // Time in milliseconds between button input probe for AC detection
 const uint8_t BUTTON_AC_PERIOD = (20 + BUTTON_FAST_PROBE_INTERVAL - 1) / BUTTON_FAST_PROBE_INTERVAL;   // Duration of an AC wave in probe intervals
 
-const char kMultiPress[40] PROGMEM = "|SINGLE|DOUBLE|TRIPLE|QUAD|PENTA|CLEAR|";
+const char kMultiPress[38] PROGMEM = "SINGLE|DOUBLE|TRIPLE|QUAD|PENTA|CLEAR";
+
+const char kInputTypeButton[43] PROGMEM = "Single|Multi|Hold|Hold Released|Hold Reset";
 
 Ticker* TickerButton;
 
 enum SendKeyOptions { KEY_BUTTON, KEY_SWITCH };
 
+enum SendKeyPowerOptions { POWER_HOLD = 3, POWER_INCREMENT = 4, POWER_INV = 5, POWER_CLEAR = 6, POWER_RELEASE = 7,
+                           POWER_100 = 8, CLEAR_RETAIN = 9, POWER_DELAYED = 10 };
+
 enum ButtonStates { PRESSED, NOT_PRESSED };
-static const uint8_t MAX_KEYS_SET = 32;            // Max number of keys
+static const uint8_t MAX_KEYS_SET = 32;            // Max number of keys 32-bit packed
 
 struct BUTTON {
-  uint32_t debounce = 0;                        // Button debounce timer
-  uint32_t no_pullup_mask = 0;                  // key no pullup flag (1 = no pullup)
-  uint32_t pulldown_mask = 0;                   // key pulldown flag (1 = pulldown)
-  uint32_t inverted_mask = 0;                   // Key inverted flag (1 = inverted)
-  uint32_t used = 0; //rename _mask                            // Key used bitmask
-  uint32_t virtual_pin = 0;                     // Key state bitmask
+  uint32_t tSaved_debounce = 0;                 // Button debounce timer
+  /***
+   * 32-bitmaps
+   */
+  uint32_t no_pullup_bitmap = 0;                // key no pullup flag (1 = no pullup)
+  uint32_t pulldown_bitmap = 0;                 // key pulldown flag (1 = pulldown)
+  uint32_t inverted_bitmap = 0;                 // Key inverted flag (1 = inverted)
+  uint32_t used_bitmap = 0;                     // Key used bitmask
+  uint32_t virtual_pin_bitmap = 0;              // Key state bitmask
+  /***
+   * values held in 32 byte arrays
+   */
   uint16_t hold_timer[MAX_KEYS_SET] = { 0 };    // Timer for button hold
+  uint8_t  state[MAX_KEYS_SET] = { 0 };
+  uint8_t  last_state[MAX_KEYS_SET];            // Last button states
+  uint8_t  debounced_state[MAX_KEYS_SET];       // Button debounced states
+  uint8_t  window_timer[MAX_KEYS_SET] = { 0 };  // Max time between button presses to record press count
+  uint8_t  press_counter[MAX_KEYS_SET] = { 0 }; // Number of button presses within Button.window_timer
+  uint8_t  active_state[MAX_KEYS_SET];             // may remove, as this can be inferred from other values when needed. Keep for now
+  
+
   uint16_t dual_code = 0;                       // Sonoff dual received code
-  uint8_t state[MAX_KEYS_SET] = { 0 };
-  uint8_t last_state[MAX_KEYS_SET];             // Last button states
-  uint8_t debounced_state[MAX_KEYS_SET];        // Button debounced states
-  uint8_t window_timer[MAX_KEYS_SET] = { 0 };   // Max time between button presses to record press count
-  uint8_t press_counter[MAX_KEYS_SET] = { 0 };  // Number of button presses within Button.window_timer
-  uint8_t dual_receive_count = 0;               // Sonoff dual input flag
-
-  uint8_t active_state[MAX_KEYS_SET];             // may remove, as this can be inferred from other values when needed. Keep for now
-
+  uint8_t  dual_receive_count = 0;              // Sonoff dual input flag
   uint8_t first_change = 0;
-  bool probe_mutex = false;
+  bool    probe_mutex = false;
 } Button;
 
 #if defined(SOC_TOUCH_VERSION_1) || defined(SOC_TOUCH_VERSION_2)
 struct TOUCH_BUTTON {
-  uint32_t touch_mask = 0;                      // Touch flag (1 = enabled)
+  uint32_t touch_bitmap = 0;                      // Touch flag (1 = enabled)
   uint32_t calibration = 0;                     // Bitfield
   uint8_t hits[MAX_KEYS_SET] = { 0 };           // Hits in a row to filter out noise
 } TouchButton;
 #endif  // ESP32 SOC_TOUCH_VERSION_1 or SOC_TOUCH_VERSION_2
+
+struct EVENT{
+  uint8_t id = 0;
+  uint8_t presses = 0;
+  uint8_t type = 0;
+  bool waiting = false;
+}event;
 
 
 uint8_t GetHardwareSpecificPullMethod(uint8_t real_pin);
@@ -128,23 +148,46 @@ uint8_t GetState(uint32_t index);
 uint8_t LastState(uint32_t index);
 bool Used(uint32_t index);
 void Probe(void);
-uint8_t Serial(uint8_t serial_in_byte);
+uint8_t SerialProbe(uint8_t serial_in_byte);
 void Handler(void);
-void MqttButtonTopic(uint32_t button_id, uint32_t action, uint32_t hold);
 void Loop(void);
-bool SendKey(uint32_t key, uint32_t device, uint32_t state);
 
 void SetButtonUsed(uint32_t index);
 
-    uint8_t ConstructJSON_Settings(uint8_t json_level = 0, bool json_appending = true);
-    uint8_t ConstructJSON_Sensor(uint8_t json_level = 0, bool json_appending = true);
+
+bool SendButton(uint32_t device, uint32_t state, uint16_t count = 1);
+
+
+  #ifdef ENABLE_FEATURE_SENSOR_INTERFACE_UNIFIED_SENSOR_REPORTING
+  uint8_t GetSensorCount(void) override
+  {
+    uint8_t count = 0;
+    for (uint32_t i = 0; i < MAX_KEYS_SET; i++) {
+      if (bitRead(Button.used_bitmap, i)) {
+        count++;
+      }
+    }
+    return count;
+  }
+  void GetSensorReading(sensors_reading_t* value, uint8_t index = 0) override
+  {
+    if(index > MAX_KEYS_SET-1) {value->sensor_type.push_back(0); return ;}
+    value->timestamp = Button.tSaved_debounce; // Switches are constantly updated, so timestamp is not required. Assume "0" from now on means reading can be skipped as timeout
+    value->sensor_type.push_back(SENSOR_TYPE_STATE_ACTIVE_ID);
+    value->data_f.push_back(GetState(index));
+    value->sensor_id = index;
+  };
+  #endif // ENABLE_FEATURE_SENSOR_INTERFACE_UNIFIED_SENSOR_REPORTING
+
+
+  uint8_t ConstructJSON_Settings(uint8_t json_level = 0, bool json_appending = true);
+  uint8_t ConstructJSON_Sensor(uint8_t json_level = 0, bool json_appending = true);
 
   #ifdef USE_MODULE_NETWORK_MQTT
     void MQTTHandler_Init();
     std::vector<struct handler<mButtons>*> mqtthandler_list;    
     struct handler<mButtons> mqtthandler_settings;
     struct handler<mButtons> mqtthandler_sensor_ifchanged;
-    struct handler<mButtons> mqtthandler_sensor_teleperiod;
   #endif // USE_MODULE_NETWORK_MQTT
 
 

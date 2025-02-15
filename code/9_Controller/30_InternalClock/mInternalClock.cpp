@@ -102,9 +102,9 @@ void mInternalClock::RulesEvent_Set_Speed(){
 
   ALOG_TST(PSTR("MATCHED RulesEvent_Set_Speed"));
 
-  uint8_t index = pCONT_rules->rules[pCONT_rules->rules_active_index].command.device_id;
+  uint8_t index = tkr_rules->rules[tkr_rules->rules_active_index].command.device_id;
 
-  uint8_t state = pCONT_rules->rules[pCONT_rules->rules_active_index].command.value.data[0];
+  uint8_t state = tkr_rules->rules[tkr_rules->rules_active_index].command.value.data[0];
   uint8_t current_speed = 0;
 
   if(state == STATE_NUMBER_INCREMENT_ID)

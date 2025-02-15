@@ -463,6 +463,12 @@ enum LoggingLevels {
 #endif
 
 
+#ifdef USE_DEBUG_DRIVER
+#define SHOW_FREE_MEM(WHERE) ShowFreeMem(WHERE);
+#else
+#define SHOW_FREE_MEM(WHERE)
+#endif
+
 
 
 
@@ -673,9 +679,16 @@ void AddLog_Array(uint8_t loglevel, const char* name_ctr, T* arr, U arr_len)
     logPointer += written;
 
     // Add array elements to the log message
-    for (U index = 0; index < arr_len && (logPointer - logBuffer) < sizeof(logBuffer) - 10; ++index) {  // Limit size to avoid buffer overflow
-        written = snprintf(logPointer, sizeof(logBuffer) - (logPointer - logBuffer), "%d,", arr[index]);
+    for (U index = 0; index < arr_len && (logPointer - logBuffer) < sizeof(logBuffer) - 10; ++index) {
+        // Append the current element
+        written = snprintf(logPointer, sizeof(logBuffer) - (logPointer - logBuffer), "%d", arr[index]);
         logPointer += written;
+
+        // Append a comma only if there is another element after the current one
+        if (index < arr_len - 1) {
+            written = snprintf(logPointer, sizeof(logBuffer) - (logPointer - logBuffer), ",");
+            logPointer += written;
+        }
     }
 
     // Null-terminate the string
@@ -686,6 +699,7 @@ void AddLog_Array(uint8_t loglevel, const char* name_ctr, T* arr, U arr_len)
     // Pass the formatted string to AddLog
     AddLog(loglevel, PSTR("%s"), logBuffer);
 }
+
 template<typename T, typename U, typename V>
 void AddLog_Array_Block(uint8_t loglevel, const char* name_ctr, T* arr, U arr_len, V arr_width, bool use_tabs)
 {

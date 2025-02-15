@@ -54,24 +54,24 @@ class mPalette
      * @brief 
      * Single colour user options, up to all 5 rgbcct elements
      */
-    enum PALETTELIST_SEGMENT__RGBCCT_COLOUR__IDS
+    enum PALETTELIST_SEGMENT__SEGMENT_COLOUR__IDS
     {
-      PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID = 0, // New scene colour, static
-      PALETTELIST_SEGMENT__RGBCCT_COLOUR_02__ID,
-      PALETTELIST_SEGMENT__RGBCCT_COLOUR_03__ID,
-      PALETTELIST_SEGMENT__RGBCCT_COLOUR_04__ID,
-      PALETTELIST_SEGMENT__RGBCCT_COLOUR_05__ID,
-      PALETTELIST_SEGMENT__RGBCCT_COLOUR_LENGTH__ID
+      PALETTELIST_SEGMENT__SEGMENT_COLOUR_01__ID = 0, // New scene colour, static
+      PALETTELIST_SEGMENT__SEGMENT_COLOUR_02__ID,
+      PALETTELIST_SEGMENT__SEGMENT_COLOUR_03__ID,
+      PALETTELIST_SEGMENT__SEGMENT_COLOUR_04__ID,
+      PALETTELIST_SEGMENT__SEGMENT_COLOUR_05__ID,
+      PALETTELIST_SEGMENT__SEGMENT_COLOUR_LENGTH__ID
     };
 
 
     /**
      * @brief 
-     * Generated using PALETTELIST_SEGMENT__RGBCCT_COLOUR__IDS
+     * Generated using PALETTELIST_SEGMENT__SEGMENT_COLOUR__IDS
      **/
     enum PALETTELIST_SEGMENT__RGBCCT_CRGBPALETTE16_PALETTES__IDS
     {
-      PALETTELIST_SEGMENT__RGBCCT_CRGBPALETTE16_PALETTES__PAIRED_TWO_12__ID = PALETTELIST_SEGMENT__RGBCCT_COLOUR_LENGTH__ID,
+      PALETTELIST_SEGMENT__RGBCCT_CRGBPALETTE16_PALETTES__PAIRED_TWO_12__ID = PALETTELIST_SEGMENT__SEGMENT_COLOUR_LENGTH__ID,
       PALETTELIST_SEGMENT__RGBCCT_CRGBPALETTE16_PALETTES__PAIRED_THREE_123__ID,
       PALETTELIST_SEGMENT__RGBCCT_CRGBPALETTE16_PALETTES__PAIRED_FOUR_1234__ID,
       PALETTELIST_SEGMENT__RGBCCT_CRGBPALETTE16_PALETTES__PAIRED_FIVE_12345__ID,
@@ -178,7 +178,6 @@ class mPalette
       PALETTELIST_STATIC_CRGBPALETTE16_GRADIENT__CANDY_2__ID,
       PALETTELIST_STATIC_CRGBPALETTE16_GRADIENT__PINK_PURPLE__ID,
       PALETTELIST_STATIC_CRGBPALETTE16_GRADIENT__PINK_WHITE_PURPLE__ID,
-
 
       //
       PALETTELIST_STATIC_CRGBPALETTE16_GRADIENT_LENGTH__ID
@@ -367,15 +366,10 @@ class mPalette
      * 
      */
     struct PALETTE_DATA{ // 6 bytes per palette
-      uint16_t palettelist_id;
-      // Pointer to name
-      // const char* friendly_name_ctr;                   // Should I just move towards the faster way? there is no added benefit here
-      // colour bytes 
-      std::vector<uint8_t> data;
-      // Moving away from colour_width to reduce calculation per pixel
-      uint8_t number_of_colours;
-      // Contains information on formatting of data buffer
-      PALETTE_ENCODING_DATA encoding;
+      uint16_t palettelist_id;      
+      std::vector<uint8_t> data; // colour bytes       
+      uint8_t number_of_colours; // Moving away from colour_width to reduce calculation per pixel      
+      PALETTE_ENCODING_DATA encoding;// Contains information on formatting of data buffer
     };
     std::vector<PALETTE_DATA> static_palettes;
     std::vector<PALETTE_DATA> dynamic_palettes;
@@ -387,96 +381,21 @@ class mPalette
 
     uint8_t GetColourMapSizeByPaletteID(uint8_t palette_id);
     uint8_t GetEncodedColourWidth( PALETTE_ENCODING_DATA encoded );
-
-
-    // uint16_t GetNumberOfColoursInPalette(uint16_t palette_id, uint8_t pixel_width_contrained_limit = 0); 
-    // uint16_t GetNumberOfColoursFromEncoded(PALETTE_ENCODING_DATA encoding, uint8_t data_in_palette);
-
+    uint8_t GetColoursInPalette(uint16_t palette_id);
     uint8_t GetColoursInCRGB16Palette(uint16_t palette_id);
-
     PALETTE_ENCODING_DATA findPaletteEncoding(uint16_t id);
 
-
-    RgbwwColor 
-    #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
-    IRAM_ATTR 
-    #endif 
-    GetColourFromPreloadedPaletteBuffer_2023(
-      uint16_t palette_id = 0,
+    IRAM_ATTR [[gnu::hot]] RgbwwColor      Get_Encoded_Colour_ReadBuffer_RGBWW
+    (
       uint8_t* palette_elements = nullptr,
       uint16_t desired_index_from_palette = 0,
       uint8_t* encoded_index = nullptr,
-      uint8_t     flag_spanned_segment = true, // true(default):"desired_index_from_palette is exact pixel index", false:"desired_index_from_palette is scaled between 0 to 255, where (127/155 would be the center pixel)"
-      uint8_t     flag_wrap_hard_edge = true,        // true(default):"hard edge for wrapping wround, so last to first pixel (wrap) is blended", false: "hard edge, palette resets without blend on last/first pixels"
-      uint8_t     flag_crgb_exact_colour = false,
-      bool flag_request_is_for_full_visual_output = false
-    );
-  
-    [[gnu::hot]] uint32_t GetColourFromPreloadedPaletteBuffer_2025(
-      uint16_t palette_id = 0,
-      uint8_t* palette_elements = nullptr,
-      uint16_t desired_index_from_palette = 0,
-      uint8_t* encoded_index = nullptr,
-      uint8_t     flag_spanned_segment = true, // true(default):"desired_index_from_palette is exact pixel index", false:"desired_index_from_palette is scaled between 0 to 255, where (127/155 would be the center pixel)"
-      uint8_t     flag_wrap_hard_edge = true,        // true(default):"hard edge for wrapping wround, so last to first pixel (wrap) is blended", false: "hard edge, palette resets without blend on last/first pixels"
-      uint8_t     flag_crgb_exact_colour = false,
-      bool flag_request_is_for_full_visual_output = false
-    );
-  
-
-#ifndef ENABLE_DEVFEATURE_LIGHTING__OCT24_TIMING
-    RgbwwColor Get_Encoded_StaticPalette_Colour(
-      uint16_t palette_id = 0,
-      uint8_t* palette_elements = nullptr,
-      uint16_t desired_index_from_palette = 0,
-      uint8_t* encoded_index = nullptr,  // Must be passed in as something other than 0, or else nullptr will not be checked inside properly
-      bool     flag_map_scaling = true, // true(default):"desired_index_from_palette is exact pixel index", false:"desired_index_from_palette is scaled between 0 to 255, where (127/155 would be the center pixel)"
-      bool     flag_wrap_hard_edge = false,        // true(default):"hard edge for wrapping wround, so last to first pixel (wrap) is blended", false: "hard edge, palette resets without blend on last/first pixels"
-      bool     flag_crgb_exact_colour = false,
-      bool     flag_forced_gradient = false
+      PALETTE_ENCODING_DATA encoding = {0},
+      uint8_t encoded_colour_width = 0
     );
 
-    RgbwwColor SubGet_Encoded_CustomPalette_Colour(
-      uint16_t palette_id = 0,
-      uint8_t* palette_elements = nullptr,
-      uint16_t desired_index_from_palette = 0,
-      uint8_t* encoded_index = nullptr,  // Must be passed in as something other than 0, or else nullptr will not be checked inside properly
-      bool     flag_map_scaling = false, // true(default):"desired_index_from_palette is exact pixel index", false:"desired_index_from_palette is scaled between 0 to 255, where (127/155 would be the center pixel)"
-      bool     flag_wrap_hard_edge = false,        // true(default):"hard edge for wrapping wround, so last to first pixel (wrap) is blended", false: "hard edge, palette resets without blend on last/first pixels"
-      bool     flag_crgb_exact_colour = false,
-      bool     flag_forced_gradient = false
-    );
-
-    
-    // Dynamic palettes should do any calculations, then rely on the other methods to get colours
-    RgbwwColor Get_Encoded_DynamicPalette_Colour(
-      uint16_t palette_id = 0,
-      uint8_t* palette_elements = nullptr,
-      uint16_t desired_index_from_palette = 0,
-      uint8_t* encoded_index = nullptr,  // Must be passed in as something other than 0, or else nullptr will not be checked inside properly
-      bool     flag_map_scaling = true, // true(default):"desired_index_from_palette is exact pixel index", false:"desired_index_from_palette is scaled between 0 to 255, where (127/155 would be the center pixel)"
-      bool     flag_wrap_hard_edge = false,        // true(default):"hard edge for wrapping wround, so last to first pixel (wrap) is blended", false: "hard edge, palette resets without blend on last/first pixels"
-      bool     flag_crgb_exact_colour = false,
-      bool     flag_forced_gradient = false,
-      bool flag_request_is_for_full_visual_output = false // eg. webui, show what the whole range would be
-    );
-
-#endif
-
-
-
-
-
-
-
-
-
-
-    RgbwwColor     
-    #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
-    IRAM_ATTR 
-    #endif 
-    Get_Encoded_Palette_Colour(
+    IRAM_ATTR [[gnu::hot]] RgbwwColor      Get_Encoded_Palette_Colour_RGBWW
+    (
       uint8_t* palette_elements = nullptr,
       uint16_t desired_index_from_palette = 0,
       uint8_t encoded_colour_width = 0,
@@ -489,18 +408,28 @@ class mPalette
       bool     flag_forced_gradient = false
     );
 
-
-
-    RgbwwColor 
-    #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
-    IRAM_ATTR 
-    #endif 
-    Get_Encoded_Colour_ReadBuffer_Fast(
+    IRAM_ATTR [[gnu::hot]] RgbwwColor     GetColourFromPreloadedPaletteBuffer_RGBWW
+    (
+      uint16_t palette_id = 0,
       uint8_t* palette_elements = nullptr,
       uint16_t desired_index_from_palette = 0,
       uint8_t* encoded_index = nullptr,
-      PALETTE_ENCODING_DATA encoding = {0},
-      uint8_t encoded_colour_width = 0
+      uint8_t     flag_spanned_segment = true, // true(default):"desired_index_from_palette is exact pixel index", false:"desired_index_from_palette is scaled between 0 to 255, where (127/155 would be the center pixel)"
+      uint8_t     flag_wrap_hard_edge = true,        // true(default):"hard edge for wrapping wround, so last to first pixel (wrap) is blended", false: "hard edge, palette resets without blend on last/first pixels"
+      uint8_t     flag_crgb_exact_colour = false,
+      bool flag_request_is_for_full_visual_output = false
+    );
+  
+    IRAM_ATTR [[gnu::hot]] uint32_t       GetColourFromPreloadedPaletteBuffer_U32
+    (
+      uint16_t palette_id = 0,
+      uint8_t* palette_elements = nullptr,
+      uint16_t desired_index_from_palette = 0,
+      uint8_t* encoded_index = nullptr,
+      uint8_t     flag_spanned_segment = true, // true(default):"desired_index_from_palette is exact pixel index", false:"desired_index_from_palette is scaled between 0 to 255, where (127/155 would be the center pixel)"
+      uint8_t     flag_wrap_hard_edge = true,        // true(default):"hard edge for wrapping wround, so last to first pixel (wrap) is blended", false: "hard edge, palette resets without blend on last/first pixels"
+      uint8_t     flag_crgb_exact_colour = false,
+      bool flag_request_is_for_full_visual_output = false
     );
 
 
@@ -508,7 +437,7 @@ class mPalette
 
 
 
-    uint8_t GetColoursInPalette(uint16_t palette_id);
+
 
     
 

@@ -27,7 +27,7 @@ class mEvent
      * 
      * */
 
-    #define D_RULE_DATA_VALUE_MAX_LENGTH 10
+    #define RULE_ENCODED_DATA_MAX_BYTES 10
 
     struct EVENT_PART{
       /**
@@ -48,7 +48,7 @@ class mEvent
       struct VALUES{
         uint8_t encoding = 0;
         // dynamic way of handling this in the future, ie the instance of this class creates the size?
-        uint8_t data[D_RULE_DATA_VALUE_MAX_LENGTH]; // should this change to a vector? where would the vector save, and expand to?
+        uint8_t data[RULE_ENCODED_DATA_MAX_BYTES]; // should this change to a vector? where would the vector save, and expand to?
         uint8_t length = 0;
       }value;
       /**

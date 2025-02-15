@@ -110,7 +110,9 @@ void mRelayStateLEDStrip::EverySecond()
   */
   uint8_t segment_index = ENABLE_CONTROLLERS__RELAY_STATE_LEDSTRIP__SEGMENT_INDEX;
 
-  pSEGMENT_I(segment_index).effect_id = mAnimatorLight::EFFECTS_FUNCTION__MANUAL__PIXEL_SET_ELSEWHERE__ID;
+  // pSEGMENT_I(segment_index).effect_id = mAnimatorLight::EFFECTS_FUNCTION__MANUAL__CONTROLLED_FROM_ANOTHER_MODULE__ID;
+
+  tkr_anim->CommandSet_Flasher_FunctionID(tkr_anim->GetFlasherFunctionIDbyName("Module Controlled"), segment_index);
   
   // pSEGMENT_I(segment_index).SetPixelColor(0, RgbwwColor(255,0,0));
   // pSEGMENT_I(segment_index).SetPixelColor(1, RgbwwColor(0,255,0));
@@ -131,14 +133,14 @@ void mRelayStateLEDStrip::EverySecond()
         {
           colour_on = rt.relay_status[relay_id].timer_decounter.active % 2 ?  RgbwwColor(0,50,0) :  RgbwwColor(0,0,50);
         }
-        pSEGMENT_I(segment_index).SetPixelColor(relay_id, colour_on);
+        pSEGMENT_I(segment_index).setPixelColor(relay_id, colour_on);
         pSEGMENT_I(segment_index).setBrightnessRGB(255);
 
 
       }
       else
       {
-        pSEGMENT_I(segment_index).SetPixelColor(relay_id, RgbwwColor(5,0,0));
+        pSEGMENT_I(segment_index).setPixelColor(relay_id, RgbwwColor(5,0,0));
         pSEGMENT_I(segment_index).setBrightnessRGB(255);
       }
     }

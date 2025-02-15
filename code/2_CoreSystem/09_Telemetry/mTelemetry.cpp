@@ -31,6 +31,7 @@ int8_t mTelemetry::Tasker(uint8_t function, JsonParserObject obj)
      * PERIODIC SECTION * 
     *******************/
     case TASK_EVERY_SECOND:
+
       if (serial_messages_remaining_to_send > 0) {
         serial_messages_remaining_to_send--;
         auto handle = mqtthandler_list[serial_messages_remaining_to_send];
@@ -41,9 +42,17 @@ int8_t mTelemetry::Tasker(uint8_t function, JsonParserObject obj)
           mqtthandler_list[serial_messages_remaining_to_send]->postfix_topic,
           JBI->GetBuffer());
       }    
+      
     break;
     case TASK_UPTIME_1_MINUTES:
-      serial_messages_remaining_to_send = mqtthandler_list.size();
+
+      if(tkr_time->IsBuildDateTimeElapsedBeyond(SECONDS_FROM_BUILDTIME_TO_ENABLE_SPLASHING_TELEMETRY))
+      {
+        ALOG_INF(PSTR("IsBuildDateTimeElapsedBeyond %d"), tkr_time->IsBuildDateTimeElapsedBeyond(SECONDS_FROM_BUILDTIME_TO_ENABLE_SPLASHING_TELEMETRY));
+        ALOG_INF(PSTR("BuildDateTimeElapsed %d"), tkr_time->BuildDateTimeElapsed());
+        serial_messages_remaining_to_send = mqtthandler_list.size();
+      }
+      
     break;
     /************
      * MQTT SECTION * 

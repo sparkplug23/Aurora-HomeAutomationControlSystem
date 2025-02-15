@@ -156,8 +156,11 @@ void mSensorsInterface::CommandEvent_Motion(uint8_t event_type)
 
   ALOG_ERR(PSTR("CommandEvent_Motion-----------------------------------------------------------------------------\n\r=================================================================="));
 
+  // I need a nice way to force the event to send no only on the next call, but immediately to ensure no race conditions of multiple events.
+
   #ifdef USE_MODULE_NETWORK_MQTT
   mqtthandler_motion_event_ifchanged.flags.SendNow = true;
+  Tasker(TASK_MQTT_SENDER);
   #endif // USE_MODULE_NETWORK_MQTT
 
 }
@@ -170,10 +173,10 @@ void mSensorsInterface::MQTT_Report_Event_Button()
 
   JBI->Start();
   
-    sprintf(event_ctr,"%s-%d","Button",pCONT_rules->event_triggered.device_id);
+    sprintf(event_ctr,"%s-%d","Button",tkr_rules->event_triggered.device_id);
     JBI->Add("Event", event_ctr);
 
-    JBI->Add("Device", pCONT_rules->event_triggered.device_id);
+    JBI->Add("Device", tkr_rules->event_triggered.device_id);
     JBI->Add("Function", "ButtonPress");
     JBI->Add("Task", "Button");
     JBI->Add("State", "SHORT_PRESS");// : "LONG_PRESS");    
@@ -187,7 +190,7 @@ void mSensorsInterface::MQTT_Report_Event_Button()
    * If event was serviced, then clear it
    * */
   #ifndef ENABLE_DEVFEATURE_PHASEOUT_CLEARING_EVENT
-  pCONT_rules->Reset(&pCONT_rules->event_triggered);  // I need to remember the last event, so simply use another flag outside of the struct as waiting and clear that if needed
+  tkr_rules->Reset(&tkr_rules->event_triggered);  // I need to remember the last event, so simply use another flag outside of the struct as waiting and clear that if needed
   #endif 
 
 }
@@ -288,15 +291,14 @@ uint8_t mSensorsInterface::ConstructJSON_Sensor(uint8_t json_level, bool json_ap
       {
         //Get any sensors in module
         uint8_t sensors_available = pmod->GetSensorCount();
-        // ALOG_INF( PSTR("GetSensorCount =%d\t%s"), sensors_available, pmod->GetModuleFriendlyName());
+        // ALOG_INF( PSTR("GetSensorCount =%d\t%s"), sensors_available, pmod->GetModuleName());
 
         uint16_t unified_sensor_reporting_invalid_reading_timeout_seconds = tkr_set->Settings.unified_interface_reporting_invalid_reading_timeout_seconds;
         // ALOG_WRN(PSTR("reading_timeout_seconds %d"), unified_sensor_reporting_invalid_reading_timeout_seconds);
                   
         if(sensors_available) 
         {
-          // ALOG_INF( PSTR("GetSensorCount =%d\t%s"), sensors_available, pmod->GetModuleFriendlyName());
-
+          // ALOG_INF( PSTR("GetSensorCount\t\t =%d\t%s"), sensors_available, pmod->GetModuleName());
           for(int sensor_id=0;sensor_id<sensors_available;sensor_id++)
           {
             sensors_reading_t val;
@@ -314,12 +316,13 @@ uint8_t mSensorsInterface::ConstructJSON_Sensor(uint8_t json_level, bool json_ap
                   {
                     if(sensor_elapsed_time > unified_sensor_reporting_invalid_reading_timeout_seconds)
                     {
+                      // ALOG_INF(PSTR("sensor_id %d val.sensor_if %d"), sensor_id, val.sensor_id);
                       #ifdef ENABLE_DEVFEATURE_UNIFIED_REPORTING_SKIPPING_INVALID_TIMEOUT_READINGS
                       ALOG_WRN(PSTR("sensor time invalid %d > %d"), sensor_elapsed_time, unified_sensor_reporting_invalid_reading_timeout_seconds);
                       continue; // skip the result in this loop
                       #else
                       DLI->GetDeviceName_WithModuleUniqueID( pmod->GetModuleUniqueID(), val.sensor_id, buffer, sizeof(buffer));
-                      ALOG_WRN(PSTR("sensor_elapsed_time missing %S %s %d %d"), pmod->GetModuleName(), buffer, sensor_elapsed_time, unified_sensor_reporting_invalid_reading_timeout_seconds);
+                      ALOG_DBM(PSTR("sensor_elapsed_time missing %S %s %d %d"), pmod->GetModuleName(), buffer, sensor_elapsed_time, unified_sensor_reporting_invalid_reading_timeout_seconds);
                       #endif
                     }
                   }
@@ -369,7 +372,7 @@ uint8_t mSensorsInterface::ConstructJSON_Sensor(uint8_t json_level, bool json_ap
                     flag_level_ended_needed = true;
                   }
                   
-                  RgbColor colour  = GetColourValueUsingMaps_ForUnifiedSensor(temperature);
+                  RgbwwColor colour  = GetColourValueUsingMaps_ForUnifiedSensor(temperature);
 
                   JBI->Add_FV(
                     DLI->GetDeviceName_WithModuleUniqueID( pmod->GetModuleUniqueID(), val.sensor_id, buffer, sizeof(buffer)),
@@ -1334,10 +1337,10 @@ uint8_t mSensorsInterface::ConstructJSON_Motion_Event(uint8_t json_level, bool j
    * @brief Motion Event : PIR module
    **/
   #ifdef USE_MODULE_SENSORS_PIR
-  if(pCONT_rules->event_triggered.module_id == pCONT_motion->GetModuleUniqueID())
+  if(tkr_rules->event_triggered.module_id == pCONT_motion->GetModuleUniqueID())
   {
-    uint16_t device_id   = pCONT_rules->event_triggered.device_id;
-    uint16_t state_id = pCONT_rules->event_triggered.value.data[0];  
+    uint16_t device_id   = tkr_rules->event_triggered.device_id;
+    uint16_t state_id = tkr_rules->event_triggered.value.data[0];  
 
     JBI->Add(D_LOCATION, DLI->GetDeviceName_WithModuleUniqueID( pCONT_motion->GetModuleUniqueID(), device_id, buffer, sizeof(buffer))); 
     JBI->Add("Time", tkr_time->GetTimeStr(tkr_time->Rtc.local_time).c_str());
@@ -1429,17 +1432,17 @@ uint8_t mSensorsInterface::ConstructJSON_Motion_Event(uint8_t json_level, bool j
 //  * */
 
 
-//     uint8_t sensor_id = pCONT_rules->rules[pCONT_rules->rules_active_index].command.device_id;
+//     uint8_t sensor_id = tkr_rules->rules[tkr_rules->rules_active_index].command.device_id;
 
 //     /**
 //      * If command state is follow (now value 2), then use trigger.data[0] as destination.data[0]
 //      * */
-//     uint8_t trigger_state = pCONT_rules->rules[pCONT_rules->rules_active_index].trigger.value.data[0];
-//     uint8_t command_state_in = pCONT_rules->rules[pCONT_rules->rules_active_index].command.value.data[0];
-//     uint8_t newevent_command_state_in = pCONT_rules->event_triggered.value.data[0];
+//     uint8_t trigger_state = tkr_rules->rules[tkr_rules->rules_active_index].trigger.value.data[0];
+//     uint8_t command_state_in = tkr_rules->rules[tkr_rules->rules_active_index].command.value.data[0];
+//     uint8_t newevent_command_state_in = tkr_rules->event_triggered.value.data[0];
 //     uint8_t command_state_out = 0;
 
-//     uint8_t current_module_id = pCONT_rules->event_triggered.module_id;
+//     uint8_t current_module_id = tkr_rules->event_triggered.module_id;
 
 // // enum SwitchModeOptions_IDS {
 // //   TOGGLE, 
@@ -1453,8 +1456,8 @@ uint8_t mSensorsInterface::ConstructJSON_Motion_Event(uint8_t json_level, bool j
 // //   MAX_SWITCH_OPTION
 // // };
 
-// // pCONT_rules->ShowRuleAddLogByIndex();
-// // pCONT_rules->ShowRuleEvent_AddLog();
+// // tkr_rules->ShowRuleAddLogByIndex();
+// // tkr_rules->ShowRuleEvent_AddLog();
 
 // //     if(command_state_in == SWITCHMODE_FOLLOW_ID)
 // //     {
@@ -1509,7 +1512,7 @@ uint8_t mSensorsInterface::ConstructJSON_Motion_Event(uint8_t json_level, bool j
 
 // // 1 ie HIGH will ALWAYS mean active, the inversion should be handled on the trigger/switch side
 
-//       pir_detect[sensor_id].state = command_state_out;//pCONT_rules->rules[pCONT_rules->rules_active_index].command.value.data[0];//PIR_Detected(sensor_id);
+//       pir_detect[sensor_id].state = command_state_out;//tkr_rules->rules[tkr_rules->rules_active_index].command.value.data[0];//PIR_Detected(sensor_id);
       
       
 //       AddLog(LOG_LEVEL_DEBUG,PSTR("pir_detect[sensor_id].state=%d %d %d %d %d"),
@@ -1528,7 +1531,7 @@ uint8_t mSensorsInterface::ConstructJSON_Motion_Event(uint8_t json_level, bool j
 //         // AddLog(LOG_LEVEL_DEBUG,PSTR("pir_detect[sensor_id].detected_time=%d"),pir_detect[sensor_id].detected_time);
         
 //         // #ifdef USE_MODULE_CORE_RULES
-//         // pCONT_rules->New_Event(E M_MODULE_SENSORS_MOTION_ID, sensor_id);
+//         // tkr_rules->New_Event(E M_MODULE_SENSORS_MOTION_ID, sensor_id);
 //         // #endif
 //         // pCONT->Tasker_Interface(TASK_EVENT_MOTION_STARTED_ID);
 
@@ -1540,7 +1543,7 @@ uint8_t mSensorsInterface::ConstructJSON_Motion_Event(uint8_t json_level, bool j
 //         pir_detect[sensor_id].isactive = false;
 
 //         // #ifdef USE_MODULE_CORE_RULES
-//         // pCONT_rules->New_Event(E M_MODULE_SENSORS_MOTION_ID, sensor_id);
+//         // tkr_rules->New_Event(E M_MODULE_SENSORS_MOTION_ID, sensor_id);
 //         // #endif
 //         // pCONT->Tasker_Interface(TASK_EVENT_MOTION_ENDED_ID);
 
@@ -1549,8 +1552,8 @@ uint8_t mSensorsInterface::ConstructJSON_Motion_Event(uint8_t json_level, bool j
 // /**
 //  * @brief Remember what triggered this so the device name can be retrieved in sender
 //  **/
-//       pir_detect[sensor_id].device_name.unique_module_id = pCONT_rules->event_triggered.module_id;
-//       pir_detect[sensor_id].device_name.device_id = pCONT_rules->event_triggered.device_id;
+//       pir_detect[sensor_id].device_name.unique_module_id = tkr_rules->event_triggered.module_id;
+//       pir_detect[sensor_id].device_name.device_id = tkr_rules->event_triggered.device_id;
 //       pir_detect[sensor_id].ischanged = true;
 //       mqtthandler_sensor_ifchanged.flags.SendNow = true;
 //   //   }

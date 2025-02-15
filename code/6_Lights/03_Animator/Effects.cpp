@@ -108,7 +108,6 @@ uint16_t mAnimatorLight::EffectAnim__Solid_Colour()
  
   if (!SEGMENT.allocateColourData( SEGMENT.colour_width__used_in_effect_generate * 2) ){ DEBUG_LINE_HERE; return USE_ANIMATOR; } // Pixel_Width * Two_Channels
 
-Serial.println(SEGMENT.colour_width__used_in_effect_generate);
   // Retrieve the desired color from the palette
   if (SEGMENT.colour_width__used_in_effect_generate == ColourType::COLOUR_TYPE__RGBWW__ID) {
     #ifdef ENABLE_FEATURE_LIGHTING__RGBWW_GENERATE
@@ -158,7 +157,7 @@ Serial.println(SEGMENT.colour_width__used_in_effect_generate);
 
 }
 // Enable the colour palette, with default segcol "Colour 01", with 1 second refresh and no blend for instant colour change and low memory usage
-static const char PM_EFFECT_CONFIG__SOLID_COLOUR[] PROGMEM = "Solid Colour@;;!;pal=0,sx=255,ep=1000"; //"NAME@Speed,Intensity,Custom1,C2,C3,Checkbox1,CB2,CB3,EffectPeriod,Grouping;"
+static const char PM_EFFECT_CONFIG__SOLID_COLOUR[] PROGMEM = "Solid@;;!;pal=0,sx=255,ep=1000"; //"NAME@Speed,Intensity,Custom1,C2,C3,Checkbox1,CB2,CB3,EffectPeriod,Grouping;"
 
 
 /********************************************************************************************************************************************************************************************************************
@@ -1974,7 +1973,7 @@ uint16_t mAnimatorLight::EffectAnim__Twinkle_Palette_Onto_Palette()
     /**
      * @brief If palette is one of the segment colours, then use its built in brightness as the palette over brightness
      **/
-    if(palette_to_draw_ontop < mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_LENGTH__ID)
+    if(palette_to_draw_ontop < mPalette::PALETTELIST_SEGMENT__SEGMENT_COLOUR_LENGTH__ID)
     {
       overdraw_colour = AdjustColourWithBrightness(overdraw_colour,255);//.WithBrightness(); // Use already set SegColour 
     }else{
@@ -2919,7 +2918,7 @@ uint16_t mAnimatorLight::SubTask_Segment_Animate_Function__SunPositions_Elevatio
 // #ifndef DISABLE_ANIMATION_COLOURS_FOR_RGBCCT_OLD_METHOD
 
 
-//   SEGMENT.palette_id = mPaletteI->PALETTELIST_VARIABLE_RGBCCT_COLOUR_01_ID;
+//   SEGMENT.palette_id = mPaletteI->PALETTELIST_VARIABLE_SEGMENT_COLOUR_01_ID;
 
 //   mPaletteI->SetPaletteListPtrFromID(SEGMENT.palette_id);
 //   // Set up colours
@@ -5224,7 +5223,7 @@ uint16_t mAnimatorLight::EffectAnim__ColourFul()
   uint32_t cols[9]{0x00FF0000,0x00EEBB00,0x0000EE00,0x000077CC};
   if (SEGMENT.intensity > 160 || SEGMENT.palette_id) { //palette or color
     // If RGBCCT palette, use the first 3 colors
-    if (SEGMENT.palette_id == mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID) {
+    if (SEGMENT.palette_id == mPalette::PALETTELIST_SEGMENT__SEGMENT_COLOUR_01__ID) {
       numColors = 5;
       for (size_t i = 0; i < 5; i++) cols[i] = SEGCOLOR_U32(i);
     } 
@@ -5421,7 +5420,7 @@ uint16_t mAnimatorLight::EffectAnim__Base_Gradient(bool loading)
 uint16_t mAnimatorLight::EffectAnim__Gradient(void) {
   return EffectAnim__Base_Gradient(false);
 }
-static const char PM_EFFECT_CONFIG__GRADIENT[] PROGMEM = "Gradient@!,Spread;!,!;!;;ix=16";
+static const char PM_EFFECT_CONFIG__GRADIENT[] PROGMEM = "Gradient 2@!,Spread;!,!;!;;ix=16";
 
 
 /*******************************************************************************************************************************************************************************************************************
@@ -10672,13 +10671,13 @@ static const char PM_EFFECT_CONFIG__HARDWARE__LIGHT_SENSOR_PIXEL_INDEXING[] PROG
  * @description : Manual__PixelSetElsewhere
  * @note : Temporary effect before realtime can take over
  ********************************************************************************************************************************************************************************************************************/
-#ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__PIXEL_SET_ELSEWHERE
-uint16_t mAnimatorLight::EffectAnim__Manual__PixelSetElsewhere()
+#ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__CONTROLLED_FROM_ANOTHER_MODULE
+uint16_t mAnimatorLight::EffectAnim__Manual__ControlledFromAnotherModule()
 {  
   return FRAMETIME; 
 }
-static const char PM_EFFECT_CONFIG__MANUAL__PIXEL_SET_ELSEWHERE__INDEXING[] PROGMEM = "Debug Pixel Set Manually@Fg size,Bg size;Fg,!;!;;pal=19";
-#endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__PIXEL_SET_ELSEWHERE
+static const char PM_EFFECT_CONFIG__MANUAL__CONTROLLED_FROM_ANOTHER_MODULE__INDEXING[] PROGMEM = "Module Controlled@Fg size,Bg size;Fg,!;!;;";
+#endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__CONTROLLED_FROM_ANOTHER_MODULE
 
 
 
@@ -14086,7 +14085,7 @@ static const char PM_EFFECT_CONFIG__AUDIOREACTIVE__2D__FFT_AKEMI__INDEXING[] PRO
  * (2) A vertical strip shows the sky as horizon to top. Hence, instead of the moving gradient, 16 key points on it will be set and change depending on the time of day to reflect the darkening sunset.
  * 
  * All effects below are in order, and should over time be added (uncommented) so they build
- * 
+ * AddEffect call must follow enum indexing at this time. This may be resolved later by reserving spaces.
  * 
  */
 void mAnimatorLight::LoadEffects()
@@ -14835,10 +14834,10 @@ void mAnimatorLight::LoadEffects()
   /**
    * Manual Pixel: Keeping as legacy, but mode change to realtime will remove this
    **/
-  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__PIXEL_SET_ELSEWHERE
-  addEffect(EFFECTS_FUNCTION__MANUAL__PIXEL_SET_ELSEWHERE__ID,
-            &mAnimatorLight::EffectAnim__Manual__PixelSetElsewhere,
-            PM_EFFECT_CONFIG__MANUAL__PIXEL_SET_ELSEWHERE__INDEXING);
+  #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__CONTROLLED_FROM_ANOTHER_MODULE
+  addEffect(EFFECTS_FUNCTION__MANUAL__CONTROLLED_FROM_ANOTHER_MODULE__ID,
+            &mAnimatorLight::EffectAnim__Manual__ControlledFromAnotherModule,
+            PM_EFFECT_CONFIG__MANUAL__CONTROLLED_FROM_ANOTHER_MODULE__INDEXING);
   #endif
 
   /**

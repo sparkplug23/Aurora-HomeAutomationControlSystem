@@ -562,6 +562,7 @@ char releaseString[7] = WLED_RELEASE_NAME; // must include the quotes when defin
       ANIMATION_MODE__REALTIME_ARTNET,
       ANIMATION_MODE__REALTIME_TPM2NET,
       ANIMATION_MODE__REALTIME_DDP,  
+      ANIMATION_MODE__INTERNAL_CONTROL_FROM_ANOTHER_MODULE, // eg controller modules doing direct setPixelColor
       ANIMATION_MODE__LENGTH_ID
     };   
     #ifdef ENABLE_FEATURE_LIGHTING__REALTIME_MODES 
@@ -1068,9 +1069,9 @@ inline uint32_t color_blend(uint32_t color1, uint32_t color2, uint8_t blend) {
     uint16_t EffectAnim__SunPositions__DrawSun_2D_Elevation_And_Azimuth_01();
     uint16_t EffectAnim__SunPositions__White_Colour_Temperature_CCT_Based_On_Elevation_01();
     #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__SUN_POSITIONS
-    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__PIXEL_SET_ELSEWHERE
-    uint16_t EffectAnim__Manual__PixelSetElsewhere();
-    #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__PIXEL_SET_ELSEWHERE
+    #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__CONTROLLED_FROM_ANOTHER_MODULE
+    uint16_t EffectAnim__Manual__ControlledFromAnotherModule();
+    #endif // ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__CONTROLLED_FROM_ANOTHER_MODULE
     #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL0_DEVELOPING
     void SubTask_Flasher_Animate_Function_Tester_01();
     void SubTask_Flasher_Animate_Function_Tester_02();
@@ -1530,9 +1531,10 @@ inline uint32_t color_blend(uint32_t color1, uint32_t color2, uint8_t blend) {
 
       /**
        * Manual Pixel: Keeping as legacy, but mode change to realtime will remove this
+       * Removing this, Feb25, it should be handled by a realtime mode (ie not effects)
        **/
-      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__PIXEL_SET_ELSEWHERE
-      EFFECTS_FUNCTION__MANUAL__PIXEL_SET_ELSEWHERE__ID,
+      #ifdef ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__CONTROLLED_FROM_ANOTHER_MODULE
+      EFFECTS_FUNCTION__MANUAL__CONTROLLED_FROM_ANOTHER_MODULE__ID,
       #endif
 
       /**
@@ -1719,7 +1721,14 @@ inline uint32_t color_blend(uint32_t color1, uint32_t color2, uint8_t blend) {
 
   void SubTask_Effects();
   void Segments_RefreshLEDIndexPattern(uint8_t segment_index = 0);
+
   
+  #ifdef ENABLE_ANIMATION_MODE__INTERNAL_CONTROL_FROM_ANOTHER_MODULE
+  void SubTask_AnimationMode__InternalControlFromAnotherModule();
+  #endif 
+  
+
+
   byte realtimeMode = REALTIME_MODE_INACTIVE;
   bool realtimeRespectLedMaps; // used in getMappedPixelIndex()
 
@@ -2255,6 +2264,12 @@ struct SegmentColour {
     SegmentColour(uint8_t r = 0, uint8_t g = 0, uint8_t b = 0, uint8_t ww = 0, uint8_t cw = 0, uint8_t br_rgb = 255, uint8_t br_ww = 255)
         : colour(r, g, b, ww, cw), bri_rgb(br_rgb), bri_ww(br_ww) {}
     
+    
+void setRGB(uint8_t r, uint8_t g, uint8_t b) {
+    colour.R = r; colour.G = g; colour.B = b;
+}
+
+
     // Set RGB brightness (0-255)
 void setBrightnessRGB(uint8_t brightness) {
     bri_rgb = brightness;

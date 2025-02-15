@@ -59,6 +59,7 @@ int8_t mTime::Tasker(uint8_t function, JsonParserObject obj)
 void mTime::Pre_Init(void)
 {
   Rtc.millis = millis();
+  RtcTime.valid = false;
 }
 
 
@@ -249,7 +250,7 @@ String mTime::GetTime(uint8_t time_type)
   switch (time_type)
   {
     default:
-    case DT_LOCAL_TIME:{
+    case DT_LOCAL_TIME:{ // replaces hhmmss_ctr
       
       // make another GetTime (no date function)
       time = Rtc.local_time;
@@ -497,6 +498,24 @@ uint32_t mTime::MakeTime(datetime_t &tm)
 }
 
 
+
+uint32_t mTime::BuildDateTimeElapsed() {
+  if(!RtcTime.valid) return 0;
+    // Compute once and cache the build timestamp.
+    static const uint32_t buildEpoch = ConvertBuildDateTimeToEpoch();
+    uint32_t currentTime = Rtc.local_time;
+    if (currentTime > buildEpoch) {
+        return currentTime - buildEpoch;
+    }
+    return 0;
+}
+
+bool mTime::IsBuildDateTimeElapsedBeyond(uint32_t seconds_check) {
+    return BuildDateTimeElapsed() > seconds_check;
+}
+
+
+
 uint32_t mTime::GetUTCTime()
 {
   return Rtc.utc_time;
@@ -667,12 +686,14 @@ void mTime::RtcSecond(void)
   }
 
   if (Rtc.utc_time > START_VALID_TIME) {  // 2016-01-01
-      Rtc.time_timezone = RtcTimeZoneOffset(Rtc.utc_time);
+    Rtc.time_timezone = RtcTimeZoneOffset(Rtc.utc_time);
     Rtc.local_time = Rtc.utc_time + Rtc.time_timezone;
     Rtc.time_timezone /= 60;
     if (tkr_set->Settings.bootcount_reset_time < START_VALID_TIME) {
       tkr_set->Settings.bootcount_reset_time = Rtc.local_time;
     }
+    RtcTime.valid = true;
+    ALOG_DBM(PSTR(D_LOG_TIME "Valid"));
   } else {
     Rtc.local_time = Rtc.utc_time;
   }

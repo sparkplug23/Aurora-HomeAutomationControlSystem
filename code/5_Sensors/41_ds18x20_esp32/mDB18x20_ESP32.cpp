@@ -337,7 +337,7 @@ void mDB18x20_ESP32::SetDeviceNameID_WithAddress(const char* device_name, uint8_
     // AddLog_Array("Searching Saved", sensor_vector[i].address, 8);
     if(ArrayCompare(array_val,8, sensor_vector[i].address,8))
     {
-      AddLog_Array("MATCHED Searching Saved", sensor_vector[i].address, 8);
+      AddLog_Array(LOG_LEVEL_INFO, "MATCHED Searching Saved", sensor_vector[i].address, 8);
       sensor_vector[i].device_name_index = device_name_index;
       break;
     }

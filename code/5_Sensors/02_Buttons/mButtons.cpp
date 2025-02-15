@@ -30,26 +30,6 @@ int8_t mButtons::Tasker(uint8_t function, JsonParserObject obj){
       Loop();
     break;
     /************
-     * EVENTS SECTION * 
-    *******************/
-    case TASK_EVENT_INPUT_STATE_CHANGED_ID:
-      // CommandSet_SDCard_OpenClose_Toggle();
-   
-    
-      // Event for this
-      if(pCONT_rules->event_triggered.module_id == D_UNIQUE_MODULE_SENSORS_BUTTONS_ID)
-      {
-   
-        ALOG_INF(PSTR("Button State Changed1 : MQTTHandler_Sender"));
-   
-        // Send immediately (Button type is held in event, so ConstructJson can make the correct formatted data)
-        mqtthandler_sensor_ifchanged.flags.SendNow = true;
-   
-      }   
-
-
-    break;
-    /************
      * MQTT SECTION * 
     *******************/
     #ifdef USE_MODULE_NETWORK_MQTT
@@ -92,7 +72,7 @@ void mButtons::Pre_Init(void)
   ALOG_INF(PSTR("Pre_Init"));
 
   // Check all possible pin options
-  Button.used = 0;    
+  Button.used_bitmap = 0;    
 
   // Lets check each type on their own, normal, inverted etc
   for(uint32_t i=0;i<MAX_KEYS_SET;i++)
@@ -134,7 +114,7 @@ void mButtons::Pre_Init(void)
     {
       SetButtonUsed(i);
       pin = pCONT_pins->GetPin(GPIO_KEY1_TOUCH_ID, i);      
-      ButtonTouchFlag(i);
+      TouchFlag(i);
     }
     #endif // SOC_TOUCH_VERSION_1
     else{
@@ -143,13 +123,13 @@ void mButtons::Pre_Init(void)
 
     if(pin != -1)
     {
-      ALOG_INF(PSTR(D_LOG_BUTTONS "%d pin=%d %s"), i, pin, toBinaryString(Button.used, MAX_KEYS_SET).c_str() );
+      ALOG_INF(PSTR(D_LOG_BUTTONS "%d pin=%d %s"), i, pin, toBinaryString(Button.used_bitmap, MAX_KEYS_SET).c_str() );
       Button.last_state[i] = digitalRead(pin);
     }
 
   }
 
-  if(Button.used){ module_state.mode = ModuleStatus::Initialising; }
+  if(Button.used_bitmap){ module_state.mode = ModuleStatus::Initialising; }
 
 }
 
@@ -164,7 +144,7 @@ void mButtons::Init(void)
 
 
   bool ac_detect = (tkr_set->Settings.button_debounce % 10 == 9);
-//   Button.used = 0;
+//   Button.used_bitmap = 0;
 // /*
 //   uint32_t last_used = 0;
 // */
@@ -172,19 +152,19 @@ void mButtons::Init(void)
 //     Button.last_state[i] = NOT_PRESSED;
 // #ifdef ESP8266
 //     if ((0 == i) && ((SONOFF_DUAL == TasmotaGlobal.module_type) || (CH4 == TasmotaGlobal.module_type))) {
-//       bitSet(Button.used, i);            // This pin is used
+//       bitSet(Button.used_bitmap, i);            // This pin is used
 //     } else
 // #endif  // ESP8266
 //     if (pCONT_pins->PinUsed(GPIO_KEY1_ID, i)) {
-//       bitSet(Button.used, i);            // This pin is used
+//       bitSet(Button.used_bitmap, i);            // This pin is used
 // #ifdef ESP8266
-//       pinMode(pCONT_pins->Pin(GPIO_KEY1, i), bitRead(Button.no_pullup_mask, i) ? INPUT : ((16 == pCONT_pins->Pin(GPIO_KEY1, i)) ? INPUT_PULLDOWN_16 : INPUT_PULLUP));
+//       pinMode(pCONT_pins->Pin(GPIO_KEY1, i), bitRead(Button.no_pullup_bitmap, i) ? INPUT : ((16 == pCONT_pins->Pin(GPIO_KEY1, i)) ? INPUT_PULLDOWN_16 : INPUT_PULLUP));
 // #endif  // ESP8266
 // #ifdef ESP32
-//       pinMode(pCONT_pins->Pin(GPIO_KEY1_ID, i), bitRead(Button.pulldown_mask, i) ? INPUT_PULLDOWN : bitRead(Button.no_pullup_mask, i) ? INPUT : INPUT_PULLUP);
+//       pinMode(pCONT_pins->Pin(GPIO_KEY1_ID, i), bitRead(Button.pulldown_bitmap, i) ? INPUT_PULLDOWN : bitRead(Button.no_pullup_bitmap, i) ? INPUT : INPUT_PULLUP);
 // #endif  // ESP32
 //       // Set global now so doesn't change the saved power state on first button check
-//       Button.last_state[i] = (digitalRead(pCONT_pins->Pin(GPIO_KEY1_ID, i)) != bitRead(Button.inverted_mask, i));
+//       Button.last_state[i] = (digitalRead(pCONT_pins->Pin(GPIO_KEY1_ID, i)) != bitRead(Button.inverted_bitmap, i));
 //       if (ac_detect) {
 //         Button.state[i] = 0x80 + 2 * BUTTON_AC_PERIOD;
 //         Button.last_state[i] = 0;				 // Will set later in the debouncing code
@@ -192,7 +172,7 @@ void mButtons::Init(void)
 //     }
 // #ifdef USE_ADC
 //     else if (PinUsed(GPIO_ADC_BUTTON, i) || PinUsed(GPIO_ADC_BUTTON_INV, i)) {
-//       bitSet(Button.used, i);            // This pin is used
+//       bitSet(Button.used_bitmap, i);            // This pin is used
 //     }
 // #endif  // USE_ADC
 //     else {
@@ -203,19 +183,19 @@ void mButtons::Init(void)
 //         //   XdrvMailbox.index = button index
 //         // At exit:
 //         //   XdrvMailbox.index bit 0 = current state
-//         // bitSet(Button.used, i);                // This pin is used
+//         // bitSet(Button.used_bitmap, i);                // This pin is used
 //         // bool state = (XdrvMailbox.index &1);
 //         // ButtonSetVirtualPinState(i, state);    // Virtual hardware pin state
 //         // if (!state) { ButtonInvertFlag(i); }   // Set inverted flag
 //         // // last_state[i] must be 1 to indicate no button pressed
-//         // Button.last_state[i] = (bitRead(Button.virtual_pin, i) != bitRead(Button.inverted_mask, i));
+//         // Button.last_state[i] = (bitRead(Button.virtual_pin_bitmap, i) != bitRead(Button.inverted_bitmap, i));
 
 //         // AddLog(LOG_LEVEL_DEBUG, PSTR("BTN: Add vButton%d, State %d"), i +1, Button.last_state[i]);
 //       }
 //     }
 //     Button.debounced_state[i] = Button.last_state[i];
 // /*
-//     if (bitRead(Button.used, i)) {
+//     if (bitRead(Button.used_bitmap, i)) {
 //       last_used = i +1;
 //     }
 // */
@@ -232,12 +212,12 @@ void mButtons::Init(void)
       //   XdrvMailbox.index = button index
       // At exit:
       //   XdrvMailbox.index bit 0 = current state
-      bitSet(Button.used, i);                // This pin is used
+      bitSet(Button.used_bitmap, i);                // This pin is used
       bool state = (XdrvMailbox.index &1);
       ButtonSetVirtualPinState(i, state);    // Virtual hardware pin state
       if (!state) { ButtonInvertFlag(i); }   // Set inverted flag
       // last_state[i] must be 1 to indicate no button pressed
-      Button.last_state[i] = (bitRead(Button.virtual_pin, i) != bitRead(Button.inverted_mask, i));
+      Button.last_state[i] = (bitRead(Button.virtual_pin_bitmap, i) != bitRead(Button.inverted_bitmap, i));
 
       AddLog(LOG_LEVEL_DEBUG, PSTR("BTN: Add vButton%d, State %d"), i +1, Button.last_state[i]);
     }
@@ -246,11 +226,11 @@ void mButtons::Init(void)
   }
 */
 
-//  AddLog(LOG_LEVEL_DEBUG, PSTR("BTN: vPinUsed %08X, State %08X, Invert %08X"), Button.used, Button.virtual_pin, Button.inverted_mask);
+//  AddLog(LOG_LEVEL_DEBUG, PSTR("BTN: vPinUsed %08X, State %08X, Invert %08X"), Button.used_bitmap, Button.virtual_pin_bitmap, Button.inverted_bitmap);
 
   TickerButton = new Ticker();
 
-  if (Button.used) // Any bit set
+  if (Button.used_bitmap) // Any bit set
   {
     #ifdef ESP288
     TickerSwitch->attach_ms(SWITCH_PROBE_INTERVAL, 
@@ -278,23 +258,32 @@ void mButtons::Init(void)
 
 }
 
+void mButtons::Loop(void) {
+  if (Button.used_bitmap) {
+    if(mTime::TimeReached(&Button.tSaved_debounce, tkr_set->Settings.button_debounce)){
+      Handler();
+    }
+  }
+}
+
+
 /********************************************************************************************/
 
 void mButtons::PullupFlag(uint32_t button_bit) {
-  bitSet(Button.no_pullup_mask, button_bit);
+  bitSet(Button.no_pullup_bitmap, button_bit);
 }
 
 void mButtons::PulldownFlag(uint32_t button_bit) {
-  bitSet(Button.pulldown_mask, button_bit);
+  bitSet(Button.pulldown_bitmap, button_bit);
 }
 
 void mButtons::InvertFlag(uint32_t button_bit) {
-  bitSet(Button.inverted_mask, button_bit);
+  bitSet(Button.inverted_bitmap, button_bit);
 }
 
 #if defined(SOC_TOUCH_VERSION_1) || defined(SOC_TOUCH_VERSION_2)
 void mButtons::TouchFlag(uint32_t button_bit) {
-  bitSet(TouchButton.touch_mask, button_bit);
+  bitSet(TouchButton.touch_bitmap, button_bit);
 }
 #endif  // ESP32 SOC_TOUCH_VERSION_1 or SOC_TOUCH_VERSION_2
 
@@ -302,7 +291,7 @@ void mButtons::TouchFlag(uint32_t button_bit) {
 
 void mButtons::SetVirtualPinState(uint32_t index, uint32_t state) {
   // Set virtual pin state to be debounced as used by early detected buttons
-  bitWrite(Button.virtual_pin, index, state);
+  bitWrite(Button.virtual_pin_bitmap, index, state);
 }
 
 uint8_t mButtons::GetState(uint32_t index) {
@@ -318,11 +307,11 @@ uint8_t mButtons::LastState(uint32_t index) {
 /*------------------------------------------------------------------------------------------*/
 
 bool mButtons::Used(uint32_t index) {
-  return (pCONT_pins->PinUsed(GPIO_KEY1_ID, index) || bitRead(Button.used, index));
+  return (pCONT_pins->PinUsed(GPIO_KEY1_ID, index) || bitRead(Button.used_bitmap, index));
 }
 
 void mButtons::SetButtonUsed(uint32_t index) {
-  bitSet(Button.used, index);
+  bitSet(Button.used_bitmap, index);
 }
 
 
@@ -355,10 +344,10 @@ void mButtons::Probe(void)
 
   uint32_t not_activated;
   for (uint32_t i = 0; i < MAX_KEYS_SET; i++) {
-    if (!bitRead(Button.used, i)) { continue; }
+    if (!bitRead(Button.used_bitmap, i)) { continue; }
 
     if (pCONT_pins->PinUsed(GPIO_KEY1_ID, i)) {
-      not_activated = (digitalRead(pCONT_pins->GetPin(GPIO_KEY1_ID, i)) != bitRead(Button.inverted_mask, i));
+      not_activated = (digitalRead(pCONT_pins->GetPin(GPIO_KEY1_ID, i)) != bitRead(Button.inverted_bitmap, i));
     } else if (pCONT_pins->PinUsed(GPIO_KEY1_INV_ID, i)) { // Inverted pin, active low
       not_activated = digitalRead(pCONT_pins->GetPin(GPIO_KEY1_INV_ID, i));
     } else if (pCONT_pins->PinUsed(GPIO_KEY1_NP_ID, i)) { // No pull, active high
@@ -369,7 +358,7 @@ void mButtons::Probe(void)
     #if defined(SOC_TOUCH_VERSION_1) || defined(SOC_TOUCH_VERSION_2)
     else
     if (pCONT_pins->PinUsed(GPIO_KEY1_TOUCH_ID, i)) {
-      if (bitRead(TouchButton.touch_mask, i)) {
+      if (bitRead(TouchButton.touch_bitmap, i)) {
         if (ac_detect || bitRead(TouchButton.calibration, i +1)) { continue; }  // Touch is slow. Takes 21mS to read
         uint32_t value = touchRead( pCONT_pins->Pin(GPIO_KEY1_TOUCH_ID, i));
         #ifdef SOC_TOUCH_VERSION_2
@@ -381,7 +370,7 @@ void mButtons::Probe(void)
     }   
     #endif  // ESP32 SOC_TOUCH_VERSION_1 or SOC_TOUCH_VERSION_2
     else {
-      not_activated = (bitRead(Button.virtual_pin, i) != bitRead(Button.inverted_mask, i));
+      not_activated = (bitRead(Button.virtual_pin_bitmap, i) != bitRead(Button.inverted_bitmap, i));
     }
 
     ALOG_DBM(PSTR(D_LOG_BUTTONS "not_activated %d"), not_activated);
@@ -473,23 +462,27 @@ void mButtons::Probe(void)
  * SetOption32 (40)    - Button held for factor times longer
  * SetOption40 (0)     - Do not ignore button hold
  * SetOption73 (0)     - Decouple button from relay and send just mqtt topic
+ * 
+ * I think Handler, in relation to defaults, should be split. 
+ * In my case, the default power options should be a separate function in this class
+ * 
 \*********************************************************************************************/
 
 void mButtons::Handler(void) {
   if (tkr_time->uptime_seconds_nonreset < 4) { return; }                    // Block GPIO for 4 seconds after poweron to workaround Wemos D1 / Obi RTS circuit
 
-  uint8_t hold_time_extent = IMMINENT_RESET_FACTOR;            // Extent hold time factor in case of iminnent Reset command
+  uint8_t hold_time_extent = IMMINENT_RESET_FACTOR;            // Since hold times are 0.1/second, this gets back into seconds
   uint16_t loops_per_second = 1000 / tkr_set->Settings.button_debounce;  // ButtonDebounce (50)
   char scmnd[20];
 
   for (uint32_t button_index = 0; button_index < MAX_KEYS_SET; button_index++) {
-    if (!bitRead(Button.used, button_index)) { continue; }
+    if (!bitRead(Button.used_bitmap, button_index)) { continue; }
 
     uint8_t button = Button.debounced_state[button_index];
 
     // ALOG_INF(PSTR("button %d %d"), button_index, button);
 
-#ifdef ESP8266
+    #ifdef ESP8266
     if (!button_index && ((SONOFF_DUAL == TasmotaGlobal.module_type) || (CH4 == TasmotaGlobal.module_type))) {
       if (Button.dual_code) {
         AddLog(LOG_LEVEL_DEBUG, PSTR("BTN: Code %04X"), Button.dual_code);
@@ -503,18 +496,18 @@ void mButtons::Handler(void) {
         button = NOT_PRESSED;
       }
     } else
-#endif  // ESP8266
-    // if (pCONT_pins->PinUsed(GPIO_KEY1_ID, button_index)) { // cant do this, since we must check every button, best to use bitmask check
+    #endif  // ESP8266
+
     if (Used(button_index)) {
 
-#if defined(SOC_TOUCH_VERSION_1) || defined(SOC_TOUCH_VERSION_2)
-      if (bitRead(TouchButton.touch_mask, button_index) && bitRead(TouchButton.calibration, button_index +1)) {  // Touch
+      #if defined(SOC_TOUCH_VERSION_1) || defined(SOC_TOUCH_VERSION_2)
+      if (bitRead(TouchButton.touch_bitmap, button_index) && bitRead(TouchButton.calibration, button_index +1)) {  // Touch
         uint32_t _value = touchRead( pCONT_pins->Pin(GPIO_KEY1_TOUCH_ID, button_index) );
-#ifdef SOC_TOUCH_VERSION_2
+        #ifdef SOC_TOUCH_VERSION_2
         if (_value > tkr_set->Settings.touch_threshold) {  // ESPS3 No touch = 24200, Touch = 100000
-#else
+        #else
         if ((_value > 0) && (_value < touch_threshold)) {  // ESP32 No touch = 74, Touch = 20 (Probably read-error (0))
-#endif
+        #endif
           TouchButton.hits[button_index]++;
         } else {
           TouchButton.hits[button_index] = 0;
@@ -522,100 +515,117 @@ void mButtons::Handler(void) {
         AddLog(LOG_LEVEL_INFO, PSTR("PLOT: %u, %u, %u,"), button_index +1, _value, TouchButton.hits[button_index]);  // Button number (1..4), value, continuous hits under threshold
         continue;
       }
-#endif  // ESP32 SOC_TOUCH_VERSION_1 or SOC_TOUCH_VERSION_2
+      #endif  // ESP32 SOC_TOUCH_VERSION_1 or SOC_TOUCH_VERSION_2
 
     }
-#ifdef USE_ADC
-#ifndef FIRMWARE_MINIMAL
+    #ifdef USE_ADC
+    #ifndef FIRMWARE_MINIMAL
     else if (PinUsed(GPIO_ADC_BUTTON, button_index)) {
       button = AdcGetButton(Pin(GPIO_ADC_BUTTON, button_index));
     }
     else if (PinUsed(GPIO_ADC_BUTTON_INV, button_index)) {
       button = AdcGetButton(Pin(GPIO_ADC_BUTTON_INV, button_index));
     }
-#endif  // FIRMWARE_MINIMAL
-#endif  // USE_ADC
+    #endif  // FIRMWARE_MINIMAL
+    #endif  // USE_ADC
 
-    // XdrvMailbox.index = button_index;
-    // XdrvMailbox.payload = button;
-    // XdrvMailbox.command_code = (Button.last_state[button_index] & 0xFF) | ((Button.press_counter[button_index] & 0xFF) << 8);
-    if (0){//XdrvCall(FUNC_BUTTON_PRESSED)) {
+    tkr_set->XdrvMailbox.index = button_index;
+    tkr_set->XdrvMailbox.payload = button;
+    tkr_set->XdrvMailbox.command_code = (Button.last_state[button_index] & 0xFF) | ((Button.press_counter[button_index] & 0xFF) << 8);
+    if (pCONT->Tasker_Interface(TASK_BUTTON_PRESSED) == FUNCTION_RESULT_HANDLED_ID){
       // Serviced
     }
-#ifdef ESP8266
-    else if (SONOFF_4CHPRO == TasmotaGlobal.module_type) {
-      if (Button.hold_timer[button_index]) { Button.hold_timer[button_index]--; }
+    else 
+    {
 
-      bool button_pressed = false;
-      if ((PRESSED == button) && (NOT_PRESSED == Button.last_state[button_index])) {
-        AddLog(LOG_LEVEL_DEBUG, PSTR("BTN: Button%d level 1-0"), button_index +1);
-        Button.hold_timer[button_index] = loops_per_second;
-        button_pressed = true;
-      }
-      if ((NOT_PRESSED == button) && (PRESSED == Button.last_state[button_index])) {
-        AddLog(LOG_LEVEL_DEBUG, PSTR("BTN: Button%d level 0-1"), button_index +1);
-        if (!Button.hold_timer[button_index]) { button_pressed = true; }  // Do not allow within 1 second
-      }
-      if (button_pressed) {
-        if (!Settings->flag3.mqtt_buttons) {                 // SetOption73 (0) - Decouple button from relay and send just mqtt topic
-          if (!SendKey(KEY_BUTTON, button_index +1, POWER_TOGGLE)) {  // Execute Toggle command via MQTT if ButtonTopic is set
-            ExecuteCommandPower(button_index +1, POWER_TOGGLE, SRC_BUTTON);  // Execute Toggle command internally
-          }
-        } else {
-          MqttButtonTopic(button_index +1, 1, 0);            // SetOption73 (0) - Decouple button from relay and send just mqtt topic
-        }
-      }
-    }
-#endif  // ESP8266
-    else {
-      if ((PRESSED == button) && (NOT_PRESSED == Button.last_state[button_index])) {
+      /** BUTTON PRESSED ONCE
+       * Changed from NOT_PRESSED to PRESSED
+       */
+      if (
+        (PRESSED == button) && 
+        (NOT_PRESSED == Button.last_state[button_index])
+      ){
 
-        if (tkr_set->Settings.flag_system.button_single) {                  // SetOption13 (0) - Allow only single button press for immediate action,
-          if (!tkr_set->Settings.flag3.mqtt_buttons) {               // SetOption73 (0) - Decouple button from relay and send just mqtt topic
-            AddLog(LOG_LEVEL_DEBUG, PSTR("BTN: Button%d immediate"), button_index +1);
-            // if (!SendKey(KEY_BUTTON, button_index +1, POWER_TOGGLE)) {  // Execute Toggle command via MQTT if ButtonTopic is set
-            //   ExecuteCommandPower(button_index +1, POWER_TOGGLE, SRC_BUTTON);  // Execute Toggle command internally
-            // }
-            AddLog(LOG_LEVEL_INFO,PSTR(D_LOG_BUTTONS "#%d Changed : Level %d | %s " D_IMMEDIATE), button_index, button, button==PRESSED?"ACTIVE":"Not Active" );          
-                                                                                                          // <length of data>,<state>,<type ie single/multi/hold><count>  
-            pCONT_rules->NewEventRun_NumArg(D_UNIQUE_MODULE_SENSORS_BUTTONS_ID, TASK_EVENT_INPUT_STATE_CHANGED_ID, button_index, 2, button, INPUT_TYPE_SINGLE_PRESS_ID); // 1 press event
+        /***
+         * SINGLE-PRESS: React to single press and trigger rule
+         */
+        if (tkr_set->Settings.flag_system.button_single_press_only) { // SetOption13 (0) - Allow only single button press for immediate action
+
+          AddLog(LOG_LEVEL_INFO,PSTR(D_LOG_BUTTONS "#%d Immediate: %d | %s " D_IMMEDIATE), button_index, button, button==PRESSED?"ACTIVE":"Not Active" );          
+                      
+          SendButton(button_index, INPUT_TYPE_SINGLE_PRESS_ID);
         
-          } else {
-            MqttButtonTopic(button_index +1, 1, 0);          // SetOption73 1 - Decouple button from relay and send just mqtt topic
-          }
-        } else {
+        } 
+        /***
+         * MULTI-PRESS: Capture timing and increment count
+         */
+        else 
+        {
           Button.press_counter[button_index] = (Button.window_timer[button_index]) ? Button.press_counter[button_index] +1 : 1;
-          AddLog(LOG_LEVEL_DEBUG, PSTR("BTN: Button%d multi-press %d"), button_index +1, Button.press_counter[button_index]);
           Button.window_timer[button_index] = uint32_t(DOUBLE_CLICK_WINDOW * loops_per_second) / 1000;
+          
+          AddLog(LOG_LEVEL_INFO, PSTR("BTN: Button%d multi-press %d %d"), button_index +1, Button.press_counter[button_index], Button.window_timer[button_index]);
+        
+          // Multipress is recorded, but not acted on until timeout of a possible additional press
         }
-        // TasmotaGlobal.blinks = 201;
       }
 
+      /**
+       * BUTTON NOT PRESSED
+       * No change 
+       */
       if (NOT_PRESSED == button) {
         Button.hold_timer[button_index] = 0;
-        if (tkr_set->Settings.flag3.mqtt_buttons && (PRESSED == Button.last_state[button_index]) && !Button.press_counter[button_index]) { // SetOption73 (0) - Decouple button from relay and send just mqtt topic
-          MqttButtonTopic(button_index +1, 6, 0);
+        /**
+         * BUTTON was released, it was pressed before
+         */
+        if (
+          (PRESSED == Button.last_state[button_index]) &&   // Button was pressed before
+          !Button.press_counter[button_index]               // no multiple counter
+        ){
+          ALOG_INF(PSTR(D_LOG_BUTTONS "Released %d after long press: CLEAR"), button_index);
+
+          SendButton(button_index, INPUT_TYPE_SINGLE_HOLD_RELEASED_ID);
+
         }
-      } else {
+      }       
+      /**
+       * BUTTON HELD (PRESSED)
+       * Button held: It was pressed before, and is still pressed now, hence it is held 
+       */
+      else 
+      {
         Button.hold_timer[button_index]++;
-        if (tkr_set->Settings.flag_system.button_single) {                  // SetOption13 (0) - Allow only single button press for immediate action
-          if (Button.hold_timer[button_index] == loops_per_second * hold_time_extent * tkr_set->Settings.setoption_255[P_HOLD_TIME] / 10) {  // SetOption32 (40) - Button held for factor times longer
-            snprintf_P(scmnd, sizeof(scmnd), PSTR("SetOption" "13 0"));  // Disable single press only
-            ALOG_INF(PSTR("button was held : ExecuteCommand(scmnd, SRC_BUTTON);"));
-            pCONT_rules->NewEventRun_NumArg(D_UNIQUE_MODULE_SENSORS_BUTTONS_ID, TASK_EVENT_INPUT_STATE_CHANGED_ID, button_index, 2, button, INPUT_TYPE_SINGLE_HOLD_ID);    // ERROR - Not sure what this section will do, long press no multi?
-          
+
+        /**
+         * Immediate actions: Single press only
+         * If single-press only was enabled, then holding the button for X time will enable multipress mode. The reason for this code is single-press mode enables immediate action, while multipress adds a timeout delay to await multiple press so may not always be the best option.
+         * The following code enables a runtime way of switching from single only, to, multipress enabled.
+         */
+        if (tkr_set->Settings.flag_system.button_single_press_only) {                  // SetOption13 (0) - Allow only single button press for immediate action
+          uint16_t hold_timer_limit = loops_per_second * hold_time_extent * tkr_set->Settings.setoption_255[P_HOLD_TIME] / 10;
+          if (Button.hold_timer[button_index] == hold_timer_limit) {  // SetOption32 (40) - Button held for factor times longer
+            Button.press_counter[button_index] = 0;
+            ALOG_INF(PSTR("Disable single press only SO13"));
+            tkr_set->Settings.flag_system.button_single_press_only = false;        // SetOption13 (0) - "SetOption" "13 0" // Disable single press only
           }
-        } else {
+        }
+        /**
+         * Immediate actions: Multi press allowed
+         */
+        else 
+        {
           if (Button.hold_timer[button_index] == loops_per_second * tkr_set->Settings.setoption_255[P_HOLD_TIME] / 10) {  // SetOption32 (40) - Button hold
             Button.press_counter[button_index] = 0;
-            if (tkr_set->Settings.flag3.mqtt_buttons) {              // SetOption73 (0) - Decouple button from relay and send just mqtt topic
-              ALOG_INF(PSTR("Decouple button from relay and send just mqtt topic MqttButtonTopic(button_index +1, 3, 1);"));
-            } else {
-              ALOG_INF(PSTR("SendKey(KEY_BUTTON, button_index +1, POWER_HOLD);"));  // Execute Hold command via MQTT if ButtonTopic is set
-            }
-            pCONT_rules->NewEventRun_NumArg(D_UNIQUE_MODULE_SENSORS_BUTTONS_ID, TASK_EVENT_INPUT_STATE_CHANGED_ID, button_index, 2, button, INPUT_TYPE_SINGLE_HOLD_ID); 
+
+            SendButton(button_index, INPUT_TYPE_SINGLE_HOLD_ID);
           
           } else {
+
+            /***
+             * SECTION: Button hold is used to system factory reset
+             */
+            #ifdef ENABLE_FEATURE_BUTTON__FACTORY_RESET_WITH_LONG_HOLD
             if (tkr_set->Settings.flag_system.button_restrict) {            // SetOption1 (0) - Control button multipress
               if (tkr_set->Settings.setoption_255[P_HOLD_IGNORE] > 0) {      // SetOption40 (0) - Do not ignore button hold
                 if (Button.hold_timer[button_index] > loops_per_second * tkr_set->Settings.setoption_255[P_HOLD_IGNORE] / 10) {
@@ -624,121 +634,91 @@ void mButtons::Handler(void) {
                 }
               }
             } else {
-              if ((Button.hold_timer[button_index] == loops_per_second * hold_time_extent * tkr_set->Settings.setoption_255[P_HOLD_TIME] / 10)) {  // SetOption32 (40) - Button held for factor times longer
+
+              if (Button.hold_timer[button_index] == (loops_per_second * hold_time_extent * tkr_set->Settings.setoption_255[P_HOLD_TIME] / 10) ) {  // SetOption32 (40) - Button held for factor times longer
+                ALOG_WRN(PSTR(D_LOG_BUTTONS "FACTORY RESET")); 
                 Button.press_counter[button_index] = 0;
-                snprintf_P(scmnd, sizeof(scmnd), PSTR(D_CMND_RESET " 1"));
-                ALOG_INF(PSTR("The tasmota way was this caused a system reset, I want to decouple : ExecuteCommand(scmnd, SRC_BUTTON);"));
-                // pCONT_rules->NewEventRun_NumArg(D_UNIQUE_MODULE_SENSORS_BUTTONS_ID, TASK_EVENT_INPUT_STATE_CHANGED_ID, id, 2, state, INPUT_TYPE_SINGLE_HOLD_ID);    // Resetting command
                 
+                SendButton(button_index, INPUT_TYPE_SINGLE_HOLD_RESET_TIME_ID);
+
+              }else
+              if (Button.hold_timer[button_index] == (loops_per_second * hold_time_extent * tkr_set->Settings.setoption_255[P_HOLD_TIME] / 20) ) { // Warning at half way point this will cause a reset
+                ALOG_WRN(PSTR(D_LOG_BUTTONS "FACTORY RESET will occur if hold is continued"));                
               }
-            }
+              
+            } // reset time out
+            #endif // ENABLE_FEATURE_BUTTON__FACTORY_RESET_WITH_LONG_HOLD
+
           }
         }
       }
 
-      if (!tkr_set->Settings.flag_system.button_single) {                   // SetOption13 (0) - Allow multi-press
-        if (Button.window_timer[button_index]) {
+      if (!tkr_set->Settings.flag_system.button_single_press_only)  // SetOption13 (0) - Allow multi-press
+      {                   
+        if (Button.window_timer[button_index]) 
+        {
           Button.window_timer[button_index]--;
-        } else {
-          if (!tkr_set->runtime.restart_flag && !Button.hold_timer[button_index] && (Button.press_counter[button_index] > 0) && (Button.press_counter[button_index] < 7)) {
+        } 
+        else 
+        {
+          if (
+            !tkr_set->runtime.restart_flag && 
+            !Button.hold_timer[button_index] && 
+            (Button.press_counter[button_index] > 0) && 
+            (Button.press_counter[button_index] < MAX_BUTTON_MULTIPRESS_COUNTER)
+          ){
 
             bool single_press = false;
             if (Button.press_counter[button_index] < 3) {    // Single or Double press
-#ifdef ESP8266
+              #ifdef ESP8266
               if ((SONOFF_DUAL_R2 == TasmotaGlobal.module_type) || (SONOFF_DUAL == TasmotaGlobal.module_type) || (CH4 == TasmotaGlobal.module_type)) {
                 single_press = true;
               } else
-#endif  // ESP8266
+              #endif  // ESP8266
               {
                 single_press = (tkr_set->Settings.flag_system.button_swap +1 == Button.press_counter[button_index]);  // SetOption11 (0)
-                if ((1 == Button.used) && 0/* (2 == TasmotaGlobal.devices_present)*/) {  // Single Button with two devices only
+                if ((1 == Button.used_bitmap) && 0/* (2 == TasmotaGlobal.devices_present)*/) {  // Single Button with two devices only
                   if (tkr_set->Settings.flag_system.button_swap) {          // SetOption11 (0)
                     Button.press_counter[button_index] = (single_press) ? 1 : 2;
                   }
                 }
               }
             }
-/*********************************
- * 
- * 
- * 
- * Section below is what to do with multipress events, but I want these as rules only, so likely to be removed (merged into "Events")
- * 
- */
-            // XdrvMailbox.index = button_index;
-            // XdrvMailbox.payload = Button.press_counter[button_index];
-            if (0){//XdrvCall(FUNC_BUTTON_MULTI_PRESSED)) {       // I actually do want to implement this, though really rules should handle it anyway
+            
+            tkr_set->XdrvMailbox.index = button_index;
+            tkr_set->XdrvMailbox.payload = button;
+            if (pCONT->Tasker_Interface(TASK_BUTTON_MULTI_PRESSED) == FUNCTION_RESULT_HANDLED_ID) {
               // Serviced
-//                AddLog(LOG_LEVEL_DEBUG, PSTR("BTN: FUNC_BUTTON_MULTI_PRESSED serviced"));
+              AddLog(LOG_LEVEL_DEBUG, PSTR("BTN: FUNC_BUTTON_MULTI_PRESSED serviced"));
             } else
 
-#ifdef ROTARY_V1
-            if (!RotaryButtonPressed(button_index)) {
-#endif
-              if (!tkr_set->Settings.flag3.mqtt_buttons && single_press && 0){//SendKey(KEY_BUTTON, button_index + Button.press_counter[button_index], POWER_TOGGLE)) {  // Execute Toggle command via MQTT if ButtonTopic is set
-                // Success
-              } else {
-                if (Button.press_counter[button_index] < 6) { // Single to Penta press
-                  if (!tkr_set->Settings.flag3.mqtt_buttons) {       // SetOption73 - Detach buttons from relays and enable MQTT action state for multipress
-                    if (Button.press_counter[button_index] == 1) {  // By default first press always send a TOGGLE (2)
-                      ALOG_INF(PSTR("By default first press always send a TOGGLE (2) ExecuteCommandPower(button_index + Button.press_counter[button_index], POWER_TOGGLE, SRC_BUTTON);"));
-                    } else {
-                      SendKey(KEY_BUTTON, button_index +1, Button.press_counter[button_index] +9);    // 2,3,4 and 5 press send just the key value (11,12,13 and 14) for rules
-                      // if (0 == button_index) {               // BUTTON1 can toggle up to 5 relays if present. If a relay is not present will send out the key value (2,11,12,13 and 14) for rules
-                      //   uint32_t max_device = (TasmotaGlobal.devices_present < MAX_RELAY_BUTTON1) ? TasmotaGlobal.devices_present : MAX_RELAY_BUTTON1;
-                      //   if ((Button.press_counter[button_index] > 1) && (Button.press_counter[button_index] <= max_device)) {
-                      //     ALOG_INF(PSTR("ExecuteCommandPower(button_index + Button.press_counter[button_index], POWER_TOGGLE, SRC_BUTTON);"));   // Execute Toggle command internally
-                      //   }
-                      // }
-                    }
-                  }
+              #ifdef ROTARY_V1
+              if (!RotaryButtonPressed(button_index)) {
+              #endif
+                if (Button.press_counter[button_index] < MAX_BUTTON_MULTIPRESS_COUNTER) { // Single to 5 press
 
-                } else {    // 6 press start wificonfig 2
-                  if (!tkr_set->Settings.flag_system.button_restrict) {     // SetOption1  - Control button multipress
-                    snprintf_P(scmnd, sizeof(scmnd), PSTR("WifiConfig" " 2"));
-                    ALOG_INF(PSTR("ExecuteCommand(scmnd, SRC_BUTTON);"));
-                  }
+                  SendButton(button_index, Button.press_counter[button_index] == 1 ? INPUT_TYPE_SINGLE_PRESS_ID : INPUT_TYPE_MULTIPLE_PRESS_ID, Button.press_counter[button_index]);
+
+                } else {
+                  ALOG_ERR(PSTR(D_LOG_BUTTONS "Too manny presses: Reset counter"));
+                  Button.hold_timer[button_index] = 0;       // Reset button hold counter to stay below hold trigger
+                  Button.press_counter[button_index] = 0;    // Discard button press to disable functionality
                 }
-                if (tkr_set->Settings.flag3.mqtt_buttons) {          // SetOption73 (0) - Decouple button from relay and send just mqtt topic
-                  if (Button.press_counter[button_index] >= 1 && Button.press_counter[button_index] <= 5) {
-                    ALOG_INF(PSTR("MqttButtonTopic(button_index +1, Button.press_counter[button_index], 0);"));
-                  }
-                }
+                
+              #ifdef ROTARY_V1
               }
-#ifdef ROTARY_V1
-            }
-#endif
+              #endif
             Button.press_counter[button_index] = 0;
-          }
-        }
-      }
+          } // less than MAX_BUTTON_MULTIPRESS_COUNTER presses, not held
+        } // window_timer
+      } // Allow multi-press
     }
     Button.last_state[button_index] = button;
   }
 }
 
 
-bool mButtons::SendKey(uint32_t key, uint32_t device, uint32_t state)
-{
-// key 0 = KEY_BUTTON = button_topic
-// key 1 = KEY_SWITCH = switch_topic
-// state 0 = POWER_OFF = off
-// state 1 = POWER_ON = on
-// state 2 = POWER_TOGGLE = toggle
-// state 3 = POWER_HOLD = hold
-// state 4 = POWER_INCREMENT = button still pressed
-// state 5 = POWER_INV = button released
-// state 6 = POWER_CLEAR = button released
-// state 7 = POWER_RELEASE = button released
-// state 9 = CLEAR_RETAIN = clear retain flag
-// state 10 = POWER_DELAYED = button released delayed
-
-ALOG_INF(PSTR(D_LOG_BUTTONS "SendKey %d %d %d"), key, device, state);
-
-
-}
-
-uint8_t mButtons::Serial(uint8_t serial_in_byte) {
+uint8_t mButtons::SerialProbe(uint8_t serial_in_byte) {
   if (Button.dual_receive_count) {
     Button.dual_receive_count--;
     if (Button.dual_receive_count) {
@@ -759,92 +739,113 @@ uint8_t mButtons::Serial(uint8_t serial_in_byte) {
   return serial_in_byte;
 }
 
+
 /**
- * @brief Event of button topic, bypassing my mqtt method to format what the message should be, refine later
+ * @brief A new wrapper I am making in place of sendkey, this make sure the button module reacts to the press event type then broadcasts it via rules to the other modules
  * 
- * @param button_id 
- * @param action 
- * @param hold 
+ * @param key 
+ * @param device 
+ * @param state 
+ * @return true 
+ * @return false 
  */
-void mButtons::MqttButtonTopic(uint32_t button_id, uint32_t action, uint32_t hold) {
+bool mButtons::SendButton(uint32_t index, uint32_t state, uint16_t count)
+{
 
-  ALOG_INF(PSTR("MqttButtonTopic"));
+  char button_name[50];
+  DLI->GetDeviceName_WithModuleUniqueID( GetModuleUniqueID(), index, button_name, sizeof(button_name));  
+  char state_name_ctr[30];
+  pCONT_sup->GetTextIndexed_P(state_name_ctr, sizeof(state_name_ctr), state, kInputTypeButton);
+    
+  ALOG_INF(PSTR(D_LOG_BUTTONS "SendButton[%d|%s] type[%d|%s] count[%d]"), index, button_name, state, state_name_ctr, count);
 
-  // SendKey(KEY_BUTTON, button_id, (hold) ? 3 : action +9);
+  event.id      = index;
+  event.type    = state;
+  event.presses = count;
+  event.waiting = true; // new event recorded
 
-  // if (!tkr_set->Settings.flag.hass_discovery) {                        // SetOption19 - Control Home Assistant automatic discovery (See SetOption59)
-  //   char scommand[10];
-  //   snprintf_P(scommand, sizeof(scommand), PSTR(D_JSON_BUTTON "%d"), button_id);
-  //   char mqttstate[7];
-  //   Response_P(S_JSON_SVALUE_ACTION_SVALUE, scommand, (hold) ? SettingsText(SET_STATE_TXT4) : GetTextIndexed(mqttstate, sizeof(mqttstate), action, kMultiPress));
-  //   MqttPublishPrefixTopicRulesProcess_P(RESULT_OR_STAT, scommand);
-  // }
-}
+  #ifdef USE_MODULE_CORE_RULES
+  tkr_rules->NewEventRun_NumArg(
+      D_UNIQUE_MODULE_SENSORS_BUTTONS_ID, // Unique module ID
+      TASK_EVENT_INPUT_STATE_CHANGED_ID,  // Task Event
+      index,                       // Button Index
+      2,                                  // Optional Encoded Data_Length
+      state,                              // Encoded Data: Byte 0   "Type of press"
+      count                               // Encoded Data: Byte 1   "Number of presses"        
+    ); // Event has occured, save and check it    
+  #endif
 
-void mButtons::Loop(void) {
-  if (Button.used) {
-    if(mTime::TimeReached(&Button.debounce, tkr_set->Settings.button_debounce)){
-      Handler();
-    }
-  }
+  mqtthandler_sensor_ifchanged.flags.SendNow = true;
+  Tasker(TASK_MQTT_SENDER);
+
+  event.waiting = false;
+
 }
 
 
 uint8_t mButtons::ConstructJSON_Settings(uint8_t json_level, bool json_appending){
 
   JBI->Start();
-    JBI->Add(D_SENSOR_COUNT, Button.used);
+    JBI->Add(D_SENSOR_COUNT, GetSensorCount());
+
+    for(uint32_t i=0; i<GetSensorCount(); i++)
+    {
+      if(bitRead(Button.used_bitmap,i))
+      {
+        char button_name[50];
+        DLI->GetDeviceName_WithModuleUniqueID( GetModuleUniqueID(), i, button_name, sizeof(button_name));  
+
+        JBI->Object_Start(button_name);
+          JBI->Add("ID", i);
+          JBI->Add("state", Button.state[i]);
+          JBI->Add("last_state", Button.last_state[i]);
+          JBI->Add("debounced_state", Button.debounced_state[i]);
+          JBI->Add("press_counter", Button.press_counter[i]);
+          // JBI->Add("hold_timer", Button.hold_timer[i]);
+          JBI->Add("window_timer", Button.window_timer[i]);
+          JBI->Add("active_state", Button.active_state[i]);
+          /***
+           * To reduce reporting, bitmapped things are only added when set
+           */
+          if(bitRead(Button.no_pullup_bitmap,i))   JBI->Add("no_pullup", true);
+          if(bitRead(Button.pulldown_bitmap,i))    JBI->Add("pulldown", true);
+          if(bitRead(Button.inverted_bitmap,i))    JBI->Add("inverted", true);
+          if(bitRead(Button.used_bitmap,i))        JBI->Add("used", true);
+          if(bitRead(Button.virtual_pin_bitmap,i)) JBI->Add("virtual_pin", true);
+          
+        JBI->Object_End();
+
+      }
+    }
+
   return JBI->End();
 
 }
 
+/**
+ * @brief I dont like having the reporting here tied to rules, it must be its own thing
+ * 
+ * @param json_level 
+ * @param json_appending 
+ * @return uint8_t 
+ */
 uint8_t mButtons::ConstructJSON_Sensor(uint8_t json_level, bool json_appending){
 
   JBI->Start();
-    // JBI->Array_AddArray("lastbutton", lastbutton, sizeof(lastbutton));
 
-    // JBI->Object_Start("ButtonPressed");
-    //   JBI->Add("IsButtonActiveCtr", buttons[0].isactive);
-    // JBI->Object_End();
-
-
-    // /**
-    //  * @brief New method to show type of press (short/long/multi)
-    //  **/
-    // JBI->Object_Start("Event"); // asumes only one button at a time, will need nicer formatting later (arrays?)
-    //   JBI->Add("ID", pCONT_rules->event_triggered.device_id);
-    //   // JBI->Add("func", pCONT_rules->event_triggered.function_id);
-    //   // JBI->Array_AddArray("data1", pCONT_rules->event_triggered.value.data, pCONT_rules->event_triggered.value.length);
-
-    //   // [state][type][opt. count]
-    //   if(pCONT_rules->event_triggered.value.data[1] == INPUT_TYPE_SINGLE_PRESS_ID)
-    //   {
-    //     JBI->Add("type", "Single");
-    //     JBI->Add("count", 1);
-    //   }
-    //   if(pCONT_rules->event_triggered.value.data[1] == INPUT_TYPE_SINGLE_HOLD_ID)
-    //   {
-    //     JBI->Add("type", "Hold");
-    //     JBI->Add("count", pCONT_rules->event_triggered.value.data[2]);
-    //   }
-    //   if(pCONT_rules->event_triggered.value.data[1] == INPUT_TYPE_MULTIPLE_PRESS_ID)
-    //   {
-    //     JBI->Add("type", "Multiple");
-    //     JBI->Add("count", pCONT_rules->event_triggered.value.data[2]);
-    //   }
-
-    // JBI->End();
-
-
-
-    // JBI->Add("pin",    buttons[0].pin);
-    // JBI->Add("dpin",   digitalRead(buttons[0].pin));
-    // JBI->Array_Start("bit_set_invert");
-    //   for(int i=0;i<MAX_KEYS;i++){ JBI->Add(bitRead(key_inverted, i)); }
-    // JBI->Array_End();
-    // JBI->Array_Start("state");
-    //   for(int i=0;i<MAX_KEYS;i++){ JBI->Add(buttons[i].state); }
-    // JBI->Array_End();
+    if(event.waiting)
+    {
+      JBI->Add("ID", event.id);
+      char button_name[50];
+      DLI->GetDeviceName_WithModuleUniqueID( GetModuleUniqueID(), event.id, button_name, sizeof(button_name));  
+      JBI->Add("Name", button_name);
+      JBI->Add("Type", event.type);
+      char state_name_ctr[30];
+      pCONT_sup->GetTextIndexed_P(state_name_ctr, sizeof(state_name_ctr), event.type, kInputTypeButton);
+      JBI->Add("TypeName", state_name_ctr);
+      JBI->Add("Count", event.presses);
+      JBI->Add("LocalTime", tkr_time->GetTime().c_str());
+    }
 
   return JBI->End();
 
@@ -872,21 +873,10 @@ void mButtons::MQTTHandler_Init(){
   ptr->ConstructJSON_function = &mButtons::ConstructJSON_Settings;
   mqtthandler_list.push_back(ptr);
 
-  ptr = &mqtthandler_sensor_teleperiod;
-  ptr->tSavedLastSent = 0;
-  ptr->flags.PeriodicEnabled = true;
-  ptr->flags.SendNow = true;
-  ptr->tRateSecs = SEC_IN_MIN; 
-  ptr->topic_type = MQTT_TOPIC_TYPE_TELEPERIOD_ID;
-  ptr->json_level = JSON_LEVEL_DETAILED;
-  ptr->postfix_topic = PM_MQTT_HANDLER_POSTFIX_TOPIC_SENSORS_CTR;
-  ptr->ConstructJSON_function = &mButtons::ConstructJSON_Sensor;
-  mqtthandler_list.push_back(ptr);
-
   ptr = &mqtthandler_sensor_ifchanged;
   ptr->tSavedLastSent = 0;
-  ptr->flags.PeriodicEnabled = true;
-  ptr->flags.SendNow = true;
+  ptr->flags.PeriodicEnabled = false;
+  ptr->flags.SendNow = false;
   ptr->tRateSecs = 10; 
   ptr->topic_type = MQTT_TOPIC_TYPE_IFCHANGED_ID;
   ptr->json_level = JSON_LEVEL_DETAILED;

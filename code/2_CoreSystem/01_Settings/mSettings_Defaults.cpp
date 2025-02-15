@@ -272,7 +272,7 @@ void mSettings::SystemSettings_DefaultBody(void)
   ALOG_INF(PSTR("Settings.switch_debounce is set --- %d"), Settings.switch_debounce);  DEBUG_LINE_HERE2
   Settings.flag_system.button_restrict = 0;
   Settings.flag_system.button_swap = 0;
-  Settings.flag_system.button_single = 0; // support only single press to support faster button recognition (disable to allow multipress)
+  Settings.flag_system.button_single_press_only = 0; // support only single press to support faster button recognition (disable to allow multipress)
   Settings.flag_network.button_switch_force_local =0;
 
   Settings.flag_system.mqtt_switches = 0; // false default

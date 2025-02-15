@@ -5152,7 +5152,7 @@ typedef uint32_t ColourBaseType;
 
   // #define ENABLE_FREERAM_APPENDING_SERIAL
 
-  #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 3000
+  // #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 3000
 
   /***********************************
    * SECTION: System Configs

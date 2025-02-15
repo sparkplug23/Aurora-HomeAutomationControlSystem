@@ -71,9 +71,6 @@ enum TASKER_FUNCTION_TYPES
   
   TASK_TEMPLATE_DEVICE_EXECUTE_LOAD, // This is called from the above function, used to parse the object json
   
-  // New trigger events which only modules to react to changes "triggers" from other modules or external sources
-  TASK_TRIGGER_EVENT_BUTTON_PRESSED,
-  // TASK_TRIGGER_
   
   /**
    * Called when we reach the end of "setup()" before loop starts
@@ -281,8 +278,14 @@ enum TASKER_FUNCTION_TYPES
   TASK_EVENT_SET_SPEED_ID,
 
   
+  
   TASK_SET_POWER, TASK_SET_DEVICE_POWER, TASK_SHOW_SENSOR,
-  TASK_RULES_PROCESS, TASK_SERIAL, TASK_FREE_MEM, TASK_BUTTON_PRESSED,
+  TASK_RULES_PROCESS, TASK_SERIAL, TASK_FREE_MEM, 
+  
+  TASK_BUTTON_PRESSED,
+  TASK_BUTTON_MULTI_PRESSED,
+  TASK_BUTTON_HOLD,
+
   TASK_SET_POWER_ON_ID,
   TASK_SET_POWER_OFF_ID,
 

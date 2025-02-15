@@ -246,16 +246,16 @@ void mRelays::RulesEvent_Set_Power(){
 
   ALOG_TST(PSTR("MATCHED RulesEvent_Set_Power"));
 
-  uint8_t relay_index = pCONT_rules->rules[pCONT_rules->rules_active_index].command.device_id;
+  uint8_t relay_index = tkr_rules->rules[tkr_rules->rules_active_index].command.device_id;
 
-  uint8_t relay_state = pCONT_rules->rules[pCONT_rules->rules_active_index].command.value.data[0];
+  uint8_t relay_state = tkr_rules->rules[tkr_rules->rules_active_index].command.value.data[0];
 
   #ifdef ENABLE_DEVFEATURE_RULES_COMMAND_CAN_USE_TRIGGER_VALUE // This probably needs moved into RulesEngine to work everywhere
-  if(pCONT_rules->rules[pCONT_rules->rules_active_index].command.value.data[0] == STATE_NUMBER_FOLLOW_ID)
+  if(tkr_rules->rules[tkr_rules->rules_active_index].command.value.data[0] == STATE_NUMBER_FOLLOW_ID)
   {
     // Replace relay_state with event_triggered value
-    ALOG_INF(PSTR(" pCONT_rules->event_triggered.value.data[0] = %d"), pCONT_rules->event_triggered.value.data[0]);
-    relay_state = pCONT_rules->event_triggered.value.data[0]; // ie relay will follow the button state
+    ALOG_INF(PSTR(" tkr_rules->event_triggered.value.data[0] = %d"), tkr_rules->event_triggered.value.data[0]);
+    relay_state = tkr_rules->event_triggered.value.data[0]; // ie relay will follow the button state
   }
   #endif //  ENABLE_DEVFEATURE_RULES_COMMAND_CAN_USE_TRIGGER_VALUE
 

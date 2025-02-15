@@ -153,7 +153,7 @@ void mAnimatorLight::Save_Module()
 
   ALOG_INF(PSTR("mAnimatorLight::Save_Module()"));
 
-  char buffer[100] = {0};
+  char buffer[120] = {0};
 
   /********************************************************************
    * Byte Data
@@ -879,11 +879,49 @@ void mAnimatorLight::EveryLoop()
       SubTask_Effects();
     break;
     #endif
+    #ifdef ENABLE_ANIMATION_MODE__INTERNAL_CONTROL_FROM_ANOTHER_MODULE
+    case ANIMATION_MODE__INTERNAL_CONTROL_FROM_ANOTHER_MODULE:
+      SubTask_AnimationMode__InternalControlFromAnotherModule();
+    break;
+    #endif
+
+
+    
   } // END switch
 
   yield();
 
 }
+
+#ifdef ENABLE_ANIMATION_MODE__INTERNAL_CONTROL_FROM_ANOTHER_MODULE
+/**
+ * @brief Function should call the Bus::Show based on the effect_period time
+ * It will assume the setPixelColor has been called, and brightness has been already applied
+ * 
+ * Note: This currently does not respect segments, and thus causes issues when effects are running at the same time. It needs fixing.
+ * 
+ */
+void mAnimatorLight::SubTask_AnimationMode__InternalControlFromAnotherModule()
+{
+  
+  uint32_t nowUp = millis(); // Be aware, millis() rolls over every 49 days
+  effect_start_time = nowUp + timebase;
+  if (nowUp - _lastShow < MIN_SHOW_DELAY) return;
+  bool doShow = false;
+
+  _isServicing = true;
+
+  if(doShow)
+  {
+    yield();
+    show();
+    _lastShow = nowUp;
+  }   
+
+  _isServicing = false;
+
+}
+#endif
 
 
 void mAnimatorLight::BootMessage()
@@ -1277,7 +1315,7 @@ void IRAM_ATTR mAnimatorLight::Segment::LoadPalette(uint8_t palette_id, mPalette
     
   }else
   if(
-    (palette_id >= mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID) && (palette_id < mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_LENGTH__ID)
+    (palette_id >= mPalette::PALETTELIST_SEGMENT__SEGMENT_COLOUR_01__ID) && (palette_id < mPalette::PALETTELIST_SEGMENT__SEGMENT_COLOUR_LENGTH__ID)
   ){  
   // DEBUG_LINE_HERE
     // Preloading is not needed, already in ram
@@ -1479,7 +1517,7 @@ const char* mAnimatorLight::GetPaletteNameByID(uint16_t palette_id, char* buffer
    * PALETTELIST_STATIC_HTML_COLOUR_CODES__IDS
    */
   if(
-    ((palette_id >= mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID) && (palette_id < mPalette::PALETTELIST_LENGTH_OF_PALETTES_IN_FLASH_THAT_ARE_NOT_USER_DEFINED))
+    ((palette_id >= mPalette::PALETTELIST_SEGMENT__SEGMENT_COLOUR_01__ID) && (palette_id < mPalette::PALETTELIST_LENGTH_OF_PALETTES_IN_FLASH_THAT_ARE_NOT_USER_DEFINED))
   ){       
     // ALOG_INF(PSTR("GetPaletteNameByID  A%d"), palette_id);
     mPaletteI->GetPaletteNameByID(palette_id, buffer, buflen);
@@ -1538,7 +1576,7 @@ int16_t mAnimatorLight::GetPaletteIDbyName(char* buffer)
    * Dynamic User Defined Names
    * 
    * PALETTELIST_VARIABLE_HSBID__IDS
-   * PALETTELIST_SEGMENT__RGBCCT_COLOUR__IDS
+   * PALETTELIST_SEGMENT__SEGMENT_COLOUR__IDS
    * PALETTELIST_VARIABLE_GENERIC__IDS
    * 
   ***************************************************************/
@@ -1885,8 +1923,11 @@ void mAnimatorLight::SubTask_Effects()
     
   } // END for
   
-  #ifdef WLED_DEBUG
-  if ((_targetFps != FPS_UNLIMITED) && (millis() - nowUp > _frametime)) DEBUG_PRINTF_P(PSTR("Slow effects %u/%d.\n\r"), (unsigned)(millis()-nowUp), (int)_frametime);
+  #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PERFORMANCE_METRICS_SAFE_IN_RELEASE_MODE
+  if ((_targetFps != FPS_UNLIMITED) && (millis() - nowUp > _frametime)) 
+  {
+    ALOG_DBG(PSTR("Slow effects %u/%d"), (unsigned)(millis()-nowUp), (int)_frametime);
+  }
   #endif  
   if(doShow)
   {
@@ -1896,8 +1937,11 @@ void mAnimatorLight::SubTask_Effects()
     show();
     _lastShow = nowUp;
   }   
-  #ifdef WLED_DEBUG
-  if ((_targetFps != FPS_UNLIMITED) && (millis() - nowUp > _frametime)) DEBUG_PRINTF_P(PSTR("Slow strip %u/%d.\n\r"), (unsigned)(millis()-nowUp), (int)_frametime);
+  #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PERFORMANCE_METRICS_SAFE_IN_RELEASE_MODE
+  if ((_targetFps != FPS_UNLIMITED) && (millis() - nowUp > _frametime))
+  {
+    ALOG_DBG(PSTR("Slow strip %u/%d"), (unsigned)(millis()-nowUp), (int)_frametime);
+  }
   #endif
       
   _force_update = false;
@@ -1964,7 +2008,7 @@ uint8_t mAnimatorLight::GetNumberOfColoursInPalette(uint16_t palette_id)
   }
   else
   if(
-    (palette_id >= mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID) && (palette_id < mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_LENGTH__ID)
+    (palette_id >= mPalette::PALETTELIST_SEGMENT__SEGMENT_COLOUR_01__ID) && (palette_id < mPalette::PALETTELIST_SEGMENT__SEGMENT_COLOUR_LENGTH__ID)
   ){
     palette_colour_count = 1;
   }
@@ -2326,7 +2370,7 @@ void mAnimatorLight::FileSystem_JsonAppend_Save_Module()
 
   uint8_t bus_appended = 0;
 
-  char buffer[100] = {0};
+  char buffer[120] = {0};
 
   for(uint8_t seg_i = 0; seg_i< getSegmentsNum(); seg_i++)
   {
@@ -5359,7 +5403,7 @@ bool mAnimatorLight::deserializeMap(uint8_t n) {
 //     LoadPalette(palette_id);  //loadPalette perhaps needs to be a segment instance instead. Though this will block unloaded methods    
 //   }
 
-//   RgbcctColor colour = mPaletteI->GetColourFromPreloadedPaletteBuffer_2023(
+//   RgbcctColor colour = mPaletteI->GetColourFromPreloadedPaletteBuffer_RGBWW(
 //     palette_id,
 //     (uint8_t*)palette_container->pData.data(),
 //     pixel_position,
@@ -5445,7 +5489,7 @@ RgbwwColor mAnimatorLight::Segment::GetPaletteColour_Rgbww(
     LoadPalette(palette_id);  //loadPalette perhaps needs to be a segment instance instead. Though this will block unloaded methods    
   }
 
-  RgbwwColor colour = mPaletteI->GetColourFromPreloadedPaletteBuffer_2023(
+  RgbwwColor colour = mPaletteI->GetColourFromPreloadedPaletteBuffer_RGBWW(
     palette_id,
     (uint8_t*)palette_container->pData.data(),
     pixel_position,
@@ -5547,7 +5591,7 @@ uint32_t mAnimatorLight::Segment::GetPaletteColour(
     LoadPalette(palette_id);  //loadPalette perhaps needs to be a segment instance instead. Though this will block unloaded methods    
   }
 
-  uint32_t colour = mPaletteI->GetColourFromPreloadedPaletteBuffer_2025(
+  uint32_t colour = mPaletteI->GetColourFromPreloadedPaletteBuffer_U32(
     palette_id,
     (uint8_t*)palette_container->pData.data(),
     pixel_position,
@@ -5626,10 +5670,10 @@ RgbwwColor IRAM_ATTR mAnimatorLight::GetColourFromUnloadedPalette3(
     ((palette_id >= mPalette::PALETTELIST_STATIC_CRGBPALETTE16_GRADIENT__SUNSET__ID) && (palette_id < mPalette::PALETTELIST_STATIC_CRGBPALETTE16_GRADIENT_LENGTH__ID)) ||
     ((palette_id >= mPalette::PALETTELIST_SEGMENT__RGBCCT_CRGBPALETTE16_PALETTES__PAIRED_TWO_12__ID) && (palette_id < mPalette::PALETTELIST_SEGMENT__RGBCCT_CRGBPALETTE16_PALETTES__LENGTH__ID)) ||
     ((palette_id >= mPalette::PALETTELIST_STATIC_SINGLE_COLOUR__RED__ID) && (palette_id < mPalette::PALETTELIST_STATIC_SINGLE_COLOUR__LENGTH__ID)) ||
-    ((palette_id >= mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID) && (palette_id < mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_LENGTH__ID))
+    ((palette_id >= mPalette::PALETTELIST_SEGMENT__SEGMENT_COLOUR_01__ID) && (palette_id < mPalette::PALETTELIST_SEGMENT__SEGMENT_COLOUR_LENGTH__ID))
   ) {
-    // These palettes do not require loading into RAM. Directly call GetColourFromPreloadedPaletteBuffer_2023
-    return mPaletteI->GetColourFromPreloadedPaletteBuffer_2023(
+    // These palettes do not require loading into RAM. Directly call GetColourFromPreloadedPaletteBuffer_RGBWW
+    return mPaletteI->GetColourFromPreloadedPaletteBuffer_RGBWW(
       palette_id,
       nullptr, // No buffer required for these types
       _pixel_position,
@@ -5647,7 +5691,7 @@ RgbwwColor IRAM_ATTR mAnimatorLight::GetColourFromUnloadedPalette3(
   mPaletteLoaded palette_container_temp = mPaletteLoaded();
   SEGMENT.LoadPalette(palette_id, &palette_container_temp);
   
-  return mPaletteI->GetColourFromPreloadedPaletteBuffer_2023(
+  return mPaletteI->GetColourFromPreloadedPaletteBuffer_RGBWW(
     palette_id,
     &palette_container_temp.pData[0],
     _pixel_position,
@@ -6724,7 +6768,7 @@ uint8_t mAnimatorLight::ConstructJSON_Settings(uint8_t json_level, bool json_app
 uint8_t mAnimatorLight::ConstructJSON_Segments(uint8_t json_level, bool json_appending)
 {
 
-  char buffer[100];
+  char buffer[120];
 
   JBI->Start();
 

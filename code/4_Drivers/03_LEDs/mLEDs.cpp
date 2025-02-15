@@ -29,7 +29,7 @@ int8_t mLEDs::Tasker(uint8_t function, JsonParserObject obj){
       Config_StatusEffect();
       Refresh_AllLEDs();  // This will update all the LEDs according to their modes
     break;
-    break;
+
     /************
      * COMMANDS SECTION * 
     *******************/
@@ -114,11 +114,12 @@ void mLEDs::Init(void)
     // pinMode(pin, OUTPUT);  // Set the pin as output
 
     // if (i == 0) {  // LED 1 - Blink 3 times, each blink 300ms apart, cycle every 5 seconds
-    //   StartEffect_Blink(i, 3, 100, 5000, 30);  
+    //   StartEffect_Blink(i, 40, 100, 1000, 60);  
     // } else if (i == 1) {  // LED 2 - Solid ON
-    //   StartEffect_Blink(i, 3, 250, 5000, 30);  
+    //   StartEffect_Blink(i, 40, 250, 1000, 60);  
     //   // StartEffect_On(i);
-    // } else if (i == 2) {  // LED 3 - Solid OFF
+    // } 
+    // else if (i == 2) {  // LED 3 - Solid OFF
     //   StartEffect_Blink(i, 10, 100, 5000, 30);  
     //   // StartEffect_Off(i);
     // } else if (i == 3) {  // LED 4 - Pulsing with 1-second period
@@ -175,7 +176,7 @@ void mLEDs::Refresh_LED(uint8_t led_index)
       if (led.effect != LED_OFF) { // This check ensures that reset happens only once
           digitalWrite(pin, LOW);  // Turn off the LED after duration is exceeded
           led.effect = LED_OFF;      // Set the mode to OFF
-          ALOG_INF(PSTR("LED%d Reset OFF after duration"), pin);
+          ALOG_DBM(PSTR("LED%d Reset OFF after duration"), pin);
       }
       return;  // Stop further processing as the LED is now off
   }
@@ -248,7 +249,7 @@ void mLEDs::Refresh_LED(uint8_t led_index)
           } else {
               // After the pulse, keep LED off during the pause period
               analogWrite(pin, 0);  // Turn LED off (0 brightness)
-              // ALOG_INF(PSTR("off"));
+              ALOG_INF(PSTR("off"));
           }
       }
       break;

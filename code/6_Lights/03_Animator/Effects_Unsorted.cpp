@@ -3335,7 +3335,7 @@ static const char PM_EFFECT_CONFIG__CHRISTMAS_MUSICAL_01[] PROGMEM = "CHRISTMAS_
  
 //   // AddLog(LOG_LEVEL_DEBUG,PSTR(D_LOG_NEO "SubTask_Flasher_Animate_Function_SunPositions_Solid_Colour_Based_On_Sun_Elevation_05"));
 
-//   pCONT_iLight->animation.palette_id = mPaletteI->PALETTELIST_VARIABLE_RGBCCT_COLOUR_01_ID;
+//   pCONT_iLight->animation.palette_id = mPaletteI->PALETTELIST_VARIABLE_SEGMENT_COLOUR_01_ID;
 
 //   mPaletteI->SetPaletteListPtrFromID(pCONT_iLight->animation.palette_id);
 //   // Set up colours

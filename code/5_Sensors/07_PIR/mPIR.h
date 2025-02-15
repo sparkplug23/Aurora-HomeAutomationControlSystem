@@ -7,9 +7,9 @@
 
 #ifdef USE_MODULE_SENSORS_PIR
 
-#include "2_CoreSystem/07_Time/mTime.h"
-#include "5_Sensors/00_Interface/mSensorsInterface.h"
-#include "2_CoreSystem/05_HardwarePins/gpio_types.h"
+// #include "2_CoreSystem/07_Time/mTime.h"
+// #include "5_Sensors/00_Interface/mSensorsInterface.h"
+// #include "2_CoreSystem/05_HardwarePins/gpio_types.h"
 
 #include "1_TaskerManager/mTaskerInterface.h"
 

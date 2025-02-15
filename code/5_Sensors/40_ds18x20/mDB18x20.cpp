@@ -139,10 +139,10 @@ void mDoorSensor::EveryLoop(){
     if(door_detect.state){ 
       door_detect.isactive = true;
       door_detect.detected_time = tkr_time->GetTimeShortNow();
-      pCONT_rules->NewEventRun( GetModuleUniqueID(), TASK_EVENT_MOTION_STARTED_ID, 0, door_detect.isactive);
+      tkr_rules->NewEventRun( GetModuleUniqueID(), TASK_EVENT_MOTION_STARTED_ID, 0, door_detect.isactive);
     }else{ 
       door_detect.isactive = false;
-      pCONT_rules->NewEventRun( GetModuleUniqueID(), TASK_EVENT_MOTION_ENDED_ID, 0, door_detect.isactive);
+      tkr_rules->NewEventRun( GetModuleUniqueID(), TASK_EVENT_MOTION_ENDED_ID, 0, door_detect.isactive);
     }
     door_detect.ischanged = true;
     mqtthandler_sensor_ifchanged.flags.SendNow = true;
@@ -162,10 +162,10 @@ void mDoorSensor::EveryLoop(){
     if(lock_detect.state){ 
       lock_detect.isactive = true;
       lock_detect.detected_time = tkr_time->GetTimeShortNow();
-      pCONT_rules->NewEventRun( GetModuleUniqueID(), TASK_EVENT_MOTION_STARTED_ID, 1, lock_detect.isactive);
+      tkr_rules->NewEventRun( GetModuleUniqueID(), TASK_EVENT_MOTION_STARTED_ID, 1, lock_detect.isactive);
     }else{ 
       lock_detect.isactive = false;
-      pCONT_rules->NewEventRun( GetModuleUniqueID(), TASK_EVENT_MOTION_ENDED_ID, 1, lock_detect.isactive);
+      tkr_rules->NewEventRun( GetModuleUniqueID(), TASK_EVENT_MOTION_ENDED_ID, 1, lock_detect.isactive);
     }
     lock_detect.ischanged = true;
     mqtthandler_sensor_ifchanged.flags.SendNow = true;

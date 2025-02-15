@@ -89,21 +89,21 @@ void mImmersionTankColour::Event_Handle_Light_Toggle_Button()
 
 #ifdef USE_MODULE_SENSORS_BUTTONS
 
-  if(pCONT_rules->event_triggered.value.data[1] == INPUT_TYPE_SINGLE_PRESS_ID)
+  if(tkr_rules->event_triggered.value.data[1] == INPUT_TYPE_SINGLE_PRESS_ID)
   {
 
     data.time_on->Start(10); // 10 seconds
     ALOG_INF( PSTR("Start(10)") );
 
   }
-  if(pCONT_rules->event_triggered.value.data[1] == INPUT_TYPE_SINGLE_HOLD_ID)
+  if(tkr_rules->event_triggered.value.data[1] == INPUT_TYPE_SINGLE_HOLD_ID)
   {
 
     data.time_on->Stop(); // Stop
     ALOG_INF( PSTR("Stop()") );
 
   }
-  if(pCONT_rules->event_triggered.value.data[1] == INPUT_TYPE_MULTIPLE_PRESS_ID)
+  if(tkr_rules->event_triggered.value.data[1] == INPUT_TYPE_MULTIPLE_PRESS_ID)
   {
 
     uint16_t seconds_on = 0;
@@ -115,8 +115,8 @@ void mImmersionTankColour::Event_Handle_Light_Toggle_Button()
     
     // if(data.time_on->Value() < (120*60)) // if less than 2 hours, append 15 seconds per button press
     // {
-      seconds_on = (pCONT_rules->event_triggered.value.data[2]-1) * 15 * 60;
-      ALOG_INF( PSTR("presses = %d, seconds = %d"), pCONT_rules->event_triggered.value.data[2], seconds_on );
+      seconds_on = (tkr_rules->event_triggered.value.data[2]-1) * 15 * 60;
+      ALOG_INF( PSTR("presses = %d, seconds = %d"), tkr_rules->event_triggered.value.data[2], seconds_on );
 
       data.time_on->Start(seconds_on); 
       // ALOG_INF( PSTR("Start(%d)"), seconds_on );

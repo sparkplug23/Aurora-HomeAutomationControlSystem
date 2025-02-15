@@ -197,7 +197,7 @@ void mMavlinkFlyingLEDS::Effect_LandingLights()
   // #endif
   tkr_anim->SEGMENT_I(2).RgbwwColors[0] = color_hatch_chase;
   tkr_anim->SEGMENT_I(2).RgbwwColors[1] = RgbwwColor(0,0,0,0,0); //black
-  tkr_anim->SEGMENT_I(2).palette_id = mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID;
+  tkr_anim->SEGMENT_I(2).palette_id = mPalette::PALETTELIST_SEGMENT__SEGMENT_COLOUR_01__ID;
   tkr_anim->SEGMENT_I(2).effect_id = mAnimatorLight::EFFECTS_FUNCTION__CHASE_THEATER__ID;
   tkr_anim->SEGMENT_I(2).cycle_time__rate_ms = FRAMETIME_MS;
   tkr_anim->SEGMENT_I(2).speed = 255;
@@ -210,7 +210,7 @@ void mMavlinkFlyingLEDS::Effect_LandingLights()
    **/
   HsbColor color_rudder = color_hatch_chase;
   tkr_anim->SEGMENT_I(3).RgbwwColors[0] = color_rudder;
-  tkr_anim->SEGMENT_I(3).palette_id = mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID;
+  tkr_anim->SEGMENT_I(3).palette_id = mPalette::PALETTELIST_SEGMENT__SEGMENT_COLOUR_01__ID;
   tkr_anim->SEGMENT_I(3).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
   tkr_anim->SEGMENT_I(3).cycle_time__rate_ms = FRAMETIME_MS;
   tkr_anim->SEGMENT_I(3).speed = 255;
@@ -427,7 +427,7 @@ void mMavlinkFlyingLEDS::Effect_Flight01_RandomSweep()
   // #endif
   tkr_anim->SEGMENT_I(2).RgbwwColors[0] = color_hatch_chase;
   tkr_anim->SEGMENT_I(2).RgbwwColors[1] = RgbwwColor(0,0,0,0,0); //black
-  tkr_anim->SEGMENT_I(2).palette_id = mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID;
+  tkr_anim->SEGMENT_I(2).palette_id = mPalette::PALETTELIST_SEGMENT__SEGMENT_COLOUR_01__ID;
   tkr_anim->SEGMENT_I(2).effect_id = mAnimatorLight::EFFECTS_FUNCTION__CHASE_THEATER__ID;
   tkr_anim->SEGMENT_I(2).cycle_time__rate_ms = FRAMETIME_MS;
   tkr_anim->SEGMENT_I(2).speed = 255;
@@ -440,7 +440,7 @@ void mMavlinkFlyingLEDS::Effect_Flight01_RandomSweep()
    **/
   HsbColor color_rudder = color_hatch_chase;
   tkr_anim->SEGMENT_I(3).RgbwwColors[0] = color_rudder;
-  tkr_anim->SEGMENT_I(3).palette_id = mPalette::PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID;
+  tkr_anim->SEGMENT_I(3).palette_id = mPalette::PALETTELIST_SEGMENT__SEGMENT_COLOUR_01__ID;
   tkr_anim->SEGMENT_I(3).effect_id = mAnimatorLight::EFFECTS_FUNCTION__SOLID_COLOUR__ID;
   tkr_anim->SEGMENT_I(3).cycle_time__rate_ms = FRAMETIME_MS;
   tkr_anim->SEGMENT_I(3).speed = 255;

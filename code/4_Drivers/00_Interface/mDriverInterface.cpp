@@ -97,15 +97,15 @@ void mDriverInterface::MQTT_Report_Event_Button()
 
   JBI->Start();
   
-  // if(pCONT_rules->event_triggered.device_id == 0)
+  // if(tkr_rules->event_triggered.device_id == 0)
   // {
-    sprintf(event_ctr,"%s-%d","Button",pCONT_rules->event_triggered.device_id);
+    sprintf(event_ctr,"%s-%d","Button",tkr_rules->event_triggered.device_id);
 
   // }
 
     JBI->Add("Event", event_ctr);
 
-    JBI->Add("Device", pCONT_rules->event_triggered.device_id);
+    JBI->Add("Device", tkr_rules->event_triggered.device_id);
     JBI->Add("Function", "ButtonPress");
 
     JBI->Add("Task", "Button");
@@ -126,7 +126,7 @@ void mDriverInterface::MQTT_Report_Event_Button()
    * If event was serviced, then clear it
    * */
   #ifndef ENABLE_DEVFEATURE_PHASEOUT_CLEARING_EVENT
-  pCONT_rules->Reset(&pCONT_rules->event_triggered);  // I need to remember the last event, so simply use another flag outside of the struct as waiting and clear that if needed
+  tkr_rules->Reset(&tkr_rules->event_triggered);  // I need to remember the last event, so simply use another flag outside of the struct as waiting and clear that if needed
   #endif 
 
 }

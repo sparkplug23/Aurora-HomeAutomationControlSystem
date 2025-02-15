@@ -107,7 +107,7 @@ class mSensorsInterface :
 
     #ifdef USE_MODULE_LIGHTS_INTERFACE
     uint8_t flag_unified_sensor_colour_heatmap_type = 0;
-    RgbcctColor GetColourValueUsingMaps_ForUnifiedSensor(float temperature);
+    RgbwwColor GetColourValueUsingMaps_ForUnifiedSensor(float temperature);
     #endif // USE_MODULE_LIGHTS_INTERFACE
         
     void CommandEvent_Motion(uint8_t event_type);

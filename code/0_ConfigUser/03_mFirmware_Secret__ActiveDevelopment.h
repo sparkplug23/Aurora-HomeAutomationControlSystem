@@ -40,7 +40,7 @@
 // #define DEVICE_LIGHTING__LIGHTING_EFFECTS__MATRIX_SEGMENT_TESTER
 // #define DEVICE_ACTIVE_DEVELOPMENT__DOOR_LIGHTING__OFFICE
 // #define DEVICE_TESTBED__GPS_SERIAL
-// #define DEVICE_ACTIVE_DEVELOPMENT__SWITCHES_AND_BUTTONS
+#define DEVICE_ACTIVE_DEVELOPMENT__SWITCHES_AND_BUTTONS
 
 
 /**************************************************************************************************************************************************
@@ -539,25 +539,14 @@ May need to add two power connections too, so its not just the cat5e wire to let
 
   /***********************************
    * SECTION: Lighting Configs
-  ************************************/  
-
-  // #define ENABLE_DEVFEATURE_LIGHT__HEATMAP_PALETTES
+  ************************************/    
 
   #ifdef ENABLE_TEMPLATE_SECTION__LIGHTING
 
-    #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL2_FLASHING_BASIC        // ie shimmering. Used around house all year
-    #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED     // ie christmas. Seasonal, flashing
-    #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE     // ie all options
+  #define USE_TEMPLATED_DEFAULT_LIGHTING_DEFINES__LATEST_LIGHTING_JANUARY_2025
 
-    #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__PIXEL_SET_ELSEWHERE
-
-    #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__MANUAL
-
-    // #define ENABLE_DEBUGFEATURE_LIGHTING__PALETTE_ENCODED_DYNAMIC_HEATMAPS
-    // #define ENABLE_DEBUGFEATURE_LIGHTING__PALETTE_ENCODED_DYNAMIC__TEST_INJECT_RGB_NO_GRADIENT
-    #define ENABLE_DEBUGFEATURE_LIGHTING__PALETTE_ENCODED_DYNAMIC__TEST_INJECT_RGB_WITH_GRADIENT
-    
-    
+  #define DATA_BUFFER_PAYLOAD_MAX_LENGTH 4000
+  
     // 13, 18, 19, 22, 23, 25, 26, 27       USED
     // 33, 32, 21, 17, 16, 15*, 14*, 5*, 4, NOTUSED
     // 21 = on PCB (4 pixels)
@@ -590,11 +579,12 @@ May need to add two power connections too, so its not just the cat5e wire to let
         }
       ],
       "Segment0": {
+        "Name":"Solar Sky Metal",
         "PixelRange": [
           0,
           144
         ],
-        "ColourPalette":"Live Solar Sky",
+        "ColourPalette":"Candy",
         "PaletteMappingValues":[10,15,20],
         "SegColour0": {
           "Hue": 0,
@@ -602,7 +592,7 @@ May need to add two power connections too, so its not just the cat5e wire to let
           "BrightnessRGB":5
         },
         "Effects": {
-          "Function":"Gradient",
+          "Function":"Static",
           "Speed":127,
           "Intensity":255,
           "Decimate":0,
@@ -613,6 +603,7 @@ May need to add two power connections too, so its not just the cat5e wire to let
         "BrightnessCCT": 0
       },
       "Segment1": {
+        "Name":"Relay Status",
         "PixelRange": [
           144,
           148
@@ -636,7 +627,7 @@ May need to add two power connections too, so its not just the cat5e wire to let
         "BrightnessCCT": 0
       },
       "Segment2": {
-        "Name":"Leg",
+        "Name":"Leg Vertical",
         "PixelRange": [
           148,
           184
@@ -660,12 +651,12 @@ May need to add two power connections too, so its not just the cat5e wire to let
         "BrightnessCCT": 0
       },
       "Segment3": {
-        "Name":"Floor",
+        "Name":"Leg Floor",
         "PixelRange": [
           184,
           192
         ],
-        "ColourPalette":"Live SunEL CCT",
+        "ColourPalette":"Snowy 02",
         "PaletteMappingValues":[10,15,20],
         "SegColour0": {
           "Hue": 0,
@@ -1283,7 +1274,7 @@ new 26GHz radar sensor
     #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL3_FLASHING_EXTENDED     // ie christmas. Seasonal, flashing
     #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_GENERAL__LEVEL4_FLASHING_COMPLETE     // ie all options
 
-    #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__PIXEL_SET_ELSEWHERE
+    #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__CONTROLLED_FROM_ANOTHER_MODULE
 
     #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__MANUAL
 
@@ -1987,7 +1978,7 @@ new 26GHz radar sensor
     // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__HARDWARE_TESTING      // effects that enable colour mapping for counting positions and testing hardware/pins
     // #define ENABLE_DEVFEATURE_JSON__ASYNCJSON_V6
 
-    #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__PIXEL_SET_ELSEWHERE
+    #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__CONTROLLED_FROM_ANOTHER_MODULE
 
     // #define ENABLE_DEVFEATURE_LIGHT__PHASE_OUT_TIMEMS
 
@@ -2600,7 +2591,7 @@ new 26GHz radar sensor
     // #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__HARDWARE_TESTING      // effects that enable colour mapping for counting positions and testing hardware/pins
     // #define ENABLE_DEVFEATURE_JSON__ASYNCJSON_V6
 
-    #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__PIXEL_SET_ELSEWHERE
+    #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__CONTROLLED_FROM_ANOTHER_MODULE
 
     // #define ENABLE_DEVFEATURE_LIGHT__PHASE_OUT_TIMEMS
 
@@ -3851,7 +3842,7 @@ new 26GHz radar sensor
     #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__HARDWARE_TESTING      // effects that enable colour mapping for counting positions and testing hardware/pins
     #define ENABLE_DEVFEATURE_JSON__ASYNCJSON_V6
 
-    #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__PIXEL_SET_ELSEWHERE
+    #define ENABLE_FEATURE_ANIMATORLIGHT_EFFECT_SPECIALISED__CONTROLLED_FROM_ANOTHER_MODULE
 
     #define ENABLE_DEVFEATURE_LIGHT__PHASE_OUT_TIMEMS
 
@@ -7776,7 +7767,7 @@ new 26GHz radar sensor
   /***********************************
    * SECTION: System Debug Options
   ************************************/  
-#define ENABLE_DEBUGFEATURE__OVERIDE_FASTBOOT_DISABLE
+// #define ENABLE_DEBUGFEATURE__OVERIDE_FASTBOOT_DISABLE
  
   #define ENABLE_FEATURE_SYSTEM__BOOT_SPLASH__DISPLAY_BLOCK_TO_SHOW_END_OF_INIT
   #define ENABLE_FEATURE_SYSTEM__SHOW_BOOT_MESSAGE
@@ -7787,8 +7778,8 @@ new 26GHz radar sensor
 
   // #define ENABLE_TEMPLATE_SECTION__SENSORS__BME
 
-  #define ENABLE_TEMPLATE_SECTION__ENERGY
-  #define ENABLE_TEMPLATE_SECTION__ENERGY__PZEM
+  // #define ENABLE_TEMPLATE_SECTION__ENERGY
+  // #define ENABLE_TEMPLATE_SECTION__ENERGY__PZEM
 
  
   /***********************************
@@ -7808,8 +7799,8 @@ new 26GHz radar sensor
    * SECTION: Network Configs
   ************************************/    
 
-  #define USE_MODULE_NETWORK_WEBSERVER
-  #define ENABLE_WEBSERVER_LIGHTING_WEBUI
+  // #define USE_MODULE_NETWORK_WEBSERVER
+  // #define ENABLE_WEBSERVER_LIGHTING_WEBUI
 
   /***********************************
    * SECTION: Sensor Configs
@@ -7842,7 +7833,7 @@ new 26GHz radar sensor
   ************************************/  
  
   #define USE_MODULE_DRIVERS_INTERFACE
-  // #define USE_MODULE_DRIVERS_RELAY
+  #define USE_MODULE_DRIVERS_RELAY
   #define USE_MODULE_DRIVERS_LEDS
  
   /***********************************
@@ -7886,15 +7877,9 @@ new 26GHz radar sensor
     "\"" D_FRIENDLYNAME "\":\"" DEVICENAME_FRIENDLY_CTR "\","
     "\"" D_GPIOC "\":{"
       #ifdef USE_MODULE_DRIVERS_LEDS
-      "\"27\":\"" D_GPIO_FUNCTION_LED1_CTR  "\","
-      "\"14\":\"" D_GPIO_FUNCTION_LED2_CTR  "\","
-      #ifndef USE_MODULE_DRIVERS_RELAY    // if no relays, we want to use all LEDs directly
-      "\"12\":\"" D_GPIO_FUNCTION_LED3_CTR  "\","
-      "\"13\":\"" D_GPIO_FUNCTION_LED4_CTR  "\","
-      "\"2\":\"" D_GPIO_FUNCTION_LED5_CTR  "\","
+      "\"2\":\"" D_GPIO_FUNCTION_LED1_CTR  "\","  // BUILTIN LED as new Status LED, to reflect Network and Relay0 status
       #else
       "\"2\":\""  D_GPIO_FUNCTION_LED3_CTR  "\"," //builtin BLUE
-      #endif
       #endif  
       #ifdef USE_MODULE_SENSORS_BUTTONS
       "\"5\":\"" D_GPIO_FUNCTION_KEY1_INV_CTR  "\","
@@ -7911,12 +7896,10 @@ new 26GHz radar sensor
       "\"19\":\"" D_GPIO_FUNCTION_SWT2_INV_CTR  "\","
       #endif  
       #ifdef USE_MODULE_DRIVERS_RELAY
-      #ifndef USE_MODULE_DRIVERS_LEDS // When LEDs are not used, set 4 relays
-      "\"27\":\"" D_GPIO_FUNCTION_REL3_CTR  "\","
-      "\"14\":\"" D_GPIO_FUNCTION_REL4_CTR  "\","
-      #endif
       "\"12\":\"" D_GPIO_FUNCTION_REL1_CTR  "\","
-      "\"13\":\"" D_GPIO_FUNCTION_REL2_CTR  "\""
+      "\"13\":\"" D_GPIO_FUNCTION_REL2_CTR  "\","
+      "\"27\":\"" D_GPIO_FUNCTION_REL3_CTR  "\","
+      "\"14\":\"" D_GPIO_FUNCTION_REL4_CTR  "\""
       #endif
     "},"
     "\"" D_BASE "\":\"" D_MODULE_NAME_USERMODULE_CTR "\","
@@ -7953,7 +7936,16 @@ new 26GHz radar sensor
         "\"" D_DEVICE_UNIQUE_NAME "\""
       "],"
       "\"" D_MODULE_SENSORS_SWITCHES_CTR "\":["
-        "\"" D_DEVICE_UNIQUE_NAME "\""
+        "\"" "SwitchEdge" "\","
+        "\"" "SwitchClose" "\""
+      "],"
+      "\"" D_MODULE_SENSORS_BUTTONS_CTR "\":["
+        "\"" "BUT1" "\","
+        "\"" "BUT2" "\","
+        "\"" "BUT3" "\","
+        "\"" "BUT4" "\","
+        "\"" "BUT5" "\","
+        "\"" "BUT6" "\""
       "],"
       "\"" D_MODULE_SENSORS_DB18S20_CTR "\":["
         "\"" D_DEVICE_SENSOR_DB18S20_0_NAME "\""

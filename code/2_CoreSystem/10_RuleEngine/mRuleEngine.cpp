@@ -166,23 +166,23 @@ void mRuleEngine::ShowRuleAddLogByIndex(uint8_t show_type)
       "\tdevice_id:\t%d\n\r"
       "\tvalue:\t\t\t[%d,%d,%d,%d,%d]\n\r"
     "2"),
-    pCONT_rules->rules_active_index,
-    pCONT_rules->rules[pCONT_rules->rules_active_index].trigger.module_id, 
-    pCONT_rules->rules[pCONT_rules->rules_active_index].trigger.function_id, 
-    pCONT_rules->rules[pCONT_rules->rules_active_index].trigger.device_id, 
-    pCONT_rules->rules[pCONT_rules->rules_active_index].trigger.value.data[0], 
-    pCONT_rules->rules[pCONT_rules->rules_active_index].trigger.value.data[1], 
-    pCONT_rules->rules[pCONT_rules->rules_active_index].trigger.value.data[2], 
-    pCONT_rules->rules[pCONT_rules->rules_active_index].trigger.value.data[3], 
-    pCONT_rules->rules[pCONT_rules->rules_active_index].trigger.value.data[4],
-    pCONT_rules->rules[pCONT_rules->rules_active_index].command.module_id, 
-    pCONT_rules->rules[pCONT_rules->rules_active_index].command.function_id, 
-    pCONT_rules->rules[pCONT_rules->rules_active_index].command.device_id, 
-    pCONT_rules->rules[pCONT_rules->rules_active_index].command.value.data[0], 
-    pCONT_rules->rules[pCONT_rules->rules_active_index].command.value.data[1], 
-    pCONT_rules->rules[pCONT_rules->rules_active_index].command.value.data[2], 
-    pCONT_rules->rules[pCONT_rules->rules_active_index].command.value.data[3], 
-    pCONT_rules->rules[pCONT_rules->rules_active_index].command.value.data[4]
+    tkr_rules->rules_active_index,
+    tkr_rules->rules[tkr_rules->rules_active_index].trigger.module_id, 
+    tkr_rules->rules[tkr_rules->rules_active_index].trigger.function_id, 
+    tkr_rules->rules[tkr_rules->rules_active_index].trigger.device_id, 
+    tkr_rules->rules[tkr_rules->rules_active_index].trigger.value.data[0], 
+    tkr_rules->rules[tkr_rules->rules_active_index].trigger.value.data[1], 
+    tkr_rules->rules[tkr_rules->rules_active_index].trigger.value.data[2], 
+    tkr_rules->rules[tkr_rules->rules_active_index].trigger.value.data[3], 
+    tkr_rules->rules[tkr_rules->rules_active_index].trigger.value.data[4],
+    tkr_rules->rules[tkr_rules->rules_active_index].command.module_id, 
+    tkr_rules->rules[tkr_rules->rules_active_index].command.function_id, 
+    tkr_rules->rules[tkr_rules->rules_active_index].command.device_id, 
+    tkr_rules->rules[tkr_rules->rules_active_index].command.value.data[0], 
+    tkr_rules->rules[tkr_rules->rules_active_index].command.value.data[1], 
+    tkr_rules->rules[tkr_rules->rules_active_index].command.value.data[2], 
+    tkr_rules->rules[tkr_rules->rules_active_index].command.value.data[3], 
+    tkr_rules->rules[tkr_rules->rules_active_index].command.value.data[4]
 
     );
 
@@ -250,55 +250,56 @@ void mRuleEngine::NewEventRun(uint16_t _module_id, uint16_t function_event, uint
 /**
  * @brief Version 2 of triggering rules, adding the event but also include the type of function. Thie function can choose to pass that on, ignore or change the function type 
  * 
- * @param _module_id 
- * @param function_event 
- * @param _index 
- * @param _data_length
+ * @param _module_id     : Unique ID of the module "GetModuleUniqueID()"
+ * @param function_event : TASK_ID of the event
+ * @param _index         : Index of the device/sensor of that module when multiple
+ * @param _data_length   : Length of the data, 
  * @param ... Each byte of the data is its own argument which depends on the type of event (another method might use vectors) 
+ * @return If the Tasker reports but event is handled, then the module calling it can leave it as handled
  */
-void mRuleEngine::NewEventRun_NumArg(uint16_t _module_id, uint16_t function_event, uint8_t _index, uint8_t _data_length, ...)
+bool mRuleEngine::NewEventRun_NumArg(uint16_t _module_id, uint16_t function_event, uint8_t _index, uint8_t _data_length, ...)
 {
   Reset();
   event_triggered.module_id = _module_id;
   event_triggered.function_id = function_event;
   event_triggered.device_id = _index;
   
-  va_list arg;
+  char buffer[50];
+  DLI->GetDeviceName_WithModuleUniqueID( event_triggered.module_id, event_triggered.device_id, buffer, sizeof(buffer));
 
-  ALOG_INF( PSTR("module_id, function_id, device_id = %d,%d,%d"), event_triggered.module_id, event_triggered.function_id, event_triggered.device_id);
-  
+
+  ALOG_INF( PSTR(D_LOG_RULES "NewEventRun_NumArg\n\r\t\t\t\tModule [%d\t%S],\n\r\t\t\t\tTask   [%d\t%S],\n\r\t\t\t\tIndex  [%d\t%s]"), 
+    event_triggered.module_id,   pCONT->GetModuleName(event_triggered.module_id),
+    event_triggered.function_id, pCONT->GetTaskName(event_triggered.function_id),
+    event_triggered.device_id,   buffer
+  );
+ 
+  /***
+   * Unpack data bytes
+   */
+  va_list arg;
   va_start(arg, _data_length);
   for(int i = 0; i < _data_length; i++) 
   {
-
-    if(i>D_RULE_DATA_VALUE_MAX_LENGTH-1){
-      ALOG_ERR(PSTR("NewEventRun_NumArg Exceeded"));
-      break;
-    }
-
-    event_triggered.value.data[i] = va_arg(arg, int);
-
+    if(i < RULE_ENCODED_DATA_MAX_BYTES)
+      event_triggered.value.data[i] = va_arg(arg, int);
   }
   va_end(arg);
+  AddLog_Array(LOG_LEVEL_INFO, PSTR(D_LOG_RULES "data"), event_triggered.value.data, _data_length);
 
-  // AddLog_Array_Int(LOG_LEVEL_HIGHLIGHT, "data", event_triggered.value.data, ARRAY_SIZE(event_triggered.value.data));
-  AddLog_Array(LOG_LEVEL_INFO, PSTR("data"), event_triggered.value.data, ARRAY_SIZE(event_triggered.value.data));
-  // DEBUG_LINE_HERE; ALOG_INF(PSTR("event_triggered.module_id = %d"), event_triggered.module_id);
-
-  // ShowRuleEvent_AddLog();
-
-  // va_start(arg, formatP);
-  // vsnprintf_P(tkr_set->log_data, sizeof(tkr_set->log_data), formatP, arg);
-  // va_end(arg);
+  uint8_t task_handled = 0;
 
   /**
-   * @brief Mess version for now, added to here
-   *  */
-
-  // Legacy option, pass to all tasker_interfaces. This allows hard coded things to happen. ie Time runs out, turn relay off
-  pCONT->Tasker_Interface(function_event);
-  // New method to check the rules
+   * @brief Call RULES
+   **/
   Tasker_Rules_Interface(function_event);
+
+  /**
+   * @brief Call all Taskers for hardcoded triggers
+   **/
+  pCONT->Tasker_Interface(function_event);
+
+  return task_handled ? true : false;
 
 }
 
@@ -327,7 +328,9 @@ uint8_t mRuleEngine::GetEnabledCount()
 
 
 // All events here will only trigger based of function calls, when those occur happen throughout code
-void mRuleEngine::Tasker_Rules_Interface(uint16_t function_input){
+bool mRuleEngine::Tasker_Rules_Interface(uint16_t function_input){
+
+  bool task_handled = false;
 
 
   // #ifdef ENABLE_LOG_LEVEL_INFO
@@ -385,8 +388,8 @@ void mRuleEngine::Tasker_Rules_Interface(uint16_t function_input){
             pCONT_sup->GetTextIndexed(
               data_buffer.payload.ctr, 
               sizeof(data_buffer.payload.ctr), 
-              pCONT_rules->rules[rule_index].command.json_commands_dlist_id, 
-              pCONT_rules->jsonbuffer.data
+              tkr_rules->rules[rule_index].command.json_commands_dlist_id, 
+              tkr_rules->jsonbuffer.data
             ); 
             data_buffer.payload.length_used += strlen(data_buffer.payload.ctr);
 
@@ -430,6 +433,8 @@ void mRuleEngine::Tasker_Rules_Interface(uint16_t function_input){
     } // configured and enabled
 
   } // for loop
+
+  return task_handled;
  
 }
 
@@ -492,7 +497,7 @@ bool mRuleEngine::AppendEventToRules(mEvent::EVENT_PART* trigger_new, mEvent::EV
   rules[rule_count].flag_enabled = true;
   // If succesfully added
   return true;
-  // pCONT_rules->rules_active_index++;
+  // tkr_rules->rules_active_index++;
 
 }
 
@@ -707,7 +712,7 @@ void mRuleEngine::parse_JSONCommand(JsonParserObject obj)
 
       jobj = obj[rule_name].getObject()["Trigger"];
       if(!jobj.isNull()){
-        parsesub_Rule_Part(jobj, &pCONT_rules->rules[rule_index].trigger);
+        parsesub_Rule_Part(jobj, &tkr_rules->rules[rule_index].trigger);
         // Activate rule
         rules[rule_index].flag_configured = true;
         rules[rule_index].flag_enabled = true;
@@ -715,7 +720,7 @@ void mRuleEngine::parse_JSONCommand(JsonParserObject obj)
 
       jobj = obj[rule_name].getObject()["Command"];
       if(!jobj.isNull()){
-        parsesub_Rule_Part(jobj, &pCONT_rules->rules[rule_index].command);        
+        parsesub_Rule_Part(jobj, &tkr_rules->rules[rule_index].command);        
       }
 
       mqtthandler_settings.flags.SendNow = true;
@@ -764,7 +769,7 @@ void mRuleEngine::parse_JSONCommand(JsonParserObject obj)
 
     // jobj = obj[rule_name].getObject()["Trigger"];
     // if(!jobj.isNull()){
-    //   parsesub_Rule_Part(jobj, &pCONT_rules->rules[rule_index].trigger);
+    //   parsesub_Rule_Part(jobj, &tkr_rules->rules[rule_index].trigger);
 
     //   // tmp fix, just set but later needs made dynamic
 
@@ -777,7 +782,7 @@ void mRuleEngine::parse_JSONCommand(JsonParserObject obj)
 
     // jobj = obj[rule_name].getObject()["Command"];
     // if(!jobj.isNull()){
-    //   parsesub_Rule_Part(jobj, &pCONT_rules->rules[rule_index].command);
+    //   parsesub_Rule_Part(jobj, &tkr_rules->rules[rule_index].command);
       
     // }
 
@@ -843,28 +848,28 @@ void mRuleEngine::AppendRule_FromDefault_UsingName(const char* name)
 
     mEvent::EVENT_PART* p_event = nullptr;
 
-    if(pCONT_rules->rules_active_index>D_MAX_RULES){ return; } //block new rules
+    if(tkr_rules->rules_active_index>D_MAX_RULES){ return; } //block new rules
 
     #if defined(USE_MODULE_SENSORS_SWITCHES) && defined(USE_MODULE_DRIVERS_RELAY)
     
     // Trigger0
-    pCONT_rules->rules[pCONT_rules->rules_active_index].flag_enabled = true;   
-    pCONT_rules->rules[pCONT_rules->rules_active_index].flag_configured = true;   
-    p_event = &pCONT_rules->rules[pCONT_rules->rules_active_index].trigger;   
+    tkr_rules->rules[tkr_rules->rules_active_index].flag_enabled = true;   
+    tkr_rules->rules[tkr_rules->rules_active_index].flag_configured = true;   
+    p_event = &tkr_rules->rules[tkr_rules->rules_active_index].trigger;   
     p_event->module_id = D_UNIQUE_MODULE_SENSORS_SWITCHES_ID;
     p_event->function_id = TASK_EVENT_INPUT_STATE_CHANGED_ID;
     p_event->device_id = 0;
     p_event->value.length = 0;
     p_event->value.data[p_event->value.length++] = STATE_NUMBER_TOGGLE_ID;  // Toggled 
     // Command0
-    p_event = &pCONT_rules->rules[pCONT_rules->rules_active_index].command;   
+    p_event = &tkr_rules->rules[tkr_rules->rules_active_index].command;   
     p_event->module_id = D_UNIQUE_MODULE_DRIVERS_RELAY_ID;
     p_event->function_id = TASK_EVENT_SET_POWER_ID;
     p_event->device_id = 0;
     p_event->value.length = 0;
     p_event->value.data[p_event->value.length++] = STATE_NUMBER_FOLLOW_ID;  // Toggle
 
-    pCONT_rules->rules_active_index++;
+    tkr_rules->rules_active_index++;
 
     #endif // defined(USE_MODULE_SENSORS_SWITCHES) && defined(USE_MODULE_DRIVERS_RELAY)
 
@@ -877,41 +882,41 @@ void mRuleEngine::AppendRule_FromDefault_UsingName(const char* name)
 
   //   mEvent::EVENT_PART* p_event = nullptr;
 
-  //   if(pCONT_rules->rules_active_index>D_MAX_RULES){ return; } //block new rules
+  //   if(tkr_rules->rules_active_index>D_MAX_RULES){ return; } //block new rules
 
   //   #if defined(USE_MODULE_SENSORS_SWITCHES) && defined(USE_MODULE_DRIVERS_RELAY)
     
   //   // Trigger0
-  //   pCONT_rules->rules[pCONT_rules->rules_active_index].flag_enabled = true;   
-  //   pCONT_rules->rules[pCONT_rules->rules_active_index].flag_configured = true;   
-  //   p_event = &pCONT_rules->rules[pCONT_rules->rules_active_index].trigger;   
+  //   tkr_rules->rules[tkr_rules->rules_active_index].flag_enabled = true;   
+  //   tkr_rules->rules[tkr_rules->rules_active_index].flag_configured = true;   
+  //   p_event = &tkr_rules->rules[tkr_rules->rules_active_index].trigger;   
   //   p_event->module_id = D_UNIQUE_MODULE_SENSORS_SWITCHES_ID;
   //   p_event->function_id = TASK_EVENT_INPUT_STATE_CHANGED_ID;
   //   p_event->device_id = 0;
   //   p_event->value.length = 0;
   //   p_event->value.data[p_event->value.length++] = STATE_NUMBER_ON_ID;  // Toggled 
   //   // Command0
-  //   p_event = &pCONT_rules->rules[pCONT_rules->rules_active_index].command;   
+  //   p_event = &tkr_rules->rules[tkr_rules->rules_active_index].command;   
   //   p_event->module_id = D_UNIQUE_MODULE_DRIVERS_RELAY_ID;
   //   p_event->function_id = TASK_EVENT_SET_POWER_ID;
   //   p_event->device_id = 0;
   //   p_event->value.length = 0;
   //   p_event->value.data[p_event->value.length++] = STATE_NUMBER_ON_ID;  // Toggle
 
-  //   pCONT_rules->rules_active_index++;
+  //   tkr_rules->rules_active_index++;
 
 
   //   // Trigger1
-  //   pCONT_rules->rules[pCONT_rules->rules_active_index].flag_enabled = true;   
-  //   pCONT_rules->rules[pCONT_rules->rules_active_index].flag_configured = true;   
-  //   p_event = &pCONT_rules->rules[pCONT_rules->rules_active_index].trigger;   
+  //   tkr_rules->rules[tkr_rules->rules_active_index].flag_enabled = true;   
+  //   tkr_rules->rules[tkr_rules->rules_active_index].flag_configured = true;   
+  //   p_event = &tkr_rules->rules[tkr_rules->rules_active_index].trigger;   
   //   p_event->module_id = D_UNIQUE_MODULE_SENSORS_SWITCHES_ID;
   //   p_event->function_id = TASK_EVENT_INPUT_STATE_CHANGED_ID;
   //   p_event->device_id = 0;
   //   p_event->value.length = 0;
   //   p_event->value.data[p_event->value.length++] = STATE_NUMBER_OFF_ID;  // Toggled 
   //   // Command1
-  //   p_event = &pCONT_rules->rules[pCONT_rules->rules_active_index].command;   
+  //   p_event = &tkr_rules->rules[tkr_rules->rules_active_index].command;   
   //   p_event->module_id = D_UNIQUE_MODULE_DRIVERS_RELAY_ID;
   //   p_event->function_id = TASK_EVENT_SET_POWER_ID;
   //   p_event->device_id = 0;
@@ -927,7 +932,7 @@ void mRuleEngine::AppendRule_FromDefault_UsingName(const char* name)
 
 
 
-  //   pCONT_rules->rules_active_index++;
+  //   tkr_rules->rules_active_index++;
 
   //   #endif // defined(USE_MODULE_SENSORS_SWITCHES) && defined(USE_MODULE_DRIVERS_RELAY)
 
@@ -936,7 +941,7 @@ void mRuleEngine::AppendRule_FromDefault_UsingName(const char* name)
 
 
 
-  ALOG_INF(PSTR(D_LOG_RULES "AppendRule_FromDefault_UsingName=%d"), pCONT_rules->rules_active_index);
+  ALOG_INF(PSTR(D_LOG_RULES "AppendRule_FromDefault_UsingName=%d"), tkr_rules->rules_active_index);
 
 
 }
@@ -1041,8 +1046,8 @@ uint8_t mRuleEngine::ConstructJSON_Settings(uint8_t json_method, bool json_appen
                 pCONT_sup->GetTextIndexed(
                     buffer_unescaped, 
                     sizeof(buffer_unescaped), 
-                    pCONT_rules->rules[id].command.json_commands_dlist_id, 
-                    pCONT_rules->jsonbuffer.data
+                    tkr_rules->rules[id].command.json_commands_dlist_id, 
+                    tkr_rules->jsonbuffer.data
                 ); 
 
                 for(int i=0;i<strlen(buffer_unescaped);i++){

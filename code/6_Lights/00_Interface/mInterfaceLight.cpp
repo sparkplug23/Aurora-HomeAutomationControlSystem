@@ -731,8 +731,8 @@ void mInterfaceLight::RulesEvent_Set_Power()
 
   ALOG_TST(PSTR("MATCHED RulesEvent_Set_Power"));
 
-  uint8_t index = pCONT_rules->rules[pCONT_rules->rules_active_index].command.device_id;
-  uint8_t state = pCONT_rules->rules[pCONT_rules->rules_active_index].command.value.data[0];
+  uint8_t index = tkr_rules->rules[tkr_rules->rules_active_index].command.device_id;
+  uint8_t state = tkr_rules->rules[tkr_rules->rules_active_index].command.value.data[0];
 
   bool get_state = CommandGet_LightPowerState(); 
 

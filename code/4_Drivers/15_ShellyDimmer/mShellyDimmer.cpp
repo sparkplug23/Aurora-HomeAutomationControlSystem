@@ -239,9 +239,9 @@ void mShellyDimmer::RulesEvent_Set_Power(){
   
   // ALOG_TST(PSTR("MATCHED RulesEvent_Set_Power"));
 
-  uint8_t relay_index = pCONT_rules->rules[pCONT_rules->rules_active_index].command.device_id;
-  uint8_t relay_state = pCONT_rules->rules[pCONT_rules->rules_active_index].command.value.data[0];
-  uint8_t brightness_on_value = pCONT_rules->rules[pCONT_rules->rules_active_index].command.value.data[1];
+  uint8_t relay_index = tkr_rules->rules[tkr_rules->rules_active_index].command.device_id;
+  uint8_t relay_state = tkr_rules->rules[tkr_rules->rules_active_index].command.value.data[0];
+  uint8_t brightness_on_value = tkr_rules->rules[tkr_rules->rules_active_index].command.value.data[1];
 
   // ALOG_TST(PSTR("MATCHED RulesEvent_Set_Power %d %d %d"),relay_index, relay_state, brightness_on_value);
 

@@ -255,6 +255,65 @@ class mTime :
     }
 
 
+    // Helper: Return days in a month (with leap year check for February) using PROGMEM.
+    static int DaysInMonthFromProgmem(int month, int year) {
+        if (month == 2 && ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0))) {
+            return 29;
+        }
+        return pgm_read_byte(&kDaysInMonth[month - 1]);
+    }
+
+    // Convert build date/time (from __DATE__ and __TIME__) to an epoch timestamp.
+    static uint32_t ConvertBuildDateTimeToEpoch() {
+        int buildYear, buildDay, buildHour, buildMinute, buildSecond;
+        int buildMonth = 0;
+        char monthStr[4];
+
+        // __DATE__ is in the format "Mmm dd yyyy"
+        sscanf(__DATE__, "%3s %d %d", monthStr, &buildDay, &buildYear);
+
+        // Determine the month number by comparing monthStr with PROGMEM month names.
+        for (int i = 0; i < 12; i++) {
+            char monthBuf[4];
+            // Copy 3 characters from PROGMEM into a RAM buffer.
+            memcpy_P(monthBuf, kMonthNamesEnglish + i * 3, 3);
+            monthBuf[3] = '\0';
+            if (strcmp(monthBuf, monthStr) == 0) {
+                buildMonth = i + 1;
+                break;
+            }
+        }
+
+        // __TIME__ is in the format "hh:mm:ss"
+        sscanf(__TIME__, "%d:%d:%d", &buildHour, &buildMinute, &buildSecond);
+
+        // Count days since January 1, 1970.
+        uint32_t days = 0;
+        for (int year = 1970; year < buildYear; ++year) {
+            days += 365;
+            if ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)) {
+                days += 1;
+            }
+        }
+        // Add days for the months in the current year.
+        for (int m = 1; m < buildMonth; ++m) {
+            days += DaysInMonthFromProgmem(m, buildYear);
+        }
+        days += (buildDay - 1);
+
+        uint32_t buildEpoch = days * 86400 + buildHour * 3600 + buildMinute * 60 + buildSecond;
+        return buildEpoch;
+    }
+
+
+    // Returns the elapsed seconds since the build date/time.
+    uint32_t BuildDateTimeElapsed();
+
+    // Returns true if the elapsed time since build is beyond seconds_check.
+    bool IsBuildDateTimeElapsedBeyond(uint32_t seconds_check);
+
+
+
 
     uint8_t day(uint32_t time);
     uint8_t month(uint32_t time);

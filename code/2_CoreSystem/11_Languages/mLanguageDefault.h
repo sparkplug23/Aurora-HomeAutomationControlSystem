@@ -1365,6 +1365,7 @@
   #define D_LOG_DB18 "DB8: "         // Uptime
   #define D_LOG_DEBUG "DBG: "        // Debug
   #define D_LOG_DHT "DHT: "          // DHT sensor
+  #define D_LOG_DSB "DSB: "          // DS18xB20 sensor
   #define D_LOG_DOORBELL "DRB: "         // Neopixels
   #define D_LOG_FILESYSTEM "UFS: "
   #define D_LOG_FONA "FON: "

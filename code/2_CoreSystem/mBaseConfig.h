@@ -474,10 +474,10 @@ With latest version, all longer term shared debug features should be added here 
 
 #define KEY_CHECK_TIME         1000
 #define KEY_DEBOUNCE_TIME      50                // [ButtonDebounce] Number of mSeconds button press debounce time
-#define KEY_HOLD_TIME          20                // [SetOption32] Number of 0.1 seconds to hold Button or external Pushbutton before sending HOLD message
+#define KEY_HOLD_TIME          25                // [SetOption32] Number of 0.1 seconds to hold Button or external Pushbutton before sending HOLD message
 #define SWITCH_DEBOUNCE_TIME   50                // [SwitchDebounce] Number of mSeconds switch press debounce time
 #define SWITCH_MODE            SWITCHMODE_TOGGLE_ID            // [SwitchMode] TOGGLE, FOLLOW, FOLLOW_INV, PUSHBUTTON, PUSHBUTTON_INV, PUSHBUTTONHOLD, PUSHBUTTONHOLD_INV, PUSHBUTTON_TOGGLE (the wall switch state)
-#define WS2812_LEDS            20                // [Pixels] Number of WS2812 ledout.index to start with (max is 512)
+
 
 #define TEMP_CONVERSION        0                 // [SetOption8] Return temperature in (0 = Celsius or 1 = Fahrenheit)
 #define PRESSURE_CONVERSION    0                 // [SetOption24] Return pressure in (0 = hPa or 1 = mmHg)
@@ -496,6 +496,8 @@ With latest version, all longer term shared debug features should be added here 
 #ifndef SETTINGS_SENSORS_MQTT_IFCHANGED_PERIOD_SECONDS
 #define SETTINGS_SENSORS_MQTT_IFCHANGED_PERIOD_SECONDS 10
 #endif
+
+#define ENABLE_DEVFEATURE_DEVICENAMES__USE_DEVICE_ID_WHEN_NO_NAME_MATCHED
 
 /*********************************************************************************************\
  *  Rules

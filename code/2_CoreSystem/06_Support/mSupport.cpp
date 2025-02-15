@@ -534,19 +534,6 @@ void mSupport::AppendDList(char* buffer, uint16_t buflen, const char* formatP, .
 }
 
 
-String mSupport::GetSwitchText(uint32_t i) {
-  String switch_text = "";
-  if (i < MAX_SWITCHES_TXT) {
-    switch_text = tkr_set->SettingsText(SET_SWITCH_TXT1 + i);
-  }
-  if ('\0' == switch_text[0]) {
-    switch_text = F("D_JSON_SWITCH");
-    switch_text += String(i+1);
-  }
-  return switch_text;
-}
-
-
 #ifdef USE_ARDUINO_OTA
 
 /*********************************************************************************************\
@@ -1058,6 +1045,15 @@ const char* mSupport::GetResetReason(char* buffer, uint8_t buflen)
   #endif
   return buffer;
 }
+
+char* mSupport::GetStateText(uint32_t state)
+{
+  if (state >= MAX_STATE_TEXT) {
+    state = 1;
+  }
+  return tkr_set->SettingsText(SET_STATE_TXT1 + state);
+}
+
 
 
 #ifdef ENABLE_DEVFEATURE_FIRMWARE__FOR_FUTURE_RELEASE

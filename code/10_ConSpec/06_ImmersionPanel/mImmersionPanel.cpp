@@ -271,16 +271,16 @@ void mImmersionPanel::Event_InputStateChanged()
   
   ALOG_INF(PSTR("TASK_EVENT_INPUT_STATE_CHANGED_ID"));
 
-  if(pCONT_rules->event_triggered.module_id == D_UNIQUE_MODULE_SENSORS_BUTTONS_ID)
+  if(tkr_rules->event_triggered.module_id == D_UNIQUE_MODULE_SENSORS_BUTTONS_ID)
   {
     ALOG_INF(PSTR("TASK_EVENT_INPUT_STATE_CHANGED_ID D_UNIQUE_MODULE_SENSORS_BUTTONS_ID"));
 
-    if(pCONT_rules->event_triggered.value.data[0] == 1)
+    if(tkr_rules->event_triggered.value.data[0] == 1)
     {
       data.button1_state ^= 1;
       ALOG_INF(PSTR("TASK_EVENT_INPUT_STATE_CHANGED_ID BUTTON_PRESSED_ID button1_state=%d"), data.button1_state);
     }
-    if(pCONT_rules->event_triggered.value.data[0] == 1)
+    if(tkr_rules->event_triggered.value.data[0] == 1)
     {
       data.button2_state ^= 1;
       ALOG_INF(PSTR("TASK_EVENT_INPUT_STATE_CHANGED_ID BUTTON_PRESSED_ID button2_state=%d"), data.button2_state);

@@ -263,6 +263,7 @@ class MQTTConnection
       snprintf(prefix_topic, sizeof(prefix_topic), _prefix_topic);
     }
 
+    
 
     void TaskerHandlers();
 
@@ -377,6 +378,18 @@ class mMQTTManager :
     uint16_t GetTelePeriod_SubModule();
     uint16_t GetIfChangedPeriod(); // main
     uint16_t GetIfChangedPeriod_SubModule();
+
+    #ifdef ENABLE_DEVFEATURE_MQTT__PUBLUSH_TASMOTA_METHODS
+
+    void MqttPublishPayloadPrefixTopic_P(uint32_t prefix, const char* subtopic, const char* payload, uint32_t binary_length, bool retained);
+    void MqttPublishPrefixTopic_P(uint32_t prefix, const char* subtopic, bool retained);
+    void MqttPublishPrefixTopicRulesProcess_P(uint32_t prefix, const char* subtopic, bool retained);
+    void MqttPublishPrefixTopicRulesProcess_P(uint32_t prefix, const char* subtopic);
+    #define ResponseData() data_buffer.topic.ctr
+
+
+
+    #endif
 
     /************************************************************************************************
      * SECTION: Commands

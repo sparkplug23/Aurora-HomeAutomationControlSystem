@@ -187,6 +187,69 @@ class JsonBuilder{
     }
 
 
+    // #define ENABLE_DEVFEATURE_MJSON__FLOAT_SPECIALIZATION
+
+
+    #ifdef ENABLE_DEVFEATURE_MJSON__FLOAT_SPECIALIZATION
+
+    template <typename T>
+    void Add(const char* key, T value)
+    {
+      if (!writer.buffer || writer.buffer_size == 0)
+      {
+        Serial.println("ERROR: JsonBuilder::Add() buffer nullptr or size zero");
+        return;
+      }
+
+      if (writer.length > 1 && writer.buffer[writer.length - 1] != '{' && writer.buffer[writer.length - 1] != '[')
+      {
+        writer.length += sprintf_P(&writer.buffer[writer.length], ",");
+      }
+
+      if constexpr (is_unsigned_number_type<T>::value)
+      {
+        writer.length += snprintf_P(&writer.buffer[writer.length], writer.buffer_size, "\"%s\":%lu", key, value);
+      }
+      else if constexpr (is_signed_number_type<T>::value)
+      {
+        writer.length += snprintf_P(&writer.buffer[writer.length], writer.buffer_size, "\"%s\":%d", key, value);
+      }
+      else if constexpr (is_string_type<T>::value)
+      {
+        writer.length += snprintf(&writer.buffer[writer.length], writer.buffer_size, "\"%s\":\"%s\"", key, value);
+      }
+      else if constexpr (is_char_type<T>::value)
+      {
+        writer.length += snprintf(&writer.buffer[writer.length], writer.buffer_size, "\"%s\":'%c'", key, value);
+      }
+      else if constexpr (is_float_type<T>::value || is_double_type<T>::value)
+      {
+        AddFloatOrDouble(key, value);
+      }
+    }
+
+
+    // Overload for float
+    void AddFloatOrDouble(const char* key, float value)
+    {
+      char fvalue[20];
+      dtostrfd2(value, JSON_VARIABLE_FLOAT_PRECISION_LENGTH, fvalue);
+      writer.length += snprintf(&writer.buffer[writer.length], writer.buffer_size, "\"%s\":%s", key, fvalue);
+    }
+
+    // Overload for double
+    void AddFloatOrDouble(const char* key, double value)
+    {
+      char fvalue[20];
+      dtostrfd2(value, JSON_VARIABLE_FLOAT_PRECISION_LENGTH, fvalue);
+      writer.length += snprintf(&writer.buffer[writer.length], writer.buffer_size, "\"%s\":%s", key, fvalue);
+    }
+
+
+
+    #else
+
+
     template <typename T>
     void Add(T value){
       if((writer.buffer == nullptr)||(writer.buffer_size == 0))
@@ -244,6 +307,8 @@ class JsonBuilder{
       // #endif // USE_DEVFEATURE_JSON_ADD_FLOAT_AS_OWN_FUNCTION
 
     }
+
+    #endif // ENABLE_DEVFEATURE_MJSON__FLOAT_SPECIALIZATION
 
     #ifdef USE_DEVFEATURE_JSON_ADD_FLOAT_AS_OWN_FUNCTION
     void Addf(float value){

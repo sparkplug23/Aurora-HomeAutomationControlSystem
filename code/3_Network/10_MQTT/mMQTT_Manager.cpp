@@ -338,7 +338,73 @@ uint16_t mMQTTManager::GetIfChangedPeriod_SubModule()
     return dt.ifchanged_secs;  
 }
 
+    #ifdef ENABLE_DEVFEATURE_MQTT__PUBLUSH_TASMOTA_METHODS
+void mMQTTManager::MqttPublishPayloadPrefixTopic_P(uint32_t prefix, const char* subtopic, const char* payload, uint32_t binary_length, bool retained) {
 
+ALOG_INF(PSTR("MqttPublishPayloadPrefixTopic_P"));
+
+/*
+  Publish <prefix>/<device>/<RESULT or <subtopic>> payload string or binary when binary_length set with optional retained
+
+  prefix 0 = cmnd using subtopic
+  prefix 1 = stat using subtopic
+  prefix 2 = tele using subtopic
+  prefix 4 = cmnd using subtopic or RESULT
+  prefix 5 = stat using subtopic or RESULT
+  prefix 6 = tele using subtopic or RESULT
+*/
+  SHOW_FREE_MEM(PSTR("MqttPublishPayloadPrefixTopic_P"));
+/*
+  char romram[64];                      // Claim 64 bytes from 4k stack
+  snprintf_P(romram, sizeof(romram), ((prefix > 3) && !Settings->flag.mqtt_response) ? S_RSLT_RESULT : subtopic);  // SetOption4 - Switch between MQTT RESULT or COMMAND
+  UpperCase(romram, romram);
+
+  prefix &= 3;
+  char stopic[TOPSZ];                   // Claim TOPSZ bytes from 4k stack
+  GetTopic_P(stopic, prefix, TasmotaGlobal.mqtt_topic, romram);
+  MqttPublishPayload(stopic, payload, binary_length, retained);
+*/
+  // Reduce important stack usage by 200 bytes but adding 52 bytes code
+  // char *romram = (char*)malloc(64);     // Claim 64 bytes from 20k heap
+  // strcpy_P(romram, ((prefix > 3) && !Settings->flag.mqtt_response) ? S_RSLT_RESULT : subtopic);
+  // UpperCase(romram, romram);
+
+  // prefix &= 3;
+  // char *htopic = (char*)malloc(TOPSZ);  // Claim TOPSZ bytes from 16k heap
+  // GetTopic_P(htopic, prefix, TasmotaGlobal.mqtt_topic, romram);
+  // char stopic[strlen_P(htopic) +1];     // Claim only strlen_P bytes from 4k stack
+  // strcpy_P(stopic, htopic);
+  // free(htopic);                         // Free 16k heap from TOPSZ bytes
+  // free(romram);                         // Free 16k heap from 64 bytes
+  // MqttPublishPayload(stopic, payload, binary_length, retained);
+
+}
+
+void mMQTTManager::MqttPublishPrefixTopic_P(uint32_t prefix, const char* subtopic, bool retained) {
+ALOG_INF(PSTR("MqttPublishPrefixTopic_P"));
+  // Publish <prefix>/<device>/<RESULT or <subtopic>> default ResponseData string with optional retained
+  SHOW_FREE_MEM(PSTR("MqttPublishPrefixTopic_P"));
+
+  MqttPublishPayloadPrefixTopic_P(prefix, subtopic, ResponseData(), 0, retained);
+}
+
+void mMQTTManager::MqttPublishPrefixTopicRulesProcess_P(uint32_t prefix, const char* subtopic, bool retained) {
+ALOG_INF(PSTR("MqttPublishPrefixTopicRulesProcess_P"));
+  // Publish <prefix>/<device>/<RESULT or <subtopic>> default ResponseData string with optional retained
+  //   then process rules
+  SHOW_FREE_MEM(PSTR("MqttPublishPrefixTopicRulesProcess_P"));
+
+  MqttPublishPrefixTopic_P(prefix, subtopic, retained);
+  // XdrvRulesProcess(0);
+}
+
+void mMQTTManager::MqttPublishPrefixTopicRulesProcess_P(uint32_t prefix, const char* subtopic) {
+  // Publish <prefix>/<device>/<RESULT or <subtopic>> default ResponseData string no retained
+  //   then process rules
+  MqttPublishPrefixTopicRulesProcess_P(prefix, subtopic, false);
+}
+
+#endif // ENABLE_DEVFEATURE_MQTT__PUBLUSH_TASMOTA_METHODS
 
 
 void mMQTTManager::Load_New_Subscriptions_From_Function_Template()

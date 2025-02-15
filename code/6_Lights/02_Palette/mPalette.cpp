@@ -630,14 +630,13 @@ void mPalette::addStaticPalette(uint16_t id, const uint8_t* data, const uint8_t 
   for(int i=0;i<length;i++){ palette_tmp.data.push_back(data_t[i]); }
   #endif
 
-  // palette_tmp.friendly_name_ctr = name;
   palette_tmp.encoding = {encoding};
   palette_tmp.palettelist_id = id;
   
   uint8_t encoded_colour_width  = GetEncodedColourWidth( palette_tmp.encoding );  
   palette_tmp.number_of_colours = length / encoded_colour_width;
 
-  uint16_t id_adj = id - PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID; // First static ID
+  uint16_t id_adj = id - PALETTELIST_SEGMENT__SEGMENT_COLOUR_01__ID; // First static ID
 
   if (id_adj < custom_palettes.size()) {
     static_palettes[id_adj] = palette_tmp;
@@ -679,7 +678,6 @@ void mPalette::addDynamicPalette(uint16_t id, const uint8_t* data, const uint8_t
     {
       palette_tmp.number_of_colours = 16; // to be moved into some kind of default value
     }
-    
   }
 
   // dynamic id is offset by the number of static palettes
@@ -772,12 +770,7 @@ mPalette::PALETTE_ENCODING_DATA mPalette::findPaletteEncoding(uint16_t id)
  * SECTION: Main requests to get colours from palettes
  *********************************************************************************************************************************************************************************
  *********************************************************************************************************************************************************************************/
-
-RgbwwColor 
-#ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
-IRAM_ATTR 
-#endif 
-mPalette::GetColourFromPreloadedPaletteBuffer_2023(
+IRAM_ATTR [[gnu::hot]] RgbwwColor      mPalette::GetColourFromPreloadedPaletteBuffer_RGBWW(
   uint16_t palette_id,
   uint8_t* palette_buffer,
   uint16_t _pixel_position,    
@@ -848,16 +841,16 @@ mPalette::GetColourFromPreloadedPaletteBuffer_2023(
   
   /**************************************************************
    * 
-   * PALETTELIST_SEGMENT__RGBCCT_COLOUR__IDS
+   * PALETTELIST_SEGMENT__SEGMENT_COLOUR__IDS
    * 
   ***************************************************************/
   else
   if(
-    (palette_id >= PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID) && (palette_id < PALETTELIST_SEGMENT__RGBCCT_COLOUR_LENGTH__ID)
+    (palette_id >= PALETTELIST_SEGMENT__SEGMENT_COLOUR_01__ID) && (palette_id < PALETTELIST_SEGMENT__SEGMENT_COLOUR_LENGTH__ID)
   ){  
   
 
-    uint8_t adjusted_id = palette_id - PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID;
+    uint8_t adjusted_id = palette_id - PALETTELIST_SEGMENT__SEGMENT_COLOUR_01__ID;
     uint8_t segIdx = tkr_anim->segment_current_index;
 
     if(segIdx >= tkr_anim->segments.size() ){ segIdx = 0; } 
@@ -879,7 +872,7 @@ mPalette::GetColourFromPreloadedPaletteBuffer_2023(
     uint8_t colours_in_palette = static_palettes[palette_adjusted_id].data.size() / encoded_colour_width;
     palette_buffer = &static_palettes[palette_adjusted_id].data[0];
 
-    colour = Get_Encoded_Palette_Colour(
+    colour = Get_Encoded_Palette_Colour_RGBWW(
       palette_buffer,
       _pixel_position,
       encoded_colour_width,
@@ -902,7 +895,7 @@ mPalette::GetColourFromPreloadedPaletteBuffer_2023(
     uint8_t colours_in_palette = custom_palettes[palette_adjusted_id].data.size() / encoded_colour_width;
     palette_buffer = &custom_palettes[palette_adjusted_id].data[0];
 
-    colour = Get_Encoded_Palette_Colour(
+    colour = Get_Encoded_Palette_Colour_RGBWW(
       palette_buffer,
       _pixel_position,
       encoded_colour_width,
@@ -915,7 +908,7 @@ mPalette::GetColourFromPreloadedPaletteBuffer_2023(
       false
     );
   }
-  // Dynamic palettes inline switch-case
+  // Dynamic palettes inline switch-case to reduc performance with another function call
   else 
   if(
     ((palette_id >= PALETTELIST_DYNAMIC__SOLAR_AZIMUTH__WHITE_COLOUR_TEMPERATURE_01__ID) && (palette_id < PALETTELIST_DYNAMIC__LENGTH__ID))
@@ -972,7 +965,22 @@ mPalette::GetColourFromPreloadedPaletteBuffer_2023(
   return colour;
 }
 
-uint32_t mPalette::GetColourFromPreloadedPaletteBuffer_2025(
+
+/**
+ * @brief 
+ * NEEDS TO BE A RGBWW VERSION OF THIS FUNCTION BELOW.
+ * 
+ * @param palette_id 
+ * @param palette_buffer 
+ * @param _pixel_position 
+ * @param encoded_value 
+ * @param flag_spanned_segment 
+ * @param flag_wrap_hard_edge 
+ * @param flag_crgb_exact_colour 
+ * @param flag_request_is_for_full_visual_output 
+ * @return uint32_t 
+ */
+IRAM_ATTR [[gnu::hot]] uint32_t      mPalette::GetColourFromPreloadedPaletteBuffer_U32(
   uint16_t palette_id,
   uint8_t* palette_buffer,
   uint16_t _pixel_position,    
@@ -983,6 +991,23 @@ uint32_t mPalette::GetColourFromPreloadedPaletteBuffer_2025(
   bool flag_request_is_for_full_visual_output
 ){
   DEBUG_PIN4_SET(0);
+
+  bool flag_force_gradient = false;// missing as it was in 
+  /*
+  
+  RgbwwColor mPalette::Get_Encoded_DynamicPalette_Colour(
+  uint16_t palette_adjusted_id,
+  uint8_t* palette_buffer,
+  uint16_t _pixel_position,  
+  uint8_t* encoded_value, // Must be passed in as something other than 0, or else nullptr will not be checked inside properly
+  bool     flag_map_scaling, // true(default):"desired_index_from_palette is exact pixel index", false:"desired_index_from_palette is scaled between 0 to 255, where (127/155 would be the center pixel)"
+  bool     flag_wrap_hard_edge,        // true(default):"hard edge for wrapping wround, so last to first pixel (wrap) is blended", false: "hard edge, palette resets without blend on last/first pixels"
+  bool     flag_crgb_exact_colour,
+  bool     flag_force_gradient,
+  bool     flag_request_is_for_full_visual_output
+){
+
+  */
   
   RgbwwColor colour = RgbwwColor();
 
@@ -1043,16 +1068,16 @@ uint32_t mPalette::GetColourFromPreloadedPaletteBuffer_2025(
   
   /**************************************************************
    * 
-   * PALETTELIST_SEGMENT__RGBCCT_COLOUR__IDS
+   * PALETTELIST_SEGMENT__SEGMENT_COLOUR__IDS
    * 
   ***************************************************************/
   else
   if(
-    (palette_id >= PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID) && (palette_id < PALETTELIST_SEGMENT__RGBCCT_COLOUR_LENGTH__ID)
+    (palette_id >= PALETTELIST_SEGMENT__SEGMENT_COLOUR_01__ID) && (palette_id < PALETTELIST_SEGMENT__SEGMENT_COLOUR_LENGTH__ID)
   ){  
   
 
-    uint8_t adjusted_id = palette_id - PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID;
+    uint8_t adjusted_id = palette_id - PALETTELIST_SEGMENT__SEGMENT_COLOUR_01__ID;
     uint8_t segIdx = tkr_anim->segment_current_index;
 
     if(segIdx >= tkr_anim->segments.size() ){ segIdx = 0; } 
@@ -1073,7 +1098,7 @@ uint32_t mPalette::GetColourFromPreloadedPaletteBuffer_2025(
     uint8_t colours_in_palette = static_palettes[palette_adjusted_id].data.size() / encoded_colour_width;
     palette_buffer = &static_palettes[palette_adjusted_id].data[0];
 
-    colour = Get_Encoded_Palette_Colour(
+    colour = Get_Encoded_Palette_Colour_RGBWW(
       palette_buffer,
       _pixel_position,
       encoded_colour_width,
@@ -1096,7 +1121,7 @@ uint32_t mPalette::GetColourFromPreloadedPaletteBuffer_2025(
     uint8_t colours_in_palette = custom_palettes[palette_adjusted_id].data.size() / encoded_colour_width;
     palette_buffer = &custom_palettes[palette_adjusted_id].data[0];
 
-    colour = Get_Encoded_Palette_Colour(
+    colour = Get_Encoded_Palette_Colour_RGBWW(
       palette_buffer,
       _pixel_position,
       encoded_colour_width,
@@ -1120,6 +1145,10 @@ uint32_t mPalette::GetColourFromPreloadedPaletteBuffer_2025(
     palette_buffer = &dynamic_palettes[palette_adjusted_id_rel0].data[0];
     PALETTE_ENCODING_DATA encoding = dynamic_palettes[palette_adjusted_id_rel0].encoding;
 
+    // Serial.println("((palette_id >= PALETTELIST_DYNAMIC__SOLAR_AZIMUTH__WHITE_COLOUR_TEMPERATURE_01__ID) && (palette_id < PALETTELIST_DYNAMIC__LENGTH__ID))");
+
+    #define ENABLE_NEW_LIVE_PALETTES
+
     switch(palette_id) {
       case PALETTELIST_DYNAMIC__SOLAR_AZIMUTH__WHITE_COLOUR_TEMPERATURE_01__ID: {
           
@@ -1136,6 +1165,9 @@ uint32_t mPalette::GetColourFromPreloadedPaletteBuffer_2025(
         uint32_t col32 = RGBW32(col.R, col.G, col.B, col.WW);
         return col32;
       }
+      /**
+       * @brief Only around the +-10% of horizon should the transition occur. Anything above/below should remain at fully cold/warm white
+       **/
       case PALETTELIST_DYNAMIC__SOLAR_ELEVATION__WHITE_COLOUR_TEMPERATURE_01__ID: {
         
         #ifdef USE_MODULE_SENSORS_SUN_TRACKING
@@ -1148,6 +1180,104 @@ uint32_t mPalette::GetColourFromPreloadedPaletteBuffer_2025(
         float el_max = 30;
         #endif
 
+        #ifdef ENABLE_NEW_LIVE_PALETTES
+
+          // Determine pixel length and position for full visual output
+          uint16_t pixel_length = tkr_anim->_virtualSegmentLength;
+          // RgbwwColor colour_out = RgbwwColor();  
+
+          mAnimatorLight::SegmentColour colour_out = 0;
+
+          if (flag_request_is_for_full_visual_output) 
+          {
+
+            // Map the pixel position to the elevation range (el_min to el_max)
+            float mapped_elevation = mSupport::mapfloat(_pixel_position, 0.0f, 16.0f, el_min, el_max);
+
+            // Debug output for pixel_position_adjust and mapped_elevation
+            ALOG_INF(PSTR("Full Visual Output: Pixel Position: %d, Mapped Elevation: %d"), _pixel_position, (int)mapped_elevation);
+
+
+// a way around this would be just to use the segment colour0 and col1 as the holder for these two colours.
+// Or, use the segcolour object, and rename as something like RgbcctColour as a self contained version within my code for just this.
+
+            // Based on the mapped elevation, assign cold or warm white, or blend between
+            float elevation_transition_degrees = 10; // degrees around which to blend
+
+            if (fabs(mapped_elevation) > elevation_transition_degrees) {
+                if (mapped_elevation >= 0) {
+                     colour_out.setCCT_Kelvin(CCT_MIN_DEFAULT); // Cold White
+                     colour_out.setRGB(255, 255, 255);          // Full RGB for Cold White
+                } else {
+                    colour_out.setCCT_Kelvin(CCT_MAX_DEFAULT); // Warm White
+                    colour_out.setRGB(0xFF, 0x52, 0x18);       // Warm Orange for Warm White
+                }
+            } else {
+                float progress = mSupport::mapfloat(
+                    mapped_elevation,
+                    elevation_transition_degrees, 
+                    -1 * elevation_transition_degrees, 
+                    0.0f, 
+                    1.0f
+                );
+
+                mAnimatorLight::SegmentColour colour1 = 0;//RgbwwColor();
+                colour1.setCCT_Kelvin(CCT_MIN_DEFAULT);  // Cold White
+                colour1.setRGB(255, 255, 255);           // Full RGB for Cold White
+
+                mAnimatorLight::SegmentColour colour2 = 0;//RgbwwColor();
+                colour2.setCCT_Kelvin(CCT_MAX_DEFAULT);  // Warm White
+                colour2.setRGB(0xFF, 0x52, 0x18);        // Warm Orange for Warm White
+
+                colour_out.colour = RgbwwColor::LinearBlend(colour1.colour, colour2.colour, progress);
+              }
+          } else {
+              // Default elevation-based calculation
+              float elevation_transition_degrees = 20; // degrees above/below horizon to transition between warm/cold white
+              float elevation_transition_offset = 0;   // Offset for the center of the transition
+
+              // Adjusted center point for the transition
+              float transition_min = elevation_transition_offset - elevation_transition_degrees / 2.0f;
+              float transition_max = elevation_transition_offset + elevation_transition_degrees / 2.0f;
+
+              if (fabs(elevation - elevation_transition_offset) > elevation_transition_degrees / 2.0f) {
+                  if (elevation >= transition_max) {
+                      colour_out.setCCT_Kelvin(CCT_MIN_DEFAULT);  // Cold White
+                      colour_out.setRGB(255, 255, 255);           // Full RGB for Cold White
+                  } else if (elevation <= transition_min) {
+                      colour_out.setCCT_Kelvin(CCT_MAX_DEFAULT);  // Warm White
+                      colour_out.setRGB(0xFF, 0x52, 0x18);        // Warm Orange for Warm White
+                  }
+              } else {
+                  float progress = mSupport::mapfloat(
+                      elevation,
+                      transition_max,
+                      transition_min,
+                      0.0f,
+                      1.0f
+                  );
+
+                  mAnimatorLight::SegmentColour colour1 = 0;//RgbwwColor();
+                  colour1.setCCT_Kelvin(CCT_MIN_DEFAULT);  // Cold White
+                  colour1.setRGB(255, 255, 255);           // Full RGB for Cold White
+
+                  mAnimatorLight::SegmentColour colour2 = 0;//RgbwwColor();
+                  colour2.setCCT_Kelvin(CCT_MAX_DEFAULT);  // Warm White
+                  colour2.setRGB(0xFF, 0x52, 0x18);        // Warm Orange for Warm White
+
+                colour_out.colour = RgbwwColor::LinearBlend(colour1.colour, colour2.colour, progress);
+              }
+          }
+
+          #ifdef ENABLE_DEBUGFEATURE_LIGHT__PALETTE_RELOAD_LOGGING
+          Serial.println(elevation);
+          colour_out.debug_print("colour_out");
+          #endif
+
+          colour = colour_out.colour;
+
+        #else
+
         float progress = mSupport::mapfloat(elevation, el_min, el_max, 0.0f, 1.0f);
         RgbwwColor colour1 = pSEGMENT.segcol[0].colour;
         RgbwwColor colour2 = pSEGMENT.segcol[1].colour;
@@ -1155,404 +1285,12 @@ uint32_t mPalette::GetColourFromPreloadedPaletteBuffer_2025(
         RgbwwColor col = RgbwwColor::LinearBlend(colour1, colour2, progress);
         uint32_t col32 = RGBW32(col.R, col.G, col.B, col.WW);
         return col32;
+        
+        #endif 
       }
-      // Add additional cases for other dynamic palettes here, as needed
-      default:
-        ALOG_ERR(PSTR("Bad Palette ID"));
-        return 0; // Default to black if palette is not found
-    }
-  }
-  else {
-    ALOG_INF(PSTR("Missing %d"), palette_id);
-  }
-
-  DEBUG_PIN4_SET(1);
-        RgbwwColor col = colour;//RgbwwColor::LinearBlend(colour1, colour2, progress);
-        uint32_t col32 = RGBW32(col.R, col.G, col.B, col.WW);
-        return col32;
-
-  // return colour.getU32();
-}
-
-
-
-
-
-
-
-/*********************************************************************************************************************************************************************************
- *********************************************************************************************************************************************************************************
- * SECTION: private/internal requests to get colours from palettes
- *********************************************************************************************************************************************************************************
- *********************************************************************************************************************************************************************************/
-
-#ifndef ENABLE_DEVFEATURE_LIGHTING__OCT24_TIMING
-
-/**
- * @brief private function
- * 
- * Attempting to make addressing of all palettes into 255 range so it works easier with WLED
- * 0-255, regardless of length. Hence, 5 pixels in a palette would address as 0,50,100,150,200 (the 255/5), no longer as 0,1,2,3,4. This would make things more uniform when getting colours from any palette
- * 
- * 
- * Dont bother with subfunctions, keep it tight with this even if code has to repeat. Code cost without function call penalty
- * 
- * @param palette_id 
- * @param seg_i 
- * @return RgbwwColor 
- */
-RgbwwColor  
-#ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
-IRAM_ATTR 
-#endif 
-mPalette::Get_Encoded_StaticPalette_Colour(
-  uint16_t palette_adjusted_id,
-  uint8_t* palette_buffer,
-  uint16_t _pixel_position,  
-  uint8_t* encoded_value, // Must be passed in as something other than 0, or else nullptr will not be checked inside properly
-  bool     flag_map_scaling, // true(default):"desired_index_from_palette is exact pixel index", false:"desired_index_from_palette is scaled between 0 to 255, where (127/155 would be the center pixel)"
-  bool     flag_wrap_hard_edge,        // true(default):"hard edge for wrapping wround, so last to first pixel (wrap) is blended", false: "hard edge, palette resets without blend on last/first pixels"
-  bool     flag_crgb_exact_colour,
-  bool     flag_force_gradient
-){
-    
-  // ALOG_ERR(PSTR("Get_Encoded_StaticPalette_Colour (%d,%d,%d,%d,%d,%d,%d)"), palette_adjusted_id, palette_buffer, _pixel_position, encoded_value, flag_spanned_segment, flag_wrap_hard_edge, flag_crgb_exact_colour, flag_force_gradient );
-
-  
-  uint8_t encoded_colour_width  = GetEncodedColourWidth(static_palettes[palette_adjusted_id].encoding);   
-  uint8_t colours_in_palette = static_palettes[palette_adjusted_id].data.size()/encoded_colour_width;
-  palette_buffer = &static_palettes[palette_adjusted_id].data[0];
-  PALETTE_ENCODING_DATA encoding = static_palettes[palette_adjusted_id].encoding;
-  
-
-  return Get_Encoded_Palette_Colour(
-    palette_buffer,
-    _pixel_position,
-    encoded_colour_width,
-    colours_in_palette,
-    encoding,
-    encoded_value,  // Must be passed in as something other than 0, or else nullptr will not be checked inside properly
-    flag_map_scaling, // true(default):"desired_index_from_palette is exact pixel index", false:"desired_index_from_palette is scaled between 0 to 255, where (127/155 would be the center pixel)"
-    flag_wrap_hard_edge,        // true(default):"hard edge for wrapping wround, so last to first pixel (wrap) is blended", false: "hard edge, palette resets without blend on last/first pixels"
-    flag_crgb_exact_colour,
-    flag_force_gradient
-  );
-
-}
-
-/**
- * @brief private function
- * 
- * Attempting to make addressing of all palettes into 255 range so it works easier with WLED
- * 0-255, regardless of length. Hence, 5 pixels in a palette would address as 0,50,100,150,200 (the 255/5), no longer as 0,1,2,3,4. This would make things more uniform when getting colours from any palette
- * 
- * 
- * Dont bother with subfunctions, keep it tight with this even if code has to repeat. Code cost without function call penalty
- * 
- * @param palette_id 
- * @param seg_i 
- * @return RgbwwColor 
- */
-RgbwwColor mPalette::SubGet_Encoded_CustomPalette_Colour(
-  uint16_t palette_adjusted_id,
-  uint8_t* palette_buffer,
-  uint16_t _pixel_position,  
-  uint8_t* encoded_value, // Must be passed in as something other than 0, or else nullptr will not be checked inside properly
-  bool     flag_spanned_segment, // true(default):"desired_index_from_palette is exact pixel index", false:"desired_index_from_palette is scaled between 0 to 255, where (127/155 would be the center pixel)"
-  bool     flag_wrap_hard_edge,        // true(default):"hard edge for wrapping wround, so last to first pixel (wrap) is blended", false: "hard edge, palette resets without blend on last/first pixels"
-  bool     flag_crgb_exact_colour,
-  bool     flag_force_gradient
-){
-
-  uint8_t encoded_colour_width  = GetEncodedColourWidth(custom_palettes[palette_adjusted_id].encoding);   
-  uint8_t colours_in_palette = custom_palettes[palette_adjusted_id].data.size()/encoded_colour_width;
-  palette_buffer = &custom_palettes[palette_adjusted_id].data[0];
-  PALETTE_ENCODING_DATA encoding = custom_palettes[palette_adjusted_id].encoding;
-
-  return Get_Encoded_Palette_Colour(
-    palette_buffer,
-    _pixel_position,
-    encoded_colour_width,
-    colours_in_palette,
-    encoding,
-    encoded_value,  // Must be passed in as something other than 0, or else nullptr will not be checked inside properly
-    flag_spanned_segment, // true(default):"desired_index_from_palette is exact pixel index", false:"desired_index_from_palette is scaled between 0 to 255, where (127/155 would be the center pixel)"
-    flag_wrap_hard_edge,        // true(default):"hard edge for wrapping wround, so last to first pixel (wrap) is blended", false: "hard edge, palette resets without blend on last/first pixels"
-    flag_crgb_exact_colour,
-    flag_force_gradient
-  );
-
-}
-
-
-/**
- * @brief private function
- * 
- * Attempting to make addressing of all palettes into 255 range so it works easier with WLED
- * 0-255, regardless of length. Hence, 5 pixels in a palette would address as 0,50,100,150,200 (the 255/5), no longer as 0,1,2,3,4. This would make things more uniform when getting colours from any palette
- * 
- * 
- * Dont bother with subfunctions, keep it tight with this even if code has to repeat. Code cost without function call penalty
- * 
- * @param palette_id 
- * @param seg_i 
- * @return RgbwwColor 
- * 
- * Only static palettes should be within the palette class, the dynamic and custom palettes should be in the main code ?
- * Or, the parts that control the dynamic palettes (aux values) if moved into palettes probably makes it totally sustainable.
- * But then we have multiple for different segments, but if done right then the effect will just need to respect the single use palette
- * But then we have RGBCCT colours, which are all different per segment.
- * But that spans 1/2/3/4/5 grouped from those, which use these unique palettes and are therefore unique to the segment.
- * 
- * For now, I think dynamic should be made internal to the palette class and use an internal parameter in the place of aux
- * 
- * 
- * I should add to dynamic palettes, an optional flag for "getting for webui view" and hence instead of showing the exact colour, it would show a demo of the possible colours. Eg Sky could be the full colour spectrum. It would mean a higher level option would select full 16 colours and send crgb16 palette view
- * Or all dynamic palettes must have how it may look stored in memory, and that is used when the webui calls it. 
- */
-RgbwwColor mPalette::Get_Encoded_DynamicPalette_Colour(
-  uint16_t palette_adjusted_id,
-  uint8_t* palette_buffer,
-  uint16_t _pixel_position,  
-  uint8_t* encoded_value, // Must be passed in as something other than 0, or else nullptr will not be checked inside properly
-  bool     flag_map_scaling, // true(default):"desired_index_from_palette is exact pixel index", false:"desired_index_from_palette is scaled between 0 to 255, where (127/155 would be the center pixel)"
-  bool     flag_wrap_hard_edge,        // true(default):"hard edge for wrapping wround, so last to first pixel (wrap) is blended", false: "hard edge, palette resets without blend on last/first pixels"
-  bool     flag_crgb_exact_colour,
-  bool     flag_force_gradient,
-  bool     flag_request_is_for_full_visual_output
-){
-
-/**
- * @brief New Sep24
- * Dynamic palettes must still load from stored memory, if nothing is required it can be overwritten below, but this will serve as webui views. 
- * So load, then if webui request, exist before generating the live part.
- * 
- */
-
-  // ATTENTION: Adjusting palette back here, so it correctly reads fro dynamic_palette, but switch below requires the ID without adjustment
-
-  uint8_t palette_adjusted_id_rel0 = palette_adjusted_id - PALETTELIST_DYNAMIC__SOLAR_AZIMUTH__WHITE_COLOUR_TEMPERATURE_01__ID;
-
-  // ALOG_INF(PSTR("palette_adjusted_id_rel0 %d"), palette_adjusted_id_rel0);
-  // Serial.flush();
-
-  uint8_t encoded_colour_width  = GetEncodedColourWidth(dynamic_palettes[palette_adjusted_id_rel0].encoding);   
-  uint8_t colours_in_palette = dynamic_palettes[palette_adjusted_id_rel0].data.size()/encoded_colour_width;
-  palette_buffer = &dynamic_palettes[palette_adjusted_id_rel0].data[0];
-  PALETTE_ENCODING_DATA encoding = dynamic_palettes[palette_adjusted_id_rel0].encoding;
-
-  // ALOG_INF(PSTR("color_from_palette %d"), colours_in_palette);
-  
-  RgbwwColor loaded_colour;
-
-  
-  
-  // _pixel_position = 0;
-
-  // loaded_colour = Get_Encoded_Palette_Colour(
-  //   palette_buffer,
-  //   _pixel_position,
-  //   encoded_colour_width,
-  //   colours_in_palette,
-  //   encoding,
-  //   encoded_value,  // Must be passed in as something other than 0, or else nullptr will not be checked inside properly
-  //   flag_map_scaling, // true(default):"desired_index_from_palette is exact pixel index", false:"desired_index_from_palette is scaled between 0 to 255, where (127/155 would be the center pixel)"
-  //   flag_wrap_hard_edge,        // true(default):"hard edge for wrapping wround, so last to first pixel (wrap) is blended", false: "hard edge, palette resets without blend on last/first pixels"
-  //   flag_crgb_exact_colour,
-  //   flag_force_gradient
-  // );
-
-  // loaded_colour.debug_print("loaded dynamic 0");
-  // // This load seciton above, will likely need to be called below X times depending on the values I want. 
-
-  // _pixel_position = 255;
-
-  // loaded_colour = Get_Encoded_Palette_Colour(
-  //   palette_buffer,
-  //   _pixel_position,
-  //   encoded_colour_width,
-  //   colours_in_palette,
-  //   encoding,
-  //   encoded_value,  // Must be passed in as something other than 0, or else nullptr will not be checked inside properly
-  //   flag_map_scaling, // true(default):"desired_index_from_palette is exact pixel index", false:"desired_index_from_palette is scaled between 0 to 255, where (127/155 would be the center pixel)"
-  //   flag_wrap_hard_edge,        // true(default):"hard edge for wrapping wround, so last to first pixel (wrap) is blended", false: "hard edge, palette resets without blend on last/first pixels"
-  //   flag_crgb_exact_colour,
-  //   flag_force_gradient
-  // );
-
-  // loaded_colour.debug_print("loaded dynamic 255");
-  // // This load seciton above, will likely need to be called below X times depending on the values I want. 
-
-
-
-
-// Here, I likely want to work conversions, then call the other methods that are needed.
-// For simplicity, the required colours will be requested from the static options that are in progmem.
-
-// // #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PALETTE_ENCODED_DYNAMIC_HEATMAPS
-// ALOG_INF(PSTR("Get_Encoded_DynamicPalette_Colour %d"), palette_adjusted_id);
-// #endif 
-
-// if(encoded_value != nullptr)
-// {
-//   ALOG_INF(PSTR("encoded_value != nullptr"));
-// }
-// else{
-//   ALOG_INF(PSTR("encoded_value == nullptr"));
-// }
-
-/*
-// Should I make it here that one of the matlab colourmaps can be loaded into here, and then some the float vector is actually saved with the palettes
-// rather than the strip code? oh!
-// 1) matlab palettes should be called through this, 
-// 2) if the vector has been set, then it will enable the palette to be rescaled? though, this may not enable the temperature celius, or really its just added by command.
-// This would limit scalled palettes to be only 1, which is probably enough. so lets just use a vector that is cleared when not using matlab palettes. 
-// Should any palette be allowed to use this rescale? may be too complex and best to stick with matlab ones, otherwise the palette creation tool will be used
-// and this is just for exact mapping from a value into colourmap.
-// maybe it makes more sense to have another GetColourFromPalette that does the colour mapping, so it really is another functionality.
-
-
-GetColourFromPalette_WithColourMapScale(normal colour map, pass in vector float list))
-
-
-*/
-
-  switch(palette_adjusted_id) //switch back to palette_NOT_adjusted_id
-  { 
-    default:
-      ALOG_ERR(PSTR("Bad Palette ID"));
-    case PALETTELIST_DYNAMIC__SOLAR_AZIMUTH__WHITE_COLOUR_TEMPERATURE_01__ID:{
-
-      #ifdef USE_MODULE_SENSORS_SUN_TRACKING
-      float azimuth = pCONT_solar->Get_Azimuth();
-      #else
-      float azimuth = 0;
-      #endif
-
-      float progress = mSupport::mapfloat(azimuth, 0,360, 0.0f, 1.0f);
-      
-      RgbwwColor colour1 = pSEGMENT_I(0).segcol[0];
-      RgbwwColor colour2 = pSEGMENT_I(0).segcol[1];      
-
-      #ifdef ENABLE_DEBUGFEATURE_LIGHT__PALETTE_RELOAD_LOGGING
-      Serial.println(azimuth);
-      Serial.println(progress);
-      #endif
-
-      return RgbwwColor::LinearBlend(colour1, colour2, progress);
-
-    }
-    break;
-    
-    /**
-     * @brief Only around the +-10% of horizon should the transition occur. Anything above/below should remain at fully cold/warm white
-     * 
-     */
-    case PALETTELIST_DYNAMIC__SOLAR_ELEVATION__WHITE_COLOUR_TEMPERATURE_01__ID:
-    {
-
-      #ifdef USE_MODULE_SENSORS_SUN_TRACKING
-      float elevation = pCONT_solar->Get_Elevation();
-      float el_min = pCONT_solar->Get_Elevation_Min();
-      float el_max = pCONT_solar->Get_Elevation_Max();
-      #else
-      float elevation = 0;
-      float el_min = -30;
-      float el_max = 30;
-      #endif
-
-      // Determine pixel length and position for full visual output
-      uint16_t pixel_length = tkr_anim->_virtualSegmentLength;
-      RgbwwColor colour_out = RgbwwColor();  
-
-      if (flag_request_is_for_full_visual_output) 
-      {
-
-        // Map the pixel position to the elevation range (el_min to el_max)
-        float mapped_elevation = mSupport::mapfloat(_pixel_position, 0.0f, 16.0f, el_min, el_max);
-
-        // Debug output for pixel_position_adjust and mapped_elevation
-        ALOG_INF(PSTR("Full Visual Output: Pixel Position: %d, Mapped Elevation: %d"), _pixel_position, (int)mapped_elevation);
-
-        // Based on the mapped elevation, assign cold or warm white, or blend between
-        float elevation_transition_degrees = 10; // degrees around which to blend
-
-        if (fabs(mapped_elevation) > elevation_transition_degrees) {
-            if (mapped_elevation >= 0) {
-                colour_out.setCCT_Kelvin(CCT_MIN_DEFAULT); // Cold White
-                colour_out.setRGB(255, 255, 255);          // Full RGB for Cold White
-            } else {
-                colour_out.setCCT_Kelvin(CCT_MAX_DEFAULT); // Warm White
-                colour_out.setRGB(0xFF, 0x52, 0x18);       // Warm Orange for Warm White
-            }
-        } else {
-            float progress = mSupport::mapfloat(
-                mapped_elevation,
-                elevation_transition_degrees, 
-                -1 * elevation_transition_degrees, 
-                0.0f, 
-                1.0f
-            );
-
-            RgbwwColor colour1 = RgbwwColor();
-            colour1.setCCT_Kelvin(CCT_MIN_DEFAULT);  // Cold White
-            colour1.setRGB(255, 255, 255);           // Full RGB for Cold White
-
-            RgbwwColor colour2 = RgbwwColor();
-            colour2.setCCT_Kelvin(CCT_MAX_DEFAULT);  // Warm White
-            colour2.setRGB(0xFF, 0x52, 0x18);        // Warm Orange for Warm White
-
-            colour_out = RgbwwColor::LinearBlend(colour1, colour2, progress);
-          }
-      } else {
-          // Default elevation-based calculation
-          float elevation_transition_degrees = 20; // degrees above/below horizon to transition between warm/cold white
-          float elevation_transition_offset = 0;   // Offset for the center of the transition
-
-          // Adjusted center point for the transition
-          float transition_min = elevation_transition_offset - elevation_transition_degrees / 2.0f;
-          float transition_max = elevation_transition_offset + elevation_transition_degrees / 2.0f;
-
-          if (fabs(elevation - elevation_transition_offset) > elevation_transition_degrees / 2.0f) {
-              if (elevation >= transition_max) {
-                  colour_out.setCCT_Kelvin(CCT_MIN_DEFAULT);  // Cold White
-                  colour_out.setRGB(255, 255, 255);           // Full RGB for Cold White
-              } else if (elevation <= transition_min) {
-                  colour_out.setCCT_Kelvin(CCT_MAX_DEFAULT);  // Warm White
-                  colour_out.setRGB(0xFF, 0x52, 0x18);        // Warm Orange for Warm White
-              }
-          } else {
-              float progress = mSupport::mapfloat(
-                  elevation,
-                  transition_max,
-                  transition_min,
-                  0.0f,
-                  1.0f
-              );
-
-              RgbwwColor colour1 = RgbwwColor();
-              colour1.setCCT_Kelvin(CCT_MIN_DEFAULT);  // Cold White
-              colour1.setRGB(255, 255, 255);           // Full RGB for Cold White
-
-              RgbwwColor colour2 = RgbwwColor();
-              colour2.setCCT_Kelvin(CCT_MAX_DEFAULT);  // Warm White
-              colour2.setRGB(0xFF, 0x52, 0x18);        // Warm Orange for Warm White
-
-              colour_out = RgbwwColor::LinearBlend(colour1, colour2, progress);
-          }
-      }
-
-      #ifdef ENABLE_DEBUGFEATURE_LIGHT__PALETTE_RELOAD_LOGGING
-      Serial.println(elevation);
-      colour_out.debug_print("colour_out");
-      #endif
-
-      return colour_out;
-      
-    }
-    break;
-    case PALETTELIST_DYNAMIC__SOLAR_ELEVATION__RGBCCT_PRIMARY_TO_SECONDARY_01__ID:
-    {
+      case PALETTELIST_DYNAMIC__SOLAR_ELEVATION__RGBCCT_PRIMARY_TO_SECONDARY_01__ID:
+        // Serial.println("PALETTELIST_DYNAMIC__SOLAR_ELEVATION__RGBCCT_PRIMARY_TO_SECONDARY_01__ID");
+        {
         // Define the transition width around the horizon (±X degrees)
         float elevation_transition_degrees = 10.0f; // Transition over 20 degrees total (10 above and 10 below)
 
@@ -1561,8 +1299,8 @@ GetColourFromPalette_WithColourMapScale(normal colour map, pass in vector float 
         #endif
 
         // Retrieve the two colors for blending
-        RgbwwColor colour1 = pSEGMENT.segcol[0]; // Daytime color
-        RgbwwColor colour2 = pSEGMENT.segcol[1]; // Nighttime color
+        RgbwwColor colour1 = pSEGMENT.segcol[0].colour; // Daytime color
+        RgbwwColor colour2 = pSEGMENT.segcol[1].colour; // Nighttime color
 
         // Get the current solar elevation
         #ifdef USE_MODULE_SENSORS_SUN_TRACKING
@@ -1630,14 +1368,12 @@ GetColourFromPalette_WithColourMapScale(normal colour map, pass in vector float 
         }
 
         // Return the final blended or fixed color
-        return colour_out;
+        colour =  colour_out;
     }
-    break;
-
-
-
-    case PALETTELIST_DYNAMIC__TIMEREACTIVE__RGBCCT_PRIMARY_TO_SECONDARY_WITH_SECONDS_IN_MINUTE_01__ID:
-    {
+      break;
+      case PALETTELIST_DYNAMIC__TIMEREACTIVE__RGBCCT_PRIMARY_TO_SECONDARY_WITH_SECONDS_IN_MINUTE_01__ID:
+        // Serial.println("PALETTELIST_DYNAMIC__TIMEREACTIVE__RGBCCT_PRIMARY_TO_SECONDARY_WITH_SECONDS_IN_MINUTE_01__ID");
+        {
 
       float progress = mSupport::mapfloat(tkr_time->RtcTime.second, 0,59, 0.0f, 1.0f);
       
@@ -1646,332 +1382,132 @@ GetColourFromPalette_WithColourMapScale(normal colour map, pass in vector float 
       #endif
 
 
-      RgbwwColor colour1 = pSEGMENT.segcol[0];
-      RgbwwColor colour2 = pSEGMENT.segcol[1];      
+      RgbwwColor colour1 = pSEGMENT.segcol[0].colour;
+      RgbwwColor colour2 = pSEGMENT.segcol[1].colour;      
 
-      return RgbwwColor::LinearBlend(colour1, colour2, progress);
+      colour = RgbwwColor::LinearBlend(colour1, colour2, progress);
 
     }
-    case PALETTELIST_DYNAMIC__SOLAR_ELEVATION__SOLID_COLOUR_OF_SKY__ID:
-    {
+      break;
+      case PALETTELIST_DYNAMIC__SOLAR_ELEVATION__SOLID_COLOUR_OF_SKY__ID:
+      {
+        // Serial.println("PALETTELIST_DYNAMIC__SOLAR_ELEVATION__SOLID_COLOUR_OF_SKY__ID");
 
-      uint16_t pixel_length = tkr_anim->_virtualSegmentLength;
+        uint16_t pixel_length = tkr_anim->_virtualSegmentLength;
 
-      uint16_t rescaled_palette_index;
-      
-      // Check if we're in preview mode
-      if (flag_request_is_for_full_visual_output) {
-
-        // Preview mode: Direct mapping without zoom, using the full range of the palette
-        // Directly map the pixel position into the full palette range (0-255)
-        rescaled_palette_index = _pixel_position;
-
-        ALOG_INF(PSTR("preview %d"), rescaled_palette_index);
-
-      } else {
-
-        // Running mode: Apply zoom based on elevation    
+        uint16_t rescaled_palette_index;
 
         #ifdef USE_MODULE_SENSORS_SUN_TRACKING
-        float elevation = pCONT_solar->Get_Elevation();
-        float el_min = pCONT_solar->Get_Elevation_Min();
-        float el_max = pCONT_solar->Get_Elevation_Max();
-        // Serial.print(elevation); Serial.print("|"); Serial.print(el_min); Serial.print("|"); Serial.println(el_max);
-        #else
-        float elevation = 0;
-        float el_min = -30;
-        float el_max = 30;
+        if(pCONT_solar->Valid())
+        {
+          flag_request_is_for_full_visual_output = true;
+        }
         #endif
 
+        
+        // Check if we're in preview mode
+        if (flag_request_is_for_full_visual_output) {
 
-        // Step 1: Convert the pixel position into the 0-255 range
-        uint16_t pixel_position_adjust = (_pixel_position * 255) / (pixel_length - 1);
+          // Preview mode: Direct mapping without zoom, using the full range of the palette
+          // Directly map the pixel position into the full palette range (0-255)
+          rescaled_palette_index = _pixel_position;
 
-        // Debug output for scaled pixel position
-        // ALOG_INF(PSTR("Pixel Position Adjusted: %d"), pixel_position_adjust);
+          ALOG_INF(PSTR("preview %d"), rescaled_palette_index);
 
-        // Calculate 40% of the elevation range for zoom
-        float zoom_range_perc_as_ratio = 0.1f;
-        float elevation_offset = zoom_range_perc_as_ratio * (el_max - el_min);
+        } else {
 
-        // Calculate the elevation window around the current value
-        float el_minus_40 = elevation - elevation_offset;
-        float el_plus_40 = elevation + elevation_offset;
+          // Running mode: Apply zoom based on elevation    
 
-        // Ensure the elevation window is clamped within the valid elevation range
-        if (el_minus_40 < el_min) el_minus_40 = el_min;
-        if (el_plus_40 > el_max) el_plus_40 = el_max;
+          #ifdef USE_MODULE_SENSORS_SUN_TRACKING
+          float elevation = pCONT_solar->Get_Elevation();
+          float el_min = pCONT_solar->Get_Elevation_Min();
+          float el_max = pCONT_solar->Get_Elevation_Max();
+          // Serial.print(elevation); Serial.print("|"); Serial.print(el_min); Serial.print("|"); Serial.println(el_max);
+          #else
+          float elevation = 0;
+          float el_min = -30;
+          float el_max = 30;
+          #endif
 
-        // Debug output for elevation and its range
-        // ALOG_INF(PSTR("Elevation: %d, el_min: %d, el_max: %d, el_minus_40: %d, el_plus_40: %d"),
-        //     (int)elevation, (int)el_min, (int)el_max, (int)el_minus_40, (int)el_plus_40);
 
-        // Step 3: Now, map this elevation range into the palette (0 to 255)
-        uint16_t palette_start = (uint16_t)mSupport::mapfloat(el_minus_40, el_min, el_max, 0.0f, 255.0f);
-        uint16_t palette_end = (uint16_t)mSupport::mapfloat(el_plus_40, el_min, el_max, 0.0f, 255.0f);
+          // Step 1: Convert the pixel position into the 0-255 range
+          uint16_t pixel_position_adjust = (_pixel_position * 255) / (pixel_length - 1);
 
-        // Debug output for palette start/end
-        // ALOG_INF(PSTR("Palette Start: %d, Palette End: %d"), palette_start, palette_end);
+          // Debug output for scaled pixel position
+          // ALOG_INF(PSTR("Pixel Position Adjusted: %d"), pixel_position_adjust);
 
-        // Make sure palette_start is less than palette_end
-        if (palette_start >= palette_end) {
-            palette_start = (palette_end > 0) ? palette_end - 1 : 0;
+          // Calculate 40% of the elevation range for zoom
+          float zoom_range_perc_as_ratio = 0.1f;
+          float elevation_offset = zoom_range_perc_as_ratio * (el_max - el_min);
+
+          // Calculate the elevation window around the current value
+          float el_minus_40 = elevation - elevation_offset;
+          float el_plus_40 = elevation + elevation_offset;
+
+          // Ensure the elevation window is clamped within the valid elevation range
+          if (el_minus_40 < el_min) el_minus_40 = el_min;
+          if (el_plus_40 > el_max) el_plus_40 = el_max;
+
+          // Debug output for elevation and its range
+          // ALOG_INF(PSTR("Elevation: %d, el_min: %d, el_max: %d, el_minus_40: %d, el_plus_40: %d"),
+          //     (int)elevation, (int)el_min, (int)el_max, (int)el_minus_40, (int)el_plus_40);
+
+          // Step 3: Now, map this elevation range into the palette (0 to 255)
+          uint16_t palette_start = (uint16_t)mSupport::mapfloat(el_minus_40, el_min, el_max, 0.0f, 255.0f);
+          uint16_t palette_end = (uint16_t)mSupport::mapfloat(el_plus_40, el_min, el_max, 0.0f, 255.0f);
+
+          // Debug output for palette start/end
+          // ALOG_INF(PSTR("Palette Start: %d, Palette End: %d"), palette_start, palette_end);
+
+          // Make sure palette_start is less than palette_end
+          if (palette_start >= palette_end) {
+              palette_start = (palette_end > 0) ? palette_end - 1 : 0;
+          }
+
+          // Step 4: Map the pixel position into the zoomed palette range
+          rescaled_palette_index = (uint16_t)mSupport::mapfloat(
+              pixel_position_adjust, 0.0f, 255.0f, palette_start, palette_end
+          );
+
+          // Debug output for the rescaled palette index
+          // ALOG_INF(PSTR("Rescaled Palette Index: %d"), rescaled_palette_index);
+
+          // Ensure rescaled_palette_index is clamped between 0 and 255
+          rescaled_palette_index = constrain(rescaled_palette_index, 0, 255);
         }
 
-        // Step 4: Map the pixel position into the zoomed palette range
-        rescaled_palette_index = (uint16_t)mSupport::mapfloat(
-            pixel_position_adjust, 0.0f, 255.0f, palette_start, palette_end
+        // Fetch the color using the rescaled palette index, regardless of mode
+        // RgbwwColor 
+        colour = Get_Encoded_Palette_Colour_RGBWW(
+            palette_buffer,
+            rescaled_palette_index,    // Pass the manually scaled 0-255 value here
+            encoded_colour_width,
+            colours_in_palette,
+            encoding,
+            encoded_value,
+            false,                     // Set flag_map_scaling to false, as we are doing the scaling ourselves
+            flag_wrap_hard_edge,
+            flag_crgb_exact_colour,
+            flag_force_gradient
         );
-
-        // Debug output for the rescaled palette index
-        // ALOG_INF(PSTR("Rescaled Palette Index: %d"), rescaled_palette_index);
-
-        // Ensure rescaled_palette_index is clamped between 0 and 255
-        rescaled_palette_index = constrain(rescaled_palette_index, 0, 255);
       }
-
-      // Fetch the color using the rescaled palette index, regardless of mode
-      RgbwwColor loaded_colour = Get_Encoded_Palette_Colour(
-          palette_buffer,
-          rescaled_palette_index,    // Pass the manually scaled 0-255 value here
-          encoded_colour_width,
-          colours_in_palette,
-          encoding,
-          encoded_value,
-          false,                     // Set flag_map_scaling to false, as we are doing the scaling ourselves
-          flag_wrap_hard_edge,
-          flag_crgb_exact_colour,
-          flag_force_gradient
-      );
-
-      return loaded_colour;
-
+      break;
+      default:
+        ALOG_ERR(PSTR("Bad Palette ID %d"), palette_id);
+        return 0; // Default to black if palette is not found
     }
-    break;
-    /***
-     * 
-     * New way to show temps as colours
-     * 
-     * Encoded my way
-     *  - list of colours, with gradient position evening divided by how many there is
-     *  - this may simply be a loaded normal RGB palette, but with gradient position conversion working
-     *  - though, I may wish to set the inflection points, ie my X sensors may not be evening spaced. So in this case, may be best to manually work out the even conversion myself
-     *  - grad,R,G,B, ( may wish to add white channels here), so really, back to my original palettes that are "encoded" with the first 6 bytes describing what the data holds.
-     * 
-     * CRGB16Palette
-     *  - this will only permit 16 or 4 colours, and must be evenly spaced
-     *  - so not going to work for this case 
-     * 
-     * 
-     * PALETTELIST_VARIABLE_GENERIC_01__ID was the old name
-     * 
-     * 
-     * 
-     * 
-     * 
-    */
-    /**
-     * Using sensor readings, to generate colour palettes
-     * This will be part of the new "sensor_struct" to hold all types
-     *   Should it do like wled effects, memory buffer with different struct types?
-     *    GetSensor(ptr,TEMP_ID) which will use memory location 0, to know how the struct is encoded and return the temperature from bytes 1-5 as float for example
-     * This way, one struct pointer can be used to pass "sensor X" as a task source for this custom controller
-     * */
-    // case PALETTELIST_DYNAMIC__ENCODED_GENERIC__ID:{
-      
-    //   #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PALETTE_ENCODED_DYNAMIC__LOG_MESSAGES
-    //   ALOG_INF(PSTR("Get_Encoded_DynamicPalette_Colour::ENCODED %d"), palette_adjusted_id);
-    //   #endif 
-
-    //   uint16_t palette_id = PALETTELIST_DYNAMIC__ENCODED_GENERIC__ID;
-    //   uint16_t palette_id_adj = palette_id - mPalette::PALETTELIST_DYNAMIC__SOLAR_AZIMUTH__WHITE_COLOUR_TEMPERATURE_01__ID;
-
-    //   uint8_t encoded_colour_width  = GetEncodedColourWidth(dynamic_palettes[palette_id_adj].encoding);   
-    //   uint8_t colours_in_palette = dynamic_palettes[palette_id_adj].data.size()/encoded_colour_width;
-    //   palette_buffer = &dynamic_palettes[palette_id_adj].data[0];
-    //   PALETTE_ENCODING_DATA encoding = dynamic_palettes[palette_id_adj].encoding;
-
-    //   // uint8_t flag_map_scaling = true;//??
-
-    //   // ALOG_INF(PSTR("encoded_colour_width \t%d"),encoded_colour_width);
-    //   // ALOG_INF(PSTR("addDynamicPalette bytes added[3] %d"), dynamic_palettes[3].data.size());
-    //   // for(int i=0;i<dynamic_palettes[3].data.size();i++){ Serial.print( dynamic_palettes[3].data[i]);Serial.print( "," ); } Serial.println();
-  
-
-    //   RgbwwColor colour;
-      
-
-    //   colour =  Get_Encoded_Palette_Colour(
-    //     palette_buffer,
-    //     _pixel_position,
-    //     encoded_colour_width,
-    //     colours_in_palette,
-    //     encoding,
-    //     encoded_value,  // Must be passed in as something other than 0, or else nullptr will not be checked inside properly
-    //     flag_spanned_segment, // true(default):"desired_index_from_palette is exact pixel index", false:"desired_index_from_palette is scaled between 0 to 255, where (127/155 would be the center pixel)"
-    //     flag_wrap_hard_edge,        // true(default):"hard edge for wrapping wround, so last to first pixel (wrap) is blended", false: "hard edge, palette resets without blend on last/first pixels"
-    //     flag_crgb_exact_colour,
-    //     flag_force_gradient
-    //   );
-
-    //   #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PALETTE_ENCODED_DYNAMIC__LOG_MESSAGES
-    //   if(encoded_value != nullptr)
-    //   {
-    //     ALOG_INF(PSTR("Get_Encoded_Palette_Colour encoded_value != nullptr %d"), *encoded_value);
-    //   }
-    //   else{
-    //     ALOG_INF(PSTR("encoded_value == nullptr"));
-    //   }
-    //   #endif // ENABLE_DEBUGFEATURE_LIGHTING__PALETTE_ENCODED_DYNAMIC__LOG_MESSAGES
-
-
-    //   return colour;
-
-
-
-
-
-
-    //   #else
-
-    //   RgbwwColor colour_out = RgbwwColor(255,0,255,0,0);
-    //   RgbwwColor colour;
-
-    //   // uint8_t test_data[] = { //if vector, then data length is inherited from vector
-    //   //   // 6,5,
-    //   //   0,0,0, // 0
-    //   //   255,0,0, // 1
-    //   //   0,255,0, // 2
-    //   //   0,0,255, // 3
-    //   //   255,255,0, // 4
-    //   //   255,0,255, // 5
-    //   // };
-
-      
-    //     uint16_t encoded_colour_width = 0;
-
-    //     uint16_t palette_id = PALETTELIST_DYNAMIC__ENCODED_GENERIC__ID;
-    //     uint16_t palette_id_adj = palette_id - mPalette::PALETTELIST_DYNAMIC__SOLAR_AZIMUTH__WHITE_COLOUR_TEMPERATURE_01__ID;
-
-
-    //     mPalette::PALETTE_DATA pal = mPaletteI->dynamic_palettes[constrain(palette_id_adj,0,mPaletteI->dynamic_palettes.size()-1)];
-
-    //     #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PALETTE_ENCODED_DYNAMIC_HEATMAPS
-    //     ALOG_INF(PSTR("--------------palette_id_adj %d"), palette_id_adj);
-    //     Serial.println(pal.encoding.data, BIN);
-    //     #endif // ENABLE_DEBUGFEATURE_LIGHTING__PALETTE_ENCODED_DYNAMIC_HEATMAPS
-
-    //     // PALETTE_ENCODING_DATA encoding = dynamic_palettes[palette_adjusted_id].encoding;
-
-    //     // /**
-    //     //  * @brief temp force load the data in
-    //     //  * 
-    //     //  */
-    //     // pal.data.clear();
-    //     // pal.data.assign(test_data, test_data + sizeof(test_data) / sizeof(test_data[0])); // load the data in
-    //     // pal.encoding = {PALETTE_ENCODING_TYPE_RGB_NO_INDEX}; // force the encoding in
-
-
-
-
-    //     if(pal.encoding.red_enabled){ encoded_colour_width++; }
-    //     if(pal.encoding.green_enabled){ encoded_colour_width++; }
-    //     if(pal.encoding.blue_enabled){ encoded_colour_width++; }
-    //     if(pal.encoding.white_warm_enabled){ encoded_colour_width++; }
-
-    //     if(pal.encoding.white_cold_enabled){ encoded_colour_width++; }
-    //     if(pal.encoding.encoded_value_byte_width){ encoded_colour_width += pal.encoding.encoded_value_byte_width; }
-
-    //     // if(pal.encoding.index_exact){ encoded_colour_width++; }
-    //     if(pal.encoding.index_gradient){ encoded_colour_width++; }
-    //     if(pal.encoding.index_is_trigger_value_exact){ encoded_colour_width++; }
-    //     if(pal.encoding.index_is_trigger_value_scaled100){ encoded_colour_width++; }
-        
-    //     // if(pal.encoding.encoded_as_hsb_ids){ encoded_colour_width++; }
-    //     if(pal.encoding.encoded_as_crgb_palette_16){ encoded_colour_width++; }
-    //     if(pal.encoding.encoded_as_crgb_palette_256){ encoded_colour_width++; }
-    //     if(pal.encoding.palette_can_be_modified){ encoded_colour_width++; }
-
-
-    //     if(encoded_colour_width==0)
-    //     {
-    //       // ALOG_ERR(PSTR("encoded_colour_width==0, crash errorAA =%S"), pal.friendly_name_ctr);
-    //       return 0;
-    //     }
-    //     // ALOG_INF(PSTR("============  %d %d %d"),  pal.data.size(), encoded_colour_width, palette_colour_count);
-
-            
-      
-    //     uint8_t  palette_colour_count = pal.data.size()/encoded_colour_width; 
-
-    //     #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PALETTE_ENCODED_DYNAMIC_HEATMAPS
-    //     ALOG_INF(PSTR("============  %d %d %d"),  pal.data.size(), encoded_colour_width, palette_colour_count);
-    //     #endif // ENABLE_DEBUGFEATURE_LIGHTING__PALETTE_ENCODED_DYNAMIC_HEATMAPS
-
-        
-      
-    //   /**
-    //    * [0] colour_count, used with map_type to generate map_size (ie colour_map_size = pixel_width*pixel_count)
-    //    * [1] colour_encoded_length      eg (6=rgb no_index, )
-    //    * [2] data field 0
-    //     * */
-
-    //   uint16_t before = _pixel_position;
-    //   uint16_t pixel_position_adjust = _pixel_position;
-    //   uint8_t colours_in_palette = 5;
-
-
-
-    //   // uint16_t before = pixel_position_adjust;
-    //   // if(not gradient)
-    // //   ALOG_INF(PSTR("colours_in_palette %d"), colours_in_palette);
-    // // 
-    // // delay(3000);
-    //   // pixel_position_adjust %= colours_in_palette; // convert incoming pixels into repeating 0-15 numbers.
-    //   pixel_position_adjust %= colours_in_palette; 
-    //   // else // if gradient, then this same thing should happen but scale into 255 range
-    //   // ALOG_INF(PSTR("pixel_position_adjust %d/%d"), before, pixel_position_adjust);
-    
-    //   colour = Get_Encoded_Colour_ReadBuffer_Fast(
-    //     palette_buffer,
-    //     pixel_position_adjust,  
-    //     encoded_value,
-    //     pal.encoding,
-    //     encoded_colour_width
-    //   );
-
-
-
-    //   // if(not gradient)
-    //   #ifdef ENABLE_DEBUGFEATURE_LIGHTING__PALETTE_ENCODED_DYNAMIC_HEATMAPS
-    //   ALOG_INF(PSTR("encoding %x"), pal.encoding);
-    //   ALOG_INF(PSTR("encoded_value %d"), encoded_value);
-    //   ALOG_INF(PSTR("pixel_position_adjust %d|%d %d,%d,%d"), before, pixel_position_adjust, colour.R, colour.G, colour.B);
-    //   #endif // ENABLE_DEBUGFEATURE_LIGHTING__PALETTE_ENCODED_DYNAMIC_HEATMAPS
-    // // 
-    // // delay(3000);
-
-    //   // if(pixel_position_adjust < colours_in_palette)
-    //   // {
-    //   //   uint8_t colour_index = pixel_position_adjust*3 + 2;
-    //   //   colour_out = RgbwwColor(test_data[colour_index], test_data[colour_index+1], test_data[colour_index+2]);
-    //   // }
-  
-
-    //   return colour;
-
-    // }break;
+  }
+  else {
+    ALOG_INF(PSTR("Missing %d"), palette_id);
   }
 
-  return RgbwwColor(255,0,0,0,0);
+  DEBUG_PIN4_SET(1);
+        RgbwwColor col = colour;//RgbwwColor::LinearBlend(colour1, colour2, progress);
+        uint32_t col32 = RGBW32(col.R, col.G, col.B, col.WW);
+        return col32;
 
+  // return colour.getU32();
 }
-
-#endif // ENABLE_DEVFEATURE_LIGHTING__OCT24_TIMING
-
-
-
-
 
 
 /*********************************************************************************************************************************************************************************
@@ -1999,14 +1535,14 @@ int16_t mPalette::Get_Static_PaletteIDbyName(const char* c)
 
   for(
     uint8_t ii=0;
-            ii<(PALETTELIST_SEGMENT__RGBCCT_COLOUR_LENGTH__ID-PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID);
+            ii<(PALETTELIST_SEGMENT__SEGMENT_COLOUR_LENGTH__ID-PALETTELIST_SEGMENT__SEGMENT_COLOUR_01__ID);
             ii++
   ){    
     ALOG_DBM( PSTR("s> %d %s \"%S\""), ii, c, PM_SEGMENT__RGBCCT_SOLID_COLOUR__NAMES_CTR ); 
     if((id=mSupport::GetCommandID16_P(c, PM_SEGMENT__RGBCCT_SOLID_COLOUR__NAMES_CTR))>=0)
     {
       ALOG_INF( PSTR("MATCH \"%s\" %d %d"), c, ii, id ); 
-      return id+PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID;            
+      return id+PALETTELIST_SEGMENT__SEGMENT_COLOUR_01__ID;            
     }
   }
 
@@ -2184,9 +1720,9 @@ const char* mPalette::GetPaletteNameByID(uint8_t palette_id, char* buffer, uint8
    * 
   ***************************************************************/
   if(
-    ((palette_id >= PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID) && (palette_id < PALETTELIST_SEGMENT__RGBCCT_COLOUR_LENGTH__ID))
+    ((palette_id >= PALETTELIST_SEGMENT__SEGMENT_COLOUR_01__ID) && (palette_id < PALETTELIST_SEGMENT__SEGMENT_COLOUR_LENGTH__ID))
   ){  
-    uint16_t adjusted_id = palette_id - PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID;
+    uint16_t adjusted_id = palette_id - PALETTELIST_SEGMENT__SEGMENT_COLOUR_01__ID;
     mSupport::GetTextIndexed_P(buffer, buflen, adjusted_id, PM_SEGMENT__RGBCCT_SOLID_COLOUR__NAMES_CTR);   
   }
 
@@ -2271,13 +1807,13 @@ const char* mPalette::GetPaletteNameByID(uint8_t palette_id, char* buffer, uint8
 
   /**************************************************************
    * 
-   * PALETTELIST_SEGMENT__RGBCCT_COLOUR_LENGTH__ID
+   * PALETTELIST_SEGMENT__SEGMENT_COLOUR_LENGTH__ID
    * 
   ***************************************************************/
   if(
-    ((palette_id >= PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID)    && (palette_id < PALETTELIST_SEGMENT__RGBCCT_COLOUR_LENGTH__ID))
+    ((palette_id >= PALETTELIST_SEGMENT__SEGMENT_COLOUR_01__ID)    && (palette_id < PALETTELIST_SEGMENT__SEGMENT_COLOUR_LENGTH__ID))
   ){  
-    uint16_t adjusted_id = palette_id - PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID;
+    uint16_t adjusted_id = palette_id - PALETTELIST_SEGMENT__SEGMENT_COLOUR_01__ID;
     sprintf_P(buffer, PSTR(D_DEFAULT_DYNAMIC_PALETTE_NAMES__VARIABLE_RGBCCT__NAME_CTR), adjusted_id + 1); // names are 1-10
   }
 
@@ -2309,7 +1845,7 @@ uint8_t mPalette::GetColourMapSizeByPaletteID(uint8_t palette_id){
   
   uint8_t new_size = 1; // assumed 1 at least
   
-  if((palette_id>=PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID)&&(palette_id<PALETTELIST_SEGMENT__RGBCCT_COLOUR_LENGTH__ID)){
+  if((palette_id>=PALETTELIST_SEGMENT__SEGMENT_COLOUR_01__ID)&&(palette_id<PALETTELIST_SEGMENT__SEGMENT_COLOUR_LENGTH__ID)){
 
     mPalette::PALETTE_DATA *ptr_tmp = &static_palettes[palette_id];
 
@@ -2510,12 +2046,12 @@ uint8_t mPalette::GetColoursInPalette(uint16_t palette_id)
 
   /**************************************************************
    * 
-   * PALETTELIST_SEGMENT__RGBCCT_COLOUR__IDS
+   * PALETTELIST_SEGMENT__SEGMENT_COLOUR__IDS
    * 
   ***************************************************************/
   else
   if(
-    (palette_id >= PALETTELIST_SEGMENT__RGBCCT_COLOUR_01__ID) && (palette_id < PALETTELIST_SEGMENT__RGBCCT_COLOUR_LENGTH__ID)
+    (palette_id >= PALETTELIST_SEGMENT__SEGMENT_COLOUR_01__ID) && (palette_id < PALETTELIST_SEGMENT__SEGMENT_COLOUR_LENGTH__ID)
   ){  
     return 1;
   }
@@ -2553,11 +2089,7 @@ uint8_t mPalette::GetColoursInPalette(uint16_t palette_id)
 
 #ifdef ENABLE_DEVFEATURE_LIGHTING__OCT24_TIMING
 
-RgbwwColor 
-#ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
-IRAM_ATTR 
-#endif 
-mPalette::Get_Encoded_Colour_ReadBuffer_Fast(
+IRAM_ATTR [[gnu::hot]] RgbwwColor      mPalette::Get_Encoded_Colour_ReadBuffer_RGBWW(
   uint8_t* palette_buffer,
   uint16_t pixel_position,  
   uint8_t* return_encoded_value,
@@ -2598,7 +2130,7 @@ mPalette::Get_Encoded_Colour_ReadBuffer_Fast(
  * @param seg_i 
  * @return RgbwwColor 
  */
-RgbwwColor mPalette::Get_Encoded_Colour_ReadBuffer_Fast(
+RgbwwColor mPalette::Get_Encoded_Colour_ReadBuffer_RGBWW(
   uint8_t* palette_buffer,
   uint16_t pixel_position,  
   uint8_t* return_encoded_value,
@@ -2691,11 +2223,7 @@ Performance improvements:
     Eliminated redundant calculations, such as unnecessary recalculations of pixel_position_adjust.
     The gradient palette vector is now populated in a single pass, and boundary conditions are checked in an efficient loop.
 */
-RgbwwColor  
-#ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
-IRAM_ATTR 
-#endif 
-mPalette::Get_Encoded_Palette_Colour(
+IRAM_ATTR [[gnu::hot]] RgbwwColor      mPalette::Get_Encoded_Palette_Colour_RGBWW(
   uint8_t* palette_buffer,
   uint16_t _pixel_position, 
   uint8_t encoded_colour_width,
@@ -2724,7 +2252,7 @@ mPalette::Get_Encoded_Palette_Colour(
     // Map pixel position to color index in the palette
     pixel_position_adjust %= colours_in_palette;
 
-    colour = Get_Encoded_Colour_ReadBuffer_Fast(
+    colour = Get_Encoded_Colour_ReadBuffer_RGBWW(
       palette_buffer,
       pixel_position_adjust,  
       encoded_value,
@@ -2747,7 +2275,7 @@ mPalette::Get_Encoded_Palette_Colour(
     std::vector<uint8_t> gradient_palettes(colours_in_palette);
     if (encoding.index_gradient) {
       for (uint8_t i = 0; i < colours_in_palette; ++i) {
-        Get_Encoded_Colour_ReadBuffer_Fast(
+        Get_Encoded_Colour_ReadBuffer_RGBWW(
           palette_buffer,
           i,  
           &gradient_palettes[i],
@@ -2792,14 +2320,14 @@ mPalette::Get_Encoded_Palette_Colour(
     }
 
     // Blend between lower and upper color boundaries
-    RgbwwColor lower_colour = Get_Encoded_Colour_ReadBuffer_Fast(
+    RgbwwColor lower_colour = Get_Encoded_Colour_ReadBuffer_RGBWW(
       palette_buffer,
       lower_boundary_i,  
       nullptr,
       encoding,
       encoded_colour_width
     );
-    RgbwwColor upper_colour = Get_Encoded_Colour_ReadBuffer_Fast(
+    RgbwwColor upper_colour = Get_Encoded_Colour_ReadBuffer_RGBWW(
       palette_buffer,
       upper_boundary_i,  
       nullptr,
@@ -2824,7 +2352,7 @@ mPalette::Get_Encoded_Palette_Colour(
 
   uint8_t palette_index = scale8(pixel_position_adjust, colours_in_palette - 1);
 
-  colour = Get_Encoded_Colour_ReadBuffer_Fast(
+  colour = Get_Encoded_Colour_ReadBuffer_RGBWW(
     palette_buffer,
     palette_index,  
     encoded_value,
@@ -2856,7 +2384,7 @@ RgbwwColor
 #ifdef ENABLE_DEVFEATURE_LIGHTING_PALETTE_IRAM
 IRAM_ATTR 
 #endif 
-mPalette::Get_Encoded_Palette_Colour(
+mPalette::Get_Encoded_Palette_Colour_RGBWW(
   uint8_t* palette_buffer,
   uint16_t _pixel_position, 
   uint8_t encoded_colour_width,
@@ -2974,7 +2502,7 @@ mPalette::Get_Encoded_Palette_Colour(
     // else // if gradient, then this same thing should happen but scale into 255 range
     // ALOG_INF(PSTR("pixel_position_adjust %d/%d"), before, pixel_position_adjust);
   
-    colour = Get_Encoded_Colour_ReadBuffer_Fast(
+    colour = Get_Encoded_Colour_ReadBuffer_RGBWW(
       palette_buffer,
       pixel_position_adjust,  
       encoded_value,
@@ -3059,7 +2587,7 @@ mPalette::Get_Encoded_Palette_Colour(
       // ALOG_INF(PSTR("colours_in_palette %d"), colours_in_palette);
       for(uint8_t pix_i=0; pix_i<colours_in_palette; pix_i++)
       {
-        Get_Encoded_Colour_ReadBuffer_Fast( // since the gradient exists already, this is some recursive call
+        Get_Encoded_Colour_ReadBuffer_RGBWW( // since the gradient exists already, this is some recursive call
             palette_buffer,
             pix_i,  
             &encoded_value2,
@@ -3182,14 +2710,14 @@ mPalette::Get_Encoded_Palette_Colour(
     // RgbwwColor lower_colour = Get_StaticPalette_Encoded_Colour_ReadBuffer(palette_adjusted_id, palette_buffer, lower_boundary_i); 
     // RgbwwColor upper_colour = Get_StaticPalette_Encoded_Colour_ReadBuffer(palette_adjusted_id, palette_buffer, upper_boundary_i);
     
-    RgbwwColor lower_colour = Get_Encoded_Colour_ReadBuffer_Fast(
+    RgbwwColor lower_colour = Get_Encoded_Colour_ReadBuffer_RGBWW(
       palette_buffer,
       lower_boundary_i,  
       nullptr,
       encoding,
       encoded_colour_width
     );
-    RgbwwColor upper_colour = Get_Encoded_Colour_ReadBuffer_Fast(
+    RgbwwColor upper_colour = Get_Encoded_Colour_ReadBuffer_RGBWW(
       palette_buffer,
       upper_boundary_i,  
       nullptr,
@@ -3265,7 +2793,7 @@ mPalette::Get_Encoded_Palette_Colour(
       
 
 
-  colour = Get_Encoded_Colour_ReadBuffer_Fast(
+  colour = Get_Encoded_Colour_ReadBuffer_RGBWW(
     palette_buffer,
     palette_index,  
     encoded_value,
